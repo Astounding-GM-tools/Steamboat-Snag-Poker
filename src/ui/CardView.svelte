@@ -1,0 +1,139 @@
+<script lang="ts">
+  import { isJoker, rankLabel, type Card } from '../engine';
+  import { t } from '../i18n';
+  import { SUIT_GLYPH } from './format';
+
+  interface Props {
+    card?: Card | null;
+    faceDown?: boolean;
+    small?: boolean;
+    selected?: boolean;
+    ghost?: boolean;
+    fresh?: boolean;
+    placeholder?: string;
+    onclick?: () => void;
+    ondragstart?: (e: DragEvent) => void;
+  }
+
+  let { card = null, faceDown = false, small = false, selected = false, ghost = false, fresh = false, placeholder = '', onclick, ondragstart }: Props = $props();
+
+  const rank = $derived(card && !isJoker(card) ? (card.rank === 10 ? '10' : rankLabel(card.rank)) : '');
+  const suit = $derived(card && !isJoker(card) ? SUIT_GLYPH[card.suit] : '');
+</script>
+
+{#if faceDown}
+  <div class="card back" class:small></div>
+{:else if !card}
+  <div class="card empty" class:small>{placeholder}</div>
+{:else}
+  <button
+    type="button"
+    class="card face"
+    class:small
+    class:selected
+    class:ghost
+    class:fresh
+    class:joker={isJoker(card)}
+    draggable={!!ondragstart}
+    {onclick}
+    {ondragstart}
+    disabled={!onclick && !ondragstart}
+  >
+    {#if isJoker(card)}
+      <span class="jester">🃏</span>
+      <span class="jname">{t(`joker.${card.index}`).replace(/^the /, '')}</span>
+    {:else}
+      <span class="corner">{rank}<br />{suit}</span>
+      <span class="pip">{suit}</span>
+    {/if}
+  </button>
+{/if}
+
+<style>
+  .card {
+    --w: 76px;
+    width: var(--w);
+    height: calc(var(--w) * 1.4);
+    border-radius: 6px;
+    position: relative;
+    flex: none;
+    padding: 0;
+    outline: none;
+    font-family: var(--title-font);
+  }
+  .small {
+    --w: 52px;
+  }
+  .face {
+    background: var(--paper);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.6);
+    cursor: grab;
+  }
+  .face:disabled {
+    cursor: default;
+    opacity: 1;
+  }
+  .face:hover:not(:disabled) {
+    transform: translateY(-4px) rotate(-1deg);
+  }
+  .selected {
+    transform: translateY(-10px) rotate(-2deg) !important;
+    box-shadow: 0 0 0 3px var(--paper), 0 0 18px 4px rgba(255, 255, 255, 0.45);
+  }
+  .ghost {
+    opacity: 0.55;
+    border-style: dashed;
+  }
+  .fresh {
+    animation: pop 0.5s ease-out;
+  }
+  @keyframes pop {
+    0% { transform: scale(1.3) rotate(6deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .corner {
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    font-size: calc(var(--w) * 0.22);
+    line-height: 1;
+    text-align: center;
+  }
+  .pip {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: calc(var(--w) * 0.55);
+    padding-top: 10%;
+  }
+  .joker {
+    background: repeating-linear-gradient(45deg, #ddd 0 6px, #bbb 6px 12px);
+  }
+  .jester {
+    display: block;
+    font-size: calc(var(--w) * 0.45);
+    margin-top: 14%;
+  }
+  .jname {
+    display: block;
+    font-family: var(--body-font);
+    font-size: calc(var(--w) * 0.13);
+    line-height: 1.1;
+    padding: 0 3px;
+  }
+  .back {
+    background: repeating-linear-gradient(-45deg, #555 0 4px, #222 4px 8px);
+    border: 2px solid var(--paper);
+  }
+  .empty {
+    border: 2px dashed var(--grey);
+    display: grid;
+    place-items: center;
+    color: var(--grey);
+    font-size: 0.75rem;
+    text-align: center;
+  }
+</style>
