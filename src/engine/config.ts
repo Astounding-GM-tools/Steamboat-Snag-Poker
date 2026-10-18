@@ -35,6 +35,11 @@ export interface RulesConfig {
   shuffledJokerEveryMonths: number;
   /** Popularity lost per owned Joker at the end of every round. */
   drainPerJoker: number;
+  /**
+   * Share of the winner's gain that the loser loses: 0 = losing costs nothing,
+   * 1 = zero-sum (the winner's points come out of the loser's Popularity).
+   */
+  loserPays: number;
   startPopularity: number;
   maxPopularity: number;
   winGain: Record<Category, number>;
@@ -66,6 +71,7 @@ const KANSAS: RulesConfig = {
   communityJokerChance: 0.5,
   shuffledJokerEveryMonths: 2,
   drainPerJoker: 4,
+  loserPays: 0,
   startPopularity: 50,
   maxPopularity: 100,
   winGain: BASE_GAIN,

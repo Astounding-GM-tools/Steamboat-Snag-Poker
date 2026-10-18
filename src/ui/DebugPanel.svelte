@@ -71,6 +71,7 @@
         {/if}
         <label>{t('debug.totalJokers')} <input type="number" min="0" max="30" bind:value={draft.totalJokers} /></label>
         <label>{t('debug.drain')} <input type="number" min="0" max="20" bind:value={draft.drainPerJoker} /></label>
+        <label>{t('debug.loserPays')} <input type="number" min="0" max="1" step="0.25" bind:value={draft.loserPays} /></label>
       </div>
       <label>{t('debug.seed')} <input type="text" bind:value={seedText} /></label>
       <label class="check"><input type="checkbox" checked={peek} onchange={(e) => onpeek(e.currentTarget.checked)} /> {t('debug.peek')}</label>

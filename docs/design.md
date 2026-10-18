@@ -67,7 +67,7 @@ The shape of a hand decides how many Jokers it can carry:
 | Two pair | 4 | 1 |
 | Straight / flush / full house | 5 | none |
 
-**The deal:** cards are dealt like at a real table — hole cards one at a time
+**The deal** (always fast for people who prefer reduced motion): cards are dealt like at a real table — hole cards one at a time
 round the table (you, them, you, them…), a beat, then the Flop one, two, three;
 Turn and River cards and replacement cards slide in too. A **Fast deal**
 checkbox speeds it up (remembered per browser), and a click on the table
@@ -159,6 +159,11 @@ An empty slot at showdown is a dead card.
   there is a community Joker → +2 Jokers, none shed.
 - A no-Joker round is low stakes: losing just means no Popularity that month.
 
+### Loser pays (🔧)
+
+`loserPays` (0–1) sets how much of the winner's gain the loser loses: 0 = losing
+costs nothing (current default), 1 = zero-sum.
+
 ### End of round
 
 1. Apply Joker transfers.
@@ -249,6 +254,12 @@ Ducks, Sailboats, Snowmen, Cowboys and Ladies.
 
 Play is by drag-and-drop onto a slot or the discard pile, with click-to-select
 as a fallback. Dropping is final.
+
+## Accessibility
+
+- **Reduced motion:** all animations and transitions stop; the deal is fast.
+- **High contrast:** no film grain, scratches, vignette or flicker; brighter
+  secondary text.
 
 ## Technical
 

@@ -17,6 +17,7 @@
   const foe = $derived(report.duel.players[1]);
   const won = $derived(res.winner === 0);
   const mine = $derived(report.popularity[HUMAN_ID]);
+  const loss = $derived(res.winner === 1 ? Math.round(res.gain * game.config.loserPays) : 0);
   const over = $derived(game.phase === 'gameOver' || game.phase === 'victory');
 
   const headline = $derived(
@@ -63,9 +64,10 @@
         {#if res.dumped.length}<p>{t('end.dumped', { jokers: jokerList(res.dumped) })}</p>{/if}
         {#if res.communityTaken.length}<p>{t('end.dodged', { name: name(foe), jokers: jokerList(res.communityTaken) })}</p>{/if}
       {:else}
+        {#if loss}<p class="big">{t('end.loss', { n: loss })}</p>{/if}
         {#if res.dumped.length}<p class="big">{t('end.gotDumped', { name: name(foe), jokers: jokerList(res.dumped) })}</p>{/if}
         {#if res.communityTaken.length}<p class="big">{t('end.tookCommunity', { jokers: jokerList(res.communityTaken) })}</p>{/if}
-        {#if !res.dumped.length && !res.communityTaken.length}<p>{t('end.noHarm')}</p>{/if}
+        {#if !loss && !res.dumped.length && !res.communityTaken.length}<p>{t('end.noHarm')}</p>{/if}
       {/if}
       {#if mine?.drained}<p>{t('end.drain', { n: mine.drained })}</p>{/if}
       {#if mine}<p class="pop">{t('table.popularity')}: {mine.before}% → <b>{mine.after}%</b></p>{/if}

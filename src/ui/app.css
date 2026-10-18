@@ -149,3 +149,32 @@ button.ghost {
   color: var(--grey);
   letter-spacing: 0.4em;
 }
+
+/* High contrast: no grain, scratches, vignette or flicker, and brighter secondary text. */
+@media (prefers-contrast: more) {
+  :root {
+    --grey: #d8d5cc;
+    --dim: #9a978f;
+    --paper: #ffffff;
+  }
+  .film {
+    animation: none;
+    filter: none;
+    background: #000;
+  }
+  .film::before,
+  .film::after {
+    display: none;
+  }
+}
+
+/* Reduced motion: stop every animation and transition (boat, shakes, deals, iris). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

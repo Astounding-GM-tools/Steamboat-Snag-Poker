@@ -148,6 +148,7 @@ function finishMonth(state: GameState, rng: Rng) {
       before[p.id] ??= p.popularity;
       p.jokers = seat.jokers;
       if (res.winner === i) p.popularity = Math.min(cfg.maxPopularity, p.popularity + res.gain);
+      else if (res.winner !== null) p.popularity = Math.max(0, p.popularity - Math.round(res.gain * cfg.loserPays));
     });
     state.pool.push(...res.returnedToPool);
     return { players: [round.seats[0].playerId, round.seats[1].playerId], result: res };

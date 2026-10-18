@@ -76,7 +76,9 @@
   let dealTimer: ReturnType<typeof setTimeout> | undefined;
   const dealing = $derived(pending.length > 0);
 
+  /** Fast deal is on if chosen, and always for people who prefer reduced motion. */
   function readFast(): boolean {
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
     try {
       return localStorage.getItem(FAST_KEY) === '1';
     } catch {
