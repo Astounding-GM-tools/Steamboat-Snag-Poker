@@ -2,7 +2,7 @@
  * Spoken descriptions of hands for the showdown intertitles:
  * "Four of a Kind, sevens" — and a nickname when the hand has one.
  */
-import type { HandValue } from '../engine';
+import type { HandValue, StdCard } from '../engine';
 import { t } from '../i18n';
 
 function groups(hand: HandValue): number[][] {
@@ -64,5 +64,22 @@ export function nickname(hand: HandValue): string | null {
     }
     default:
       return null;
+  }
+}
+
+/** The cards that make the hand what it is (the pair, the trips…), without kickers. */
+export function keyCards(hand: HandValue): StdCard[] {
+  const g = groups(hand);
+  switch (hand.category) {
+    case 'highCard':
+      return hand.cards.slice(0, 1);
+    case 'pair':
+    case 'threeOfAKind':
+    case 'fourOfAKind':
+      return hand.cards.filter((c) => c.rank === g[0][0]);
+    case 'twoPair':
+      return hand.cards.filter((c) => c.rank === g[0][0] || c.rank === g[1][0]);
+    default:
+      return hand.cards;
   }
 }

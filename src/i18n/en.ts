@@ -146,6 +146,7 @@ export const en = {
   'show.shows': '{name} shows {card}.',
   'show.joker': '{joker}! {name} is betting a Joker — the stakes go up!',
   'show.bestSoFar': 'Best so far: {hand}.',
+  'show.finalHand': '{name} plays {hand} — {cards}.',
   'show.possible': 'Still possible: {hands}!',
   'show.or': ' or ',
   'show.ahead': 'You’re ahead',
