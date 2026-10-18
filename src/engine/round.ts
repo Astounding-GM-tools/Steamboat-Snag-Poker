@@ -3,11 +3,11 @@
  * given; the public game API (game.ts) clones state before calling them.
  */
 import { fullDeck, isJoker, type Card, type JokerCard, type StdCard } from './cards';
-import { DEAL_SCHEDULE, type RulesConfig } from './config';
-import { compareHands, evaluate, type HandValue } from './evaluate';
+import type { RulesConfig } from './config';
+import { bestHand, compareHands, type HandValue } from './evaluate';
 import type { Rng } from './rng';
 
-export type SlotIndex = 0 | 1;
+export type SlotIndex = number;
 
 export type Action =
   | { type: 'place'; cardId: string; slot: SlotIndex }
@@ -19,7 +19,7 @@ export interface Seat {
   hand: StdCard[];
   /** Owned Jokers not currently in a slot. They never take hand space. */
   jokers: JokerCard[];
-  slots: [Card | null, Card | null];
+  slots: (Card | null)[];
 }
 
 export const STREETS = ['flop', 'turn', 'river'] as const;
@@ -69,7 +69,12 @@ export function createRound(
   config: RulesConfig,
   rng: Rng,
 ): RoundState {
-  const seat = (p: RoundPlayer): Seat => ({ playerId: p.id, hand: [], jokers: p.jokers.slice(), slots: [null, null] });
+  const seat = (p: RoundPlayer): Seat => ({
+    playerId: p.id,
+    hand: [],
+    jokers: p.jokers.slice(),
+    slots: Array.from({ length: config.slotCount }, () => null),
+  });
   const round: RoundState = {
     month,
     seats: [seat(players[0]), seat(players[1])],
@@ -114,8 +119,8 @@ function drawToSeat(round: RoundState, seat: Seat) {
 }
 
 function dealStreet(round: RoundState, config: RulesConfig) {
-  round.community.push(draw(round));
-  const n = DEAL_SCHEDULE[config.dealMode][round.street];
+  for (let i = 0; i < config.communitySchedule[round.street]; i++) round.community.push(draw(round));
+  const n = config.dealSchedule[round.street];
   for (let i = 0; i < n; i++) for (const seat of round.seats) drawToSeat(round, seat);
 }
 
@@ -123,25 +128,27 @@ export function legalActions(round: RoundState, seatIndex: number): Action[] {
   return legalSeatActions(round.seats[seatIndex], round.deck.length);
 }
 
+/** Every action except passing; passing is only allowed when nothing else is. */
 export function legalSeatActions(seat: Pick<Seat, 'hand' | 'jokers' | 'slots'>, deckSize: number): Action[] {
-  const actions: Action[] = [{ type: 'pass' }];
+  const actions: Action[] = [];
   const placeable: Card[] = [...seat.hand];
   // All Jokers are interchangeable for play, so one representative is enough.
   if (seat.jokers.length) placeable.push(seat.jokers[0]);
   for (const card of placeable) {
-    for (const slot of [0, 1] as const) {
+    for (let slot = 0; slot < seat.slots.length; slot++) {
       // Swapping a Joker for a Joker changes nothing.
       if (isJoker(card) && isJoker(seat.slots[slot])) continue;
       actions.push({ type: 'place', cardId: card.id, slot });
     }
   }
   if (deckSize > 0) for (const card of seat.hand) actions.push({ type: 'discard', cardId: card.id });
-  return actions;
+  return actions.length ? actions : [{ type: 'pass' }];
 }
 
 export function isLegal(round: RoundState, seatIndex: number, action: Action): boolean {
   const seat = round.seats[seatIndex];
-  if (action.type === 'pass') return true;
+  if (action.type === 'pass') return legalActions(round, seatIndex)[0].type === 'pass';
+  if (action.type === 'place' && !(action.slot >= 0 && action.slot < seat.slots.length)) return false;
   if (action.type === 'discard') return round.deck.length > 0 && seat.hand.some((c) => c.id === action.cardId);
   return seat.hand.some((c) => c.id === action.cardId) || seat.jokers.some((c) => c.id === action.cardId);
 }
@@ -184,12 +191,12 @@ export function resolveStreet(round: RoundState, actions: [Action, Action], conf
   else showdown(round, config);
 }
 
-export function handInPlay(round: RoundState, seatIndex: number): HandValue {
-  return evaluate([...round.seats[seatIndex].slots, ...round.community]);
+export function handInPlay(round: RoundState, seatIndex: number, config: RulesConfig): HandValue {
+  return bestHand(round.seats[seatIndex].slots, round.community, config.ownCards);
 }
 
 function showdown(round: RoundState, config: RulesConfig) {
-  const hands: [HandValue, HandValue] = [handInPlay(round, 0), handInPlay(round, 1)];
+  const hands: [HandValue, HandValue] = [handInPlay(round, 0, config), handInPlay(round, 1, config)];
   const cmp = compareHands(hands[0], hands[1]);
   const winner: 0 | 1 | null = cmp > 0 ? 0 : cmp < 0 ? 1 : null;
 

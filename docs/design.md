@@ -37,56 +37,74 @@ vignette, intertitle cards for all text.
 - Jokers you own are always available to play and **do not take up hand space**.
   You can hold 0, 5 or 10 of them. You cannot discard a Joker.
 
+## Rule presets
+
+All structural rules live in one config (`src/engine/config.ts`) with named
+presets, selectable in the rules lab (⚙) and the balance simulation:
+
+| Preset | Board (Flop/Turn/River) | Deal per player | Slots | Own cards used |
+|---|---|---|---|---|
+| **Kansas** (default) | 3 / 1 / 1 | 3 / 1 / 1 | 3 | exactly 2 |
+| **Texas** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 0–3 |
+| **Middle** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 1–2 |
+| **3 + 3** | 1 / 1 / 1 | 3 / 1 / 1 | 3 | 2–3 |
+| **Classic** (v1) | 1 / 1 / 1 | 3 / 1 / 1 | 2 | exactly 2, Joker in a 4th slot |
+
+"Kansas" sits between Texas and Omaha (geographically, too): a full Hold'em
+board, three slots, and Omaha's rule that your hand must use exactly two of
+your own cards.
+
 ## Hand ranking
 
-Standard Hold'em ranks, evaluated on the **5 cards in play**: your 2 play slots +
-the 3 community cards. Jokers and empty slots are dead, so a hand may effectively
-have 3–5 real cards. Straights and flushes need 5 real cards.
+Standard poker ranks. Your hand is the **best 5 cards** made from your slot cards
+and the community cards, using the preset's number of own cards (Kansas:
+exactly 2 of your 3 slots + exactly 3 of the 5 board cards). Jokers and empty
+slots are dead cards — but they still count as "your cards", so:
+
+- **1 Joker** in your slots is nearly free if the other two carry the hand
+  (but you lose your fallback card).
+- **2 Jokers** force you to use a dead card: a 4-card hand.
+- **3 Jokers**: only 3 board cards — suicide unless the opponent is as stuck.
+- Jokers on the board narrow everyone's choice of board cards the same way.
+
+Straights and flushes need 5 real cards.
 
 Straight flush > Four of a kind > Full house > Flush > Straight > Three of a kind
 > Two pair > Pair > High card.
 
 **Ties:** compare category, then ranks (kickers) as usual. If still equal, compare
 suits card-by-card from the highest card down, with **♣ < ♦ < ♥ < ♠**.
-Only when both hands contain exactly the same real cards (e.g. both players play
-two Jokers and the hand is just the board) is it a true **draw**: nobody wins,
-no Jokers move, no Popularity is gained.
+Only when both hands contain exactly the same real cards is it a true **draw**:
+nobody wins, no Jokers move, no Popularity is gained.
 
 ## The round (one month)
 
 Two players, three **streets**: Flop, Turn, River. On each street:
 
-1. A community card is revealed.
-2. Cards are dealt to the players according to the deal mode.
-3. Both players choose **one action in secret**, then both actions are revealed
-   simultaneously.
+1. Community cards are revealed (Kansas: 3, then 1, then 1).
+2. Cards are dealt to the players (Kansas: 3, then 1, then 1).
+3. Both players choose **one action** at the same time — the opponent never sees
+   your move before making theirs. **A card laid is a card played**: there is no
+   confirm button and no undo.
 
 ### Actions (exactly one per street)
 
-- **Place** a card from hand (including an owned Joker) into Play Slot 1 or 2.
+- **Place** a card from hand (including an owned Joker) into one of your slots.
   If the slot is occupied, the old card goes back to your hand (a swap).
-- **Discard** a non-Joker card from hand and draw a replacement.
-- **Pass** — do nothing. Valid, rarely smart.
+- **Discard** a non-Joker card from hand and draw a replacement. This is also
+  how you "pass" — and it costs you a slot you will never fill.
+- **Pass** only exists when nothing else is possible.
 
 An empty slot at showdown is a dead card.
 
-### 🔧 Deal mode
+### Community Jokers (🔧 Joker mode)
 
-| Mode | Flop | Turn | River |
-|---|---|---|---|
-| **Drip** | 1 card each | 1 card each | 1 card each |
-| **Draft** (default) | 3 cards each | +1 each | +1 each |
-| **Hold'em** | 5 cards each | — | — |
-
-### 🔧 Joker mode (how community Jokers appear)
-
-- **Slot** (default): a fourth community slot. From month 2 on, with some chance
-  (🔧 default 50%), an unowned Joker is placed there. It never affects hands; it
-  is the prize the loser takes home.
-- **Shuffled:** after the Flop deal, some unowned Jokers are shuffled into the
-  deck (🔧 one per N months elapsed, capped by the unowned pool). Any Joker drawn
-  later — by a player (it joins their hand, now owned!) or as a community card
-  (a dead board card) — is in play. Discarding becomes a gamble.
+- **Shuffled** (default): after the Flop deal, some unowned Jokers are shuffled
+  into the deck (🔧 one per N months elapsed, capped by the unowned pool). A
+  Joker drawn by a player joins their hand (now owned!); one drawn to the board
+  is a dead community card and goes to the loser. Discarding is a gamble.
+- **Slot** (Classic only): a separate fourth community slot; from month 2, with
+  some chance, an unowned Joker sits there as the loser's prize.
 
 ### Showdown and Joker transfer
 
@@ -167,15 +185,17 @@ books), Wendy Darling, the Queen of Hearts.
 1. **Title** — riverboat, "START" button, best result, short "How it works"
    card: *Steer public opinion. Avoid ruin. Dump your mess on someone else.*
 2. **The Table** — opponent area (portrait, played slots, hand size and Joker
-   count visible but the hand hidden), the River (3 community slots + Joker
-   slot), the Captain's area (hand, Jokers, 2 play slots, discard pile), side
-   panel with a shaking Popularity meter and month counter.
+   count visible but the hand hidden), the River (community cards, and the
+   discard pile clearly set apart on the right), the Captain's area (slots,
+   hand, Jokers; the cards used in your best hand are outlined), side panel with
+   a shaking Popularity meter, month counter and the league sorted by
+   Popularity.
 3. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", the winning hand,
    Popularity change, Joker movements, "Meanwhile on the river" league news,
    buttons: Next month / Main menu.
 
-Play is by drag-and-drop to three targets (Slot 1, Slot 2, Discard), with
-click-to-select as a fallback.
+Play is by drag-and-drop onto a slot or the discard pile, with click-to-select
+as a fallback. Dropping is final.
 
 ## Technical
 

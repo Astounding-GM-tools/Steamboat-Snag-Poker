@@ -1,16 +1,5 @@
 <script lang="ts">
-  import {
-    HUMAN_ID,
-    STREETS,
-    evaluate,
-    isJoker,
-    isLegal,
-    player,
-    type Action,
-    type Card,
-    type GameState,
-    type SlotIndex,
-  } from '../engine';
+  import { HUMAN_ID, STREETS, bestHand, isJoker, isLegal, legalActions, player, type Action, type Card, type GameState } from '../engine';
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import { cardLabel, name } from './format';
@@ -24,9 +13,9 @@
   let { game, peek, onaction, onmenu }: Props = $props();
 
   let selectedId = $state<string | null>(null);
-  let staged = $state<Action | null>(null);
 
   const round = $derived(game.round!);
+  const config = $derived(game.config);
   const me = $derived(round.seats[0]);
   const them = $derived(round.seats[1]);
   const opponentId = $derived(game.opponentId!);
@@ -36,13 +25,8 @@
 
   const findCard = (id: string): Card | undefined => [...me.hand, ...me.jokers].find((c) => c.id === id);
 
-  const stagedCard = $derived(staged && staged.type !== 'pass' ? findCard(staged.cardId) : undefined);
-  const previewSlots = $derived.by(() => {
-    const slots = me.slots.slice() as (Card | null)[];
-    if (staged?.type === 'place' && stagedCard) slots[staged.slot] = stagedCard;
-    return slots;
-  });
-  const myHand = $derived(evaluate([...previewSlots, ...round.community]));
+  const myHand = $derived(bestHand(me.slots, round.community, config.ownCards));
+  const usedIds = $derived(new Set(myHand.cards.map((c) => c.id)));
   const myJokerCount = $derived(me.jokers.length + me.slots.filter(isJoker).length);
   const theirJokerCount = $derived(them.jokers.length + them.slots.filter(isJoker).length);
   const stakes = $derived([
@@ -52,34 +36,35 @@
   ]);
   const lastMoves = $derived(round.history.at(-1));
   const streetName = $derived(round.street <= 2 ? STREETS[round.street] : 'showdown');
+  /** Community cards from this index on were revealed on the latest street. */
+  const freshFrom = $derived(round.community.length - config.communitySchedule[Math.min(round.street, 2)]);
+  const mustPass = $derived(playing && legalActions(round, 0)[0].type === 'pass');
+  /** Which street each community position is revealed on, for placeholders. */
+  const boardStreets = $derived(config.communitySchedule.flatMap((n, street) => Array<string>(n).fill(STREETS[street])));
+  const ruleText = $derived(
+    config.ownCards.min === config.ownCards.max
+      ? t('table.rule.exact', { n: config.ownCards.min })
+      : t('table.rule.range', { min: config.ownCards.min, max: Math.min(config.ownCards.max, config.slotCount) }),
+  );
 
   function select(card: Card) {
     if (!playing) return;
     selectedId = selectedId === card.id ? null : card.id;
   }
 
-  function stage(action: Action) {
+  /** A card laid is a card played: actions go straight to the table. */
+  function play(action: Action) {
     if (!playing || !isLegal(round, 0, action)) return;
-    staged = action;
     selectedId = null;
+    onaction(action);
   }
 
-  function toSlot(slot: SlotIndex, id = selectedId) {
-    if (id) stage({ type: 'place', cardId: id, slot });
+  function toSlot(slot: number, id = selectedId) {
+    if (id) play({ type: 'place', cardId: id, slot });
   }
 
   function toDiscard(id = selectedId) {
-    if (id && !isJoker(findCard(id))) stage({ type: 'discard', cardId: id });
-  }
-
-  function send(action: Action) {
-    staged = null;
-    selectedId = null;
-    onaction($state.snapshot(action) as Action);
-  }
-
-  function commit() {
-    if (staged) send(staged);
+    if (id && !isJoker(findCard(id))) play({ type: 'discard', cardId: id });
   }
 
   const dragStart = (card: Card) => (e: DragEvent) => {
@@ -98,6 +83,11 @@
     const card = slots[action.slot];
     return t('log.place', { name: who, card: card ? cardLabel(card) : '?', n: action.slot + 1 });
   }
+
+  const statusOrder = { active: 0, waiting: 1, eliminated: 2 } as const;
+  const league = $derived(
+    [...game.players].sort((a, b) => statusOrder[a.status] - statusOrder[b.status] || b.popularity - a.popularity),
+  );
 
   const meterLevel = (p: number) => (p < 20 ? 'danger' : p < 35 ? 'warn' : '');
 </script>
@@ -139,38 +129,22 @@
   <!-- The river -->
   <section class="river">
     <div class="street">{t(`street.${streetName}`)}</div>
-    <div class="community">
-      {#each [0, 1, 2] as i}
-        <CardView card={round.community[i] ?? null} fresh={i === round.community.length - 1} placeholder={t(`street.${STREETS[i]}`)} />
-      {/each}
-      {#if game.config.jokerMode === 'slot'}
-        <div class="joker-slot">
-          <CardView card={round.communityJoker} placeholder="🃏?" />
-        </div>
-      {/if}
-    </div>
-    <p class="stakes">
-      {#if stakes.length}{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}{:else}{t('table.noStakes')}{/if}
-    </p>
-  </section>
-
-  <!-- The Captain -->
-  <section class="captain">
-    <div class="row targets">
-      {#each previewSlots as card, i}
-        <div
-          class="target"
-          class:armed={!!selectedId}
-          role="button"
-          tabindex="0"
-          onclick={() => toSlot(i as SlotIndex)}
-          onkeydown={(e) => e.key === 'Enter' && toSlot(i as SlotIndex)}
-          ondragover={allowDrop}
-          ondrop={(e) => toSlot(i as SlotIndex, dropId(e))}
-        >
-          <CardView {card} ghost={staged?.type === 'place' && staged.slot === i} placeholder={t('table.slot', { n: i + 1 })} />
-        </div>
-      {/each}
+    <div class="river-row">
+      <div class="community">
+        {#each boardStreets as street, i}
+          <CardView
+            card={round.community[i] ?? null}
+            fresh={!!round.community[i] && i >= freshFrom}
+            used={!!round.community[i] && usedIds.has(round.community[i].id)}
+            placeholder={t(`street.${street}`)}
+          />
+        {/each}
+        {#if config.jokerMode === 'slot'}
+          <div class="joker-slot">
+            <CardView card={round.communityJoker} placeholder="🃏?" />
+          </div>
+        {/if}
+      </div>
       <div
         class="target discard"
         class:armed={!!selectedId && !isJoker(findCard(selectedId))}
@@ -181,27 +155,46 @@
         ondragover={allowDrop}
         ondrop={(e) => toDiscard(dropId(e))}
       >
-        {#if staged?.type === 'discard' && stagedCard}
-          <CardView card={stagedCard} ghost />
-        {:else}
-          <CardView card={round.discards.at(-1) ?? null} small={false} placeholder={t('table.discard')} />
-        {/if}
+        <span class="discard-label">{t('table.discard')}</span>
+        <CardView card={round.discards.at(-1) ?? null} placeholder="✕" />
       </div>
-      <div class="best">{t('table.yourBest', { hand: t(`hand.${myHand.category}`) })}</div>
+    </div>
+    <p class="stakes">
+      {#if stakes.length}{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}{:else}{t('table.noStakes')}{/if}
+    </p>
+  </section>
+
+  <!-- The Captain -->
+  <section class="captain">
+    <div class="row targets">
+      {#each me.slots as card, i}
+        <div
+          class="target"
+          class:armed={!!selectedId}
+          role="button"
+          tabindex="0"
+          onclick={() => toSlot(i)}
+          onkeydown={(e) => e.key === 'Enter' && toSlot(i)}
+          ondragover={allowDrop}
+          ondrop={(e) => toSlot(i, dropId(e))}
+        >
+          <CardView {card} used={!!card && usedIds.has(card.id)} faded={!!card && !isJoker(card) && !usedIds.has(card.id)} placeholder={t('table.slot', { n: i + 1 })} />
+        </div>
+      {/each}
+      <div class="best">
+        {t('table.yourBest', { hand: t(`hand.${myHand.category}`) })}
+        <small>{ruleText}</small>
+      </div>
     </div>
 
     <div class="row hand">
       {#each me.hand as card (card.id)}
-        {#if !(staged && staged.type !== 'pass' && staged.cardId === card.id)}
-          <CardView {card} selected={selectedId === card.id} onclick={() => select(card)} ondragstart={playing ? dragStart(card) : undefined} />
-        {/if}
+        <CardView {card} selected={selectedId === card.id} onclick={() => select(card)} ondragstart={playing ? dragStart(card) : undefined} />
       {/each}
       {#if me.jokers.length}
         <div class="jokers">
           {#each me.jokers as card (card.id)}
-            {#if !(staged && staged.type !== 'pass' && staged.cardId === card.id)}
-              <CardView small {card} selected={selectedId === card.id} onclick={() => select(card)} ondragstart={playing ? dragStart(card) : undefined} />
-            {/if}
+            <CardView small {card} selected={selectedId === card.id} onclick={() => select(card)} ondragstart={playing ? dragStart(card) : undefined} />
           {/each}
         </div>
       {/if}
@@ -209,17 +202,11 @@
 
     {#if playing}
       <div class="row controls">
-        {#if staged}
-          <span class="staged">
-            {#if staged.type === 'place' && stagedCard}{t('table.staged.place', { card: cardLabel(stagedCard), n: staged.slot + 1 })}
-            {:else if staged.type === 'discard' && stagedCard}{t('table.staged.discard', { card: cardLabel(stagedCard) })}
-            {:else}{t('table.staged.pass')}{/if}
-          </span>
-          <button onclick={commit}>{t('table.reveal')}</button>
-          <button class="ghost" onclick={() => (staged = null)}>{t('table.cancel')}</button>
+        {#if mustPass}
+          <span class="hint">{t('table.mustPass')}</span>
+          <button onclick={() => play({ type: 'pass' })}>{t('table.pass')}</button>
         {:else}
           <span class="hint">{t('table.hint')}</span>
-          <button class="ghost" onclick={() => send({ type: 'pass' })}>{t('table.pass')}</button>
         {/if}
       </div>
     {/if}
@@ -227,7 +214,7 @@
 
   <!-- Side panel -->
   <aside class="side">
-    <div class="month">{t('table.month', { month: game.month, total: game.config.months })}</div>
+    <div class="month">{t('table.month', { month: game.month, total: config.months })}</div>
     <div class="meter {meterLevel(captain.popularity)}">
       <div class="fill" style="height: {captain.popularity}%"></div>
       <span class="pct">{captain.popularity}%</span>
@@ -237,7 +224,7 @@
 
     <h3>{t('table.league')}</h3>
     <ul class="league">
-      {#each game.players as p (p.id)}
+      {#each league as p (p.id)}
         <li class:out={p.status !== 'active'} class:me={p.id === HUMAN_ID} class:foe={p.id === opponentId}>
           <span>{p.id === opponentId ? '► ' : ''}{p.id === HUMAN_ID ? t('character.captain.you') : name(p.id)}</span>
           <span>
@@ -248,6 +235,7 @@
         </li>
       {/each}
     </ul>
+    <p class="preset">{t(`preset.${config.preset}`)}</p>
     <button class="ghost menu" onclick={onmenu}>{t('table.menu')}</button>
   </aside>
 </div>
@@ -357,11 +345,19 @@
     letter-spacing: 0.1em;
     margin-bottom: 0.5rem;
   }
-  .community {
+  .river-row {
     display: flex;
-    gap: 0.75rem;
     justify-content: center;
     align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .community {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
   }
   .joker-slot {
     margin-left: 1rem;
@@ -385,12 +381,38 @@
     50% { outline-color: transparent; }
   }
   .discard {
-    margin-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.6rem 0.6rem;
+    border: 2px dashed var(--grey);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.35);
+  }
+  .discard-label {
+    font-family: var(--title-font);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--grey);
   }
   .best {
     margin-left: auto;
     font-family: var(--title-font);
     font-size: 1.1rem;
+    text-align: right;
+  }
+  .best small {
+    display: block;
+    font-family: var(--body-font);
+    font-size: 0.8rem;
+    color: var(--grey);
+  }
+  .preset {
+    color: var(--grey);
+    font-size: 0.8rem;
+    margin: 0.5rem 0 0;
   }
   .hand {
     margin-top: 0.75rem;
@@ -407,13 +429,9 @@
     margin-top: 0.75rem;
     justify-content: flex-end;
   }
-  .hint,
-  .staged {
+  .hint {
     margin-right: auto;
     color: var(--grey);
-  }
-  .staged {
-    color: var(--paper);
   }
   .month {
     font-family: var(--title-font);

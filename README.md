@@ -6,7 +6,7 @@ A silent-film poker duel prototype. Design: [docs/design.md](docs/design.md).
 npm install
 npm run dev      # play at http://localhost:5173
 npm test         # engine tests
-npm run sim      # balance simulation (slow; SIM_GAMES=10 npm run sim for a quick look)
+npm run sim      # balance simulation per preset (SIM_GAMES=10 SIM_PRESETS=kansas npm run sim)
 ```
 
 - `src/engine` — pure, framework-free rules engine (seeded, serializable state).

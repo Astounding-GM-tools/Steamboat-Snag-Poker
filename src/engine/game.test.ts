@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_CONFIG, type RulesConfig } from './config';
+import { DEFAULT_CONFIG, PRESETS, type RulesConfig } from './config';
 import { HUMAN_ID } from './characters';
 import { activeOpponents, newGame, nextMonth, player, submitAction, type GameState } from './game';
 import { legalActions } from './round';
@@ -35,7 +35,7 @@ describe('game', () => {
   it('does not mutate the previous state', () => {
     const s = newGame(1);
     const snapshot = structuredClone(s);
-    submitAction(s, { type: 'pass' });
+    submitAction(s, legalActions(s.round!, 0)[0]);
     expect(s).toEqual(snapshot);
   });
 
@@ -43,17 +43,19 @@ describe('game', () => {
     for (let seed = 0; seed < 50; seed++) expect(newGame(seed).round!.communityJoker).toBeNull();
   });
 
-  for (const dealMode of ['drip', 'draft', 'holdem'] as const) {
-    for (const jokerMode of ['slot', 'shuffled'] as const) {
-      it(`plays complete games (${dealMode}/${jokerMode}) and conserves Jokers`, () => {
-        const config = { ...DEFAULT_CONFIG, dealMode, jokerMode };
-        for (let seed = 1; seed <= 3; seed++) {
-          const end = playOut(seed, config);
-          expect(['gameOver', 'victory']).toContain(end.phase);
-          if (end.phase === 'gameOver') expect(player(end, HUMAN_ID).popularity).toBe(0);
-          else expect(end.month === config.months || activeOpponents(end).length === 0).toBe(true);
-        }
-      });
-    }
+  for (const [presetName, config] of Object.entries(PRESETS)) {
+    it(`plays complete games (${presetName}) and conserves Jokers`, () => {
+      for (let seed = 1; seed <= 3; seed++) {
+        const end = playOut(seed, config);
+        expect(['gameOver', 'victory']).toContain(end.phase);
+        if (end.phase === 'gameOver') expect(player(end, HUMAN_ID).popularity).toBe(0);
+        else expect(end.month === config.months || activeOpponents(end).length === 0).toBe(true);
+      }
+    });
   }
+
+  it('only allows passing when nothing else is possible', () => {
+    const s = newGame(5);
+    expect(legalActions(s.round!, 0).some((a) => a.type === 'pass')).toBe(false);
+  });
 });

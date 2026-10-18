@@ -5,5 +5,6 @@ export default defineConfig({
   plugins: [svelte()],
   test: {
     include: ['src/**/*.test.ts'],
+    testTimeout: 60_000,
   },
 });

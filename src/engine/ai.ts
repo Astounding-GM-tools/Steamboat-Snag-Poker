@@ -4,8 +4,8 @@
  */
 import { fullDeck, isJoker, isStd, type Card, type JokerCard, type StdCard } from './cards';
 import type { AiId } from './characters';
-import { DEAL_SCHEDULE, type RulesConfig } from './config';
-import { compareHands, evaluate } from './evaluate';
+import type { RulesConfig } from './config';
+import { bestScore, categoryOf, type OwnCardRule } from './evaluate';
 import { legalSeatActions, type Action, type RoundState } from './round';
 import type { Rng } from './rng';
 
@@ -13,10 +13,10 @@ export interface SeatView {
   street: number;
   hand: StdCard[];
   jokers: JokerCard[];
-  slots: [Card | null, Card | null];
+  slots: (Card | null)[];
   community: Card[];
   communityJoker: JokerCard | null;
-  opponentSlots: [Card | null, Card | null];
+  opponentSlots: (Card | null)[];
   opponentHandSize: number;
   opponentJokerCount: number;
   discards: StdCard[];
@@ -48,24 +48,29 @@ export function chooseAction(ai: AiId, view: SeatView, config: RulesConfig, rng:
     case 'felix':
       return randomAction(view, rng, 3);
     case 'willie':
-      return rng.next() < 0.65 ? randomAction(view, rng, 1) : smartAction(view, config, rng, { samples: 40, jokerBold: 1, noise: 1 });
+      return rng.next() < 0.65 ? randomAction(view, rng, 1) : smartAction(view, config, rng, { samples: 25, jokerBold: 1, noise: 1 });
     case 'betty':
-      return smartAction(view, config, rng, { samples: 50, jokerBold: 0.3, noise: 2 });
+      return smartAction(view, config, rng, { samples: 30, jokerBold: 0.3, noise: 2 });
     case 'sherlock':
-      return smartAction(view, config, rng, { samples: 150, jokerBold: 1, noise: 0 });
+      return smartAction(view, config, rng, { samples: 60, jokerBold: 1, noise: 0 });
   }
 }
 
 /** Pete: always wants the highest card on the table, never touches Jokers. */
 function peteAction(view: SeatView): Action {
   const best = [...view.hand].sort((a, b) => b.rank - a.rank)[0];
-  if (!best) return { type: 'pass' };
+  const worst = [...view.hand].sort((a, b) => a.rank - b.rank)[0];
+  if (!best) return legalSeatActions(view, view.deckSize)[0];
   const empty = view.slots.findIndex((s) => s === null);
-  if (empty >= 0) return { type: 'place', cardId: best.id, slot: empty as 0 | 1 };
+  if (empty >= 0) return { type: 'place', cardId: best.id, slot: empty };
   const worth = (c: Card | null) => (isStd(c) ? c.rank : 0);
-  const weakest = worth(view.slots[0]) <= worth(view.slots[1]) ? 0 : 1;
+  let weakest = 0;
+  view.slots.forEach((c, i) => {
+    if (worth(c) < worth(view.slots[weakest])) weakest = i;
+  });
   if (best.rank > worth(view.slots[weakest])) return { type: 'place', cardId: best.id, slot: weakest };
-  return { type: 'pass' };
+  // Nothing worth playing: throw away the smallest card.
+  return view.deckSize > 0 ? { type: 'discard', cardId: worst.id } : legalSeatActions(view, view.deckSize)[0];
 }
 
 /**
@@ -110,10 +115,12 @@ function smartAction(view: SeatView, config: RulesConfig, rng: Rng, opts: SmartO
   const stakes =
     (view.communityJoker ? 1 : 0) + view.community.filter(isJoker).length + view.opponentSlots.filter(isJoker).length;
   const futureStreets = 2 - view.street;
-  const futureDeals = DEAL_SCHEDULE[config.dealMode].slice(view.street + 1).reduce((a, b) => a + b, 0);
+  const futureDeals = config.dealSchedule.slice(view.street + 1).reduce((a, b) => a + b, 0);
+  const boardSize = config.communitySchedule.reduce((a, b) => a + b, 0);
+  const rule = config.ownCards;
 
   let bestAction = actions[0];
-  let bestScore = -Infinity;
+  let topScore = -Infinity;
   for (const action of actions) {
     let total = 0;
     for (let s = 0; s < opts.samples; s++) {
@@ -131,20 +138,20 @@ function smartAction(view: SeatView, config: RulesConfig, rng: Rng, opts: SmartO
         slots[action.slot] = card;
       }
       const community = view.community.slice();
-      while (community.length < 3) community.push(pile.pop()!);
+      while (community.length < boardSize) community.push(pile.pop()!);
       for (let i = 0; i < futureDeals; i++) hand.push(pile.pop()!);
-      for (let i = 0; i < futureStreets; i++) greedyImprove(hand, slots, community);
+      for (let i = 0; i < futureStreets; i++) greedyImprove(hand, slots, community, rule);
 
       const oppSlots = view.opponentSlots.map((c) => c ?? pile.pop()!);
-      const mine = evaluate([...slots, ...community]);
-      const cmp = compareHands(mine, evaluate([...oppSlots, ...community]));
+      const mine = bestScore(slots, community, rule);
+      const cmp = mine - bestScore(oppSlots, community, rule);
       const myJokers = slots.filter(isJoker).length;
-      if (cmp > 0) total += config.winGain[mine.category] + myJokers * jokerValue * opts.jokerBold;
+      if (cmp > 0) total += config.winGain[categoryOf(mine)] + myJokers * jokerValue * opts.jokerBold;
       else if (cmp < 0) total -= stakes * jokerValue;
     }
     const score = total / opts.samples + (opts.noise ? (rng.next() - 0.5) * opts.noise : 0);
-    if (score > bestScore) {
-      bestScore = score;
+    if (score > topScore) {
+      topScore = score;
       bestAction = action;
     }
   }
@@ -152,16 +159,19 @@ function smartAction(view: SeatView, config: RulesConfig, rng: Rng, opts: SmartO
 }
 
 /** Makes the single best standard-card placement, if it improves the hand. */
-function greedyImprove(hand: StdCard[], slots: (Card | null)[], community: Card[]) {
-  let best = evaluate([...slots, ...community]);
+function greedyImprove(hand: StdCard[], slots: (Card | null)[], community: Card[], rule: OwnCardRule) {
+  let best = bestScore(slots, community, rule);
+  // Fill empty slots first; only consider swaps once every slot is used.
+  const empties = slots.flatMap((c, i) => (c === null ? [i] : []));
+  const targets = empties.length ? empties : slots.map((_, i) => i);
   let move: { i: number; slot: number } | null = null;
   hand.forEach((card, i) => {
-    for (const slot of [0, 1]) {
+    for (const slot of targets) {
       if (isJoker(slots[slot])) continue; // keep a Joker we chose to play
       const trial = slots.slice();
       trial[slot] = card;
-      const v = evaluate([...trial, ...community]);
-      if (compareHands(v, best) > 0) {
+      const v = bestScore(trial, community, rule);
+      if (v > best) {
         best = v;
         move = { i, slot };
       }

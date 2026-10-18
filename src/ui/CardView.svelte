@@ -10,12 +10,16 @@
     selected?: boolean;
     ghost?: boolean;
     fresh?: boolean;
+    /** Part of the player's best hand. */
+    used?: boolean;
+    /** In a slot but not part of the best hand. */
+    faded?: boolean;
     placeholder?: string;
     onclick?: () => void;
     ondragstart?: (e: DragEvent) => void;
   }
 
-  let { card = null, faceDown = false, small = false, selected = false, ghost = false, fresh = false, placeholder = '', onclick, ondragstart }: Props = $props();
+  let { card = null, faceDown = false, small = false, selected = false, ghost = false, fresh = false, used = false, faded = false, placeholder = '', onclick, ondragstart }: Props = $props();
 
   const rank = $derived(card && !isJoker(card) ? (card.rank === 10 ? '10' : rankLabel(card.rank)) : '');
   const suit = $derived(card && !isJoker(card) ? SUIT_GLYPH[card.suit] : '');
@@ -33,6 +37,8 @@
     class:selected
     class:ghost
     class:fresh
+    class:used
+    class:faded
     class:joker={isJoker(card)}
     draggable={!!ondragstart}
     {onclick}
@@ -85,6 +91,12 @@
   .ghost {
     opacity: 0.55;
     border-style: dashed;
+  }
+  .used {
+    box-shadow: 0 0 0 2px var(--paper), 2px 3px 0 rgba(0, 0, 0, 0.6);
+  }
+  .faded {
+    opacity: 0.5;
   }
   .fresh {
     animation: pop 0.5s ease-out;

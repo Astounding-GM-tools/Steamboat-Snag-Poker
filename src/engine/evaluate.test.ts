@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { jokerCard, parseCard, type Card } from './cards';
-import { compareHands, evaluate } from './evaluate';
+import { bestHand, compareHands, evaluate } from './evaluate';
 
 const hand = (codes: string): Card[] => codes.split(' ').map((c) => (c === 'X' ? jokerCard(0) : parseCard(c)));
 const cat = (codes: string) => evaluate(hand(codes)).category;
@@ -49,5 +49,38 @@ describe('evaluate', () => {
 
   it('is a true draw only with identical real cards', () => {
     expect(beats('X X 9h 9c 2s', 'X X 9h 9c 2s')).toBe(0);
+  });
+});
+
+describe('bestHand', () => {
+  const cards = (codes: string) => codes.split(' ').map((c) => (c === 'X' ? jokerCard(1) : c === '_' ? null : parseCard(c)));
+  const omaha = { min: 2, max: 2 };
+  const texas = { min: 0, max: 3 };
+  const best = (slots: string, board: string, rule = omaha) =>
+    bestHand(cards(slots), cards(board) as Card[], rule).category;
+
+  it('Omaha rule: must use exactly two own cards', () => {
+    // Four hearts on the board but only one heart in hand: no flush in Omaha.
+    expect(best('Ah 2c 3d', 'Kh Qh Jh 9h 4s')).not.toBe('flush');
+    expect(best('Ah 2h 3d', 'Kh Qh Jh 9c 4s')).toBe('flush');
+  });
+
+  it('Texas rule: may play the board', () => {
+    expect(best('2c 3d 7s', 'Kh Qh Jh 9h 4h', texas)).toBe('flush');
+  });
+
+  it('one Joker is free when the other two cards carry the hand', () => {
+    expect(best('As Ad X', 'Ah Kc 7d 4s 2c')).toBe('threeOfAKind');
+  });
+
+  it('two Jokers force a dead card', () => {
+    // Must use two own cards, one of them a Joker: pair of aces at best, no kicker from hand.
+    expect(best('As X X', 'Ah Kc 7d 4s 2c')).toBe('pair');
+    const twoJokers = bestHand(cards('As X X'), cards('Ah Kc 7d 4s 2c') as Card[], omaha);
+    expect(twoJokers.cards).toHaveLength(4);
+  });
+
+  it('works on an incomplete board', () => {
+    expect(best('As Ad _', 'Ah')).toBe('threeOfAKind');
   });
 });
