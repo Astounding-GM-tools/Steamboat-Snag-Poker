@@ -48,8 +48,8 @@ describe('game', () => {
       for (let seed = 1; seed <= 3; seed++) {
         const end = playOut(seed, config);
         expect(['gameOver', 'victory']).toContain(end.phase);
-        if (end.phase === 'gameOver') expect(player(end, HUMAN_ID).popularity).toBe(0);
-        else expect(end.month === config.months || activeOpponents(end).length === 0).toBe(true);
+        if (end.phase === 'gameOver') expect(player(end, HUMAN_ID).money).toBe(0);
+        else expect(activeOpponents(end).length).toBe(0);
       }
     });
   }
@@ -62,10 +62,10 @@ describe('game', () => {
   it('migrates saves from before a rule setting existed', () => {
     const old = newGame(3);
     delete (old.config as Partial<RulesConfig>).loserPays;
-    old.players[1].popularity = NaN;
+    old.players[1].money = NaN;
     const fixed = migrateGame(old);
     expect(fixed.config.loserPays).toBe(DEFAULT_CONFIG.loserPays);
-    expect(Number.isFinite(fixed.players[1].popularity)).toBe(true);
+    expect(Number.isFinite(fixed.players[1].money)).toBe(true);
   });
 
   it('keeps a log of the Captain\'s recent showdowns', () => {

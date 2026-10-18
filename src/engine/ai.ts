@@ -109,7 +109,7 @@ interface SmartOptions {
 /**
  * Monte Carlo: for each legal action, sample the unknown cards many times,
  * assume we greedily improve on later streets, and score the expected
- * Popularity outcome including Joker stakes.
+ * Money outcome including Joker stakes.
  */
 function smartAction(view: SeatView, config: RulesConfig, rng: Rng, opts: SmartOptions): Action {
   const actions = legalSeatActions(view, view.deckSize);

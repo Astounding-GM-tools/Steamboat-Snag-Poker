@@ -3,7 +3,7 @@
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import SidePanel from './SidePanel.svelte';
-  import { cardLabel, name } from './format';
+  import { cardLabel, dollars, name } from './format';
 
   interface Props {
     game: GameState;
@@ -94,7 +94,7 @@
         <h2>{name(opponentId)}</h2>
         <p class="blurb">{t(`character.${opponentId}.blurb`)}</p>
         <p class="stats">
-          {t('table.popularity')}: <b>{opponent.popularity}%</b> · {t(theirJokerCount === 1 ? 'table.jokerCount.one' : 'table.jokerCount', { n: theirJokerCount })}
+          {t('table.money')}: <b>{dollars(opponent.money)}</b> · {t(theirJokerCount === 1 ? 'table.jokerCount.one' : 'table.jokerCount', { n: theirJokerCount })}
         </p>
       </div>
     </div>

@@ -1,8 +1,10 @@
 import { DEFAULT_CONFIG, migrateGame, type GameState, type RulesConfig } from '../engine';
 
 export interface Best {
-  months: number;
-  victory: boolean;
+  /** Tournaments won. */
+  wins: number;
+  /** Most crossings survived in one voyage. */
+  longest: number;
 }
 
 function read<T>(key: string, fallback: T): T {
@@ -22,14 +24,20 @@ function write(key: string, value: unknown) {
   }
 }
 
-export const loadBest = () => read<Best | null>('wwr.best', null);
+/** Reads the record; older saves stored only the best single voyage. */
+export function loadBest(): Best {
+  const raw = read<Partial<Best> & { months?: number; victory?: boolean }>('wwr.best', {});
+  return {
+    wins: raw.wins ?? (raw.victory ? 1 : 0),
+    longest: raw.longest ?? raw.months ?? 0,
+  };
+}
 export const loadConfig = () => read<RulesConfig>('wwr.config.v4', DEFAULT_CONFIG);
 export const saveConfig = (c: RulesConfig) => write('wwr.config.v4', c);
 
 export function recordResult(months: number, victory: boolean): Best {
   const prev = loadBest();
-  const better = !prev || (victory && !prev.victory) || (victory === prev.victory && months > prev.months);
-  const best = better ? { months, victory } : prev!;
+  const best = { wins: prev.wins + (victory ? 1 : 0), longest: Math.max(prev.longest, months) };
   write('wwr.best', best);
   return best;
 }

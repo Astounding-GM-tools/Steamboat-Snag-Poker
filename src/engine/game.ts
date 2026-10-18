@@ -14,7 +14,7 @@ export interface Player {
   id: string;
   /** null for the human Captain. */
   ai: AiId | null;
-  popularity: number;
+  money: number;
   jokers: JokerCard[];
   status: 'waiting' | 'active' | 'eliminated';
 }
@@ -28,8 +28,8 @@ export interface MonthReport {
   month: number;
   duel: DuelSummary;
   offscreen: DuelSummary[];
-  /** Popularity before → after for every player who took part this month. */
-  popularity: Record<string, { before: number; after: number; drained: number }>;
+  /** Money before → after for every player who took part this month. */
+  money: Record<string, { before: number; after: number; drained: number }>;
   eliminated: string[];
   joined: string[];
 }
@@ -74,16 +74,22 @@ const clone = <T>(x: T): T => structuredClone(x);
 
 /**
  * Brings a saved game up to date with the current rules format: rule settings
- * added since it was saved get their defaults, and any Popularity that is not
+ * added since it was saved get their defaults, and any Money that is not
  * a number (from such a missing setting) is reset to that player's start.
  */
 export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): GameState {
   const state = clone(saved);
   state.config = { ...DEFAULT_CONFIG, ...state.config, winGain: { ...DEFAULT_CONFIG.winGain, ...state.config.winGain } };
   state.log ??= [];
+  if (state.report && !state.report.money) {
+    state.report.money = (state.report as MonthReport & { popularity?: MonthReport['money'] }).popularity ?? {};
+  }
   for (const p of state.players) {
-    if (!Number.isFinite(p.popularity)) {
-      p.popularity = roster.find((c) => c.id === p.id)?.startPopularity ?? state.config.startPopularity;
+    // Before the river tournament, money was called popularity.
+    const legacy = (p as Player & { popularity?: number }).popularity;
+    if (p.money === undefined && legacy !== undefined) p.money = legacy;
+    if (!Number.isFinite(p.money)) {
+      p.money = roster.find((c) => c.id === p.id)?.startMoney ?? state.config.startMoney;
     }
   }
   return state;
@@ -91,11 +97,11 @@ export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): 
 
 export function newGame(seed: number, config: RulesConfig = DEFAULT_CONFIG, roster: CharacterDef[] = ROSTER): GameState {
   const players: Player[] = [
-    { id: HUMAN_ID, ai: null, popularity: config.startPopularity, jokers: [], status: 'active' },
+    { id: HUMAN_ID, ai: null, money: config.startMoney, jokers: [], status: 'active' },
     ...roster.map((c): Player => ({
       id: c.id,
       ai: c.ai,
-      popularity: c.startPopularity,
+      money: c.startMoney,
       jokers: [],
       status: c.joins === 'start' ? 'active' : 'waiting',
     })),
@@ -183,10 +189,10 @@ function finishMonth(state: GameState, rng: Rng) {
     const res = round.result!;
     round.seats.forEach((seat, i) => {
       const p = player(state, seat.playerId);
-      before[p.id] ??= p.popularity;
+      before[p.id] ??= p.money;
       p.jokers = seat.jokers;
-      if (res.winner === i) p.popularity = Math.min(cfg.maxPopularity, p.popularity + res.gain);
-      else if (res.winner !== null) p.popularity = Math.max(0, p.popularity - Math.round(res.gain * (cfg.loserPays ?? 0)));
+      if (res.winner === i) p.money += res.gain;
+      else if (res.winner !== null) p.money = Math.max(0, p.money - Math.round(res.gain * (cfg.loserPays ?? 0)));
     });
     state.pool.push(...res.returnedToPool);
     return { players: [round.seats[0].playerId, round.seats[1].playerId], result: res };
@@ -218,15 +224,15 @@ function finishMonth(state: GameState, rng: Rng) {
   }
 
   // Joker drain hits every player still on the river.
-  const popularity: MonthReport['popularity'] = {};
+  const money: MonthReport['money'] = {};
   const eliminated: string[] = [];
   for (const p of state.players) {
     if (p.status !== 'active') continue;
-    before[p.id] ??= p.popularity;
+    before[p.id] ??= p.money;
     const drained = p.jokers.length * cfg.drainPerJoker;
-    p.popularity = Math.max(0, p.popularity - drained);
-    popularity[p.id] = { before: before[p.id], after: p.popularity, drained };
-    if (p.popularity <= 0) {
+    p.money = Math.max(0, p.money - drained);
+    money[p.id] = { before: before[p.id], after: p.money, drained };
+    if (p.money <= 0) {
       p.status = 'eliminated';
       eliminated.push(p.id);
       if (p.id !== HUMAN_ID) {
@@ -246,11 +252,11 @@ function finishMonth(state: GameState, rng: Rng) {
     }
   }
 
-  state.report = { month: state.month, duel, offscreen, popularity, eliminated, joined };
+  state.report = { month: state.month, duel, offscreen, money, eliminated, joined };
   state.lastOpponentId = state.opponentId;
 
   if (player(state, HUMAN_ID).status === 'eliminated') state.phase = 'gameOver';
-  else if (state.month >= cfg.months || activeOpponents(state).length === 0) state.phase = 'victory';
+  else if (activeOpponents(state).length === 0) state.phase = 'victory';
   else state.phase = 'monthEnd';
 }
 

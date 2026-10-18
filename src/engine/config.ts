@@ -12,7 +12,6 @@ export interface RulesConfig {
   /** Display name of the preset this config came from (informational). */
   preset: string;
   playStyle: PlayStyle;
-  months: number;
   /** Community cards revealed on Flop, Turn, River. */
   communitySchedule: Schedule;
   /** Cards dealt to each player on Flop, Turn, River. */
@@ -33,15 +32,14 @@ export interface RulesConfig {
   communityJokerChance: number;
   /** Shuffled mode: one more unowned Joker goes into the deck every N months. */
   shuffledJokerEveryMonths: number;
-  /** Popularity lost per owned Joker at the end of every round. */
+  /** Money lost per owned Joker at the end of every round. */
   drainPerJoker: number;
   /**
    * Share of the winner's gain that the loser loses: 0 = losing costs nothing,
-   * 1 = zero-sum (the winner's points come out of the loser's Popularity).
+   * 1 = zero-sum (the winner's gain comes out of the loser's purse).
    */
   loserPays: number;
-  startPopularity: number;
-  maxPopularity: number;
+  startMoney: number;
   winGain: Record<Category, number>;
 }
 
@@ -61,7 +59,6 @@ const BASE_GAIN: Record<Category, number> = {
 const KANSAS: RulesConfig = {
   preset: 'kansas',
   playStyle: 'slots',
-  months: 48,
   communitySchedule: [3, 1, 1],
   dealSchedule: [3, 1, 1],
   slotCount: 3,
@@ -72,8 +69,7 @@ const KANSAS: RulesConfig = {
   shuffledJokerEveryMonths: 2,
   drainPerJoker: 4,
   loserPays: 1,
-  startPopularity: 50,
-  maxPopularity: 100,
+  startMoney: 50,
   winGain: BASE_GAIN,
 };
 

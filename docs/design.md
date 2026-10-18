@@ -7,11 +7,13 @@
 
 ## Concept
 
-A tactical, silent-film-styled poker duel in the browser. You are **The Captain**,
-steering a riverboat economy through 48 stormy months. Each month you duel a
-public-domain cartoon character in a short game of Hold'em-like poker. Losing a
-duel can saddle you with **Jokers** — crises that drain your **Popularity** every
-month. Get rid of them by dumping them on whoever you beat.
+**River Poker.** Whenever steamboat captains cross paths on the river, they sit
+down for a hand of poker. You are **The Captain**, in a tournament against a
+cast of public-domain cartoon captains. Each **crossing** you duel one of them;
+the rest play each other off-screen. Losing costs money, and can saddle you
+with **Jokers**: liabilities like stinking cargo, tiresome passengers and
+thankless duties that cost upkeep every crossing until you dump them on someone
+you beat.
 
 **Aesthetic:** 1928 black-and-white cartoon. High contrast, film grain, flicker,
 vignette, intertitle cards for all text.
@@ -20,12 +22,13 @@ vignette, intertitle cards for all text.
 
 ## Win and loss
 
-- **Popularity** starts at 50% (opponents have their own starting value).
-  It is capped at 100%.
-- **Game over:** your Popularity hits 0% at the end of a round.
-- **Victory:** survive month 48 with Popularity > 0%, **or** be the last one left
-  on the river (every opponent eliminated).
-- Persisted locally: best result (months survived, win/loss).
+- Every captain carries a **purse** of dollars (you start with $50; rivals have
+  their own starting purses). There is no cap: money comes and goes, what
+  matters is not running out.
+- **Busted:** your purse hits $0 at the end of a crossing — your boat is sold at
+  auction. Game over.
+- **King of the River:** be the last captain afloat. There is no month limit.
+- Persisted locally: tournaments won and the longest run (in crossings).
 
 ## Cards
 
@@ -117,7 +120,7 @@ Straight flush > Four of a kind > Full house > Flush > Straight > Three of a kin
 **Ties:** compare category, then ranks (kickers) as usual. If still equal, compare
 suits card-by-card from the highest card down, with **♣ < ♦ < ♥ < ♠**.
 Only when both hands contain exactly the same real cards is it a true **draw**:
-nobody wins, no Jokers move, no Popularity is gained.
+nobody wins, no Jokers move, no money is gained.
 
 ## The round in the slots style
 
@@ -150,32 +153,32 @@ An empty slot at showdown is a dead card.
 
 ### Showdown and Joker transfer
 
-- **Winner** gains Popularity based on their hand category (see table).
+- **Winner** gains money based on their hand category (see table).
 - **Loser** gains nothing, and receives:
   - every Joker the **winner** placed (dumped on them),
   - every **community** Joker,
   - and keeps any Joker they placed themselves.
 - Worst case for one round: lose a round where the opponent placed a Joker *and*
   there is a community Joker → +2 Jokers, none shed.
-- A no-Joker round is low stakes: losing just means no Popularity that month.
+- A no-Joker round is low stakes: losing just costs the pot.
 
 ### Loser pays (🔧)
 
 `loserPays` (0–1) sets how much of the winner's gain the loser loses: 0 = losing
 costs nothing, 1 = **zero-sum (default)**: the winner's points come out of
-the loser's Popularity. Simulated, this shortens a good player's game from
+the loser's money. Simulated, this shortens a good player's game from
 about 29 to about 20 months.
 
 ### End of round
 
 1. Apply Joker transfers.
-2. Every player (on screen and off) loses **Popularity per Joker owned**
-   (🔧 default 4% each).
-3. Anyone at 0% is eliminated. An eliminated opponent's Jokers return to the pool.
+2. Every player (on screen and off) loses **money per Joker owned**
+   (🔧 default $4 each).
+3. Anyone at $0 is eliminated. An eliminated opponent's Jokers return to the pool.
 
-### Popularity for a win (🔧 tunable)
+### money for a win (🔧 tunable)
 
-| Hand | Gain |
+| Hand | Winnings ($) |
 |---|---|
 | High card | +1 |
 | Pair | +3 |
@@ -190,10 +193,10 @@ about 29 to about 20 months.
 ## The league ("Meanwhile, on the river…")
 
 The game is not just your duels: a small league of opponents plays each other
-every month off-screen, trading Jokers and Popularity with the same rules.
+every crossing off-screen, trading Jokers and money with the same rules.
 
-- Each month you duel one opponent; the remaining active opponents are paired
-  randomly (an odd one out sits the month out).
+- Each crossing you duel one opponent; the remaining active opponents are paired
+  randomly (an odd one out sits the crossing out).
 - Off-screen duels are **fully simulated** with the same engine and AIs (cheap,
   and keeps the Joker economy honest). ❓ Could later be replaced by a
   probability shortcut if needed.
@@ -207,7 +210,7 @@ every month off-screen, trading Jokers and Popularity with the same rules.
 
 - Prototype: random active opponent, avoiding the same opponent twice in a row
   when possible.
-- ❓ Later: weighting by similar Popularity; a "temperature"/eagerness per
+- ❓ Later: weighting by similar money; a "temperature"/eagerness per
   character (desperate or game-loving characters seek duels); the Captain may
   decline a challenge. The engine keeps matchmaking behind one function so this
   can be swapped in.
@@ -216,13 +219,13 @@ every month off-screen, trading Jokers and Popularity with the same rules.
 
 Only public-domain versions and looks (no later redesigns, no trademarks/logos).
 
-| Character | Start | Style |
+| Character | Starting purse | Style |
 |---|---|---|
-| **Pete** (Black Pete, 1920s) | 45% | Predictable bully. Always plays his highest cards, ignores the board. Easy to beat with a straight. |
-| **Willie** (Steamboat Willie, 1928) | 55% | Chaos. Plays mostly at random, but sometimes pulls an inspired River swap. |
-| **Felix the Cat** (early 1920s shorts) | 70% | Hugely likeable, utterly irrational. Plays at random, happily throws Jokers away at the worst time. |
-| **Betty** (Betty Boop, 1930 debut) | 65% | Charming, a soft touch. Plays reasonably on pairs, rarely risks shedding a Joker. |
-| **Sherlock Holmes** | 30% | Perfectionist. Calculates odds, sheds Jokers only when safe. Unlikeable. Joins after the first elimination. |
+| **Pete** (Black Pete, 1920s) | $45 | Predictable bully. Always plays his highest cards, ignores the board. Easy to beat with a straight. |
+| **Willie** (Steamboat Willie, 1928) | $55 | Chaos. Plays mostly at random, but sometimes pulls an inspired River swap. |
+| **Felix the Cat** (early 1920s shorts) | $70 | Hugely likeable, utterly irrational. Plays at random, happily throws Jokers away at the worst time. |
+| **Betty** (Betty Boop, 1930 debut) | $65 | Charming, a soft touch. Plays reasonably on pairs, rarely risks shedding a Joker. |
+| **Sherlock Holmes** | $30 | Perfectionist. Calculates odds, sheds Jokers only when safe. Unlikeable. Joins after the first elimination. |
 
 ❓ **Wanted:** more women, including strong players. Candidates (verify
 status before use): Irene Adler ("the Woman" who outwitted Holmes — a natural
@@ -237,12 +240,12 @@ books), Wendy Darling, the Queen of Hearts.
    count visible but the hand hidden), the River (community cards, and the
    discard pile clearly set apart on the right), the Captain's area (slots,
    hand, Jokers; the cards used in your best hand are outlined), side panel with
-   a shaking Popularity meter, month counter and the league sorted by
-   Popularity.
+   a coin-stack purse that shakes when low, crossing counter and the league sorted by
+   money.
 3. **Showdown** (draw style) — the card-by-card reveal described above.
-4. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", Popularity change,
+4. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", money change,
    Joker movements, standings, "Meanwhile on the river" league news. No
-   countdown: **Next month** or **Drop anchor** (pause).
+   countdown: **Next crossing** or **Drop anchor** (pause).
 
 **Hand log:** the last 10 of the Captain's showdowns (board, both played hands,
 the cards each hand uses, result and Jokers moved), saved with the voyage.

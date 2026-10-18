@@ -195,32 +195,6 @@ h3 {
   font-family: var(--title-font);
   text-align: center;
 }
-.meter {
-  width: 46px;
-  height: 220px;
-  border: 3px solid var(--paper);
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  background: #000;
-}
-.meter .fill {
-  width: 100%;
-  background: repeating-linear-gradient(0deg, var(--paper) 0 6px, #ccc 6px 8px);
-  transition: height 0.6s ease-out;
-}
-.meter .pct {
-  position: absolute;
-  inset: auto 0 -1.6rem;
-  text-align: center;
-  font-family: var(--title-font);
-}
-.meter.warn {
-  animation: shake 0.5s infinite;
-}
-.meter.danger {
-  animation: shake 0.18s infinite;
-}
 @keyframes shake {
   25% { transform: translate(-2px, 1px) rotate(-1deg); }
   75% { transform: translate(2px, -1px) rotate(1deg); }
@@ -271,8 +245,5 @@ h3 {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-  }
-  .meter {
-    height: 60px;
   }
 }

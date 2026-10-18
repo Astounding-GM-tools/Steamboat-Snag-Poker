@@ -1,7 +1,7 @@
 <script lang="ts">
   import { HUMAN_ID, type DuelSummary, type GameState } from '../engine';
   import { t } from '../i18n';
-  import { jokerList, name } from './format';
+  import { dollars, jokerList, name } from './format';
   import { describeHand } from './handNames';
 
   interface Props {
@@ -17,7 +17,7 @@
   const res = $derived(report.duel.result);
   const foe = $derived(report.duel.players[1]);
   const won = $derived(res.winner === 0);
-  const mine = $derived(report.popularity[HUMAN_ID]);
+  const mine = $derived(report.money[HUMAN_ID]);
   const loss = $derived(res.winner === 1 ? Math.round(res.gain * game.config.loserPays) : 0);
   const over = $derived(game.phase === 'gameOver' || game.phase === 'victory');
 
@@ -30,7 +30,7 @@
 
   const statusOrder = { active: 0, waiting: 1, eliminated: 2 } as const;
   const standings = $derived(
-    [...game.players].sort((a, b) => statusOrder[a.status] - statusOrder[b.status] || b.popularity - a.popularity),
+    [...game.players].sort((a, b) => statusOrder[a.status] - statusOrder[b.status] || b.money - a.money),
   );
 
   function duelLine(d: DuelSummary): string {
@@ -54,7 +54,7 @@
     {#if game.phase === 'gameOver'}
       <p>{t('end.gameOverBody', { month: game.month })}</p>
     {:else if game.phase === 'victory'}
-      <p>{report.month < game.config.months ? t('end.lastStanding') : t('end.winGameBody', { month: game.month })}</p>
+      <p>{t('end.lastStanding', { month: game.month })}</p>
     {/if}
 
     <div class="ledger">
@@ -71,7 +71,7 @@
         {#if !loss && !res.dumped.length && !res.communityTaken.length}<p>{t('end.noHarm')}</p>{/if}
       {/if}
       {#if mine?.drained}<p>{t('end.drain', { n: mine.drained })}</p>{/if}
-      {#if mine}<p class="pop">{t('table.popularity')}: {mine.before}% → <b>{mine.after}%</b></p>{/if}
+      {#if mine}<p class="pop">{t('table.money')}: {dollars(mine.before)} → <b>{dollars(mine.after)}</b></p>{/if}
     </div>
 
     <table class="standings">
@@ -82,7 +82,7 @@
             <td>
               {#if p.status === 'eliminated'}{t('table.out')}
               {:else if p.status === 'waiting'}{t('table.waiting')}
-              {:else}{p.popularity}%{/if}
+              {:else}{dollars(p.money)}{/if}
             </td>
             <td>{p.status === 'active' ? '🃏'.repeat(p.jokers.length) || '—' : ''}</td>
           </tr>

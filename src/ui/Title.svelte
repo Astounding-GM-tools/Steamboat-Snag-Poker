@@ -3,7 +3,7 @@
   import type { Best } from './storage';
 
   interface Props {
-    best: Best | null;
+    best: Best;
     /** Month of the voyage in progress, if any. */
     savedMonth: number | null;
     onstart: () => void;
@@ -52,9 +52,8 @@
       <button class="ghost" onclick={() => (showHowTo = true)}>{t('title.howTo')}</button>
     </div>
     <p class="best">
-      {#if !best}{t('title.noBest')}
-      {:else if best.victory}{t('title.bestVictory', { months: best.months })}
-      {:else}{t('title.best', { months: best.months })}{/if}
+      {#if !best.wins && !best.longest}{t('title.noBest')}
+      {:else}{t('title.record', { wins: best.wins, months: best.longest })}{/if}
     </p>
   </div>
 

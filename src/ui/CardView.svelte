@@ -1,7 +1,7 @@
 <script lang="ts">
   import { isJoker, rankLabel, type Card } from '../engine';
   import { t } from '../i18n';
-  import { SUIT_GLYPH } from './format';
+  import { SUIT_GLYPH, jokerName } from './format';
 
   interface Props {
     card?: Card | null;
@@ -55,7 +55,7 @@
     {#if toss}<span class="stamp">✕</span>{/if}
     {#if isJoker(card)}
       <span class="jester">🃏</span>
-      <span class="jname">{t(`joker.${card.index}`).replace(/^the /, '')}</span>
+      <span class="jname">{jokerName(card.index).replace(/^the /, '')}</span>
     {:else}
       <span class="corner">{rank}<br />{suit}</span>
       <span class="pip">{suit}</span>
