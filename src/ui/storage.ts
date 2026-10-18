@@ -23,8 +23,8 @@ function write(key: string, value: unknown) {
 }
 
 export const loadBest = () => read<Best | null>('wwr.best', null);
-export const loadConfig = () => read<RulesConfig>('wwr.config.v3', DEFAULT_CONFIG);
-export const saveConfig = (c: RulesConfig) => write('wwr.config.v3', c);
+export const loadConfig = () => read<RulesConfig>('wwr.config.v4', DEFAULT_CONFIG);
+export const saveConfig = (c: RulesConfig) => write('wwr.config.v4', c);
 
 export function recordResult(months: number, victory: boolean): Best {
   const prev = loadBest();

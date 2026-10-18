@@ -162,7 +162,9 @@ An empty slot at showdown is a dead card.
 ### Loser pays (🔧)
 
 `loserPays` (0–1) sets how much of the winner's gain the loser loses: 0 = losing
-costs nothing (current default), 1 = zero-sum.
+costs nothing, 1 = **zero-sum (default)**: the winner's points come out of
+the loser's Popularity. Simulated, this shortens a good player's game from
+about 29 to about 20 months.
 
 ### End of round
 

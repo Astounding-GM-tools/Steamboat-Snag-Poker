@@ -71,7 +71,7 @@ const KANSAS: RulesConfig = {
   communityJokerChance: 0.5,
   shuffledJokerEveryMonths: 2,
   drainPerJoker: 4,
-  loserPays: 0,
+  loserPays: 1,
   startPopularity: 50,
   maxPopularity: 100,
   winGain: BASE_GAIN,
