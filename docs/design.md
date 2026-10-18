@@ -244,6 +244,10 @@ books), Wendy Darling, the Queen of Hearts.
    Joker movements, standings, "Meanwhile on the river" league news. No
    countdown: **Next month** or **Drop anchor** (pause).
 
+**Hand log:** the last 10 of the Captain's showdowns (board, both played hands,
+the cards each hand uses, result and Jokers moved), saved with the voyage.
+Open it from the result card or the rules lab.
+
 **Pausing:** Drop anchor returns to the title screen, which then offers
 **Continue voyage** and **New voyage** (with an "Abandon ship?" confirmation).
 The voyage is saved in the browser after every move, so it survives a reload.

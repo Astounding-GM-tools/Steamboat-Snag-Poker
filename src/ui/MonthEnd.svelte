@@ -9,8 +9,9 @@
     onnext: () => void;
     onpause: () => void;
     onagain: () => void;
+    onlog: () => void;
   }
-  let { game, onnext, onpause, onagain }: Props = $props();
+  let { game, onnext, onpause, onagain, onlog }: Props = $props();
 
   const report = $derived(game.report!);
   const res = $derived(report.duel.result);
@@ -106,6 +107,7 @@
         <button onclick={onnext}>{t('end.next')}</button>
         <button class="ghost" onclick={onpause}>{t('end.pause')}</button>
       {/if}
+      <button class="ghost" onclick={onlog}>{t('log.open')}</button>
     </div>
   </div>
 </div>

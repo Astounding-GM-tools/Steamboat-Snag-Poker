@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, PRESETS, type RulesConfig } from './config';
 import { HUMAN_ID } from './characters';
-import { activeOpponents, migrateGame, newGame, nextMonth, player, submitAction, type GameState } from './game';
+import { LOG_SIZE, activeOpponents, migrateGame, newGame, nextMonth, player, submitAction, type GameState } from './game';
 import { legalActions } from './round';
 import { Rng } from './rng';
 
@@ -66,5 +66,18 @@ describe('game', () => {
     const fixed = migrateGame(old);
     expect(fixed.config.loserPays).toBe(DEFAULT_CONFIG.loserPays);
     expect(Number.isFinite(fixed.players[1].popularity)).toBe(true);
+  });
+
+  it('keeps a log of the Captain\'s recent showdowns', () => {
+    let s = newGame(11);
+    const rng = new Rng(2);
+    for (let i = 0; i < 40 && (s.phase === 'duel' || s.phase === 'monthEnd'); i++) {
+      s = s.phase === 'monthEnd' ? nextMonth(s) : submitAction(s, rng.pick(legalActions(s.round!, 0)));
+    }
+    expect(s.log.length).toBeGreaterThan(0);
+    expect(s.log.length).toBeLessThanOrEqual(LOG_SIZE);
+    const last = s.log[0];
+    expect(last.board.length).toBe(5);
+    expect(last.hands).toHaveLength(2);
   });
 });

@@ -2,6 +2,7 @@
   import { newGame, nextMonth, submitAction, type Action, type GameState, type RulesConfig } from '../engine';
   import DebugPanel from './DebugPanel.svelte';
   import DrawTable from './DrawTable.svelte';
+  import HandLog from './HandLog.svelte';
   import MonthEnd from './MonthEnd.svelte';
   import Showdown from './Showdown.svelte';
   import Table from './Table.svelte';
@@ -19,6 +20,7 @@
   /** After a duel: 'reveal' plays the showdown, then 'result' shows the month's card. */
   let stage = $state<'play' | 'reveal' | 'result'>('play');
   let endTimer: ReturnType<typeof setTimeout> | undefined;
+  let showLog = $state(false);
 
   function setGame(g: GameState | null) {
     game = g;
@@ -84,10 +86,11 @@
     {#if stage === 'reveal' && game.round?.result}
       <Showdown {game} ondone={() => (stage = 'result')} />
     {:else if stage === 'result' && game.report}
-      <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} />
+      <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} onlog={() => (showLog = true)} />
     {/if}
+    {#if showLog}<HandLog {game} onclose={() => (showLog = false)} />{/if}
   {:else}
     <Title {best} savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} />
   {/if}
 </div>
-<DebugPanel {config} {seed} {peek} onapply={applyRules} onpeek={(p) => (peek = p)} />
+<DebugPanel {config} {seed} {peek} onapply={applyRules} onpeek={(p) => (peek = p)} onlog={game ? () => (showLog = true) : undefined} />

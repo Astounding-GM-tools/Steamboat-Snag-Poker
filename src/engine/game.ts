@@ -4,7 +4,7 @@
  * receives and returns a new one.
  */
 import { chooseAction, viewFor } from './ai';
-import { jokerCard, type JokerCard } from './cards';
+import { jokerCard, type Card, type JokerCard } from './cards';
 import { HUMAN_ID, ROSTER, type AiId, type CharacterDef } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { createRound, resolveStreet, type Action, type RoundResult, type RoundState } from './round';
@@ -34,6 +34,24 @@ export interface MonthReport {
   joined: string[];
 }
 
+/** One of the Captain's showdowns, kept so a player can check what happened. */
+export interface ShowdownRecord {
+  month: number;
+  opponentId: string;
+  board: Card[];
+  /** Cards each side played (Captain first), Jokers included. */
+  played: [Card[], Card[]];
+  /** Each side's final hand. */
+  hands: RoundResult['hands'];
+  winner: 0 | 1 | null;
+  gain: number;
+  dumped: JokerCard[];
+  communityTaken: JokerCard[];
+}
+
+/** How many recent showdowns the hand log keeps. */
+export const LOG_SIZE = 10;
+
 export type Phase = 'duel' | 'monthEnd' | 'gameOver' | 'victory';
 
 export interface GameState {
@@ -48,6 +66,8 @@ export interface GameState {
   lastOpponentId: string | null;
   round: RoundState | null;
   report: MonthReport | null;
+  /** The Captain's most recent showdowns, newest first. */
+  log: ShowdownRecord[];
 }
 
 const clone = <T>(x: T): T => structuredClone(x);
@@ -60,6 +80,7 @@ const clone = <T>(x: T): T => structuredClone(x);
 export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): GameState {
   const state = clone(saved);
   state.config = { ...DEFAULT_CONFIG, ...state.config, winGain: { ...DEFAULT_CONFIG.winGain, ...state.config.winGain } };
+  state.log ??= [];
   for (const p of state.players) {
     if (!Number.isFinite(p.popularity)) {
       p.popularity = roster.find((c) => c.id === p.id)?.startPopularity ?? state.config.startPopularity;
@@ -90,6 +111,7 @@ export function newGame(seed: number, config: RulesConfig = DEFAULT_CONFIG, rost
     lastOpponentId: null,
     round: null,
     report: null,
+    log: [],
   };
   return startMonthMut(state);
 }
@@ -171,6 +193,22 @@ function finishMonth(state: GameState, rng: Rng) {
   };
 
   const duel = settle(state.round!);
+  const finished = state.round!;
+  const record: ShowdownRecord = {
+    month: state.month,
+    opponentId: state.opponentId!,
+    board: finished.community.slice(),
+    played: [
+      finished.seats[0].slots.filter((c): c is Card => c !== null),
+      finished.seats[1].slots.filter((c): c is Card => c !== null),
+    ],
+    hands: duel.result.hands,
+    winner: duel.result.winner,
+    gain: duel.result.gain,
+    dumped: duel.result.dumped,
+    communityTaken: duel.result.communityTaken,
+  };
+  state.log = [record, ...(state.log ?? [])].slice(0, LOG_SIZE);
 
   // Meanwhile, on the river: everyone else not in the Captain's duel pairs up.
   const others = rng.shuffle(activeOpponents(state).filter((p) => p.id !== state.opponentId));

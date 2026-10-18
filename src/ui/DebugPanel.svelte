@@ -8,8 +8,10 @@
     peek: boolean;
     onapply: (config: RulesConfig, seed: number) => void;
     onpeek: (peek: boolean) => void;
+    /** Opens the hand log; absent when no voyage is in progress. */
+    onlog?: () => void;
   }
-  let { config, seed, peek, onapply, onpeek }: Props = $props();
+  let { config, seed, peek, onapply, onpeek, onlog }: Props = $props();
 
   let open = $state(false);
   // svelte-ignore state_referenced_locally
@@ -76,6 +78,7 @@
       <label>{t('debug.seed')} <input type="text" bind:value={seedText} /></label>
       <label class="check"><input type="checkbox" checked={peek} onchange={(e) => onpeek(e.currentTarget.checked)} /> {t('debug.peek')}</label>
       <button onclick={apply}>{t('debug.apply')}</button>
+      {#if onlog}<button class="ghost" onclick={onlog}>{t('log.open')}</button>{/if}
     </div>
   {/if}
 </div>
