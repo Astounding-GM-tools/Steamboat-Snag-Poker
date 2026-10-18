@@ -67,6 +67,12 @@ The shape of a hand decides how many Jokers it can carry:
 | Two pair | 4 | 1 |
 | Straight / flush / full house | 5 | none |
 
+**The deal:** cards are dealt like at a real table — hole cards one at a time
+round the table (you, them, you, them…), a beat, then the Flop one, two, three;
+Turn and River cards and replacement cards slide in too. A **Fast deal**
+checkbox speeds it up (remembered per browser), and a click on the table
+finishes the deal at once. Actions are disabled until the deal is done.
+
 **Hint button:** next to the opponent, shows what they could be holding
 (chance of each hand category, and how often it beats your best hand), based
 only on what you can see.

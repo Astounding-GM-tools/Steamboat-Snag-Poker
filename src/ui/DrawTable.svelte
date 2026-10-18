@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy, untrack } from 'svelte';
   import {
     CATEGORIES,
     STREETS,
@@ -63,6 +64,77 @@
   });
 
   // A new street or a new month clears the selection.
+  // --- The deal -----------------------------------------------------------
+  // Cards appear one at a time like a real deal: hole cards round the table
+  // (you, them, you, them…), then the board. Fast deal speeds it up; a click
+  // on the table finishes it at once.
+  const FAST_KEY = 'wwr.fastDeal';
+  let fastDeal = $state(readFast());
+  let dealt = $state(new Set<string>());
+  let pending = $state<string[]>([]);
+  let dealtMonth = -1;
+  let dealTimer: ReturnType<typeof setTimeout> | undefined;
+  const dealing = $derived(pending.length > 0);
+
+  function readFast(): boolean {
+    try {
+      return localStorage.getItem(FAST_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+
+  function setFast(on: boolean) {
+    fastDeal = on;
+    try {
+      localStorage.setItem(FAST_KEY, on ? '1' : '0');
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
+  $effect(() => {
+    const r = round;
+    untrack(() => scheduleDeal(r));
+  });
+  onDestroy(() => clearTimeout(dealTimer));
+
+  function scheduleDeal(r: typeof round) {
+    clearTimeout(dealTimer);
+    const base = dealtMonth === game.month ? new Set(dealt) : new Set<string>();
+    dealtMonth = game.month;
+    const mine = r.seats[0].hand.map((c) => c.id).filter((id) => !base.has(id));
+    const theirs = r.seats[1].hand.map((c) => c.id).filter((id) => !base.has(id));
+    const order: string[] = [];
+    for (let i = 0; i < Math.max(mine.length, theirs.length); i++) {
+      if (mine[i]) order.push(mine[i]);
+      if (theirs[i]) order.push(theirs[i]);
+    }
+    order.push(...r.community.map((c) => c.id).filter((id) => !base.has(id)));
+    dealt = base;
+    pending = order;
+    if (order.length) dealTimer = setTimeout(dealNext, 250);
+  }
+
+  function dealNext() {
+    const [id, ...rest] = pending;
+    if (!id) return;
+    dealt = new Set([...dealt, id]);
+    pending = rest;
+    if (!rest.length) return;
+    // A beat before the board: the hole cards are out, now the Flop.
+    const boardNext = round.community.some((c) => c.id === rest[0]) && !round.community.some((c) => c.id === id);
+    const delay = fastDeal ? 70 : boardNext ? 600 : 300;
+    dealTimer = setTimeout(dealNext, delay);
+  }
+
+  function finishDeal() {
+    if (!dealing) return;
+    clearTimeout(dealTimer);
+    dealt = new Set([...dealt, ...pending]);
+    pending = [];
+  }
+
   let lastKey = '';
   $effect.pre(() => {
     const key = `${game.month}:${round.street}`;
@@ -73,7 +145,7 @@
   });
 
   function tap(card: Card) {
-    if (!playing) return;
+    if (!playing || dealing) return;
     if (isJoker(card) && !composing) return; // Jokers can't be discarded
     if (tapped.includes(card.id)) tapped = tapped.filter((id) => id !== card.id);
     else if (isJoker(card)) {
@@ -89,7 +161,7 @@
   }
 
   function go() {
-    if (!playing) return;
+    if (!playing || dealing) return;
     const action: Action = composing
       ? { type: 'compose', cardIds: tappedCards.map((c) => c.id), jokers: tappedJokers.length }
       : { type: 'draw', cardIds: tappedCards.map((c) => c.id) };
@@ -110,7 +182,8 @@
   const pct = (x: number) => `${Math.round(x * 100)}%`;
 </script>
 
-<div class="table">
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<div class="table" onclick={finishDeal}>
   <!-- Opponent -->
   <section class="opponent">
     <div class="portrait">
@@ -126,7 +199,7 @@
     </div>
     <div class="row">
       <div class="hand-backs">
-        {#each them.hand as card (card.id)}<CardView small faceDown={!peek} card={peek ? card : null} />{/each}
+        {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView small faceDown={!peek} card={peek ? card : null} deal="top" />{/each}
         {#each them.jokers as card (card.id)}<CardView small faceDown={!peek} card={peek ? card : null} />{/each}
         <span class="count">{t('table.cards', { n: them.hand.length + them.jokers.length })}</span>
       </div>
@@ -161,8 +234,8 @@
     <div class="river-row">
       <div class="community">
         {#each Array.from({ length: boardSize }) as _, i}
-          {@const card = round.community[i] ?? null}
-          <CardView {card} used={!!card && usedIds.has(card.id)} placeholder={t(`street.${STREETS[i < 3 ? 0 : i - 2] ?? 'river'}`)} />
+          {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
+          <CardView {card} deal="left" used={!!card && usedIds.has(card.id)} placeholder={t(`street.${STREETS[i < 3 ? 0 : i - 2] ?? 'river'}`)} />
         {/each}
       </div>
       <div class="discard pile">
@@ -179,12 +252,13 @@
   <section class="captain">
     <p class="prompt">{composing ? t('draw.promptCompose') : t('draw.promptDiscard')}</p>
     <div class="row hand-row">
-      {#each me.hand as card (card.id)}
+      {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
         <CardView
           {card}
           selected={composing && tapped.includes(card.id)}
           toss={!composing && tapped.includes(card.id)}
           used={composing && usedIds.has(card.id)}
+          deal="left"
           onclick={playing ? () => tap(card) : undefined}
         />
       {/each}
@@ -210,7 +284,8 @@
             {:else}{t('draw.boardOnly')}{/if}
           {:else if round.street === 1}<b>{t('draw.lastStreet')}</b>{:else}{t('draw.street', { n: round.street + 1 })}{/if}
         </span>
-        <button onclick={go}>{buttonLabel}</button>
+        <label class="fast"><input type="checkbox" checked={fastDeal} onchange={(e) => setFast(e.currentTarget.checked)} /> {t('draw.fastDeal')}</label>
+        <button onclick={go} disabled={dealing}>{buttonLabel}</button>
       </div>
     {/if}
   </section>
@@ -289,6 +364,14 @@
   }
   .joker-fan.live :global(.card:hover) {
     z-index: 3;
+  }
+  .fast {
+    font-size: 0.8rem;
+    color: var(--grey);
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    cursor: pointer;
   }
   .small-btn {
     font-size: 0.85rem;

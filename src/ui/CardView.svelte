@@ -6,6 +6,8 @@
   interface Props {
     card?: Card | null;
     faceDown?: boolean;
+    /** Slide in as if dealt: from the dealer at the left, or from above for the opponent. */
+    deal?: 'left' | 'top' | null;
     small?: boolean;
     selected?: boolean;
     ghost?: boolean;
@@ -21,14 +23,14 @@
     ondragstart?: (e: DragEvent) => void;
   }
 
-  let { card = null, faceDown = false, small = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
+  let { card = null, faceDown = false, deal = null, small = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
 
   const rank = $derived(card && !isJoker(card) ? (card.rank === 10 ? '10' : rankLabel(card.rank)) : '');
   const suit = $derived(card && !isJoker(card) ? SUIT_GLYPH[card.suit] : '');
 </script>
 
 {#if faceDown}
-  <div class="card back" class:small></div>
+  <div class="card back" class:small class:deal-left={deal === 'left'} class:deal-top={deal === 'top'}></div>
 {:else if !card}
   <div class="card empty" class:small>{placeholder}</div>
 {:else}
@@ -39,6 +41,8 @@
     class:selected
     class:ghost
     class:fresh
+    class:deal-left={deal === 'left'}
+    class:deal-top={deal === 'top'}
     class:used
     class:toss
     class:faded
@@ -118,6 +122,28 @@
   }
   .fresh {
     animation: pop 0.5s ease-out;
+  }
+  .deal-left {
+    animation: deal-left 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  .deal-top {
+    animation: deal-top 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  @keyframes deal-left {
+    from { transform: translate(-260px, -40px) rotate(-25deg); opacity: 0; }
+    60% { opacity: 1; }
+    to { transform: none; }
+  }
+  @keyframes deal-top {
+    from { transform: translate(-120px, -160px) rotate(20deg); opacity: 0; }
+    60% { opacity: 1; }
+    to { transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .deal-left,
+    .deal-top {
+      animation: none;
+    }
   }
   @keyframes pop {
     0% { transform: scale(1.3) rotate(6deg); }

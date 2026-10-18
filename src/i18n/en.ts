@@ -56,6 +56,7 @@ export const en = {
   'draw.boardOnly': 'Nothing tapped: you would play the board alone.',
   'draw.risking': 'risking {n} 🃏',
   'draw.hint': 'Hint',
+  'draw.fastDeal': 'Fast deal',
   'draw.oddsTitle': 'What {name} could be holding:',
   'draw.oddsBeats': '{name} beats your best possible hand {pct} of the time.',
   'draw.theyDiscarded': 'Threw away:',
