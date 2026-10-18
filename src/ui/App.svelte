@@ -1,46 +1,69 @@
 <script lang="ts">
   import { newGame, nextMonth, submitAction, type Action, type GameState, type RulesConfig } from '../engine';
   import DebugPanel from './DebugPanel.svelte';
+  import DrawTable from './DrawTable.svelte';
   import MonthEnd from './MonthEnd.svelte';
+  import Showdown from './Showdown.svelte';
   import Table from './Table.svelte';
   import Title from './Title.svelte';
-  import { loadBest, loadConfig, recordResult, saveConfig } from './storage';
+  import { loadBest, loadConfig, loadGame, recordResult, saveConfig, saveGame } from './storage';
 
   let config = $state.raw<RulesConfig>(loadConfig());
   let seed = $state(Date.now() >>> 0);
   let peek = $state(false);
   let best = $state(loadBest());
+  /** Paused or saved voyage, shown as "Continue" on the title screen. */
+  let saved = $state.raw<GameState | null>(loadGame());
   // Engine state is replaced wholesale on every move, so keep it out of deep reactivity.
   let game = $state.raw<GameState | null>(null);
-  let showEnd = $state(false);
+  /** After a duel: 'reveal' plays the showdown, then 'result' shows the month's card. */
+  let stage = $state<'play' | 'reveal' | 'result'>('play');
   let endTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function setGame(g: GameState | null) {
+    game = g;
+    if (g) {
+      saveGame(g);
+      saved = loadGame();
+    }
+  }
 
   function start(newSeed = Date.now() >>> 0) {
     seed = newSeed;
-    game = newGame(seed, config);
-    showEnd = false;
+    stage = 'play';
+    setGame(newGame(seed, config));
+  }
+
+  function resume() {
+    if (!saved) return;
+    stage = saved.phase === 'duel' ? 'play' : 'result';
+    game = saved;
   }
 
   function act(action: Action) {
     if (!game) return;
-    game = submitAction(game, action);
-    if (game.phase !== 'duel') {
-      if (game.phase === 'gameOver' || game.phase === 'victory') best = recordResult(game.month, game.phase === 'victory');
-      // Let the showdown sit on the table for a beat before the intertitle.
-      clearTimeout(endTimer);
-      endTimer = setTimeout(() => (showEnd = true), 1400);
+    const g = submitAction(game, action);
+    if (g.phase === 'gameOver' || g.phase === 'victory') best = recordResult(g.month, g.phase === 'victory');
+    setGame(g);
+    if (g.phase !== 'duel') {
+      if (g.config.playStyle === 'draw') stage = 'reveal';
+      else {
+        // Slots style: let the showdown sit on the table for a beat.
+        clearTimeout(endTimer);
+        endTimer = setTimeout(() => (stage = 'result'), 1400);
+      }
     }
   }
 
   function next() {
     if (!game) return;
-    showEnd = false;
-    game = nextMonth(game);
+    stage = 'play';
+    setGame(nextMonth(game));
   }
 
-  function menu() {
+  function pause() {
     clearTimeout(endTimer);
-    showEnd = false;
+    stage = 'play';
     game = null;
   }
 
@@ -53,12 +76,18 @@
 
 <div class="film">
   {#if game}
-    <Table {game} {peek} onaction={act} onmenu={menu} />
-    {#if showEnd && game.report}
-      <MonthEnd {game} onnext={next} onmenu={menu} />
+    {#if game.round?.playStyle === 'draw'}
+      <DrawTable {game} {peek} onaction={act} onmenu={pause} />
+    {:else}
+      <Table {game} {peek} onaction={act} onmenu={pause} />
+    {/if}
+    {#if stage === 'reveal' && game.round?.result}
+      <Showdown {game} ondone={() => (stage = 'result')} />
+    {:else if stage === 'result' && game.report}
+      <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} />
     {/if}
   {:else}
-    <Title {best} onstart={() => start()} />
+    <Title {best} savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} />
   {/if}
 </div>
 <DebugPanel {config} {seed} {peek} onapply={applyRules} onpeek={(p) => (peek = p)} />

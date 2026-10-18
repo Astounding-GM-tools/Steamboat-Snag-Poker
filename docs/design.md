@@ -37,22 +37,58 @@ vignette, intertitle cards for all text.
 - Jokers you own are always available to play and **do not take up hand space**.
   You can hold 0, 5 or 10 of them. You cannot discard a Joker.
 
-## Rule presets
+## Play styles and presets
 
 All structural rules live in one config (`src/engine/config.ts`) with named
-presets, selectable in the rules lab (⚙) and the balance simulation:
+presets, selectable in the rules lab (⚙) and the balance simulation.
+
+### Draw (default)
+
+1. **Flop:** 3 community cards are revealed; each player is dealt **3 cards**.
+2. **Flop and Turn:** tap any number of hand cards to **discard** and draw
+   replacements, or **stand pat**. Jokers cannot be
+   discarded. Discards lie **face up**: the opponent can read what you threw
+   away, and you can read theirs.
+3. **Make your hand (on the River):** when the River card comes there is no
+   more discarding — tap the cards you want to play — any
+   of your hand cards plus any Jokers you dare, up to 5. The best community
+   cards automatically fill the rest. No pre-selection: choosing is your job.
+   Tapping nothing plays the board alone (legal, close to folding).
+4. **Showdown:** the best hand wins. Every Joker the winner *chose to play*
+   goes to the loser, along with any community Jokers. There is no automatic
+   shedding — betting hands on Jokers is how the game is won or lost.
+
+The shape of a hand decides how many Jokers it can carry:
+
+| Hand | Cards that matter | Room for Jokers |
+|---|---|---|
+| Four of a kind | 4 | 1 |
+| Three of a kind | 3 | 2 |
+| Two pair | 4 | 1 |
+| Straight / flush / full house | 5 | none |
+
+**Hint button:** next to the opponent, shows what they could be holding
+(chance of each hand category, and how often it beats your best hand), based
+only on what you can see.
+
+**The reveal:** your hand is announced first (with its nickname, if any). Then
+the opponent's played cards are turned over one at a time — teasers first
+("a flush is still possible!"), then Jokers ("the stakes go up!"), and the
+deciding card last — each showing how it combines with the board. A 5-second
+countdown runs between cards, with Next and Skip buttons.
+
+### Slots presets
 
 | Preset | Board (Flop/Turn/River) | Deal per player | Slots | Own cards used |
 |---|---|---|---|---|
-| **Kansas** (default) | 3 / 1 / 1 | 3 / 1 / 1 | 3 | exactly 2 |
+| **Kansas** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | exactly 2 |
 | **Texas** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 0–3 |
 | **Middle** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 1–2 |
 | **3 + 3** | 1 / 1 / 1 | 3 / 1 / 1 | 3 | 2–3 |
 | **Classic** (v1) | 1 / 1 / 1 | 3 / 1 / 1 | 2 | exactly 2, Joker in a 4th slot |
 
-"Kansas" sits between Texas and Omaha (geographically, too): a full Hold'em
-board, three slots, and Omaha's rule that your hand must use exactly two of
-your own cards.
+In the slots style you place one card per street into a slot (or discard one).
+"Kansas" sits between Texas and Omaha (geographically, too).
 
 ## Hand ranking
 
@@ -77,7 +113,7 @@ suits card-by-card from the highest card down, with **♣ < ♦ < ♥ < ♠**.
 Only when both hands contain exactly the same real cards is it a true **draw**:
 nobody wins, no Jokers move, no Popularity is gained.
 
-## The round (one month)
+## The round in the slots style
 
 Two players, three **streets**: Flop, Turn, River. On each street:
 
@@ -190,9 +226,20 @@ books), Wendy Darling, the Queen of Hearts.
    hand, Jokers; the cards used in your best hand are outlined), side panel with
    a shaking Popularity meter, month counter and the league sorted by
    Popularity.
-3. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", the winning hand,
-   Popularity change, Joker movements, "Meanwhile on the river" league news,
-   buttons: Next month / Main menu.
+3. **Showdown** (draw style) — the card-by-card reveal described above.
+4. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", Popularity change,
+   Joker movements, standings, "Meanwhile on the river" league news. No
+   countdown: **Next month** or **Drop anchor** (pause).
+
+**Pausing:** Drop anchor returns to the title screen, which then offers
+**Continue voyage** and **New voyage** (with an "Abandon ship?" confirmation).
+The voyage is saved in the browser after every move, so it survives a reload.
+
+**Hand nicknames** (in the language file, easy to extend): Dead Man's Hand
+(aces and eights), Full Boat (full house), the Waiter with … (full house on
+threes — a house invention: threes → trays → waiters), the Wheel (A–5
+straight), Broadway (10–A straight), Royal Flush, and rank nicknames like
+Ducks, Sailboats, Snowmen, Cowboys and Ladies.
 
 Play is by drag-and-drop onto a slot or the discard pile, with click-to-select
 as a fallback. Dropping is final.

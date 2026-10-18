@@ -3,7 +3,7 @@
  * given; the public game API (game.ts) clones state before calling them.
  */
 import { fullDeck, isJoker, type Card, type JokerCard, type StdCard } from './cards';
-import type { RulesConfig } from './config';
+import type { PlayStyle, RulesConfig } from './config';
 import { bestHand, compareHands, type HandValue } from './evaluate';
 import type { Rng } from './rng';
 
@@ -12,14 +12,21 @@ export type SlotIndex = number;
 export type Action =
   | { type: 'place'; cardId: string; slot: SlotIndex }
   | { type: 'discard'; cardId: string }
-  | { type: 'pass' };
+  | { type: 'pass' }
+  /** Draw style: discard these cards and draw replacements (none = stand pat). */
+  | { type: 'draw'; cardIds: string[] }
+  /** Draw style, after the River: the hand cards and number of Jokers you play. */
+  | { type: 'compose'; cardIds: string[]; jokers: number };
 
 export interface Seat {
   playerId: string;
   hand: StdCard[];
   /** Owned Jokers not currently in a slot. They never take hand space. */
   jokers: JokerCard[];
+  /** Slots style: the play slots. Draw style: empty until composed, then the cards played. */
   slots: (Card | null)[];
+  /** Cards this seat discarded this round (face up). */
+  discarded: StdCard[];
 }
 
 export const STREETS = ['flop', 'turn', 'river'] as const;
@@ -40,13 +47,14 @@ export interface RoundResult {
 
 export interface RoundState {
   month: number;
+  playStyle: PlayStyle;
   seats: [Seat, Seat];
   deck: Card[];
   /** Revealed community cards (in shuffled mode one may be a dead Joker). */
   community: Card[];
   /** Slot mode: the Joker in the fourth community slot, if any. */
   communityJoker: JokerCard | null;
-  /** 0..2 while playing, 3 once the showdown has been resolved. */
+  /** 0..2 on the streets (draw style composes on the River); 3 once a slots-style showdown is done. */
   street: number;
   discards: StdCard[];
   history: { street: number; actions: [Action, Action] }[];
@@ -73,10 +81,12 @@ export function createRound(
     playerId: p.id,
     hand: [],
     jokers: p.jokers.slice(),
-    slots: Array.from({ length: config.slotCount }, () => null),
+    slots: config.playStyle === 'slots' ? Array.from({ length: config.slotCount }, () => null) : [],
+    discarded: [],
   });
   const round: RoundState = {
     month,
+    playStyle: config.playStyle,
     seats: [seat(players[0]), seat(players[1])],
     deck: rng.shuffle(fullDeck()),
     community: [],
@@ -125,7 +135,31 @@ function dealStreet(round: RoundState, config: RulesConfig) {
 }
 
 export function legalActions(round: RoundState, seatIndex: number): Action[] {
-  return legalSeatActions(round.seats[seatIndex], round.deck.length);
+  const seat = round.seats[seatIndex];
+  if (round.playStyle === 'draw') {
+    const ids = seat.hand.map((c) => c.id);
+    if (isComposing(round)) {
+      return subsets(ids).flatMap((cardIds) =>
+        Array.from({ length: Math.min(seat.jokers.length, 5 - cardIds.length) + 1 }, (_, jokers): Action => ({ type: 'compose', cardIds, jokers })),
+      );
+    }
+    return subsets(ids)
+      .filter((cardIds) => cardIds.length <= round.deck.length)
+      .map((cardIds): Action => ({ type: 'draw', cardIds }));
+  }
+  return legalSeatActions(seat, round.deck.length);
+}
+
+/** All subsets of a small list, smallest first. */
+export function subsets<T>(items: readonly T[]): T[][] {
+  const out: T[][] = [];
+  for (let mask = 0; mask < 1 << items.length; mask++) out.push(items.filter((_, i) => mask & (1 << i)));
+  return out.sort((a, b) => a.length - b.length);
+}
+
+/** Draw style: true on the River, where hands are composed (no discarding there). */
+export function isComposing(round: RoundState): boolean {
+  return round.playStyle === 'draw' && round.street === 2 && !round.result;
 }
 
 /** Every action except passing; passing is only allowed when nothing else is. */
@@ -147,18 +181,44 @@ export function legalSeatActions(seat: Pick<Seat, 'hand' | 'jokers' | 'slots'>, 
 
 export function isLegal(round: RoundState, seatIndex: number, action: Action): boolean {
   const seat = round.seats[seatIndex];
+  if (round.playStyle === 'draw') {
+    if (action.type !== (isComposing(round) ? 'compose' : 'draw')) return false;
+    const ids = action.cardIds;
+    if (new Set(ids).size !== ids.length || !ids.every((id) => seat.hand.some((c) => c.id === id))) return false;
+    if (action.type === 'draw') return ids.length <= round.deck.length;
+    return Number.isInteger(action.jokers) && action.jokers >= 0 && action.jokers <= seat.jokers.length && ids.length + action.jokers <= 5;
+  }
+  if (action.type === 'draw' || action.type === 'compose') return false;
   if (action.type === 'pass') return legalActions(round, seatIndex)[0].type === 'pass';
   if (action.type === 'place' && !(action.slot >= 0 && action.slot < seat.slots.length)) return false;
   if (action.type === 'discard') return round.deck.length > 0 && seat.hand.some((c) => c.id === action.cardId);
   return seat.hand.some((c) => c.id === action.cardId) || seat.jokers.some((c) => c.id === action.cardId);
 }
 
+function discardCard(round: RoundState, seat: Seat, cardId: string) {
+  const [card] = seat.hand.splice(seat.hand.findIndex((c) => c.id === cardId), 1);
+  round.discards.push(card);
+  seat.discarded.push(card);
+}
+
 function applyAction(round: RoundState, seat: Seat, action: Action) {
   if (action.type === 'pass') return;
   if (action.type === 'discard') {
-    const i = seat.hand.findIndex((c) => c.id === action.cardId);
-    round.discards.push(...seat.hand.splice(i, 1));
+    discardCard(round, seat, action.cardId);
     drawToSeat(round, seat);
+    return;
+  }
+  if (action.type === 'draw') {
+    for (const id of action.cardIds) discardCard(round, seat, id);
+    for (let i = 0; i < action.cardIds.length; i++) drawToSeat(round, seat);
+    return;
+  }
+  if (action.type === 'compose') {
+    seat.slots = [
+      ...action.cardIds.map((id) => seat.hand.find((c) => c.id === id)!),
+      ...seat.jokers.splice(0, action.jokers),
+    ];
+    seat.hand = seat.hand.filter((c) => !action.cardIds.includes(c.id));
     return;
   }
   let card: Card;
@@ -180,19 +240,27 @@ function returnToHand(seat: Seat, card: Card | null) {
  * street or resolves the showdown.
  */
 export function resolveStreet(round: RoundState, actions: [Action, Action], config: RulesConfig) {
-  if (round.street > 2) throw new Error('Round is over');
+  if (round.result) throw new Error('Round is over');
   actions.forEach((a, i) => {
     if (!isLegal(round, i, a)) throw new Error(`Illegal action for seat ${i}: ${JSON.stringify(a)}`);
   });
   actions.forEach((a, i) => applyAction(round, round.seats[i], a));
   round.history.push({ street: round.street, actions });
+  if (round.playStyle === 'draw' && round.street === 2) return showdown(round, config); // hands composed
   round.street++;
   if (round.street <= 2) dealStreet(round, config);
   else showdown(round, config);
 }
 
+/** The own-card rule for a seat: draw style uses exactly the cards played. */
+export function ownCardRule(round: RoundState, seatIndex: number, config: RulesConfig) {
+  if (round.playStyle === 'slots') return config.ownCards;
+  const n = round.seats[seatIndex].slots.length;
+  return { min: n, max: n };
+}
+
 export function handInPlay(round: RoundState, seatIndex: number, config: RulesConfig): HandValue {
-  return bestHand(round.seats[seatIndex].slots, round.community, config.ownCards);
+  return bestHand(round.seats[seatIndex].slots, round.community, ownCardRule(round, seatIndex, config));
 }
 
 function showdown(round: RoundState, config: RulesConfig) {

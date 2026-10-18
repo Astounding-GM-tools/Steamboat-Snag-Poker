@@ -17,3 +17,9 @@ export function name(id: string): string {
 export function jokerList(jokers: JokerCard[]): string {
   return jokers.map((j) => t(`joker.${j.index}`)).join(' & ');
 }
+
+/** "the Ace of Spades" — for spoken intertitles. */
+export function longCardName(card: Card): string {
+  if (isJoker(card)) return t(`joker.${card.index}`);
+  return t('card.long', { rank: t(`rank.title.${card.rank}`), suit: t(`suit.${card.suit}`) });
+}

@@ -5,11 +5,14 @@
 import { fullDeck, isJoker, isStd, type Card, type JokerCard, type StdCard } from './cards';
 import type { AiId } from './characters';
 import type { RulesConfig } from './config';
-import { bestScore, categoryOf, type OwnCardRule } from './evaluate';
-import { legalSeatActions, type Action, type RoundState } from './round';
+import { bestScore, CATEGORIES, categoryOf, type Category, type OwnCardRule } from './evaluate';
+import { isComposing, legalSeatActions, subsets, type Action, type RoundState } from './round';
 import type { Rng } from './rng';
 
 export interface SeatView {
+  playStyle: RoundState['playStyle'];
+  /** Draw style: hands are being composed. */
+  composing: boolean;
   street: number;
   hand: StdCard[];
   jokers: JokerCard[];
@@ -20,6 +23,8 @@ export interface SeatView {
   opponentHandSize: number;
   opponentJokerCount: number;
   discards: StdCard[];
+  /** What the other player has discarded this round (face up). */
+  opponentDiscarded: StdCard[];
   deckSize: number;
 }
 
@@ -27,6 +32,8 @@ export function viewFor(round: RoundState, seatIndex: number): SeatView {
   const me = round.seats[seatIndex];
   const them = round.seats[1 - seatIndex];
   return {
+    playStyle: round.playStyle,
+    composing: isComposing(round),
     street: round.street,
     hand: me.hand,
     jokers: me.jokers,
@@ -37,11 +44,13 @@ export function viewFor(round: RoundState, seatIndex: number): SeatView {
     opponentHandSize: them.hand.length,
     opponentJokerCount: them.jokers.length + them.slots.filter(isJoker).length,
     discards: round.discards,
+    opponentDiscarded: them.discarded,
     deckSize: round.deck.length,
   };
 }
 
 export function chooseAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Action {
+  if (view.playStyle === 'draw') return view.composing ? composeAction(ai, view, config, rng) : drawAction(ai, view, config, rng);
   switch (ai) {
     case 'pete':
       return peteAction(view);
@@ -183,4 +192,160 @@ function greedyImprove(hand: StdCard[], slots: (Card | null)[], community: Card[
     slots[slot] = hand.splice(i, 1)[0];
     if (isStd(old)) hand.push(old);
   }
+}
+
+// ---------------------------------------------------------------------------
+// Draw style
+// ---------------------------------------------------------------------------
+
+const ANY_OWN = (n: number): OwnCardRule => ({ min: 0, max: n });
+
+/** Standard cards the viewer cannot see: candidates for the deck and the opponent's hand. */
+function unseen(view: SeatView): StdCard[] {
+  const known = new Set<string>(
+    [...view.hand, ...view.slots, ...view.community, ...view.opponentSlots, ...view.discards].filter(isStd).map((c) => c.id),
+  );
+  return fullDeck().filter((c) => !known.has(c.id));
+}
+
+function boardSize(config: RulesConfig) {
+  return config.communitySchedule.reduce((a, b) => a + b, 0);
+}
+
+/** Expected Joker stakes against us if we lose: community Jokers plus a guess at what the opponent dares. */
+function expectedStakes(view: SeatView) {
+  return (view.communityJoker ? 1 : 0) + view.community.filter(isJoker).length + 0.3 * Math.min(view.opponentJokerCount, 2);
+}
+
+function drawAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Action {
+  const options = subsets(view.hand.map((c) => c.id)).filter((ids) => ids.length <= view.deckSize);
+  switch (ai) {
+    case 'pete':
+      // Keeps his big cards, throws away anything below a ten.
+      return { type: 'draw', cardIds: view.hand.filter((c) => c.rank < 10).map((c) => c.id) };
+    case 'felix':
+      return { type: 'draw', cardIds: rng.pick(options) };
+    case 'willie':
+      return rng.next() < 0.6 ? { type: 'draw', cardIds: rng.pick(options) } : smartDraw(view, config, rng, options, 15);
+    case 'betty':
+      return smartDraw(view, config, rng, options, 25);
+    case 'sherlock':
+      return smartDraw(view, config, rng, options, 50);
+  }
+}
+
+/** Monte Carlo over which cards to throw away, judged by the chance of winning at showdown. */
+function smartDraw(view: SeatView, config: RulesConfig, rng: Rng, options: string[][], samples: number): Action {
+  const pool = unseen(view);
+  const size = boardSize(config);
+  const oppHandSize = view.opponentHandSize;
+  let best = options[0];
+  let bestValue = -Infinity;
+  for (const ids of options) {
+    let value = 0;
+    for (let s = 0; s < samples; s++) {
+      const pile = rng.shuffle(pool);
+      const hand: Card[] = view.hand.filter((c) => !ids.includes(c.id));
+      for (let i = 0; i < ids.length; i++) hand.push(pile.pop()!);
+      const board = view.community.slice();
+      while (board.length < size) board.push(pile.pop()!);
+      const opp = pile.slice(-oppHandSize);
+      const mine = bestScore(hand, board, ANY_OWN(hand.length));
+      const theirs = bestScore(opp, board, ANY_OWN(opp.length));
+      if (mine > theirs) value += 1 + config.winGain[categoryOf(mine)] / 20;
+    }
+    if (value > bestValue) {
+      bestValue = value;
+      best = ids;
+    }
+  }
+  return { type: 'draw', cardIds: best };
+}
+
+interface Composition {
+  cardIds: string[];
+  jokers: number;
+  score: number;
+}
+
+function compositions(view: SeatView): Composition[] {
+  const out: Composition[] = [];
+  for (const ids of subsets(view.hand.map((c) => c.id))) {
+    const cards = view.hand.filter((c) => ids.includes(c.id));
+    for (let j = 0; j <= Math.min(view.jokers.length, 5 - ids.length); j++) {
+      const own: Card[] = [...cards, ...view.jokers.slice(0, j)];
+      out.push({ cardIds: ids, jokers: j, score: bestScore(own, view.community, { min: own.length, max: own.length }) });
+    }
+  }
+  return out;
+}
+
+const asAction = (c: Composition): Action => ({ type: 'compose', cardIds: c.cardIds, jokers: c.jokers });
+
+function composeAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Action {
+  const options = compositions(view);
+  const strongest = (list: Composition[]) => list.reduce((a, b) => (b.score > a.score ? b : a));
+  switch (ai) {
+    case 'pete':
+      return asAction(strongest(options.filter((o) => o.jokers === 0)));
+    case 'felix':
+      return asAction(rng.pick(options.filter((o) => o.cardIds.length > 0 || o.jokers > 0)));
+    case 'willie':
+      return rng.next() < 0.5 ? asAction(rng.pick(options)) : smartCompose(view, config, rng, options, 100, 1);
+    case 'betty':
+      return smartCompose(view, config, rng, options, 150, 0.3);
+    case 'sherlock':
+      return smartCompose(view, config, rng, options, 300, 1);
+  }
+}
+
+/** Weighs each composition's chance of winning against the Jokers it could shed. */
+function smartCompose(view: SeatView, config: RulesConfig, rng: Rng, options: Composition[], samples: number, jokerBold: number): Action {
+  const pool = unseen(view);
+  const theirs: number[] = [];
+  for (let s = 0; s < samples; s++) {
+    const opp = rng.shuffle(pool).slice(0, view.opponentHandSize);
+    theirs.push(bestScore(opp, view.community, ANY_OWN(opp.length)));
+  }
+  const jokerValue = config.drainPerJoker * 3;
+  const stakes = expectedStakes(view);
+  let best = options[0];
+  let bestValue = -Infinity;
+  for (const o of options) {
+    const pWin = theirs.filter((t) => o.score > t).length / samples;
+    const value = pWin * (config.winGain[categoryOf(o.score)] + o.jokers * jokerValue * jokerBold) - (1 - pWin) * stakes * jokerValue;
+    if (value > bestValue) {
+      bestValue = value;
+      best = o;
+    }
+  }
+  return asAction(best);
+}
+
+export interface OpponentOdds {
+  /** Chance the opponent's best possible hand (without Jokers) is each category. */
+  categories: Record<Category, number>;
+  /** Chance their best possible hand beats your best possible hand (both without Jokers). */
+  beatsYou: number;
+}
+
+/**
+ * The hint: what could the other player be holding? Uses only what the viewer
+ * can see — the board, all discards and the opponent's hand size.
+ */
+export function opponentOdds(view: SeatView, config: RulesConfig, rng: Rng, samples = 400): OpponentOdds {
+  const pool = unseen(view);
+  const size = boardSize(config);
+  const categories = Object.fromEntries(CATEGORIES.map((c) => [c, 0])) as Record<Category, number>;
+  let beats = 0;
+  for (let s = 0; s < samples; s++) {
+    const pile = rng.shuffle(pool);
+    const opp = pile.splice(0, view.opponentHandSize);
+    const board = view.community.slice();
+    while (board.length < size) board.push(pile.pop()!);
+    const theirs = bestScore(opp, board, ANY_OWN(opp.length));
+    categories[categoryOf(theirs)] += 1 / samples;
+    if (theirs > bestScore(view.hand, board, ANY_OWN(view.hand.length))) beats++;
+  }
+  return { categories, beatsYou: beats / samples };
 }

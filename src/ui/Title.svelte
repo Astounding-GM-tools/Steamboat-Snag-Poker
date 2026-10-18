@@ -2,8 +2,21 @@
   import { t } from '../i18n';
   import type { Best } from './storage';
 
-  let { best, onstart }: { best: Best | null; onstart: () => void } = $props();
+  interface Props {
+    best: Best | null;
+    /** Month of the voyage in progress, if any. */
+    savedMonth: number | null;
+    onstart: () => void;
+    oncontinue: () => void;
+  }
+  let { best, savedMonth, onstart, oncontinue }: Props = $props();
   let showHowTo = $state(false);
+  let confirmAbandon = $state(false);
+
+  function newVoyage() {
+    if (savedMonth) confirmAbandon = true;
+    else onstart();
+  }
 </script>
 
 <div class="title">
@@ -30,7 +43,12 @@
     <h1>{t('title.name')}</h1>
     <p class="tagline">{t('title.tagline')}</p>
     <div class="buttons">
-      <button onclick={onstart}>{t('title.start')}</button>
+      {#if savedMonth}
+        <button onclick={oncontinue}>{t('title.continue', { month: savedMonth })}</button>
+        <button class="ghost" onclick={newVoyage}>{t('title.newVoyage')}</button>
+      {:else}
+        <button onclick={onstart}>{t('title.start')}</button>
+      {/if}
       <button class="ghost" onclick={() => (showHowTo = true)}>{t('title.howTo')}</button>
     </div>
     <p class="best">
@@ -39,6 +57,19 @@
       {:else}{t('title.best', { months: best.months })}{/if}
     </p>
   </div>
+
+  {#if confirmAbandon}
+    <div class="overlay">
+      <div class="intertitle">
+        <h2>{t('title.abandon')}</h2>
+        <p>{t('title.abandonBody', { month: savedMonth ?? 0 })}</p>
+        <div class="buttons">
+          <button onclick={() => ((confirmAbandon = false), onstart())}>{t('title.abandonYes')}</button>
+          <button class="ghost" onclick={() => (confirmAbandon = false)}>{t('title.abandonNo')}</button>
+        </div>
+      </div>
+    </div>
+  {/if}
 
   {#if showHowTo}
     <div class="overlay">

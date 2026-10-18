@@ -1,22 +1,29 @@
 import type { Category } from './evaluate';
 
 export type JokerMode = 'slot' | 'shuffled';
+/**
+ * 'slots': place one card per street into slots.
+ * 'draw': discard any cards on the Flop and Turn, then compose your hand on the River.
+ */
+export type PlayStyle = 'slots' | 'draw';
 export type Schedule = [number, number, number];
 
 export interface RulesConfig {
   /** Display name of the preset this config came from (informational). */
   preset: string;
+  playStyle: PlayStyle;
   months: number;
   /** Community cards revealed on Flop, Turn, River. */
   communitySchedule: Schedule;
   /** Cards dealt to each player on Flop, Turn, River. */
   dealSchedule: Schedule;
-  /** Number of play slots per player. */
+  /** Number of play slots per player (slots style only). */
   slotCount: number;
   /**
    * How many of your own slot cards the 5-card hand must use (Jokers and empty
    * slots count, as dead cards). The rest comes from the community cards.
-   * Texas: 0–slots, Omaha: exactly 2.
+   * Texas: 0–slots, Omaha: exactly 2. Draw style ignores this: you use exactly
+   * the cards you choose to play.
    */
   ownCards: { min: number; max: number };
   /** 'slot': a separate fourth community slot holds the prize Joker; 'shuffled': Jokers are shuffled into the deck. */
@@ -48,6 +55,7 @@ const BASE_GAIN: Record<Category, number> = {
 /** "Kansas": full Hold'em board, three slots, Omaha's use-exactly-two rule. */
 const KANSAS: RulesConfig = {
   preset: 'kansas',
+  playStyle: 'slots',
   months: 48,
   communitySchedule: [3, 1, 1],
   dealSchedule: [3, 1, 1],
@@ -65,6 +73,8 @@ const KANSAS: RulesConfig = {
 
 /** Named rule sets for play-testing and simulation. */
 export const PRESETS: Record<string, RulesConfig> = {
+  /** Draw: three cards, discard any on the Flop and Turn, compose your hand on the River. */
+  draw: { ...KANSAS, preset: 'draw', playStyle: 'draw', dealSchedule: [3, 0, 0] },
   kansas: KANSAS,
   texas: { ...KANSAS, preset: 'texas', ownCards: { min: 0, max: 3 } },
   middle: { ...KANSAS, preset: 'middle', ownCards: { min: 1, max: 2 } },
@@ -84,4 +94,4 @@ export const PRESETS: Record<string, RulesConfig> = {
   },
 };
 
-export const DEFAULT_CONFIG: RulesConfig = PRESETS.kansas;
+export const DEFAULT_CONFIG: RulesConfig = PRESETS.draw;

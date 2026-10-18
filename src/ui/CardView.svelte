@@ -10,6 +10,8 @@
     selected?: boolean;
     ghost?: boolean;
     fresh?: boolean;
+    /** Selected to be thrown away. */
+    toss?: boolean;
     /** Part of the player's best hand. */
     used?: boolean;
     /** In a slot but not part of the best hand. */
@@ -19,7 +21,7 @@
     ondragstart?: (e: DragEvent) => void;
   }
 
-  let { card = null, faceDown = false, small = false, selected = false, ghost = false, fresh = false, used = false, faded = false, placeholder = '', onclick, ondragstart }: Props = $props();
+  let { card = null, faceDown = false, small = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
 
   const rank = $derived(card && !isJoker(card) ? (card.rank === 10 ? '10' : rankLabel(card.rank)) : '');
   const suit = $derived(card && !isJoker(card) ? SUIT_GLYPH[card.suit] : '');
@@ -38,6 +40,7 @@
     class:ghost
     class:fresh
     class:used
+    class:toss
     class:faded
     class:joker={isJoker(card)}
     draggable={!!ondragstart}
@@ -45,6 +48,7 @@
     {ondragstart}
     disabled={!onclick && !ondragstart}
   >
+    {#if toss}<span class="stamp">✕</span>{/if}
     {#if isJoker(card)}
       <span class="jester">🃏</span>
       <span class="jname">{t(`joker.${card.index}`).replace(/^the /, '')}</span>
@@ -91,6 +95,20 @@
   .ghost {
     opacity: 0.55;
     border-style: dashed;
+  }
+  .toss {
+    transform: translateY(-10px) rotate(3deg) !important;
+    filter: brightness(0.75);
+  }
+  .stamp {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: calc(var(--w) * 0.9);
+    color: rgba(0, 0, 0, 0.7);
+    z-index: 2;
+    pointer-events: none;
   }
   .used {
     box-shadow: 0 0 0 2px var(--paper), 2px 3px 0 rgba(0, 0, 0, 0.6);
