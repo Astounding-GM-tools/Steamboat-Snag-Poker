@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, type GameState, type RulesConfig } from '../engine';
+import { DEFAULT_CONFIG, migrateGame, type GameState, type RulesConfig } from '../engine';
 
 export interface Best {
   months: number;
@@ -41,7 +41,7 @@ export function loadGame(): GameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     const game = raw ? (JSON.parse(raw) as GameState) : null;
-    return game && game.phase !== 'gameOver' && game.phase !== 'victory' ? game : null;
+    return game && game.phase !== 'gameOver' && game.phase !== 'victory' ? migrateGame(game) : null;
   } catch {
     return null;
   }

@@ -52,6 +52,22 @@ export interface GameState {
 
 const clone = <T>(x: T): T => structuredClone(x);
 
+/**
+ * Brings a saved game up to date with the current rules format: rule settings
+ * added since it was saved get their defaults, and any Popularity that is not
+ * a number (from such a missing setting) is reset to that player's start.
+ */
+export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): GameState {
+  const state = clone(saved);
+  state.config = { ...DEFAULT_CONFIG, ...state.config, winGain: { ...DEFAULT_CONFIG.winGain, ...state.config.winGain } };
+  for (const p of state.players) {
+    if (!Number.isFinite(p.popularity)) {
+      p.popularity = roster.find((c) => c.id === p.id)?.startPopularity ?? state.config.startPopularity;
+    }
+  }
+  return state;
+}
+
 export function newGame(seed: number, config: RulesConfig = DEFAULT_CONFIG, roster: CharacterDef[] = ROSTER): GameState {
   const players: Player[] = [
     { id: HUMAN_ID, ai: null, popularity: config.startPopularity, jokers: [], status: 'active' },
@@ -148,7 +164,7 @@ function finishMonth(state: GameState, rng: Rng) {
       before[p.id] ??= p.popularity;
       p.jokers = seat.jokers;
       if (res.winner === i) p.popularity = Math.min(cfg.maxPopularity, p.popularity + res.gain);
-      else if (res.winner !== null) p.popularity = Math.max(0, p.popularity - Math.round(res.gain * cfg.loserPays));
+      else if (res.winner !== null) p.popularity = Math.max(0, p.popularity - Math.round(res.gain * (cfg.loserPays ?? 0)));
     });
     state.pool.push(...res.returnedToPool);
     return { players: [round.seats[0].playerId, round.seats[1].playerId], result: res };

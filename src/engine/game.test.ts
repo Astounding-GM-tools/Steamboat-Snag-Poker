@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, PRESETS, type RulesConfig } from './config';
 import { HUMAN_ID } from './characters';
-import { activeOpponents, newGame, nextMonth, player, submitAction, type GameState } from './game';
+import { activeOpponents, migrateGame, newGame, nextMonth, player, submitAction, type GameState } from './game';
 import { legalActions } from './round';
 import { Rng } from './rng';
 
@@ -57,5 +57,14 @@ describe('game', () => {
   it('only allows passing when nothing else is possible', () => {
     const s = newGame(5);
     expect(legalActions(s.round!, 0).some((a) => a.type === 'pass')).toBe(false);
+  });
+
+  it('migrates saves from before a rule setting existed', () => {
+    const old = newGame(3);
+    delete (old.config as Partial<RulesConfig>).loserPays;
+    old.players[1].popularity = NaN;
+    const fixed = migrateGame(old);
+    expect(fixed.config.loserPays).toBe(DEFAULT_CONFIG.loserPays);
+    expect(Number.isFinite(fixed.players[1].popularity)).toBe(true);
   });
 });
