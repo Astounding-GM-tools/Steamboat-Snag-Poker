@@ -34,6 +34,16 @@ describe('evaluate', () => {
     expect(beats('2d 3s 4h 5c 6s', 'Ad 2s 3h 4c 5s')).toBeGreaterThan(0);
   });
 
+  it('an Ace-high flush beats a King-high flush', () => {
+    expect(beats('As 9s 7s 4s 2s', 'Ks Qs 9s 7s 4s')).toBeGreaterThan(0);
+  });
+
+  it('aces are high, and low only in the wheel (no round-the-corner straights)', () => {
+    expect(cat('Ts Jd Qh Kc As')).toBe('straight');
+    expect(cat('Qs Kd Ah 2c 3s')).toBe('highCard');
+    expect(beats('Ad 4s 7h 9c Js', 'Kd 4c 7d 9s Jc')).toBeGreaterThan(0);
+  });
+
   it('uses kickers', () => {
     expect(beats('9s 9d Ah 4c 2s', '9h 9c Kh 4d 2d')).toBeGreaterThan(0);
   });
