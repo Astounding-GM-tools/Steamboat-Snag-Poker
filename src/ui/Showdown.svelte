@@ -1,12 +1,9 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { isJoker, planReveal, Rng, type Card, type GameState } from '../engine';
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import { cardLabel, longCardName, name } from './format';
   import { describeHand, nickname } from './handNames';
-
-  const SECONDS = 5;
 
   let { game, ondone }: { game: GameState; ondone: () => void } = $props();
 
@@ -21,7 +18,6 @@
 
   /** -1 = your hand is announced; 0..n-1 = opponent cards; n = the verdict (only if they played nothing). */
   let index = $state(-1);
-  let remaining = $state(SECONDS);
   const lastIndex = $derived(steps.length ? steps.length - 1 : 0);
   const step = $derived(index >= 0 ? steps[index] : null);
   const revealed = $derived(index < 0 ? [] : steps.slice(0, index + 1).map((s) => s.card));
@@ -33,23 +29,10 @@
     return new Set(result.hands[1].cards.map((c) => c.id));
   });
 
-  const timer = setInterval(() => {
-    remaining -= 0.1;
-    if (remaining <= 0) next();
-  }, 100);
-  onDestroy(() => clearInterval(timer));
-
+  // No auto-advance: the player takes each reveal in at their own pace.
   function next() {
-    remaining = SECONDS;
-    if (atEnd) {
-      clearInterval(timer);
-      ondone();
-    } else index++;
-  }
-
-  function skipAll() {
-    clearInterval(timer);
-    ondone();
+    if (atEnd) ondone();
+    else index++;
   }
 
   const verdict = $derived(result.winner === 0 ? t('show.youWin') : result.winner === 1 ? t('show.youLose') : t('show.draw'));
@@ -63,7 +46,7 @@
     <!-- Opponent's played cards -->
     <div class="who">{foe}</div>
     <div class="cards">
-      {#each theirs as card, i (card.id)}
+      {#each theirs as card (card.id)}
         {@const shown = revealed.find((c) => c.id === card.id)}
         <CardView card={shown ?? null} faceDown={!shown} fresh={!!shown && step?.card.id === card.id} />
       {:else}
@@ -121,9 +104,8 @@
     </div>
 
     <div class="controls">
-      <div class="countdown"><span style="width: {(remaining / SECONDS) * 100}%"></span></div>
       <button onclick={next}>{atEnd ? t('show.continue') : t('show.next')}</button>
-      <button class="ghost" onclick={skipAll}>{t('show.skip')}</button>
+      <button class="ghost" onclick={ondone}>{t('show.skip')}</button>
     </div>
   </div>
 </div>
@@ -199,16 +181,7 @@
     display: flex;
     gap: 0.75rem;
     align-items: center;
+    justify-content: center;
     margin-top: 0.75rem;
-  }
-  .countdown {
-    flex: 1;
-    height: 6px;
-    border: 1px solid var(--grey);
-  }
-  .countdown span {
-    display: block;
-    height: 100%;
-    background: var(--paper);
   }
 </style>

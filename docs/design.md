@@ -74,8 +74,8 @@ only on what you can see.
 **The reveal:** your hand is announced first (with its nickname, if any). Then
 the opponent's played cards are turned over one at a time — teasers first
 ("a flush is still possible!"), then Jokers ("the stakes go up!"), and the
-deciding card last — each showing how it combines with the board. A 5-second
-countdown runs between cards, with Next and Skip buttons.
+deciding card last — each showing how it combines with the board. No auto-advance: the
+player steps through with Next (or Skip to the result).
 
 ### Slots presets
 
