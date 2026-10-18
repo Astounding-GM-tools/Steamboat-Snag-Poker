@@ -2,7 +2,7 @@
  * Spoken descriptions of hands for the showdown intertitles:
  * "Four of a Kind, sevens" — and a nickname when the hand has one.
  */
-import type { HandValue, StdCard } from '../engine';
+import type { HandValue } from '../engine';
 import { t } from '../i18n';
 
 function groups(hand: HandValue): number[][] {
@@ -11,31 +11,33 @@ function groups(hand: HandValue): number[][] {
   return [...counts.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0]);
 }
 
-const plural = (rank: number) => t(`rank.plural.${rank}`);
-const single = (rank: number) => t(`rank.name.${rank}`);
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const plural = (rank: number) => cap(t(`rank.plural.${rank}`));
+const single = (rank: number) => cap(t(`rank.name.${rank}`));
 
-/** e.g. "Two Pair, aces and eights" / "a Flush, king high". */
+/** e.g. "a Pair of Aces", "Two Pair, Aces and Eights", "a Flush, King high". */
 export function describeHand(hand: HandValue): string {
   const g = groups(hand);
-  const cat = t(`hand.${hand.category}`);
   if (!hand.cards.length) return t('hand.nothing');
   const high = hand.cards[0].rank;
   switch (hand.category) {
     case 'highCard':
-      return t('describe.high', { hand: cat, rank: single(high) });
+      return t('describe.highCard', { rank: single(high) });
     case 'pair':
+      return t('describe.pair', { rank: plural(g[0][0]) });
     case 'threeOfAKind':
+      return t('describe.trips', { rank: plural(g[0][0]) });
     case 'fourOfAKind':
-      return t('describe.of', { hand: cat, rank: plural(g[0][0]) });
+      return t('describe.quads', { rank: plural(g[0][0]) });
     case 'twoPair':
-      return t('describe.twoPair', { hand: cat, a: plural(g[0][0]), b: plural(g[1][0]) });
+      return t('describe.twoPair', { a: plural(g[0][0]), b: plural(g[1][0]) });
     case 'fullHouse':
-      return t('describe.full', { hand: cat, a: plural(g[0][0]), b: plural(g[1][0]) });
+      return t('describe.full', { a: plural(g[0][0]), b: plural(g[1][0]) });
     case 'straight':
     case 'flush':
     case 'straightFlush': {
       const top = hand.category !== 'flush' && high === 14 && hand.cards[1].rank === 5 ? 5 : high;
-      return t('describe.high', { hand: cat, rank: single(top) });
+      return t('describe.high', { hand: t(`hand.${hand.category}`), rank: single(top) });
     }
   }
 }
@@ -67,19 +69,3 @@ export function nickname(hand: HandValue): string | null {
   }
 }
 
-/** The cards that make the hand what it is (the pair, the trips…), without kickers. */
-export function keyCards(hand: HandValue): StdCard[] {
-  const g = groups(hand);
-  switch (hand.category) {
-    case 'highCard':
-      return hand.cards.slice(0, 1);
-    case 'pair':
-    case 'threeOfAKind':
-    case 'fourOfAKind':
-      return hand.cards.filter((c) => c.rank === g[0][0]);
-    case 'twoPair':
-      return hand.cards.filter((c) => c.rank === g[0][0] || c.rank === g[1][0]);
-    default:
-      return hand.cards;
-  }
-}

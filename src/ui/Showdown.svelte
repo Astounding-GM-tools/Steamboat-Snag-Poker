@@ -3,7 +3,7 @@
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import { cardLabel, longCardName, name } from './format';
-  import { describeHand, keyCards, nickname } from './handNames';
+  import { describeHand, nickname } from './handNames';
 
   let { game, ondone }: { game: GameState; ondone: () => void } = $props();
 
@@ -76,7 +76,6 @@
         <p class="big">
           {mine.length ? t('show.youPlay', { hand: describeHand(result.hands[0]) }) : t('show.youPlayBoard', { hand: describeHand(result.hands[0]) })}
         </p>
-        {#if result.hands[0].cards.length}<p class="sub">{keyCards(result.hands[0]).map(cardLabel).join(' ')}</p>{/if}
         {#if myJokers.length}<p>{t('show.withJokers', { jokers: myJokers.map(cardLabel).join(' & ') })}</p>{/if}
         {#if nickname(result.hands[0])}<p class="nick">{nickname(result.hands[0])}</p>{/if}
         <p class="sub">{t(theirs.length === 1 ? 'show.nowThem.one' : 'show.nowThem', { name: foe, n: theirs.length })}</p>
@@ -86,7 +85,7 @@
           {:else}{t('show.shows', { name: foe, card: longCardName(step.card) })}{/if}
         </p>
         {#if step.last}
-          <p>{t('show.finalHand', { name: foe, hand: describeHand(step.hand), cards: keyCards(step.hand).map(cardLabel).join(' ') })}</p>
+          <p>{t('show.finalHand', { name: foe, hand: describeHand(step.hand) })}</p>
           {#if nickname(step.hand)}<p class="nick">{nickname(step.hand)}</p>{/if}
           <p class="verdict">{verdict}</p>
         {:else}
