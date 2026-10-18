@@ -14,8 +14,10 @@ export function name(id: string): string {
   return t(`character.${id}.name`);
 }
 
+/** "the Egg Crisis", "the Egg Crisis and the Sandbar", "A, B and C". */
 export function jokerList(jokers: JokerCard[]): string {
-  return jokers.map((j) => t(`joker.${j.index}`)).join(' & ');
+  const names = jokers.map((j) => t(`joker.${j.index}`));
+  return names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')}${t('list.and')}${names.at(-1)}`;
 }
 
 /** "the Ace of Spades" — for spoken intertitles. */

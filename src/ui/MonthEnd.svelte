@@ -34,11 +34,13 @@
   function duelLine(d: DuelSummary): string {
     const r = d.result;
     if (r.winner === null) return t('end.duelDraw', { a: name(d.players[0]), b: name(d.players[1]) });
-    const moved = r.dumped.length + r.communityTaken.length;
-    return (
-      t('end.duel', { winner: name(d.players[r.winner]), loser: name(d.players[1 - r.winner]), hand: describeHand(r.hands[r.winner]) }) +
-      (moved ? ' ' + t('end.jokersMoved', { n: moved }) : '')
-    );
+    const loser = name(d.players[1 - r.winner]);
+    const moved = [...r.dumped, ...r.communityTaken];
+    const jokers =
+      moved.length === 0 ? ''
+      : moved.length === 1 ? ' ' + t('end.newJoker', { name: loser, joker: jokerList(moved) })
+      : ' ' + t('end.newJokers', { name: loser, jokers: jokerList(moved) });
+    return t('end.duel', { winner: name(d.players[r.winner]), loser, hand: describeHand(r.hands[r.winner]) }) + jokers;
   }
 </script>
 

@@ -2,7 +2,7 @@
   import { isJoker, planReveal, Rng, type Card, type GameState } from '../engine';
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
-  import { cardLabel, longCardName, name } from './format';
+  import { cardLabel, jokerList, longCardName, name } from './format';
   import { describeHand, nickname } from './handNames';
 
   let { game, ondone }: { game: GameState; ondone: () => void } = $props();
@@ -76,7 +76,7 @@
         <p class="big">
           {mine.length ? t('show.youPlay', { hand: describeHand(result.hands[0]) }) : t('show.youPlayBoard', { hand: describeHand(result.hands[0]) })}
         </p>
-        {#if myJokers.length}<p>{t('show.withJokers', { jokers: myJokers.map(cardLabel).join(' & ') })}</p>{/if}
+        {#if myJokers.length}<p>{t('show.withJokers', { jokers: jokerList(myJokers) })}</p>{/if}
         {#if nickname(result.hands[0])}<p class="nick">{nickname(result.hands[0])}</p>{/if}
         <p class="sub">{t(theirs.length === 1 ? 'show.nowThem.one' : 'show.nowThem', { name: foe, n: theirs.length })}</p>
       {:else if step}
