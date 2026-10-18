@@ -49,8 +49,13 @@ export function nickname(hand: HandValue): string | null {
   switch (hand.category) {
     case 'straightFlush':
       return r[0] === 14 && r[1] === 13 ? t('nick.royal') : null;
-    case 'fullHouse':
-      return g[0][0] === 3 ? t('nick.waiter', { rank: plural(g[1][0]) }) : t('nick.fullBoat');
+    case 'fullHouse': {
+      // Threes are "trays": a Jack carrying a tray is the Waiter; a King, the Butler.
+      const ranks = new Set([g[0][0], g[1][0]]);
+      if (ranks.has(3) && ranks.has(11)) return t('nick.waiter');
+      if (ranks.has(3) && ranks.has(13)) return t('nick.butler');
+      return t('nick.fullBoat');
+    }
     case 'twoPair':
       return g[0][0] === 14 && g[1][0] === 8 ? t('nick.deadMan') : null;
     case 'straight':

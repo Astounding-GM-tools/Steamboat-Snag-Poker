@@ -236,8 +236,8 @@ books), Wendy Darling, the Queen of Hearts.
 The voyage is saved in the browser after every move, so it survives a reload.
 
 **Hand nicknames** (in the language file, easy to extend): Dead Man's Hand
-(aces and eights), Full Boat (full house), the Waiter with … (full house on
-threes — a house invention: threes → trays → waiters), the Wheel (A–5
+(aces and eights), Full Boat (full house), the Waiter (full house of threes and
+Jacks — a Jack carrying a tray), the Butler (threes and Kings, our own), the Wheel (A–5
 straight), Broadway (10–A straight), Royal Flush, and rank nicknames like
 Ducks, Sailboats, Snowmen, Cowboys and Ladies.
 
