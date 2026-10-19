@@ -76,7 +76,7 @@ Turn and River cards and replacement cards slide in too. A **Fast deal**
 checkbox speeds it up (remembered per browser), and a click on the table
 finishes the deal at once. Actions are disabled until the deal is done.
 
-**Hint button:** next to the opponent, shows what they could be holding
+**Willie's reckoning** (on the opponent's captain card) shows what they could be holding
 (chance of each hand category, and how often it beats your best hand), based
 only on what you can see.
 
@@ -228,10 +228,10 @@ when (Gaylord Ravenal after the first bust; Maggie once Jiggs is busted).
 2. **The Table** (draw style), one column so it fits a phone:
    - a single status line: crossing number, your purse, and a **?** button
      (Willie explains how to play; the fast-deal setting lives there too);
-   - the opponent: name (tap for their **captain card**: portrait, boat, how
-     they play, where they first appeared, a bit of trivia), purse, face-down
-     hand, their Jokers face up, their discards, and a **Hint** button (Willie's
-     odds reckoning);
+   - the opponent: name (tap for their **captain card**: portrait, boat,
+     **Willie's reckoning** of what they could be holding right now, how they
+     play, where they first appeared, a bit of trivia), purse, face-down hand,
+     their Jokers face up, and their discards;
    - the river: community cards and the discard pile; Jokers at stake are
      named only when there are any;
    - your hand and Jokers, and one action button.

@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onDestroy, untrack } from 'svelte';
   import {
-    CATEGORIES,
     STREETS,
     bestHand,
     isComposing,
@@ -32,7 +31,6 @@
 
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
-  let showOdds = $state(false);
   let showHelp = $state(false);
   let showCaptain = $state(false);
 
@@ -58,8 +56,9 @@
   const stakes = $derived([...(round.communityJoker ? [round.communityJoker] : []), ...round.community.filter(isJoker)]);
   const streetName = $derived(composing ? 'compose' : round.street <= 2 ? STREETS[round.street] : 'showdown');
 
+  // Willie's reckoning appears on the captain card while a round is being played.
   const odds = $derived.by((): OpponentOdds | null => {
-    if (!showOdds) return null;
+    if (!showCaptain || !playing) return null;
     // Seeded from the visible situation so the numbers stay put while you look.
     const seed = round.community.length * 7919 + round.discards.length * 104729 + round.month;
     return opponentOdds(viewFor(round, 0), config, new Rng(seed), 600);
@@ -197,7 +196,6 @@
         <span class="name">{name(opponentId)}</span>
       </button>
       <span class="purse">{dollars(opponent.money)}</span>
-      <button class="ghost hint-btn" onclick={() => (showOdds = true)}>{t('draw.hint')}</button>
     </div>
     <div class="row">
       <div class="hand-backs">
@@ -268,24 +266,6 @@
   </section>
 </div>
 
-{#if showOdds}
-  <WillieSays title={t('willie.hintTitle')} onclose={() => (showOdds = false)}>
-    {#if odds}
-      <p>{t('draw.oddsTitle', { name: name(opponentId) })}</p>
-      {#each [...CATEGORIES].reverse() as cat}
-        {#if odds.categories[cat] >= 0.005}
-          <div class="bar">
-            <span>{t(`hand.${cat}`)}</span>
-            <span class="track"><span class="fill" style="width: {odds.categories[cat] * 100}%"></span></span>
-            <span class="num">{pct(odds.categories[cat])}</span>
-          </div>
-        {/if}
-      {/each}
-      <p><b>{t('draw.oddsBeats', { name: name(opponentId), pct: pct(odds.beatsYou) })}</b></p>
-    {/if}
-  </WillieSays>
-{/if}
-
 {#if showHelp}
   <WillieSays title={t('willie.helpTitle')} onclose={() => (showHelp = false)}>
     {#each t('title.howToBody').split('\n\n') as para}<p>{para}</p>{/each}
@@ -294,7 +274,7 @@
 {/if}
 
 {#if showCaptain}
-  <CaptainCard captain={opponent} onclose={() => (showCaptain = false)} />
+  <CaptainCard captain={opponent} {odds} onclose={() => (showCaptain = false)} />
 {/if}
 
 <style>
@@ -345,11 +325,6 @@
   .who .purse {
     color: var(--grey);
   }
-  .hint-btn {
-    margin-left: auto;
-    font-size: 0.85rem;
-    padding: 0.25em 0.8em;
-  }
   .tossed {
     display: flex;
     gap: 3px;
@@ -359,26 +334,6 @@
   .x {
     color: var(--grey);
     margin-right: 2px;
-  }
-  .bar {
-    display: grid;
-    grid-template-columns: 9rem 1fr 3rem;
-    gap: 0.5rem;
-    align-items: center;
-    font-size: 0.9rem;
-  }
-  .track {
-    height: 8px;
-    background: #222;
-    border: 1px solid var(--dim);
-  }
-  .track .fill {
-    display: block;
-    height: 100%;
-    background: var(--paper);
-  }
-  .num {
-    text-align: right;
   }
   .pile {
     cursor: default;

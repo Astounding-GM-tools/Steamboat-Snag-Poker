@@ -1,11 +1,15 @@
 <script lang="ts">
-  import type { Player } from '../engine';
+  import { CATEGORIES, type OpponentOdds, type Player } from '../engine';
   import { t } from '../i18n';
   import { dollars, name } from './format';
 
-  /** A captain's portrait card: who they are, how they play, where they come from. */
-  let { captain, onclose }: { captain: Player; onclose: () => void } = $props();
+  /**
+   * A captain's portrait card: who they are, how they play, where they come
+   * from — and, mid-round, Willie's reckoning of what they could be holding.
+   */
+  let { captain, odds = null, onclose }: { captain: Player; odds?: OpponentOdds | null; onclose: () => void } = $props();
   const id = $derived(captain.id);
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
@@ -16,6 +20,22 @@
     <h2>{name(id)}</h2>
     <p class="boat">{t(`character.${id}.boat`)}</p>
     <p class="purse">{dollars(captain.money)}{captain.jokers.length ? ` · ${'🃏'.repeat(captain.jokers.length)}` : ''}</p>
+    {#if odds}
+      <section class="reckoning">
+        <h3>{t('willie.hintTitle')}</h3>
+        <p>{t('draw.oddsTitle', { name: name(id) })}</p>
+        {#each [...CATEGORIES].reverse() as cat}
+          {#if odds.categories[cat] >= 0.005}
+            <div class="bar">
+              <span>{t(`hand.${cat}`)}</span>
+              <span class="track"><span class="fill" style="width: {odds.categories[cat] * 100}%"></span></span>
+              <span class="num">{pct(odds.categories[cat])}</span>
+            </div>
+          {/if}
+        {/each}
+        <p class="beats">{t('draw.oddsBeats', { pct: pct(odds.beatsYou) })}</p>
+      </section>
+    {/if}
     <dl>
       <dt>{t('captain.style')}</dt>
       <dd>{t(`character.${id}.blurb`)}</dd>
@@ -64,6 +84,48 @@
   }
   .purse {
     margin: 0.4rem 0 0.8rem;
+  }
+  .reckoning {
+    text-align: left;
+    border: 1px dashed var(--grey);
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.4rem;
+  }
+  .reckoning h3 {
+    font-family: var(--title-font);
+    font-weight: normal;
+    margin: 0 0 0.3rem;
+    text-align: center;
+  }
+  .reckoning p {
+    margin: 0.2rem 0 0.4rem;
+    color: var(--grey);
+    font-size: 0.9rem;
+  }
+  .reckoning .beats {
+    color: var(--paper);
+    font-weight: bold;
+    margin-top: 0.5rem;
+  }
+  .bar {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr 2.8rem;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.85rem;
+  }
+  .track {
+    height: 8px;
+    background: #222;
+    border: 1px solid var(--dim);
+  }
+  .track .fill {
+    display: block;
+    height: 100%;
+    background: var(--paper);
+  }
+  .num {
+    text-align: right;
   }
   dl {
     text-align: left;

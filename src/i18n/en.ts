@@ -63,7 +63,7 @@ export const en = {
   'captain.source': 'First seen',
   'captain.trivia': 'Did you know?',
   'draw.fastDeal': 'Fast deal',
-  'draw.oddsTitle': 'Here’s what {name} could be holding, Cap’n:',
+  'draw.oddsTitle': 'Here’s what {name} could be holding right now, Cap’n:',
   'draw.oddsBeats': 'That beats your best hand {pct} of the time.',
   'draw.theyDiscarded': 'Threw away:',
   'draw.log.pat': '{name} stands pat.',
