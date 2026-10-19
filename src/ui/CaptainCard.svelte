@@ -1,15 +1,23 @@
 <script lang="ts">
-  import { CATEGORIES, type OpponentOdds, type Player } from '../engine';
+  import { CATEGORIES, ROSTER, type OpponentOdds, type Player } from '../engine';
   import { t } from '../i18n';
   import { dollars, name } from './format';
 
   /**
    * A captain's portrait card: who they are, how they play, where they come
-   * from — and, mid-round, Willie's reckoning of what they could be holding.
+   * from, and (mid-round) Willie's reckoning of what they could be holding.
    */
   let { captain, odds = null, onclose }: { captain: Player; odds?: OpponentOdds | null; onclose: () => void } = $props();
   const id = $derived(captain.id);
   const pct = (x: number) => `${Math.round(x * 100)}%`;
+  /**
+   * US rule of thumb: works from 1923 on enter the public domain 95 years after
+   * publication (on 1 January of the 96th year); older ones are long since free.
+   */
+  const firstSeen = $derived(ROSTER.find((c) => c.id === id)?.firstSeen);
+  const publicDomain = $derived(
+    !firstSeen ? '' : firstSeen >= 1923 ? t('captain.pdSince', { year: firstSeen + 96 }) : t('captain.pdLongAgo'),
+  );
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
@@ -40,7 +48,7 @@
       <dt>{t('captain.style')}</dt>
       <dd>{t(`character.${id}.blurb`)}</dd>
       <dt>{t('captain.source')}</dt>
-      <dd>{t(`character.${id}.source`)}</dd>
+      <dd>{t(`character.${id}.source`)}{#if publicDomain}<br />{publicDomain}{/if}</dd>
       <dt>{t('captain.trivia')}</dt>
       <dd>{t(`character.${id}.trivia`)}</dd>
     </dl>

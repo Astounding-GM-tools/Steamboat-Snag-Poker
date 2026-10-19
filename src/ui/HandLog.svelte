@@ -55,7 +55,7 @@
                 <span class="none">{t('log.boardOnly')}</span>
               {/each}
             </div>
-            <span class="hand">{describeHand(rec.hands[side])}<br /><small>{t('log.uses', { cards: rec.hands[side].cards.map(cardLabel).join(' ') || '—' })}</small></span>
+            <span class="hand">{describeHand(rec.hands[side])}<br /><small>{t('log.uses', { cards: rec.hands[side].cards.map(cardLabel).join(' ') || '·' })}</small></span>
           </div>
         {/each}
         {#if jokers(rec)}<p class="jokers">{jokers(rec)}</p>{/if}

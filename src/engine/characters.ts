@@ -15,6 +15,8 @@ export interface CharacterDef {
   id: string;
   ai: AiId;
   startMoney: number;
+  /** Year of the first appearance shown on the captain card. */
+  firstSeen: number;
   /**
    * When the captain enters the river: 'start'; 'firstElimination' (after
    * anyone is busted); or { after: id } (once that captain is busted).
@@ -24,16 +26,16 @@ export interface CharacterDef {
 
 /** Names, boats and blurbs live in the i18n dictionary under `character.<id>.*`. */
 export const ROSTER: CharacterDef[] = [
-  { id: 'pete', ai: 'bully', startMoney: 45, joins: 'start' },
-  { id: 'derCaptain', ai: 'shark', startMoney: 55, joins: 'start' },
-  { id: 'hansFritz', ai: 'prankster', startMoney: 40, joins: 'start' },
-  { id: 'jiggs', ai: 'loose', startMoney: 60, joins: 'start' },
-  { id: 'nemo', ai: 'dreamer', startMoney: 50, joins: 'start' },
-  { id: 'felix', ai: 'clueless', startMoney: 70, joins: 'start' },
-  { id: 'ignatz', ai: 'anarchist', startMoney: 45, joins: 'start' },
-  { id: 'steamboatBill', ai: 'stubborn', startMoney: 50, joins: 'start' },
-  { id: 'gaylord', ai: 'gambler', startMoney: 30, joins: 'firstElimination' },
-  { id: 'maggie', ai: 'careful', startMoney: 70, joins: { after: 'jiggs' } },
+  { id: 'pete', ai: 'bully', startMoney: 45, firstSeen: 1925, joins: 'start' },
+  { id: 'derCaptain', ai: 'shark', startMoney: 55, firstSeen: 1897, joins: 'start' },
+  { id: 'hansFritz', ai: 'prankster', startMoney: 40, firstSeen: 1897, joins: 'start' },
+  { id: 'jiggs', ai: 'loose', startMoney: 60, firstSeen: 1913, joins: 'start' },
+  { id: 'nemo', ai: 'dreamer', startMoney: 50, firstSeen: 1905, joins: 'start' },
+  { id: 'felix', ai: 'clueless', startMoney: 70, firstSeen: 1919, joins: 'start' },
+  { id: 'ignatz', ai: 'anarchist', startMoney: 45, firstSeen: 1913, joins: 'start' },
+  { id: 'steamboatBill', ai: 'stubborn', startMoney: 50, firstSeen: 1928, joins: 'start' },
+  { id: 'gaylord', ai: 'gambler', startMoney: 30, firstSeen: 1926, joins: 'firstElimination' },
+  { id: 'maggie', ai: 'careful', startMoney: 70, firstSeen: 1913, joins: { after: 'jiggs' } },
 ];
 
 /** Styles of retired captains, so older saved games keep playing. */
