@@ -39,6 +39,8 @@ export interface RulesConfig {
    * 1 = zero-sum (the winner's gain comes out of the loser's purse).
    */
   loserPays: number;
+  /** Dollars the loser pays the winner for every Joker they put in their losing hand. */
+  jokerForfeit: number;
   startMoney: number;
   winGain: Record<Category, number>;
 }
@@ -69,6 +71,7 @@ const KANSAS: RulesConfig = {
   shuffledJokerEveryMonths: 2,
   drainPerJoker: 4,
   loserPays: 1,
+  jokerForfeit: 5,
   startMoney: 50,
   winGain: BASE_GAIN,
 };

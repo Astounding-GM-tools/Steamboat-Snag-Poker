@@ -275,7 +275,7 @@
       <div class="row controls">
         <span class="hint">
           {#if composing && tapped.length}
-            {describeHand(preview!)}{#if tappedJokers.length}<b> · {t('draw.risking', { n: tappedJokers.length })}</b>{/if}
+            {describeHand(preview!)}{#if tappedJokers.length}<b> · {t('draw.risking', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}</b>{/if}
           {/if}
         </span>
         <button onclick={go} disabled={dealing}>{buttonLabel}</button>

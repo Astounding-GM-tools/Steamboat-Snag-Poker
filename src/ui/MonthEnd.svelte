@@ -63,12 +63,14 @@
       {:else if won}
         <p class="big">{t('end.gain', { n: res.gain })}</p>
         {#if res.dumped.length}<p>{t('end.dumped', { jokers: jokerList(res.dumped) })}</p>{/if}
+        {#if res.forfeit}<p>{t('end.forfeitWon', { name: name(foe), n: res.forfeit })}</p>{/if}
         {#if res.communityTaken.length}<p>{t('end.dodged', { name: name(foe), jokers: jokerList(res.communityTaken) })}</p>{/if}
       {:else}
         {#if loss}<p class="big">{t('end.loss', { n: loss })}</p>{/if}
+        {#if res.forfeit}<p class="big">{t('end.forfeitLost', { n: res.forfeit })}</p>{/if}
         {#if res.dumped.length}<p class="big">{t('end.gotDumped', { name: name(foe), jokers: jokerList(res.dumped) })}</p>{/if}
         {#if res.communityTaken.length}<p class="big">{t('end.tookCommunity', { jokers: jokerList(res.communityTaken) })}</p>{/if}
-        {#if !loss && !res.dumped.length && !res.communityTaken.length}<p>{t('end.noHarm')}</p>{/if}
+        {#if !loss && !res.forfeit && !res.dumped.length && !res.communityTaken.length}<p>{t('end.noHarm')}</p>{/if}
       {/if}
       {#if mine?.drained}<p>{t('end.drain', { n: mine.drained })}</p>{/if}
       {#if mine}<p class="pop">{t('table.money')}: {dollars(mine.before)} → <b>{dollars(mine.after)}</b></p>{/if}

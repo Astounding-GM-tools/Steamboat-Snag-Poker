@@ -11,8 +11,9 @@
 
   function outcome(rec: ShowdownRecord): string {
     if (rec.winner === null) return t('log.draw');
-    const loss = Math.round(rec.gain * game.config.loserPays);
-    return rec.winner === 0 ? t('log.won', { n: rec.gain }) : t('log.lost', { n: loss });
+    const forfeit = rec.forfeit ?? 0;
+    const loss = Math.round(rec.gain * game.config.loserPays) + forfeit;
+    return rec.winner === 0 ? t('log.won', { n: rec.gain + forfeit }) : t('log.lost', { n: loss });
   }
 
   function jokers(rec: ShowdownRecord): string {

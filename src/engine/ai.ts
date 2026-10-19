@@ -164,7 +164,7 @@ function smartAction(view: SeatView, config: RulesConfig, rng: Rng, opts: SmartO
       const cmp = mine - bestScore(oppSlots, community, rule);
       const myJokers = slots.filter(isJoker).length;
       if (cmp > 0) total += config.winGain[categoryOf(mine)] + myJokers * jokerValue * opts.jokerBold;
-      else if (cmp < 0) total -= stakes * jokerValue;
+      else if (cmp < 0) total -= stakes * jokerValue + myJokers * (config.jokerForfeit ?? 0);
     }
     const score = total / opts.samples + (opts.noise ? (rng.next() - 0.5) * opts.noise : 0);
     if (score > topScore) {
@@ -354,7 +354,8 @@ function smartCompose(view: SeatView, config: RulesConfig, rng: Rng, options: Co
   let bestValue = -Infinity;
   for (const o of options) {
     const pWin = theirs.filter((t) => o.score > t).length / samples;
-    const value = pWin * (config.winGain[categoryOf(o.score)] + o.jokers * jokerValue * jokerBold) - (1 - pWin) * stakes * jokerValue;
+    const forfeit = o.jokers * (config.jokerForfeit ?? 0);
+    const value = pWin * (config.winGain[categoryOf(o.score)] + o.jokers * jokerValue * jokerBold) - (1 - pWin) * (stakes * jokerValue + forfeit);
     if (value > bestValue) {
       bestValue = value;
       best = o;

@@ -58,7 +58,9 @@ presets, selectable in the rules lab (⚙) and the balance simulation.
    cards automatically fill the rest. No pre-selection: choosing is your job.
    Tapping nothing plays the board alone (legal, close to folding).
 4. **Showdown:** the best hand wins. Every Joker the winner *chose to play*
-   goes to the loser, along with any community Jokers. There is no automatic
+   goes to the loser, along with any community Jokers. Every Joker the
+   *loser* risked costs them a **forfeit** (🔧 default $5 each), paid to the
+   winner: sneaking Jokers into a weak hand is no longer free. There is no automatic
    shedding — betting hands on Jokers is how the game is won or lost.
 
 The shape of a hand decides how many Jokers it can carry:

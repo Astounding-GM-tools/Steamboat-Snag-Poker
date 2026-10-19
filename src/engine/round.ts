@@ -37,6 +37,8 @@ export interface RoundResult {
   winner: 0 | 1 | null;
   hands: [HandValue, HandValue];
   gain: number;
+  /** Extra the loser pays the winner for the Jokers they risked and lost with. */
+  forfeit: number;
   /** Jokers the winner dumped on the loser. */
   dumped: JokerCard[];
   /** Community Jokers the loser had to take. */
@@ -304,6 +306,7 @@ function showdown(round: RoundState, config: RulesConfig) {
     winner,
     hands,
     gain: winner === null ? 0 : config.winGain[hands[winner].category],
+    forfeit: winner === null ? 0 : placed[1 - winner].length * (config.jokerForfeit ?? 0),
     dumped,
     communityTaken,
     returnedToPool,

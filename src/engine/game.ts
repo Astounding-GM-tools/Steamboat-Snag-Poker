@@ -47,6 +47,7 @@ export interface ShowdownRecord {
   hands: RoundResult['hands'];
   winner: 0 | 1 | null;
   gain: number;
+  forfeit: number;
   dumped: JokerCard[];
   communityTaken: JokerCard[];
 }
@@ -196,8 +197,9 @@ function finishMonth(state: GameState, rng: Rng) {
       const p = player(state, seat.playerId);
       before[p.id] ??= p.money;
       p.jokers = seat.jokers;
-      if (res.winner === i) p.money += res.gain;
-      else if (res.winner !== null) p.money = Math.max(0, p.money - Math.round(res.gain * (cfg.loserPays ?? 0)));
+      const forfeit = res.forfeit ?? 0;
+      if (res.winner === i) p.money += res.gain + forfeit;
+      else if (res.winner !== null) p.money = Math.max(0, p.money - Math.round(res.gain * (cfg.loserPays ?? 0)) - forfeit);
     });
     state.pool.push(...res.returnedToPool);
     return { players: [round.seats[0].playerId, round.seats[1].playerId], result: res };
@@ -216,6 +218,7 @@ function finishMonth(state: GameState, rng: Rng) {
     hands: duel.result.hands,
     winner: duel.result.winner,
     gain: duel.result.gain,
+    forfeit: duel.result.forfeit,
     dumped: duel.result.dumped,
     communityTaken: duel.result.communityTaken,
   };

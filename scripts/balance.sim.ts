@@ -13,6 +13,7 @@ const PRESET_NAMES = (process.env.SIM_PRESETS ?? Object.keys(PRESETS).join(','))
 const overrides = {
   ...(process.env.SIM_DRAIN ? { drainPerJoker: Number(process.env.SIM_DRAIN) } : {}),
   ...(process.env.SIM_JOKERS ? { totalJokers: Number(process.env.SIM_JOKERS) } : {}),
+  ...(process.env.SIM_FORFEIT ? { jokerForfeit: Number(process.env.SIM_FORFEIT) } : {}),
   ...(process.env.SIM_LOSER ? { loserPays: Number(process.env.SIM_LOSER) } : {}),
   ...(process.env.SIM_EVERY ? { shuffledJokerEveryMonths: Number(process.env.SIM_EVERY) } : {}),
 };

@@ -109,3 +109,19 @@ describe('fishing a Joker', () => {
     expect(r.fished).toEqual([{ seat: 0, street: 0, joker: jokerCard(7) }]);
   });
 });
+
+describe('Joker forfeit', () => {
+  it('the loser pays a forfeit for every Joker they risked; the winner pays none', () => {
+    const r = composeRound(['2s 3d 5h', 'As Ad 9c'], 'Ah Kc 7d 4s Jc', [2, 1]);
+    resolveStreet(r, [{ type: 'compose', cardIds: ['2s'], jokers: 2 }, { type: 'compose', cardIds: ['As', 'Ad'], jokers: 1 }], config);
+    expect(r.result!.winner).toBe(1);
+    expect(r.result!.forfeit).toBe(2 * config.jokerForfeit);
+  });
+
+  it('is zero when the loser risked no Jokers', () => {
+    const r = composeRound(['2s 3d 5h', 'As Ad 9c'], 'Ah Kc 7d 4s Jc', [0, 1]);
+    resolveStreet(r, [{ type: 'compose', cardIds: ['2s'], jokers: 0 }, { type: 'compose', cardIds: ['As', 'Ad'], jokers: 1 }], config);
+    expect(r.result!.forfeit).toBe(0);
+  });
+});
+
