@@ -178,3 +178,13 @@ button.ghost {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Phones: smaller cards so a five-card board fits across. */
+@media (max-width: 600px) {
+  .card {
+    --w: 54px !important;
+  }
+  .card.small {
+    --w: 38px !important;
+  }
+}

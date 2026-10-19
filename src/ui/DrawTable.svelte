@@ -7,6 +7,7 @@
     isComposing,
     isJoker,
     opponentOdds,
+    HUMAN_ID,
     player,
     viewFor,
     Rng,
@@ -17,7 +18,8 @@
   } from '../engine';
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
-  import SidePanel from './SidePanel.svelte';
+  import CaptainCard from './CaptainCard.svelte';
+  import WillieSays from './WillieSays.svelte';
   import { cardLabel, dollars, name } from './format';
   import { describeHand } from './handNames';
 
@@ -25,13 +27,14 @@
     game: GameState;
     peek: boolean;
     onaction: (a: Action) => void;
-    onmenu: () => void;
   }
-  let { game, peek, onaction, onmenu }: Props = $props();
+  let { game, peek, onaction }: Props = $props();
 
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
   let showOdds = $state(false);
+  let showHelp = $state(false);
+  let showCaptain = $state(false);
 
   const round = $derived(game.round!);
   const config = $derived(game.config);
@@ -39,6 +42,7 @@
   const them = $derived(round.seats[1]);
   const opponentId = $derived(game.opponentId!);
   const opponent = $derived(player(game, opponentId));
+  const captain = $derived(player(game, HUMAN_ID));
   const playing = $derived(game.phase === 'duel');
   const composing = $derived(isComposing(round));
   const boardSize = $derived(config.communitySchedule.reduce((a, b) => a + b, 0));
@@ -51,9 +55,7 @@
   );
   const usedIds = $derived(new Set(preview?.cards.map((c) => c.id) ?? []));
 
-  const theirJokerCount = $derived(them.jokers.length + them.slots.filter(isJoker).length);
   const stakes = $derived([...(round.communityJoker ? [round.communityJoker] : []), ...round.community.filter(isJoker)]);
-  const lastMove = $derived(round.history.at(-1)?.actions[1]);
   const streetName = $derived(composing ? 'compose' : round.street <= 2 ? STREETS[round.street] : 'showdown');
 
   const odds = $derived.by((): OpponentOdds | null => {
@@ -175,60 +177,40 @@
     tapped.length === 0 ? t('draw.standPat') : composing ? t('draw.play') : t('draw.discard', { n: tapped.length }),
   );
 
-  function describeMove(a: Action | undefined): string {
-    if (!a || a.type !== 'draw') return '';
-    const who = name(opponentId);
-    return a.cardIds.length === 0 ? t('draw.log.pat', { name: who }) : t('draw.log.discard', { name: who, n: a.cardIds.length });
-  }
-
   const pct = (x: number) => `${Math.round(x * 100)}%`;
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="table" onclick={finishDeal}>
+<div class="table solo" onclick={finishDeal}>
+  <!-- One quiet line: where we are and what's in the purse. -->
+  <header class="status">
+    <span>{t('table.crossing', { month: game.month })}</span>
+    <span class="purse">{dollars(captain.money)}</span>
+    <button class="ghost icon" onclick={() => (showHelp = true)} aria-label={t('willie.helpTitle')}>?</button>
+  </header>
+
   <!-- Opponent -->
   <section class="opponent">
-    <div class="portrait">
-      <div class="oval">{name(opponentId)[0]}</div>
-      <div>
-        <h2>{name(opponentId)}</h2>
-        <p class="boat">{t(`character.${opponentId}.boat`)}</p>
-        <p class="blurb">{t(`character.${opponentId}.blurb`)}</p>
-        <p class="stats">
-          {t('table.money')}: <b>{dollars(opponent.money)}</b> · {t(theirJokerCount === 1 ? 'table.jokerCount.one' : 'table.jokerCount', { n: theirJokerCount })}
-        </p>
-      </div>
-      <button class="ghost hint-btn" class:on={showOdds} onclick={() => (showOdds = !showOdds)}>{t('draw.hint')}</button>
+    <div class="who">
+      <button class="name-btn" onclick={() => (showCaptain = true)}>
+        <span class="oval small-oval">{name(opponentId)[0]}</span>
+        <span class="name">{name(opponentId)}</span>
+      </button>
+      <span class="purse">{dollars(opponent.money)}</span>
+      <button class="ghost hint-btn" onclick={() => (showOdds = true)}>{t('draw.hint')}</button>
     </div>
     <div class="row">
       <div class="hand-backs">
         {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView small faceDown={!peek} card={peek ? card : null} deal="top" />{/each}
-        {#each them.jokers as card (card.id)}<CardView small faceDown={!peek} card={peek ? card : null} />{/each}
-        <span class="count">{t('table.cards', { n: them.hand.length + them.jokers.length })}</span>
+        {#each them.jokers as card (card.id)}<CardView small {card} />{/each}
       </div>
       {#if them.discarded.length}
-        <div class="tossed">
-          <span class="count">{t('draw.theyDiscarded')}</span>
+        <div class="tossed" aria-label={t('draw.theyDiscarded')}>
+          <span class="x">✕</span>
           {#each them.discarded as card (card.id)}<CardView small {card} />{/each}
         </div>
       {/if}
     </div>
-    {#if lastMove}<p class="log">{describeMove(lastMove)}</p>{/if}
-    {#if odds}
-      <div class="odds">
-        <p class="odds-title">{t('draw.oddsTitle', { name: name(opponentId) })}</p>
-        {#each [...CATEGORIES].reverse() as cat}
-          {#if odds.categories[cat] >= 0.005}
-            <div class="bar">
-              <span>{t(`hand.${cat}`)}</span>
-              <span class="track"><span class="fill" style="width: {odds.categories[cat] * 100}%"></span></span>
-              <span class="num">{pct(odds.categories[cat])}</span>
-            </div>
-          {/if}
-        {/each}
-        <p class="odds-foot">{t('draw.oddsBeats', { name: name(opponentId), pct: pct(odds.beatsYou) })}</p>
-      </div>
-    {/if}
   </section>
 
   <!-- The river -->
@@ -238,22 +220,18 @@
       <div class="community">
         {#each Array.from({ length: boardSize }) as _, i}
           {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
-          <CardView {card} deal="left" used={!!card && usedIds.has(card.id)} placeholder={t(`street.${STREETS[i < 3 ? 0 : i - 2] ?? 'river'}`)} />
+          <CardView {card} deal="left" used={!!card && usedIds.has(card.id)} />
         {/each}
       </div>
       <div class="discard pile">
-        <span class="discard-label">{t('table.discard')}</span>
-        <CardView card={round.discards.at(-1) ?? null} placeholder="✕" />
+        <CardView small card={round.discards.at(-1) ?? null} placeholder="✕" />
       </div>
     </div>
-    <p class="stakes">
-      {#if stakes.length}{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}{:else}{t('table.noStakes')}{/if}
-    </p>
+    {#if stakes.length}<p class="stakes">{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}</p>{/if}
   </section>
 
   <!-- The Captain -->
   <section class="captain">
-    <p class="prompt">{composing ? t('draw.promptCompose') : t('draw.promptDiscard')}</p>
     <div class="row hand-row">
       {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
         <CardView
@@ -280,57 +258,114 @@
     {#if playing}
       <div class="row controls">
         <span class="hint">
-          {#if composing}
-            {#if tapped.length}
-              {t('table.yourBest', { hand: describeHand(preview!) })}
-              {#if tappedJokers.length}<b> · {t('draw.risking', { n: tappedJokers.length })}</b>{/if}
-            {:else}{t('draw.boardOnly')}{/if}
-          {:else if round.street === 1}<b>{t('draw.lastStreet')}</b>{:else}{t('draw.street', { n: round.street + 1 })}{/if}
+          {#if composing && tapped.length}
+            {describeHand(preview!)}{#if tappedJokers.length}<b> · {t('draw.risking', { n: tappedJokers.length })}</b>{/if}
+          {/if}
         </span>
-        <label class="fast"><input type="checkbox" checked={fastDeal} onchange={(e) => setFast(e.currentTarget.checked)} /> {t('draw.fastDeal')}</label>
         <button onclick={go} disabled={dealing}>{buttonLabel}</button>
       </div>
     {/if}
   </section>
-
-  <SidePanel {game} {opponentId} {onmenu} />
 </div>
 
+{#if showOdds}
+  <WillieSays title={t('willie.hintTitle')} onclose={() => (showOdds = false)}>
+    {#if odds}
+      <p>{t('draw.oddsTitle', { name: name(opponentId) })}</p>
+      {#each [...CATEGORIES].reverse() as cat}
+        {#if odds.categories[cat] >= 0.005}
+          <div class="bar">
+            <span>{t(`hand.${cat}`)}</span>
+            <span class="track"><span class="fill" style="width: {odds.categories[cat] * 100}%"></span></span>
+            <span class="num">{pct(odds.categories[cat])}</span>
+          </div>
+        {/if}
+      {/each}
+      <p><b>{t('draw.oddsBeats', { name: name(opponentId), pct: pct(odds.beatsYou) })}</b></p>
+    {/if}
+  </WillieSays>
+{/if}
+
+{#if showHelp}
+  <WillieSays title={t('willie.helpTitle')} onclose={() => (showHelp = false)}>
+    {#each t('title.howToBody').split('\n\n') as para}<p>{para}</p>{/each}
+    <label class="fast"><input type="checkbox" checked={fastDeal} onchange={(e) => setFast(e.currentTarget.checked)} /> {t('draw.fastDeal')}</label>
+  </WillieSays>
+{/if}
+
+{#if showCaptain}
+  <CaptainCard captain={opponent} onclose={() => (showCaptain = false)} />
+{/if}
+
 <style>
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--title-font);
+    font-size: 0.95rem;
+    color: var(--grey);
+  }
+  .status .purse {
+    color: var(--paper);
+  }
+  .icon {
+    margin-left: auto;
+    padding: 0 0.55em;
+    font-size: 1rem;
+    border-radius: 50%;
+  }
+  .who {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+  }
+  .name-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    outline: none;
+    border: none;
+    color: var(--paper);
+    padding: 0;
+  }
+  .small-oval {
+    width: 34px;
+    height: 42px;
+    font-size: 1.2rem;
+  }
+  .name {
+    font-family: var(--title-font);
+    font-size: 1.3rem;
+    text-decoration: underline dotted var(--grey);
+    text-underline-offset: 4px;
+  }
+  .who .purse {
+    color: var(--grey);
+  }
   .hint-btn {
     margin-left: auto;
-    align-self: flex-start;
     font-size: 0.85rem;
-  }
-  .hint-btn.on {
-    background: var(--paper);
-    color: var(--ink);
+    padding: 0.25em 0.8em;
   }
   .tossed {
     display: flex;
     gap: 3px;
     align-items: center;
+    opacity: 0.8;
   }
-  .odds {
-    margin-top: 0.6rem;
-    padding: 0.5rem 0.75rem;
-    border: 1px dashed var(--grey);
-    font-size: 0.8rem;
-  }
-  .odds-title,
-  .odds-foot {
-    margin: 0 0 0.3rem;
+  .x {
     color: var(--grey);
-  }
-  .odds-foot {
-    margin: 0.3rem 0 0;
-    color: var(--paper);
+    margin-right: 2px;
   }
   .bar {
     display: grid;
     grid-template-columns: 9rem 1fr 3rem;
     gap: 0.5rem;
     align-items: center;
+    font-size: 0.9rem;
   }
   .track {
     height: 8px;
@@ -347,20 +382,15 @@
   }
   .pile {
     cursor: default;
-  }
-  .prompt {
-    margin: 0 0 0.5rem;
-    color: var(--grey);
+    padding: 0.3rem;
   }
   .hand-row {
-    min-height: 120px;
+    min-height: 110px;
     align-items: flex-end;
   }
   .joker-fan {
     display: flex;
-    margin-left: 0.75rem;
-    padding-left: 0.75rem;
-    border-left: 2px dashed var(--dim);
+    margin-left: 0.5rem;
   }
   .joker-fan :global(.card + .card) {
     margin-left: -40px;
@@ -369,12 +399,12 @@
     z-index: 3;
   }
   .fast {
-    font-size: 0.8rem;
-    color: var(--grey);
+    font-size: 0.85rem;
     display: flex;
-    gap: 0.3rem;
+    gap: 0.4rem;
     align-items: center;
     cursor: pointer;
+    margin-top: 0.75rem;
   }
   .small-btn {
     font-size: 0.85rem;

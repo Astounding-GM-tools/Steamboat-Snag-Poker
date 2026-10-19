@@ -253,3 +253,43 @@ h3 {
   font-style: italic;
   font-size: 0.85rem;
 }
+
+/* Draw table: one column, no sidebar. */
+.table.solo {
+  grid-template-columns: 1fr;
+  grid-template-areas: 'status' 'opp' 'river' 'me';
+  max-width: 760px;
+  min-height: auto;
+}
+.table.solo .status {
+  grid-area: status;
+}
+.table.solo .oval {
+  border-radius: 50%;
+  border: 2px double var(--paper);
+  display: grid;
+  place-items: center;
+  font-family: var(--title-font);
+  background: radial-gradient(circle, #444, #111);
+  flex: none;
+}
+
+@media (max-width: 600px) {
+  .table.solo {
+    padding: 0.4rem 0.5rem;
+    gap: 0.5rem;
+  }
+  .table.solo section {
+    padding: 0.5rem;
+  }
+  .table.solo .street {
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
+  }
+  .table.solo .river-row {
+    gap: 0.5rem;
+  }
+  .table.solo .community {
+    gap: 0.3rem;
+  }
+}

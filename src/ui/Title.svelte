@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from '../i18n';
+  import WillieSays from './WillieSays.svelte';
   import type { Best } from './storage';
 
   interface Props {
@@ -71,13 +72,9 @@
   {/if}
 
   {#if showHowTo}
-    <div class="overlay">
-      <div class="intertitle howto">
-        <h2>{t('title.howTo')}</h2>
-        {#each t('title.howToBody').split('\n\n') as para}<p>{para}</p>{/each}
-        <button onclick={() => (showHowTo = false)}>{t('title.close')}</button>
-      </div>
-    </div>
+    <WillieSays title={t('title.howTo')} onclose={() => (showHowTo = false)}>
+      {#each t('title.howToBody').split('\n\n') as para}<p>{para}</p>{/each}
+    </WillieSays>
   {/if}
 </div>
 
@@ -134,17 +131,5 @@
     place-items: center;
     padding: 1rem;
     z-index: 20;
-  }
-  .howto {
-    text-align: left;
-    line-height: 1.5;
-    max-height: 90vh;
-    overflow: auto;
-  }
-  .howto h2,
-  .howto button {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
   }
 </style>

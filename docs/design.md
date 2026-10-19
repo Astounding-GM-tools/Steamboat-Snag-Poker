@@ -225,12 +225,18 @@ when (Gaylord Ravenal after the first bust; Maggie once Jiggs is busted).
 
 1. **Title** — riverboat, "START" button, best result, short "How it works"
    card: *Steer public opinion. Avoid ruin. Dump your mess on someone else.*
-2. **The Table** — opponent area (portrait, played slots, hand size and Joker
-   count visible but the hand hidden), the River (community cards, and the
-   discard pile clearly set apart on the right), the Captain's area (slots,
-   hand, Jokers; the cards used in your best hand are outlined), side panel with
-   a coin-stack purse that shakes when low, crossing counter and the league sorted by
-   money.
+2. **The Table** (draw style), one column so it fits a phone:
+   - a single status line: crossing number, your purse, and a **?** button
+     (Willie explains how to play; the fast-deal setting lives there too);
+   - the opponent: name (tap for their **captain card**: portrait, boat, how
+     they play, where they first appeared, a bit of trivia), purse, face-down
+     hand, their Jokers face up, their discards, and a **Hint** button (Willie's
+     odds reckoning);
+   - the river: community cards and the discard pile; Jokers at stake are
+     named only when there are any;
+   - your hand and Jokers, and one action button.
+   No leaderboard (it is on the result card) and no pause button mid-round
+   (pause from the result card).
 3. **Showdown** (draw style) — the card-by-card reveal described above.
 4. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", money change,
    Joker movements, standings, "Meanwhile on the river" league news. No

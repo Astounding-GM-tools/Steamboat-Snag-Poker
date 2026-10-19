@@ -79,7 +79,7 @@
 <div class="film">
   {#if game}
     {#if game.round?.playStyle === 'draw'}
-      <DrawTable {game} {peek} onaction={act} onmenu={pause} />
+      <DrawTable {game} {peek} onaction={act} />
     {:else}
       <Table {game} {peek} onaction={act} onmenu={pause} />
     {/if}
