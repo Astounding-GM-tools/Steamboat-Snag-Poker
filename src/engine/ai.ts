@@ -51,16 +51,24 @@ export function viewFor(round: RoundState, seatIndex: number): SeatView {
 
 export function chooseAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Action {
   if (view.playStyle === 'draw') return view.composing ? composeAction(ai, view, config, rng) : drawAction(ai, view, config, rng);
+  // Slots-style presets: each style falls back to one of the original behaviours.
   switch (ai) {
-    case 'pete':
+    case 'bully':
+    case 'stubborn':
       return peteAction(view);
-    case 'felix':
+    case 'clueless':
       return randomAction(view, rng, 3);
-    case 'willie':
+    case 'prankster':
+    case 'anarchist':
+      return randomAction(view, rng, 1);
+    case 'dreamer':
+    case 'loose':
       return rng.next() < 0.65 ? randomAction(view, rng, 1) : smartAction(view, config, rng, { samples: 25, jokerBold: 1, noise: 1 });
-    case 'betty':
+    case 'careful':
       return smartAction(view, config, rng, { samples: 30, jokerBold: 0.3, noise: 2 });
-    case 'sherlock':
+    case 'shark':
+      return smartAction(view, config, rng, { samples: 40, jokerBold: 1.6, noise: 0.5 });
+    case 'gambler':
       return smartAction(view, config, rng, { samples: 60, jokerBold: 1, noise: 0 });
   }
 }
@@ -219,17 +227,30 @@ function expectedStakes(view: SeatView) {
 
 function drawAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Action {
   const options = subsets(view.hand.map((c) => c.id)).filter((ids) => ids.length <= view.deckSize);
+  const discard = (cards: Card[]): Action => ({ type: 'draw', cardIds: cards.map((c) => c.id).slice(0, view.deckSize) });
   switch (ai) {
-    case 'pete':
+    case 'bully':
       // Keeps his big cards, throws away anything below a ten.
-      return { type: 'draw', cardIds: view.hand.filter((c) => c.rank < 10).map((c) => c.id) };
-    case 'felix':
+      return discard(view.hand.filter((c) => isStd(c) && c.rank < 10));
+    case 'stubborn':
+      // Stands pat on anything that isn't truly hopeless.
+      return discard(view.hand.filter((c) => isStd(c) && c.rank <= 4));
+    case 'anarchist':
+      // Throws the lot, like a brick.
+      return discard(view.hand);
+    case 'clueless':
       return { type: 'draw', cardIds: rng.pick(options) };
-    case 'willie':
-      return rng.next() < 0.6 ? { type: 'draw', cardIds: rng.pick(options) } : smartDraw(view, config, rng, options, 15);
-    case 'betty':
-      return smartDraw(view, config, rng, options, 25);
-    case 'sherlock':
+    case 'prankster':
+      return rng.next() < 0.7 ? { type: 'draw', cardIds: rng.pick(options) } : smartDraw(view, config, rng, options, 15);
+    case 'dreamer':
+      return rng.next() < 0.5 ? { type: 'draw', cardIds: rng.pick(options) } : smartDraw(view, config, rng, options, 40);
+    case 'loose':
+      return smartDraw(view, config, rng, options, 15);
+    case 'careful':
+      return smartDraw(view, config, rng, options, 40);
+    case 'shark':
+      return smartDraw(view, config, rng, options, 30);
+    case 'gambler':
       return smartDraw(view, config, rng, options, 50);
   }
 }
@@ -285,16 +306,36 @@ const asAction = (c: Composition): Action => ({ type: 'compose', cardIds: c.card
 function composeAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Action {
   const options = compositions(view);
   const strongest = (list: Composition[]) => list.reduce((a, b) => (b.score > a.score ? b : a));
+  const noJokers = options.filter((o) => o.jokers === 0);
   switch (ai) {
-    case 'pete':
-      return asAction(strongest(options.filter((o) => o.jokers === 0)));
-    case 'felix':
-      return asAction(rng.pick(options.filter((o) => o.cardIds.length > 0 || o.jokers > 0)));
-    case 'willie':
-      return rng.next() < 0.5 ? asAction(rng.pick(options)) : smartCompose(view, config, rng, options, 100, 1);
-    case 'betty':
-      return smartCompose(view, config, rng, options, 150, 0.3);
-    case 'sherlock':
+    case 'bully':
+      return asAction(strongest(noJokers));
+    case 'clueless': {
+      // Felix believes Jokers make a hand stronger, so in they all go.
+      const ids = rng.pick(subsets(view.hand.map((c) => c.id)));
+      return { type: 'compose', cardIds: ids, jokers: Math.min(view.jokers.length, 5 - ids.length) };
+    }
+    case 'anarchist': {
+      // Plays his best hand — and now and then hurls every Joker he has at you.
+      const best = strongest(noJokers);
+      if (view.jokers.length && rng.next() < 0.35) {
+        return { type: 'compose', cardIds: best.cardIds, jokers: Math.min(view.jokers.length, 5 - best.cardIds.length) };
+      }
+      return asAction(best);
+    }
+    case 'prankster':
+      return asAction(rng.pick(options));
+    case 'dreamer':
+      return rng.next() < 0.5 ? asAction(rng.pick(options)) : smartCompose(view, config, rng, options, 150, 1);
+    case 'stubborn':
+      return smartCompose(view, config, rng, options, 80, 0.5);
+    case 'loose':
+      return smartCompose(view, config, rng, options, 60, 1.3);
+    case 'careful':
+      return smartCompose(view, config, rng, options, 200, 0.3);
+    case 'shark':
+      return smartCompose(view, config, rng, options, 150, 1.6);
+    case 'gambler':
       return smartCompose(view, config, rng, options, 300, 1);
   }
 }

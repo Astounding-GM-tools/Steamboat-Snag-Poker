@@ -92,6 +92,7 @@
       <div class="oval">{name(opponentId)[0]}</div>
       <div>
         <h2>{name(opponentId)}</h2>
+        <p class="boat">{t(`character.${opponentId}.boat`)}</p>
         <p class="blurb">{t(`character.${opponentId}.blurb`)}</p>
         <p class="stats">
           {t('table.money')}: <b>{dollars(opponent.money)}</b> · {t(theirJokerCount === 1 ? 'table.jokerCount.one' : 'table.jokerCount', { n: theirJokerCount })}

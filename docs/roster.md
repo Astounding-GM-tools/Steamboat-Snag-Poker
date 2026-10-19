@@ -1,59 +1,77 @@
-# Roster draft — captains of River Poker
+# Roster — captains of River Poker
 
-> Draft for cutting down. Public-domain status is for the US (works first
-> published in 1930 or earlier). Use only the original-era look of each
-> character, never later redesigns, logos or trademarks.
+> Public-domain status is for the US (works first published in 1930 or earlier
+> are free as of 2026). Use only the original-era look of each character, never
+> later redesigns or logos. ⚠️ marks a character whose name is still used as a
+> trademark: fine for this prototype, to be checked (or lightly renamed) before
+> any public release.
 
-## Proposed captains
+## The table (built)
 
-| # | Captain | Boat | Source (year) | Purse | Style | Joins |
-|---|---|---|---|---|---|---|
-| 1 | **Pete** | the *Steamboat Willie* | *Steamboat Willie* (1928) | $45 | **Bully.** Always plays his biggest cards, ignores the board, never risks a Joker. Easy to beat with a straight. | start |
-| 2 | **Der Captain** | the *Katzenjammer* | *The Katzenjammer Kids* (1902) | $55 | **Old card shark.** Plays solid hands and *loves* to slip a Joker into trips. Bold, a bit reckless. | start |
-| 3 | **Der Inspector** | rides with Der Captain | *The Katzenjammer Kids* | $50 | **By the book.** Top hat, prim, Der Captain's eternal card partner. Plays tight and never risks a Joker. | start |
-| 4 | **Felix** | the *Nine Lives* | *Felix the Cat* shorts (1919–) | $70 | **Lovable chaos.** Plays almost at random, throws Jokers in at the worst moments. Everyone's favourite to keep afloat. | start |
-| 5 | **Cap'n Andy Hawks** | the *Cotton Blossom* (showboat) | *Show Boat*, Edna Ferber (1926) | $65 | **Showman.** Chases flashy hands — straights and flushes — even when trips would do. Sometimes brilliant, often not. | start |
-| 6 | **Parthy Ann Hawks** | the *Cotton Blossom* (co-owner) | *Show Boat* (1926) | $60 | **Formidable.** Stern, thrifty, hates waste. Careful and strong; risks a Joker only on a near-certain win. | start |
-| 7 | **Steamboat Bill** | the *Stonewall Jackson* | *Steamboat Bill, Jr.* (1928) | $50 | **Stubborn old-timer.** Rarely discards, stands pat on anything decent, never changes his mind. | start |
-| 8 | **Gaylord Ravenal** | no boat — rides whichever has a game | *Show Boat* (1926) | $30 | **Professional gambler.** Calculates every card (today's Sherlock brain). Charming, unloved, dangerous. | after first elimination |
-| 9 | **Magnolia Hawks** | the *Cotton Blossom* | *Show Boat* (1926) | $40 | **The rising star.** Starts modest, learns fast: a strong, calculating player who weighs Joker risks well. | after second elimination |
+| Captain | Boat | Source | Purse | Style | Joins |
+|---|---|---|---|---|---|
+| **Pete** | *Steamboat Willie* | *Steamboat Willie* (1928) | $45 | **Bully** — biggest cards only, discards anything below a ten, never risks a Joker. | start |
+| **Der Captain** ⚠️ | *Katzenjammer* | *The Katzenjammer Kids* (1897–) | $55 | **Shark** — solid, calculating, and loves a Joker tucked into trips. | start |
+| **Hans & Fritz** ⚠️ | *Mischief* (a raft) | *The Katzenjammer Kids* | $40 | **Pranksters** — mostly random mischief, occasionally sharp. | start |
+| **Jiggs** ⚠️ | *Night Out* | *Bringing Up Father* (1913) — *Fiinbeck* in Norway | $60 | **Loose** — quick decisions, bold with Jokers, chases big pots. | start |
+| **Little Nemo** | *Slumber* | *Little Nemo in Slumberland* (1905) | $50 | **Dreamer** — half the time brilliant, half the time baffling. | start |
+| **Felix** ⚠️ | *Nine Lives* | *Felix the Cat* shorts (1919–) | $70 | **Clueless** — plays at random and is sure Jokers make a hand stronger, so in they all go. | start |
+| **Ignatz** | *Brickyard* | *Krazy Kat* (1913) | $45 | **Anarchist** — throws his whole hand away every street; now and then hurls every Joker he has at you. | start |
+| **Steamboat Bill** | *Stonewall Jackson* | *Steamboat Bill, Jr.* (1928) | $50 | **Stubborn** — stands pat on almost anything, cautious with Jokers. | start |
+| **Gaylord Ravenal** | rides any boat with a game | *Show Boat*, Edna Ferber (1926) | $30 | **Gambler** — counts every card (the strongest player). | after the first captain is busted |
+| **Maggie** ⚠️ | *Rolling Pin* | *Bringing Up Father* — *Fia* in Norway | $70 | **Careful** — tight, patient, punishing; rarely risks a Joker. | once Jiggs is busted (she came to drag him home) |
 
-That is nine; a tournament of six to eight feels right. Suggested cuts if we
-want fewer: Der Inspector (he could stay as Der Captain's sidekick in blurbs),
-Steamboat Bill, or one of the Hawks.
+## Retired
 
-## Notes
+- **Sherlock** → his calculating brain went to Gaylord Ravenal.
+- **Betty** → not nautical; her slot went to Maggie.
+- **Willie** → becomes the narrator (below).
 
-- **Women:** Parthy Ann and Magnolia Hawks, both strong. More candidates:
-  Olive Oyl (1919, see trademark note), Tugboat Annie (public domain from 2027).
-- **Leaving:** Sherlock (replaced by Gaylord Ravenal), Betty (not nautical, and
-  her owners actively enforce trademarks), Willie (becomes the narrator).
-- **Maybe later:** Huckleberry Finn; the Duke and the King (con men on a raft —
-  great cheats if we ever add bluffing); Popeye and Olive Oyl (the 1929 comic
-  versions are public domain, but the Popeye name is an actively used
-  trademark, so riskier for a release); Bluto (public domain in 2028).
-- **Not river people:** Captain Nemo, Captain Ahab. Captain Haddock (Tintin,
-  1941) is protected for decades yet.
+## Alternates
 
-## Playing styles
+Magnolia Hawks (*Cotton Blossom*), the Yellow Kid (*Hogan's Alley*), Mutt and
+Jeff, Daddy Warbucks ⚠️, the Duke and the King (river con men from *Huckleberry
+Finn*), Barney Google ⚠️, Koko the Clown, Oswald the Lucky Rabbit.
 
-Existing AI styles cover most of this: Pete → `pete`, Felix → `felix`,
-Cap'n Andy → `willie` (chaos with flashes of brilliance), Der Inspector and
-Parthy Ann → `betty` (careful), Gaylord and Magnolia → `sherlock`
-(calculating, Magnolia with fewer samples). New: Der Captain (calculating but
-Joker-bold) and Steamboat Bill (stand-pat stubborn).
+## Later: boats with a full table
+
+Poker is communal. A later version could turn the league into a map of
+encounters along the river: early boats hold a single captain (Pete, Steamboat
+Bill); later boats seat a table (Der Captain, Der Inspector, Hans & Fritz on
+the *Katzenjammer*); the last boats are full of sharp players (the Hawks family
+on the *Cotton Blossom*). Needs the engine to seat three or four players.
+
+## Later: New Game Plus and Public Domain Day
+
+After beating the tournament, a rotating table of characters. Every 1 January,
+newly public-domain characters can arrive ("New captains spotted on the
+river!"):
+
+| Year | Arrives |
+|---|---|
+| 2027 | the 1931 pulp Shadow, Dick Tracy, Tugboat Annie |
+| 2028 | Bluto |
+| 2030 | Snuffy Smith (*Snøfte Smith*, with the moonshine), Donald Duck |
+| 2032 | The Phantom |
+| 2034 | Superman |
+| 2035 | Batman |
+
+Superheroes stay as homages (trademarks outlive copyright): a brooding
+millionaire whose boat is *The Bat*; a masked captain in purple who keeps
+coming back after being busted ("the Man Who Cannot Die" — really a new one
+each generation).
+
+**End boss:** the captain of *The Shadow*, a faceless stranger out of the fog
+who can see your hand. Avoid his catchphrase and the written-out laugh.
 
 ## Willie, the narrator
 
-Willie is no longer a captain: he was Pete's deckhand on the *Steamboat Willie*
-and now narrates the tournament. He appears as a speech bubble or a
-silent-film caption:
+Willie was Pete's deckhand on the *Steamboat Willie* and has jumped ship to
+help you. He appears as a speech bubble or a silent-film caption:
 
-- **First two crossings:** explains each step as it happens (the deal,
-  discarding, making your hand, the showdown, Jokers).
+- **First two crossings:** explains each step as it happens.
 - **Later, only at key moments:** your first Joker, a purse running low, a
-  rival run aground, the final duel.
+  rival run aground, the final duel, Maggie arriving.
 - **The hint becomes "Ask Willie":** the odds analysis in his voice.
-- **Decluttering:** the step prompts and long help lines move into Willie, so
-  the table itself gets smaller.
+- **Decluttering:** step prompts and long help lines move into Willie.
 - A setting to make him chatty, quiet, or silent.

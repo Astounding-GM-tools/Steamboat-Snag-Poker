@@ -5,7 +5,7 @@
  */
 import { chooseAction, viewFor } from './ai';
 import { jokerCard, type Card, type JokerCard } from './cards';
-import { HUMAN_ID, ROSTER, type AiId, type CharacterDef } from './characters';
+import { HUMAN_ID, LEGACY_AI, ROSTER, type AiId, type CharacterDef } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { createRound, resolveStreet, type Action, type RoundResult, type RoundState } from './round';
 import { Rng } from './rng';
@@ -17,6 +17,8 @@ export interface Player {
   money: number;
   jokers: JokerCard[];
   status: 'waiting' | 'active' | 'eliminated';
+  /** For a waiting captain: joins once this captain is busted ('*' = anyone). */
+  joinsAfter?: string;
 }
 
 export interface DuelSummary {
@@ -85,6 +87,7 @@ export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): 
     state.report.money = (state.report as MonthReport & { popularity?: MonthReport['money'] }).popularity ?? {};
   }
   for (const p of state.players) {
+    if (p.ai && LEGACY_AI[p.ai] && !ROSTER.some((c) => c.ai === p.ai)) p.ai = LEGACY_AI[p.ai];
     // Before the river tournament, money was called popularity.
     const legacy = (p as Player & { popularity?: number }).popularity;
     if (p.money === undefined && legacy !== undefined) p.money = legacy;
@@ -104,6 +107,7 @@ export function newGame(seed: number, config: RulesConfig = DEFAULT_CONFIG, rost
       money: c.startMoney,
       jokers: [],
       status: c.joins === 'start' ? 'active' : 'waiting',
+      ...(c.joins === 'start' ? {} : { joinsAfter: c.joins === 'firstElimination' ? '*' : c.joins.after }),
     })),
   ];
   const state: GameState = {
@@ -243,12 +247,14 @@ function finishMonth(state: GameState, rng: Rng) {
   }
 
   const joined: string[] = [];
-  if (eliminated.some((id) => id !== HUMAN_ID)) {
-    for (const p of state.players) {
-      if (p.status === 'waiting') {
-        p.status = 'active';
-        joined.push(p.id);
-      }
+  const busted = (id: string) => state.players.some((q) => q.id === id && q.status === 'eliminated');
+  for (const p of state.players) {
+    if (p.status !== 'waiting') continue;
+    const after = p.joinsAfter ?? '*';
+    const due = after === '*' ? eliminated.some((id) => id !== HUMAN_ID) : busted(after);
+    if (due) {
+      p.status = 'active';
+      joined.push(p.id);
     }
   }
 

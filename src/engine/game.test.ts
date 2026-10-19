@@ -80,4 +80,16 @@ describe('game', () => {
     expect(last.board.length).toBe(5);
     expect(last.hands).toHaveLength(2);
   });
+
+  it('Maggie comes down to the river once Jiggs is busted', () => {
+    let s = newGame(21);
+    expect(player(s, 'maggie').status).toBe('waiting');
+    const jiggs = s.players.find((p) => p.id === 'jiggs')!;
+    jiggs.status = 'eliminated';
+    jiggs.money = 0;
+    const rng = new Rng(4);
+    while (s.phase === 'duel') s = submitAction(s, rng.pick(legalActions(s.round!, 0)));
+    expect(player(s, 'maggie').status).toBe('active');
+    expect(s.report!.joined).toContain('maggie');
+  });
 });

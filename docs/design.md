@@ -217,20 +217,9 @@ every crossing off-screen, trading Jokers and money with the same rules.
 
 ## Opponents (public domain only)
 
-Only public-domain versions and looks (no later redesigns, no trademarks/logos).
-
-| Character | Starting purse | Style |
-|---|---|---|
-| **Pete** (Black Pete, 1920s) | $45 | Predictable bully. Always plays his highest cards, ignores the board. Easy to beat with a straight. |
-| **Willie** (Steamboat Willie, 1928) | $55 | Chaos. Plays mostly at random, but sometimes pulls an inspired River swap. |
-| **Felix the Cat** (early 1920s shorts) | $70 | Hugely likeable, utterly irrational. Plays at random, happily throws Jokers away at the worst time. |
-| **Betty** (Betty Boop, 1930 debut) | $65 | Charming, a soft touch. Plays reasonably on pairs, rarely risks shedding a Joker. |
-| **Sherlock Holmes** | $30 | Perfectionist. Calculates odds, sheds Jokers only when safe. Unlikeable. Joins after the first elimination. |
-
-❓ **Wanted:** more women, including strong players. Candidates (verify
-status before use): Irene Adler ("the Woman" who outwitted Holmes — a natural
-nemesis), Alice (Wonderland), Dorothy Gale (Oz, book version), Nancy Drew (1930
-books), Wendy Darling, the Queen of Hearts.
+Ten captains, each with a boat and a playing style — see
+[roster.md](roster.md) for the table, sources, starting purses and who joins
+when (Gaylord Ravenal after the first bust; Maggie once Jiggs is busted).
 
 ## Screens
 

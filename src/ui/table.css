@@ -247,3 +247,9 @@ h3 {
     justify-content: center;
   }
 }
+
+.boat {
+  margin: 0;
+  font-style: italic;
+  font-size: 0.85rem;
+}

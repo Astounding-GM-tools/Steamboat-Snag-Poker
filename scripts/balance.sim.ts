@@ -21,7 +21,7 @@ it('balance', () => {
   const rows: string[] = [`games/row=${GAMES} overrides=${JSON.stringify(overrides)}`];
   for (const presetName of PRESET_NAMES) {
     const config = { ...PRESETS[presetName], ...overrides };
-    for (const captainAi of ['felix', 'betty', 'sherlock'] as AiId[]) {
+    for (const captainAi of ['clueless', 'careful', 'gambler'] as AiId[]) {
       let months = 0, wins = 0, peakJokers = 0, captainDuels = 0, captainWins = 0, jokersShed = 0;
       const cats: Record<string, number> = {};
       const t0 = performance.now();
@@ -56,7 +56,7 @@ it('balance', () => {
           `gameWin=${pct(wins, GAMES).padStart(4)} duelWin=${pct(captainWins, captainDuels).padStart(4)} ` +
           `shed/game=${(jokersShed / GAMES).toFixed(1)} peakJ=${(peakJokers / GAMES).toFixed(1)} ${ms.toFixed(0)}ms/game`,
       );
-      if (captainAi === 'sherlock') {
+      if (captainAi === 'gambler') {
         const total = Object.values(cats).reduce((a, b) => a + b, 0);
         rows.push('    hands: ' + Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${pct(v, total)}`).join(', '));
       }
