@@ -6,6 +6,14 @@
 > trademark: fine for this prototype, to be checked (or lightly renamed) before
 > any public release.
 
+**Before any public release:** the "1930 or earlier" rule is American. In
+Norway and the EU, copyright runs for the creator's life plus 70 years, which
+may still protect Pete, Der Captain, Hans & Fritz, Gaylord Ravenal, Steamboat
+Bill and Felix there (Nemo, Ignatz, Jiggs and Maggie look clear). Plan:
+keep the originals for local play; switch at-risk captains to homages (same
+spirit, new names and designs) if the game goes public, after a quick check
+with someone who knows Norwegian/EU copyright.
+
 ## The table (built)
 
 | Captain | Boat | Source | Purse | Style | Joins |
