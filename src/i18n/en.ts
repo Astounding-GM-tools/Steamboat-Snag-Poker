@@ -57,6 +57,7 @@ export const en = {
   'draw.hint': 'Hint',
   'willie.name': 'Willie',
   'willie.ok': 'Aye!',
+  'willie.fished': 'Blast! You fished {jokers} out of the deck. You draw again, so your hand is still full, but that Joker is yours now.',
   'willie.hintTitle': 'Willie’s reckoning',
   'willie.helpTitle': 'How to play',
   'captain.style': 'How they play',

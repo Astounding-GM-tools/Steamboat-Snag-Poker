@@ -58,6 +58,8 @@ export interface RoundState {
   street: number;
   discards: StdCard[];
   history: { street: number; actions: [Action, Action] }[];
+  /** Jokers drawn from the deck by a player this round (shuffled Joker mode). */
+  fished: { seat: number; street: number; joker: JokerCard }[];
   result: RoundResult | null;
 }
 
@@ -94,6 +96,7 @@ export function createRound(
     street: 0,
     discards: [],
     history: [],
+    fished: [],
     result: null,
   };
 
@@ -122,10 +125,22 @@ function draw(round: RoundState): Card {
   return card;
 }
 
+/**
+ * Draws one card for a seat. A Joker fished out of the deck becomes the seat's
+ * Joker; in the draw style the seat then draws again, so the hand never
+ * shrinks (catching the Joker is penalty enough).
+ */
 function drawToSeat(round: RoundState, seat: Seat) {
-  const card = draw(round);
-  if (isJoker(card)) seat.jokers.push(card);
-  else seat.hand.push(card);
+  while (round.deck.length) {
+    const card = draw(round);
+    if (!isJoker(card)) {
+      seat.hand.push(card);
+      return;
+    }
+    seat.jokers.push(card);
+    round.fished.push({ seat: round.seats.indexOf(seat), street: round.street, joker: card });
+    if (round.playStyle !== 'draw') return;
+  }
 }
 
 function dealStreet(round: RoundState, config: RulesConfig) {

@@ -19,7 +19,7 @@
   import CardView from './CardView.svelte';
   import CaptainCard from './CaptainCard.svelte';
   import WillieSays from './WillieSays.svelte';
-  import { cardLabel, dollars, name } from './format';
+  import { cardLabel, dollars, jokerList, name } from './format';
   import { describeHand } from './handNames';
 
   interface Props {
@@ -33,6 +33,24 @@
   let tapped = $state<string[]>([]);
   let showHelp = $state(false);
   let showCaptain = $state(false);
+  /** Jokers you just fished out of the deck, for Willie to announce. */
+  let fishedNews = $state<string | null>(null);
+  let fishedSeen = 0;
+  let fishedMonth = -1;
+  $effect(() => {
+    const r = round;
+    untrack(() => {
+      const mine = (r.fished ?? []).filter((f) => f.seat === 0);
+      if (fishedMonth !== game.month) {
+        // A resumed round shouldn't re-announce old catches; a new month starts fresh.
+        fishedSeen = fishedMonth === -1 ? mine.length : 0;
+        fishedMonth = game.month;
+      }
+      const fresh = mine.slice(fishedSeen);
+      fishedSeen = mine.length;
+      if (fresh.length) fishedNews = t('willie.fished', { jokers: jokerList(fresh.map((f) => f.joker)) });
+    });
+  });
 
   const round = $derived(game.round!);
   const config = $derived(game.config);
@@ -270,6 +288,12 @@
   <WillieSays title={t('willie.helpTitle')} onclose={() => (showHelp = false)}>
     {#each t('title.howToBody').split('\n\n') as para}<p>{para}</p>{/each}
     <label class="fast"><input type="checkbox" checked={fastDeal} onchange={(e) => setFast(e.currentTarget.checked)} /> {t('draw.fastDeal')}</label>
+  </WillieSays>
+{/if}
+
+{#if fishedNews}
+  <WillieSays onclose={() => (fishedNews = null)}>
+    <p>{fishedNews}</p>
   </WillieSays>
 {/if}
 

@@ -29,6 +29,7 @@ function composeRound(hands: [string, string], board: string, jokers: [number, n
     street: 2,
     discards: [],
     history: [],
+    fished: [],
     result: null,
   };
 }
@@ -92,5 +93,19 @@ describe('planReveal', () => {
     expect(steps[2].last).toBe(true);
     expect(steps[2].standing).toBe('ahead'); // the viewer's pair of aces wins
     expect(steps[0].possible.length).toBeGreaterThan(0);
+  });
+});
+
+describe('fishing a Joker', () => {
+  it('keeps the Joker and draws again, so the hand stays at three', () => {
+    const r = composeRound(['As Kd 2c', 'Qs Qd 3h'], 'Ah 7c 7d 9s Jc');
+    r.street = 0;
+    r.community = r.community.slice(0, 3);
+    // Top of the deck (popped first): a Joker, then a real card.
+    r.deck = [parseCard('5h'), parseCard('9h'), jokerCard(7)];
+    resolveStreet(r, [{ type: 'draw', cardIds: ['2c'] }, { type: 'draw', cardIds: [] }], config);
+    expect(r.seats[0].hand).toHaveLength(3);
+    expect(r.seats[0].jokers.map((j) => j.id)).toEqual(['X7']);
+    expect(r.fished).toEqual([{ seat: 0, street: 0, joker: jokerCard(7) }]);
   });
 });

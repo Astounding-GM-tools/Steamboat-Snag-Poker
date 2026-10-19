@@ -83,6 +83,7 @@ export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): 
   const state = clone(saved);
   state.config = { ...DEFAULT_CONFIG, ...state.config, winGain: { ...DEFAULT_CONFIG.winGain, ...state.config.winGain } };
   state.log ??= [];
+  if (state.round) state.round.fished ??= [];
   if (state.report && !state.report.money) {
     state.report.money = (state.report as MonthReport & { popularity?: MonthReport['money'] }).popularity ?? {};
   }
