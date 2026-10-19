@@ -3,7 +3,7 @@
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import { cardLabel, jokerList, longCardName, name } from './format';
-  import { describeHand, nickname } from './handNames';
+  import { describeHand, nickname, tiebreak } from './handNames';
 
   let { game, ondone }: { game: GameState; ondone: () => void } = $props();
 
@@ -35,6 +35,14 @@
     else index++;
   }
 
+  /** Same-named hands: what decided it, from your point of view. */
+  const decider = $derived.by(() => {
+    if (result.winner === null) return '';
+    const tb = tiebreak(result.hands[result.winner], result.hands[1 - result.winner]);
+    if (!tb) return '';
+    const key = `show.tb.${tb.kind}.${result.winner === 0 ? 'you' : 'them'}`;
+    return t(key, { name: foe, win: tb.winner, lose: tb.loser });
+  });
   const verdict = $derived(result.winner === 0 ? t('show.youWin') : result.winner === 1 ? t('show.youLose') : t('show.draw'));
   const pct = (x: number) => `${Math.round(x * 100)}%`;
 </script>
@@ -87,6 +95,7 @@
         {#if step.last}
           <p>{t('show.finalHand', { name: foe, hand: describeHand(step.hand) })}</p>
           {#if nickname(step.hand)}<p class="nick">{nickname(step.hand)}</p>{/if}
+          {#if decider}<p class="decider">{decider}</p>{/if}
           <p class="verdict">{verdict}</p>
         {:else}
           <p>{t('show.bestSoFar', { hand: describeHand(step.hand) })}</p>
@@ -100,6 +109,7 @@
         {/if}
       {:else}
         <p class="big">{t('show.theyPlayBoard', { name: foe, hand: describeHand(result.hands[1]) })}</p>
+        {#if decider}<p class="decider">{decider}</p>{/if}
         <p class="verdict">{verdict}</p>
       {/if}
     </div>
@@ -167,6 +177,10 @@
   }
   .sub {
     color: var(--grey);
+  }
+  .decider {
+    font-family: var(--title-font);
+    font-size: 1.1rem;
   }
   .verdict {
     font-family: var(--title-font);

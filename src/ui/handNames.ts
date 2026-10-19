@@ -3,6 +3,7 @@
  * "Four of a Kind, sevens" — and a nickname when the hand has one.
  */
 import type { HandValue } from '../engine';
+import { SUIT_GLYPH } from './format';
 import { t } from '../i18n';
 
 function groups(hand: HandValue): number[][] {
@@ -74,3 +75,41 @@ export function nickname(hand: HandValue): string | null {
   }
 }
 
+
+export interface Tiebreak {
+  kind: 'kicker' | 'next' | 'suit';
+  /** What the winner had at the deciding spot, e.g. "Eight" or "♠". */
+  winner: string;
+  loser: string;
+}
+
+/** Ranks in the order poker compares them: groups by size, then by rank. */
+function rankOrder(hand: HandValue): number[] {
+  if (hand.category === 'straight' || hand.category === 'straightFlush') {
+    const r = hand.cards.map((c) => c.rank);
+    return [r[0] === 14 && r[1] === 5 ? 5 : r[0]];
+  }
+  return groups(hand).map(([rank]) => rank);
+}
+
+/**
+ * When two hands share a name ("Two Pair, Aces and Kings"), says what decided
+ * it: a kicker, the next highest card, or in the last resort a suit.
+ */
+export function tiebreak(win: HandValue, lose: HandValue): Tiebreak | null {
+  if (win.category !== lose.category || describeHand(win) !== describeHand(lose)) return null;
+  const a = rankOrder(win);
+  const b = rankOrder(lose);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    if (a[i] !== b[i]) {
+      const grouped = ['pair', 'twoPair', 'threeOfAKind', 'fourOfAKind'].includes(win.category);
+      return { kind: grouped ? 'kicker' : 'next', winner: a[i] ? single(a[i]) : '—', loser: b[i] ? single(b[i]) : t('show.nothing') };
+    }
+  }
+  for (let i = 0; i < Math.min(win.cards.length, lose.cards.length); i++) {
+    if (win.cards[i].suit !== lose.cards[i].suit) {
+      return { kind: 'suit', winner: SUIT_GLYPH[win.cards[i].suit], loser: SUIT_GLYPH[lose.cards[i].suit] };
+    }
+  }
+  return null;
+}
