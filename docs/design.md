@@ -116,7 +116,8 @@ felt, and the winner takes it (a tie splits it).
   (free early on).
 - **Discards get dearer:** the k-th card you throw away in a crossing costs $k
   (six cards = $21).
-- **Fold** on the Flop or Turn, as long as you have not swapped a card: the
+- **Fold** on the Flop or Turn, even after swapping cards (never on the River:
+  face the music and take the snags if you've come this far): the
   other captain takes the pot; you keep your snags (including any fished this
   crossing); community snags go back into the deck.
 - **Forfeit:** each snag in a losing hand still costs $5, paid to the winner.

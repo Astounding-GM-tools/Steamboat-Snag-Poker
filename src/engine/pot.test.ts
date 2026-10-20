@@ -46,12 +46,17 @@ describe('pot mode', () => {
     }
   });
 
-  it('you cannot fold once you have swapped a card, and swaps cost money', () => {
-    const s = newGame(6, config);
-    const round = s.round!;
-    const card = round.seats[0].hand[0].id;
-    expect(actionCost(round, 0, { type: 'draw', cardIds: [card] }, config)).toBe(1);
-    const after = submitAction(s, { type: 'draw', cardIds: [card] });
-    if (!after.round!.result) expect(canFold(after.round!, 0)).toBe(false);
+  it('you can still fold on the Turn after swapping, but never on the River', () => {
+    let s = newGame(6, config);
+    const card = s.round!.seats[0].hand[0].id;
+    expect(actionCost(s.round!, 0, { type: 'draw', cardIds: [card] }, config)).toBe(1);
+    s = submitAction(s, { type: 'draw', cardIds: [card] });
+    if (s.round!.result) return; // the opponent folded
+    expect(s.round!.street).toBe(1);
+    expect(canFold(s.round!, 0)).toBe(true);
+    s = submitAction(s, { type: 'draw', cardIds: [] });
+    if (s.round!.result) return;
+    expect(s.round!.street).toBe(2);
+    expect(canFold(s.round!, 0)).toBe(false);
   });
 });
