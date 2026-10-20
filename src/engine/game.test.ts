@@ -93,4 +93,17 @@ describe('game', () => {
     expect(player(s, 'maggie').status).toBe('active');
     expect(s.report!.joined).toContain('maggie');
   });
+
+  it('with an odd number of captains, the poorest rival sits the crossing out', () => {
+    let s = newGame(31);
+    // Nine captains start (you + 8): odd, so someone sits out.
+    const poorest = [...activeOpponents(s)].sort((a, b) => a.money - b.money || a.id.localeCompare(b.id))[0];
+    expect(s.sitterId).toBe(poorest.id);
+    expect(s.opponentId).not.toBe(poorest.id);
+    const rng = new Rng(9);
+    while (s.phase === 'duel') s = submitAction(s, rng.pick(legalActions(s.round!, 0)));
+    expect(s.report!.sittingOut).toBe(poorest.id);
+    const played = s.report!.offscreen.flatMap((d) => d.players);
+    expect(played).not.toContain(poorest.id);
+  });
 });

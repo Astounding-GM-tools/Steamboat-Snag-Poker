@@ -104,10 +104,11 @@
       </tbody>
     </table>
 
-    {#if report.offscreen.length || report.eliminated.length || report.joined.length}
+    {#if report.offscreen.length || report.eliminated.length || report.joined.length || report.sittingOut}
       <div class="news">
         <h2>{t('end.meanwhile')}</h2>
         {#each report.offscreen as d}<p>{duelLine(d)}</p>{/each}
+        {#if report.sittingOut}<p>{t('end.satOut', { name: name(report.sittingOut) })}</p>{/if}
         {#each report.eliminated.filter((id) => id !== HUMAN_ID) as id}<p><b>{t('end.eliminated', { name: name(id) })}</b></p>{/each}
         {#each report.joined as id}<p><b>{t('end.joined', { name: name(id) })}</b></p>{/each}
       </div>

@@ -34,6 +34,8 @@ export interface MonthReport {
   money: Record<string, { before: number; after: number; drained: number }>;
   eliminated: string[];
   joined: string[];
+  /** The captain who sat this crossing out (the poorest, when the count is odd). */
+  sittingOut?: string | null;
 }
 
 /** One of the Captain's showdowns, kept so a player can check what happened. */
@@ -69,6 +71,8 @@ export interface GameState {
   pool: JokerCard[];
   phase: Phase;
   opponentId: string | null;
+  /** This crossing's sitter: with an odd number of captains, the poorest sits out. */
+  sitterId?: string | null;
   lastOpponentId: string | null;
   round: RoundState | null;
   report: MonthReport | null;
@@ -149,14 +153,26 @@ export function activeOpponents(state: GameState): Player[] {
  * Matchmaking: random active opponent, avoiding a repeat when possible.
  * Kept in one place so weighted/"temperature" matchmaking can replace it.
  */
+/**
+ * With an odd number of captains on the river (you included), someone has to
+ * sit the crossing out: the poorest rival. It costs them nothing, not even
+ * snag upkeep, which is paid with the ante: a breather for the nearly broke.
+ */
+export function chooseSitter(state: GameState): Player | null {
+  const rivals = activeOpponents(state);
+  if ((rivals.length + 1) % 2 === 0 || rivals.length < 2) return null;
+  return [...rivals].sort((a, b) => a.money - b.money || a.id.localeCompare(b.id))[0];
+}
+
 export function pickOpponent(state: GameState, rng: Rng): Player {
-  const candidates = activeOpponents(state);
+  const candidates = activeOpponents(state).filter((p) => p.id !== state.sitterId);
   const fresh = candidates.filter((p) => p.id !== state.lastOpponentId);
   return rng.pick(fresh.length ? fresh : candidates);
 }
 
 function startMonthMut(state: GameState): GameState {
   const rng = new Rng(state.rngState);
+  state.sitterId = chooseSitter(state)?.id ?? null;
   const opponent = pickOpponent(state, rng);
   state.opponentId = opponent.id;
   const human = player(state, HUMAN_ID);
@@ -240,7 +256,7 @@ function finishMonth(state: GameState, rng: Rng) {
   state.log = [record, ...(state.log ?? [])].slice(0, LOG_SIZE);
 
   // Meanwhile, on the river: everyone else not in the Captain's duel pairs up.
-  const others = rng.shuffle(activeOpponents(state).filter((p) => p.id !== state.opponentId));
+  const others = rng.shuffle(activeOpponents(state).filter((p) => p.id !== state.opponentId && p.id !== state.sitterId));
   const offscreen: DuelSummary[] = [];
   for (let i = 0; i + 1 < others.length; i += 2) {
     offscreen.push(settle(simulateDuel(state, others[i], others[i + 1], rng)));
@@ -278,7 +294,7 @@ function finishMonth(state: GameState, rng: Rng) {
     }
   }
 
-  state.report = { month: state.month, duel, offscreen, money, eliminated, joined };
+  state.report = { month: state.month, duel, offscreen, money, eliminated, joined, sittingOut: state.sitterId ?? null };
   state.lastOpponentId = state.opponentId;
 
   if (player(state, HUMAN_ID).status === 'eliminated') state.phase = 'gameOver';

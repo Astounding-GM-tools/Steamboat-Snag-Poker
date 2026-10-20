@@ -120,6 +120,7 @@ export const en = {
   'end.potWon': 'You take the pot: ${n}',
   'end.potLost': '{name} takes the pot: ${n}',
   'end.paidIn': 'You put ${n} into it.',
+  'end.satOut': '{name}, the poorest captain afloat, sat this crossing out.',
   'end.duelFold': '{folder} folded; {winner} takes ${n}.',
   'end.forfeitLost': 'Your snags didn’t get past them: forfeit −${n}',
   'end.forfeitWon': '{name} pays you a ${n} forfeit for the snags that didn’t get past you.',

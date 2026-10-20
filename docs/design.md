@@ -236,7 +236,9 @@ The game is not just your duels: a small league of opponents plays each other
 every crossing off-screen, trading snags and money with the same rules.
 
 - Each crossing you duel one opponent; the remaining active opponents are paired
-  randomly (an odd one out sits the crossing out).
+  randomly. With an odd number of captains, **the poorest rival sits the
+  crossing out**: no ante and so no snag upkeep, a breather for the nearly
+  broke. The sitter is never your opponent that crossing.
 - Off-screen duels are **fully simulated** with the same engine and AIs (cheap,
   and keeps the snag economy honest). ❓ Could later be replaced by a
   probability shortcut if needed.
