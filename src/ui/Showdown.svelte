@@ -2,7 +2,7 @@
   import { isJoker, planReveal, Rng, type Card, type GameState } from '../engine';
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
-  import { cardLabel, jokerList, longCardName, name } from './format';
+  import { cardLabel, jokerList, jokerName, longCardName, name } from './format';
   import { describeHand, nickname, tiebreak } from './handNames';
 
   /** onverdict: the result is known on screen, so the pot can fly to the winner. */
@@ -51,8 +51,14 @@
     if (result.winner === null) return '';
     const tb = tiebreak(result.hands[result.winner], result.hands[1 - result.winner]);
     if (!tb) return '';
-    const key = `show.tb.${tb.kind}.${result.winner === 0 ? 'you' : 'them'}`;
-    return t(key, { name: foe, win: tb.winner, lose: tb.loser });
+    const side = result.winner === 0 ? 'you' : 'them';
+    if (tb.loserDead) {
+      // The deciding spot held the loser's snag: name it ("…beats your stinking hides").
+      const snag = round.seats[1 - result.winner].slots.find(isJoker);
+      const snagName = snag ? jokerName(snag.index).replace(/^the /, '').toLowerCase() : t('show.deadCard');
+      return t(`show.tb.kicker.snag.${side}`, { name: foe, win: tb.winner, snag: snagName });
+    }
+    return t(`show.tb.${tb.kind}.${side}`, { name: foe, win: tb.winner, lose: tb.loser });
   });
   const verdict = $derived(result.winner === 0 ? t('show.youWin') : result.winner === 1 ? t('show.youLose') : t('show.draw'));
   const pct = (x: number) => `${Math.round(x * 100)}%`;

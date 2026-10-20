@@ -98,7 +98,7 @@
               {:else if p.status === 'waiting'}{t('table.waiting')}
               {:else}{dollars(p.money)}{/if}
             </td>
-            <td>{p.status === 'active' ? '🃏'.repeat(p.jokers.length) || '·' : ''}</td>
+            <td>{p.status === 'active' ? '🪵'.repeat(p.jokers.length) || '·' : ''}</td>
           </tr>
         {/each}
       </tbody>

@@ -26,7 +26,7 @@
     <span class="amount">{dollars(captain.money)}</span>
   </div>
   <div class="label">{t('table.money')}</div>
-  <div class="label">🃏 × {myJokerCount}</div>
+  <div class="label">🪵 × {myJokerCount}</div>
 
   <h3>{t('table.league')}</h3>
   <ul class="league">
@@ -36,7 +36,7 @@
         <span>
           {#if p.status === 'eliminated'}{t('table.out')}
           {:else if p.status === 'waiting'}{t('table.waiting')}
-          {:else}{dollars(p.money)} · 🃏{p.jokers.length}{/if}
+          {:else}{dollars(p.money)} · 🪵{p.jokers.length}{/if}
         </span>
       </li>
     {/each}

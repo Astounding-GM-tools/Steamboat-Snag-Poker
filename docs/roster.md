@@ -18,16 +18,16 @@ with someone who knows Norwegian/EU copyright.
 
 | Captain | Boat | Source | Purse | Style | Joins |
 |---|---|---|---|---|---|
-| **Pete** | *Steamboat Willie* | *Steamboat Willie* (1928) | $45 | **Bully** — biggest cards only, discards anything below a ten, never risks a Joker. | start |
-| **Der Captain** ⚠️ | *Katzenjammer* | *The Katzenjammer Kids* (1897–) | $55 | **Shark** — solid, calculating, and loves a Joker tucked into trips. | start |
+| **Pete** | *Steamboat Willie* | *Steamboat Willie* (1928) | $45 | **Bully** — biggest cards only, discards anything below a ten, never risks a snag. | start |
+| **Der Captain** ⚠️ | *Katzenjammer* | *The Katzenjammer Kids* (1897–) | $55 | **Shark** — solid, calculating, and loves a snag tucked into trips. | start |
 | **Hans & Fritz** ⚠️ | *Mischief* (a raft) | *The Katzenjammer Kids* | $40 | **Pranksters** — mostly random mischief, occasionally sharp. | start |
-| **Jiggs** ⚠️ | *Night Out* | *Bringing Up Father* (1913) — *Fiinbeck* in Norway | $60 | **Loose** — quick decisions, bold with Jokers, chases big pots. | start |
+| **Jiggs** ⚠️ | *Night Out* | *Bringing Up Father* (1913) — *Fiinbeck* in Norway | $60 | **Loose** — quick decisions, bold with snags, chases big pots. | start |
 | **Little Nemo** | *Slumber* | *Little Nemo in Slumberland* (1905) | $50 | **Dreamer** — half the time brilliant, half the time baffling. | start |
-| **Felix** ⚠️ | *Nine Lives* | *Felix the Cat* shorts (1919–) | $70 | **Clueless** — plays at random and is sure Jokers make a hand stronger, so in they all go. | start |
-| **Ignatz** | *Brickyard* | *Krazy Kat* (1913) | $45 | **Anarchist** — throws his whole hand away every street; now and then hurls every Joker he has at you. | start |
-| **Steamboat Bill** | *Stonewall Jackson* | *Steamboat Bill, Jr.* (1928) | $50 | **Stubborn** — stands pat on almost anything, cautious with Jokers. | start |
+| **Felix** ⚠️ | *Nine Lives* | *Felix the Cat* shorts (1919–) | $70 | **Clueless** — plays at random and is sure snags make a hand stronger, so in they all go. | start |
+| **Ignatz** | *Brickyard* | *Krazy Kat* (1913) | $45 | **Anarchist** — throws his whole hand away every street; now and then hurls every snag he has at you. | start |
+| **Steamboat Bill** | *Stonewall Jackson* | *Steamboat Bill, Jr.* (1928) | $50 | **Stubborn** — stands pat on almost anything, cautious with snags. | start |
 | **Gaylord Ravenal** | rides any boat with a game | *Show Boat*, Edna Ferber (1926) | $30 | **Gambler** — counts every card (the strongest player). | after the first captain is busted |
-| **Maggie** ⚠️ | *Rolling Pin* | *Bringing Up Father* — *Fia* in Norway | $70 | **Careful** — tight, patient, punishing; rarely risks a Joker. | once Jiggs is busted (she came to drag him home) |
+| **Maggie** ⚠️ | *Rolling Pin* | *Bringing Up Father* — *Fia* in Norway | $70 | **Careful** — tight, patient, punishing; rarely risks a snag. | once Jiggs is busted (she came to drag him home) |
 
 ## Retired
 
@@ -78,7 +78,7 @@ Willie was Pete's deckhand on the *Steamboat Willie* and has jumped ship to
 help you. He appears as a speech bubble or a silent-film caption:
 
 - **First two crossings:** explains each step as it happens.
-- **Later, only at key moments:** your first Joker, a purse running low, a
+- **Later, only at key moments:** your first snag, a purse running low, a
   rival run aground, the final duel, Maggie arriving.
 - **The hint becomes "Ask Willie":** the odds analysis in his voice.
 - **Decluttering:** step prompts and long help lines move into Willie.

@@ -135,7 +135,7 @@
         {/each}
         {#if config.jokerMode === 'slot'}
           <div class="joker-slot">
-            <CardView card={round.communityJoker} placeholder="🃏?" />
+            <CardView card={round.communityJoker} placeholder="🪵?" />
           </div>
         {/if}
       </div>

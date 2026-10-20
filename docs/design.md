@@ -11,7 +11,7 @@
 down for a hand of poker. You are **The Captain**, in a tournament against a
 cast of public-domain cartoon captains. Each **crossing** you duel one of them;
 the rest play each other off-screen. Losing costs money, and can saddle you
-with **Jokers**: liabilities like stinking cargo, tiresome passengers and
+with **Snags**: liabilities like stinking cargo, tiresome passengers and
 thankless duties that cost upkeep every crossing until you dump them on someone
 you beat.
 
@@ -32,13 +32,17 @@ vignette, intertitle cards for all text.
 
 ## Cards
 
+> **Snags** were called Jokers in early versions; the code still calls them
+> `joker` (e.g. `jokerMode`, `jokerForfeit`).
+
+
 - A standard 52-card deck, freshly shuffled every round.
-- **10 Jokers** exist in the whole game (🔧 count is configurable). Every Joker is
+- **10 snags** exist in the whole game (🔧 count is configurable). Every snag is
   either *unowned* (in the pool) or *owned* by a player.
-- Jokers are **dead cards**: no rank, no suit, they never count toward a hand.
+- Snags are **dead cards**: no rank, no suit, they never count toward a hand.
   They exist only to be gotten rid of.
-- Jokers you own are always available to play and **do not take up hand space**.
-  You can hold 0, 5 or 10 of them. You cannot discard a Joker.
+- Snags you own are always available to play and **do not take up hand space**.
+  You can hold 0, 5 or 10 of them. You cannot discard a snag.
 
 ## Play styles and presets
 
@@ -47,7 +51,7 @@ presets, selectable in the rules lab (⚙) and the balance simulation.
 
 ### Kansas Shuffle (the game; preset `draw`)
 
-The name: between Texas and Omaha (geographically too), with the Joker
+The name: between Texas and Omaha (geographically too), with the snag
 shuffle after the Flop; and the "Kansas City Shuffle", an old con men's term
 for a swindle where the mark looks one way while the con goes the other, and a
 1926 jazz tune by Bennie Moten.
@@ -55,23 +59,23 @@ for a swindle where the mark looks one way while the con goes the other, and a
 
 1. **Flop:** 3 community cards are revealed; each player is dealt **3 cards**.
 2. **Flop and Turn:** tap any number of hand cards to **discard** and draw
-   replacements, or **stand pat**. Jokers cannot be
+   replacements, or **stand pat**. Snags cannot be
    discarded. Discards lie **face up**: the opponent can read what you threw
    away, and you can read theirs.
 3. **Make your hand (on the River):** when the River card comes there is no
    more discarding — tap the cards you want to play — any
-   of your hand cards plus any Jokers you dare, up to 5. The best community
+   of your hand cards plus any snags you dare, up to 5. The best community
    cards automatically fill the rest. No pre-selection: choosing is your job.
    Tapping nothing plays the board alone (legal, close to folding).
-4. **Showdown:** the best hand wins. Every Joker the winner *chose to play*
-   goes to the loser, along with any community Jokers. Every Joker the
+4. **Showdown:** the best hand wins. Every snag the winner *chose to play*
+   goes to the loser, along with any community snags. Every snag the
    *loser* risked costs them a **forfeit** (🔧 default $5 each), paid to the
-   winner: sneaking Jokers into a weak hand is no longer free. There is no automatic
-   shedding — betting hands on Jokers is how the game is won or lost.
+   winner: sneaking snags into a weak hand is no longer free. There is no automatic
+   shedding — betting hands on snags is how the game is won or lost.
 
-The shape of a hand decides how many Jokers it can carry:
+The shape of a hand decides how many snags it can carry:
 
-| Hand | Cards that matter | Room for Jokers |
+| Hand | Cards that matter | Room for snags |
 |---|---|---|
 | Four of a kind | 4 | 1 |
 | Three of a kind | 3 | 2 |
@@ -90,7 +94,7 @@ only on what you can see.
 
 **The reveal:** your hand is announced first (with its nickname, if any). Then
 the opponent's played cards are turned over one at a time — teasers first
-("a flush is still possible!"), then Jokers ("the stakes go up!"), and the
+("a flush is still possible!"), then snags ("the stakes go up!"), and the
 deciding card last — each showing how it combines with the board. No auto-advance: the
 player steps through with Next (or Skip to the result).
 
@@ -99,17 +103,17 @@ player steps through with Next (or Skip to the result).
 There are no fixed payouts: captains play for a **pot** in the middle of the
 felt, and the winner takes it (a tie splits it).
 
-- **Ante**, paid at the deal: ceil(crossing ÷ 3) (🔧 `anteEvery`), **plus Joker
-  upkeep** for every Joker you carry, so a captain dragging Jokers around pays
+- **Ante**, paid at the deal: ceil(crossing ÷ 3) (🔧 `anteEvery`), **plus snag
+  upkeep** for every snag you carry, so a captain dragging snags around pays
   a fat ante, and everyone knows they will try to dump some.
 - **Seeing the Turn** costs floor(ante ÷ 3); **seeing the River** floor(ante ÷ 2)
   (free early on).
 - **Discards get dearer:** the k-th card you throw away in a crossing costs $k
   (six cards = $21).
 - **Fold** on the Flop or Turn, as long as you have not swapped a card: the
-  other captain takes the pot; you keep your Jokers (including any fished this
-  crossing); community Jokers go back into the deck.
-- **Forfeit:** each Joker in a losing hand still costs $5, paid to the winner.
+  other captain takes the pot; you keep your snags (including any fished this
+  crossing); community snags go back into the deck.
+- **Forfeit:** each snag in a losing hand still costs $5, paid to the winner.
 - **Debt is all-in:** fees can push a purse below $0 mid-crossing. End a
   crossing at $0 or less and you are busted.
 
@@ -124,7 +128,7 @@ and every button shows its price ("Discard 2 · $4").
 | **Texas** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 0–3 |
 | **Middle** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 1–2 |
 | **3 + 3** | 1 / 1 / 1 | 3 / 1 / 1 | 3 | 2–3 |
-| **Classic** (v1) | 1 / 1 / 1 | 3 / 1 / 1 | 2 | exactly 2, Joker in a 4th slot |
+| **Classic** (v1) | 1 / 1 / 1 | 3 / 1 / 1 | 2 | exactly 2, snag in a 4th slot |
 
 In the slots style you place one card per street into a slot (or discard one).
 These were stepping stones on the way to Kansas Shuffle.
@@ -133,14 +137,14 @@ These were stepping stones on the way to Kansas Shuffle.
 
 Standard poker ranks. Your hand is the **best 5 cards** made from your slot cards
 and the community cards, using the preset's number of own cards (Kansas:
-exactly 2 of your 3 slots + exactly 3 of the 5 board cards). Jokers and empty
+exactly 2 of your 3 slots + exactly 3 of the 5 board cards). Snags and empty
 slots are dead cards — but they still count as "your cards", so:
 
-- **1 Joker** in your slots is nearly free if the other two carry the hand
+- **1 snag** in your slots is nearly free if the other two carry the hand
   (but you lose your fallback card).
-- **2 Jokers** force you to use a dead card: a 4-card hand.
-- **3 Jokers**: only 3 board cards — suicide unless the opponent is as stuck.
-- Jokers on the board narrow everyone's choice of board cards the same way.
+- **2 snags** force you to use a dead card: a 4-card hand.
+- **3 snags**: only 3 board cards — suicide unless the opponent is as stuck.
+- Snags on the board narrow everyone's choice of board cards the same way.
 
 Straights and flushes need 5 real cards.
 
@@ -150,7 +154,7 @@ Straight flush > Four of a kind > Full house > Flush > Straight > Three of a kin
 **Ties:** compare category, then ranks (kickers) as usual. If still equal, compare
 suits card-by-card from the highest card down, with **♣ < ♦ < ♥ < ♠**.
 Only when both hands contain exactly the same real cards is it a true **draw**:
-nobody wins, no Jokers move, no money is gained.
+nobody wins, no snags move, no money is gained.
 
 ## The round in the slots style
 
@@ -164,33 +168,33 @@ Two players, three **streets**: Flop, Turn, River. On each street:
 
 ### Actions (exactly one per street)
 
-- **Place** a card from hand (including an owned Joker) into one of your slots.
+- **Place** a card from hand (including an owned snag) into one of your slots.
   If the slot is occupied, the old card goes back to your hand (a swap).
-- **Discard** a non-Joker card from hand and draw a replacement. This is also
+- **Discard** a non-snag card from hand and draw a replacement. This is also
   how you "pass" — and it costs you a slot you will never fill.
 - **Pass** only exists when nothing else is possible.
 
 An empty slot at showdown is a dead card.
 
-### Community Jokers (🔧 Joker mode)
+### Community snags (🔧 snag mode)
 
-- **Shuffled** (default): after the Flop deal, some unowned Jokers are shuffled
+- **Shuffled** (default): after the Flop deal, some unowned snags are shuffled
   into the deck (🔧 one per N months elapsed, capped by the unowned pool). A
-  Joker drawn by a player joins their hand (now owned!); one drawn to the board
+  snag drawn by a player joins their hand (now owned!); one drawn to the board
   is a dead community card and goes to the loser. Discarding is a gamble.
 - **Slot** (Classic only): a separate fourth community slot; from month 2, with
-  some chance, an unowned Joker sits there as the loser's prize.
+  some chance, an unowned snag sits there as the loser's prize.
 
-### Showdown and Joker transfer
+### Showdown and snag transfer
 
 - **Winner** gains money based on their hand category (see table).
 - **Loser** gains nothing, and receives:
-  - every Joker the **winner** placed (dumped on them),
-  - every **community** Joker,
-  - and keeps any Joker they placed themselves.
-- Worst case for one round: lose a round where the opponent placed a Joker *and*
-  there is a community Joker → +2 Jokers, none shed.
-- A no-Joker round is low stakes: losing just costs the pot.
+  - every snag the **winner** placed (dumped on them),
+  - every **community** snag,
+  - and keeps any snag they placed themselves.
+- Worst case for one round: lose a round where the opponent placed a snag *and*
+  there is a community snag → +2 snags, none shed.
+- A no-snag round is low stakes: losing just costs the pot.
 
 ### Loser pays (🔧)
 
@@ -201,10 +205,10 @@ about 29 to about 20 months.
 
 ### End of round
 
-1. Apply Joker transfers.
-2. Every player (on screen and off) loses **money per Joker owned**
+1. Apply snag transfers.
+2. Every player (on screen and off) loses **money per snag owned**
    (🔧 default $4 each).
-3. Anyone at $0 is eliminated. An eliminated opponent's Jokers return to the pool.
+3. Anyone at $0 is eliminated. An eliminated opponent's snags return to the pool.
 
 ### money for a win (🔧 tunable)
 
@@ -223,15 +227,15 @@ about 29 to about 20 months.
 ## The league ("Meanwhile, on the river…")
 
 The game is not just your duels: a small league of opponents plays each other
-every crossing off-screen, trading Jokers and money with the same rules.
+every crossing off-screen, trading snags and money with the same rules.
 
 - Each crossing you duel one opponent; the remaining active opponents are paired
   randomly (an odd one out sits the crossing out).
 - Off-screen duels are **fully simulated** with the same engine and AIs (cheap,
-  and keeps the Joker economy honest). ❓ Could later be replaced by a
+  and keeps the snag economy honest). ❓ Could later be replaced by a
   probability shortcut if needed.
 - The results screen shows a newspaper-style "Meanwhile on the river" summary.
-- Since eliminated opponents return their Jokers to the pool, keeping weak
+- Since eliminated opponents return their snags to the pool, keeping weak
   players like Felix alive is in your interest.
 - Some characters **join later** (e.g. Sherlock enters after the first
   elimination) to keep the river busy.
@@ -260,11 +264,11 @@ when (Gaylord Ravenal after the first bust; Maggie once Jiggs is busted).
    - top: the opponent's name (tap for their **captain card**: portrait, boat,
      **Willie's reckoning** of what they could be holding right now, how they
      play, where they first appeared, trivia), their **coin pile**, face-down
-     hand, Jokers face up, and their discards;
+     hand, snags face up, and their discards;
    - middle: crossing number, street, the **?** button (Willie: how to play,
-     fast-deal setting), the **pot** and the board; Jokers at stake are named
+     fast-deal setting), the **pot** and the board; snags at stake are named
      only when there are any;
-   - bottom: your hand, Jokers and discards, your **coin pile**, Fold and the
+   - bottom: your hand, snags and discards, your **coin pile**, Fold and the
      priced action button.
    Coin piles are stacks of silver dollars ($10 a stack) with loose change in
    front; new coins drop in as a purse grows. Coins fly into the pot from each
@@ -274,11 +278,11 @@ when (Gaylord Ravenal after the first bust; Maggie once Jiggs is busted).
    marked ▼ (the opponent's hand uses them) and ▲ (yours does). The veil is
    light so the coin piles stay visible as the pot is paid out.
 4. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", money change,
-   Joker movements, standings, "Meanwhile on the river" league news. No
+   snag movements, standings, "Meanwhile on the river" league news. No
    countdown: **Next crossing** or **Drop anchor** (pause).
 
 **Hand log:** the last 10 of the Captain's showdowns (board, both played hands,
-the cards each hand uses, result and Jokers moved), saved with the voyage.
+the cards each hand uses, result and snags moved), saved with the voyage.
 Open it from the result card or the rules lab.
 
 **Pausing:** Drop anchor returns to the title screen, which then offers
@@ -316,5 +320,5 @@ as a fallback. Dropping is final.
 
 - Multiplayer duels.
 - Richer matchmaking (temperature, declining challenges).
-- Distinct Joker types with different effects.
+- Distinct snag types with different effects.
 - Larger, rotating roster.

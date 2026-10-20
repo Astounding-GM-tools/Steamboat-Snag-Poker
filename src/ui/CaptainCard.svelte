@@ -27,7 +27,7 @@
     <div class="oval">{name(id)[0]}</div>
     <h2>{name(id)}</h2>
     <p class="boat">{t(`character.${id}.boat`)}</p>
-    <p class="purse">{dollars(captain.money)}{captain.jokers.length ? ` · ${'🃏'.repeat(captain.jokers.length)}` : ''}</p>
+    <p class="purse">{dollars(captain.money)}{captain.jokers.length ? ` · ${'🪵'.repeat(captain.jokers.length)}` : ''}</p>
     {#if odds}
       <section class="reckoning">
         <h3>{t('willie.hintTitle')}</h3>

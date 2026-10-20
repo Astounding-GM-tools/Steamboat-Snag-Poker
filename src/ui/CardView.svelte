@@ -59,7 +59,8 @@
     {#if markAbove}<span class="mark above" aria-hidden="true">▼</span>{/if}
     {#if markBelow}<span class="mark below" aria-hidden="true">▲</span>{/if}
     {#if isJoker(card)}
-      <span class="jester">🃏</span>
+      <span class="jtitle">{t('card.snag')}</span>
+      <span class="jester">🪵</span>
       <span class="jname">{jokerName(card.index).replace(/^the /, '')}</span>
     {:else}
       <span class="corner">{rank}<br />{suit}</span>
@@ -187,10 +188,17 @@
   .joker {
     background: repeating-linear-gradient(45deg, #ddd 0 6px, #bbb 6px 12px);
   }
+  .jtitle {
+    display: block;
+    font-family: var(--title-font);
+    font-size: calc(var(--w) * 0.16);
+    letter-spacing: 0.12em;
+    margin-top: 6%;
+  }
   .jester {
     display: block;
     font-size: calc(var(--w) * 0.45);
-    margin-top: 14%;
+    margin-top: 2%;
   }
   .jname {
     display: block;

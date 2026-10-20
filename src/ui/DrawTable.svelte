@@ -304,7 +304,7 @@
           {/each}
         </div>
         {#if composing && tappedJokers.length}
-          <button class="ghost small-btn" onclick={untapJoker}>− 🃏</button>
+          <button class="ghost small-btn" onclick={untapJoker}>− 🪵</button>
         {/if}
       {/if}
       {#if me.discarded.length}
