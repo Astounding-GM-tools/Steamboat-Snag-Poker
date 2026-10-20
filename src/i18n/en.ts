@@ -1,7 +1,7 @@
 /** English strings. Add a sibling file (e.g. no.ts) with the same keys for a new language. */
 export const en = {
   'title.name': "Willie's Wild River",
-  'title.tagline': 'A Game of River Poker',
+  'title.tagline': 'A Game of Steamboat Snag Poker',
   'title.start': 'Cast Off!',
   'title.continue': 'Continue voyage (crossing {month})',
   'title.newVoyage': 'New voyage',
@@ -11,7 +11,7 @@ export const en = {
   'title.abandonNo': 'Stay aboard',
   'title.howTo': 'How it works',
   'title.howToBody':
-    'Whenever steamboat captains cross paths on the river, they sit down for a hand of River Poker. The last captain still afloat wins the tournament.\n\nYou hold three cards. On the Flop and the Turn you may throw away any of them for new ones, or stand pat. Your discards lie face up, and so do theirs.\n\nWhen the River card comes, you make your hand: tap the cards you want to play. The best community cards fill the rest of your five. The winner takes the pot straight out of the loser’s purse.\n\nSnags are liabilities: stinking cargo, tiresome passengers, thankless duties. Each one costs you upkeep every crossing. To be rid of one, put it in your hand and still win: the loser takes every snag the winner dared to play. Four of a kind has room for a snag; a full house does not. Run out of money and you’re busted.',
+    'Whenever steamboat captains cross paths on the river, they sit down for a hand of Steamboat Snag Poker. The last captain still afloat wins the tournament.\n\nYou hold three cards. On the Flop and the Turn you may throw away any of them for new ones, or stand pat. Your discards lie face up, and so do theirs.\n\nWhen the River card comes, you make your hand: tap the cards you want to play. The best community cards fill the rest of your five. The winner takes the pot straight out of the loser’s purse.\n\nSnags are liabilities: stinking cargo, tiresome passengers, thankless duties. Each one costs you upkeep every crossing. To be rid of one, put it in your hand and still win: the loser takes every snag the winner dared to play. Four of a kind has room for a snag; a full house does not. Run out of money and you’re busted.',
   'title.record': 'Tournaments won: {wins} · Longest run: {months} crossings',
   'title.noBest': 'No voyages yet',
   'title.close': 'Close',
@@ -203,8 +203,11 @@ export const en = {
   'show.tb.suit.them': 'Dead level! {name}’s {win} beats your {lose} on suit.',
   'show.nothing': 'nothing',
   'show.deadCard': 'snag',
-  'show.tb.kicker.snag.them': 'Same hand! {name}’s {win} kicker beats your {snag}.',
-  'show.tb.kicker.snag.you': 'Same hand! Your {win} kicker beats {name}’s {snag}.',
+  'show.tb.kicker.snag.them': 'Same hand! {name}’s {win} kicker beats {snags}{end}',
+  'show.tb.kicker.snag.you': 'Same hand! Your {win} kicker beats {snags}{end}',
+  'show.yours': 'your',
+  'show.theirs': '{name}’s',
+  'show.and': ' AND ',
   'show.youWin': 'YOU WIN!',
   'show.youLose': 'YOU LOSE!',
   'show.draw': 'A DEAD HEAT!',
@@ -286,7 +289,8 @@ export const en = {
   'joker.11': 'the Unpaid Coal Bill',
   'joker.generic': 'a snag',
 
-  'preset.draw': 'Rules: Kansas Shuffle',
+  'preset.draw': 'Rules: Snag Poker',
+  'preset.kansasDraw': 'Rules: Kansas Draw (no snags)',
   'preset.kansas': 'Rules: Omaha slots (5 board, 3 slots, use 2)',
   'preset.texas': 'Rules: Texas (5 board, 3 slots, use any)',
   'preset.middle': 'Rules: Middle (5 board, 3 slots, use 1–2)',

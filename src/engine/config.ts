@@ -91,11 +91,13 @@ const KANSAS: RulesConfig = {
 /** Named rule sets for play-testing and simulation. */
 export const PRESETS: Record<string, RulesConfig> = {
   /**
-   * Kansas Shuffle, the game: three cards, discard any on the Flop and Turn,
-   * compose your hand on the River, play for the pot. Free Jokers are shuffled
-   * into the deck after the Flop.
+   * Snag Poker, the game: three cards, discard any on the Flop and Turn,
+   * compose your hand on the River, play for the pot. Free snags (jokers in
+   * the code) are shuffled into the deck after the Flop.
    */
   draw: { ...KANSAS, preset: 'draw', playStyle: 'draw', dealSchedule: [3, 0, 0], pot: true },
+  /** Kansas Draw: the same game with a plain deck, no snags at all. */
+  kansasDraw: { ...KANSAS, preset: 'kansasDraw', playStyle: 'draw', dealSchedule: [3, 0, 0], pot: true, totalJokers: 0 },
   kansas: KANSAS,
   texas: { ...KANSAS, preset: 'texas', ownCards: { min: 0, max: 3 } },
   middle: { ...KANSAS, preset: 'middle', ownCards: { min: 1, max: 2 } },

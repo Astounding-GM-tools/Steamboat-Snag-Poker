@@ -49,13 +49,19 @@ vignette, intertitle cards for all text.
 All structural rules live in one config (`src/engine/config.ts`) with named
 presets, selectable in the rules lab (⚙) and the balance simulation.
 
-### Kansas Shuffle (the game; preset `draw`)
+### Snag Poker (the game; preset `draw`)
 
-The name: between Texas and Omaha (geographically too), with the snag
-shuffle after the Flop; and the "Kansas City Shuffle", an old con men's term
-for a swindle where the mark looks one way while the con goes the other, and a
-1926 jazz tune by Bennie Moten.
-
+**Naming**
+- **Snag Poker** (or just **Snag**): the core game. The liabilities are
+  **snags**, after the sunken trees that sank Mississippi steamboats ("hit a
+  snag").
+- **Steamboat Snag Poker:** this game, with the steamboat theme. Future themes:
+  Stockbroker Snag Poker, Cthulhu Mythos Snag Poker, Sherlock's Snag Poker,
+  Supervillain Snag Poker.
+- **Kansas Draw** (preset `kansasDraw`): the same rules with a plain deck and
+  no snags. "Kansas" because it sits between Texas and Omaha (geographically
+  too), and a nod to the "Kansas City Shuffle", the con men's swindle and
+  Bennie Moten's 1926 tune.
 
 1. **Flop:** 3 community cards are revealed; each player is dealt **3 cards**.
 2. **Flop and Turn:** tap any number of hand cards to **discard** and draw

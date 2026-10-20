@@ -53,10 +53,12 @@
     if (!tb) return '';
     const side = result.winner === 0 ? 'you' : 'them';
     if (tb.loserDead) {
-      // The deciding spot held the loser's snag: name it ("…beats your stinking hides").
-      const snag = round.seats[1 - result.winner].slots.find(isJoker);
-      const snagName = snag ? jokerName(snag.index).replace(/^the /, '').toLowerCase() : t('show.deadCard');
-      return t(`show.tb.kicker.snag.${side}`, { name: foe, win: tb.winner, snag: snagName });
+      // The deciding spot held the loser's snags: name every one of them
+      // ("…beats your Stinking Hides, your Layabout Nephew AND your In-Laws!").
+      const owner = result.winner === 0 ? t('show.theirs', { name: foe }) : t('show.yours');
+      const snags = round.seats[1 - result.winner].slots.filter(isJoker).map((j) => `${owner} ${jokerName(j.index).replace(/^the /, '')}`);
+      const list = snags.length <= 1 ? (snags[0] ?? `${owner} ${t('show.deadCard')}`) : `${snags.slice(0, -1).join(', ')}${t('show.and')}${snags.at(-1)}`;
+      return t(`show.tb.kicker.snag.${side}`, { name: foe, win: tb.winner, snags: list, end: snags.length > 1 ? '!' : '.' });
     }
     return t(`show.tb.${tb.kind}.${side}`, { name: foe, win: tb.winner, lose: tb.loser });
   });
