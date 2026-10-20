@@ -30,6 +30,8 @@ function composeRound(hands: [string, string], board: string, jokers: [number, n
     discards: [],
     history: [],
     fished: [],
+    potMode: false,
+    bets: [0, 0],
     result: null,
   };
 }

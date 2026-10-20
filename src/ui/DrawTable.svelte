@@ -3,7 +3,10 @@
   import {
     STREETS,
     bestHand,
+    canFold,
+    discardCost,
     isComposing,
+    streetFee,
     isJoker,
     opponentOdds,
     HUMAN_ID,
@@ -18,6 +21,7 @@
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import CaptainCard from './CaptainCard.svelte';
+  import PotStack from './PotStack.svelte';
   import WillieSays from './WillieSays.svelte';
   import { cardLabel, dollars, jokerList, name } from './format';
   import { describeHand } from './handNames';
@@ -190,9 +194,29 @@
     onaction(action);
   }
 
-  const buttonLabel = $derived(
-    tapped.length === 0 ? t('draw.standPat') : composing ? t('draw.play') : t('draw.discard', { n: tapped.length }),
+  // Pot mode: purses shrink as you pay in, and every action shows its price.
+  const bets = $derived<[number, number]>(round.potMode ? round.bets : [0, 0]);
+  const paidSoFar = (seat: number) => (playing ? bets[seat] : 0);
+  const cost = $derived(
+    round.potMode && !composing && playing
+      ? streetFee(config, round.month, round.street + 1) + discardCost(me.discarded.length, tappedCards.length)
+      : 0,
   );
+  const priced = (label: string) => (cost ? `${label} · ${dollars(cost)}` : label);
+  const buttonLabel = $derived(
+    tapped.length === 0
+      ? priced(t('draw.standPat'))
+      : composing
+        ? t('draw.play')
+        : priced(t('draw.discard', { n: tapped.length })),
+  );
+  const showFold = $derived(round.potMode && playing && !composing);
+
+  function fold() {
+    if (!playing || dealing || !canFold(round, 0)) return;
+    tapped = [];
+    onaction({ type: 'fold' });
+  }
 
   const pct = (x: number) => `${Math.round(x * 100)}%`;
 </script>
@@ -202,7 +226,7 @@
   <!-- One quiet line: where we are and what's in the purse. -->
   <header class="status">
     <span>{t('table.crossing', { month: game.month })}</span>
-    <span class="purse">{dollars(captain.money)}</span>
+    <span class="purse">{dollars(captain.money - paidSoFar(0))}</span>
     <button class="ghost icon" onclick={() => (showHelp = true)} aria-label={t('willie.helpTitle')}>?</button>
   </header>
 
@@ -213,7 +237,7 @@
         <span class="oval small-oval">{name(opponentId)[0]}</span>
         <span class="name">{name(opponentId)}</span>
       </button>
-      <span class="purse">{dollars(opponent.money)}</span>
+      <span class="purse">{dollars(opponent.money - paidSoFar(1))}</span>
     </div>
     <div class="row">
       <div class="hand-backs">
@@ -233,6 +257,7 @@
   <section class="river">
     <div class="street">{t(`street.${streetName}`)}</div>
     <div class="river-row">
+      {#if round.potMode}<PotStack {bets} />{/if}
       <div class="community">
         {#each Array.from({ length: boardSize }) as _, i}
           {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
@@ -278,6 +303,9 @@
             {describeHand(preview!)}{#if tappedJokers.length}<b> · {t('draw.risking', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}</b>{/if}
           {/if}
         </span>
+        {#if showFold}
+          <button class="ghost" onclick={fold} disabled={dealing || !canFold(round, 0)}>{t('draw.fold')}</button>
+        {/if}
         <button onclick={go} disabled={dealing}>{buttonLabel}</button>
       </div>
     {/if}

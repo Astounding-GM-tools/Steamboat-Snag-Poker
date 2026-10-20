@@ -41,6 +41,15 @@ export interface RulesConfig {
   loserPays: number;
   /** Dollars the loser pays the winner for every Joker they put in their losing hand. */
   jokerForfeit: number;
+  /**
+   * Draw style: play for a pot (antes, street fees, discard fees) instead of
+   * fixed payouts. Joker upkeep is then paid into the ante.
+   */
+  pot: boolean;
+  /** Pot mode: the ante is ceil(crossing / anteEvery). */
+  anteEvery: number;
+  /** Pot mode: the Turn and River fees are floor(ante / divisor). */
+  streetFeeDivisors: [number, number];
   startMoney: number;
   winGain: Record<Category, number>;
 }
@@ -72,6 +81,9 @@ const KANSAS: RulesConfig = {
   drainPerJoker: 4,
   loserPays: 1,
   jokerForfeit: 5,
+  pot: false,
+  anteEvery: 3,
+  streetFeeDivisors: [3, 2],
   startMoney: 50,
   winGain: BASE_GAIN,
 };
@@ -79,7 +91,7 @@ const KANSAS: RulesConfig = {
 /** Named rule sets for play-testing and simulation. */
 export const PRESETS: Record<string, RulesConfig> = {
   /** Draw: three cards, discard any on the Flop and Turn, compose your hand on the River. */
-  draw: { ...KANSAS, preset: 'draw', playStyle: 'draw', dealSchedule: [3, 0, 0] },
+  draw: { ...KANSAS, preset: 'draw', playStyle: 'draw', dealSchedule: [3, 0, 0], pot: true },
   kansas: KANSAS,
   texas: { ...KANSAS, preset: 'texas', ownCards: { min: 0, max: 3 } },
   middle: { ...KANSAS, preset: 'middle', ownCards: { min: 1, max: 2 } },

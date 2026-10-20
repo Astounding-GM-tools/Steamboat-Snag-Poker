@@ -88,7 +88,29 @@ the opponent's played cards are turned over one at a time — teasers first
 deciding card last — each showing how it combines with the board. No auto-advance: the
 player steps through with Next (or Skip to the result).
 
-### Slots presets
+### The pot (draw style)
+
+There are no fixed payouts: captains play for a **pot** in the middle of the
+felt, and the winner takes it (a tie splits it).
+
+- **Ante**, paid at the deal: ceil(crossing ÷ 3) (🔧 `anteEvery`), **plus Joker
+  upkeep** for every Joker you carry, so a captain dragging Jokers around pays
+  a fat ante, and everyone knows they will try to dump some.
+- **Seeing the Turn** costs floor(ante ÷ 3); **seeing the River** floor(ante ÷ 2)
+  (free early on).
+- **Discards get dearer:** the k-th card you throw away in a crossing costs $k
+  (six cards = $21).
+- **Fold** on the Flop or Turn, as long as you have not swapped a card: the
+  other captain takes the pot; you keep your Jokers (including any fished this
+  crossing); community Jokers go back into the deck.
+- **Forfeit:** each Joker in a losing hand still costs $5, paid to the winner.
+- **Debt is all-in:** fees can push a purse below $0 mid-crossing. End a
+  crossing at $0 or less and you are busted.
+
+The pot sits left of the board; coins fly in from each side as captains pay,
+and every button shows its price ("Discard 2 · $4").
+
+
 
 | Preset | Board (Flop/Turn/River) | Deal per player | Slots | Own cards used |
 |---|---|---|---|---|

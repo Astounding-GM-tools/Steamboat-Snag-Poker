@@ -48,6 +48,9 @@ export interface ShowdownRecord {
   winner: 0 | 1 | null;
   gain: number;
   forfeit: number;
+  /** Pot mode: what each side paid in; and who folded, if anyone. */
+  paid?: [number, number];
+  folded?: 0 | 1 | null;
   dumped: JokerCard[];
   communityTaken: JokerCard[];
 }
@@ -84,7 +87,11 @@ export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): 
   const state = clone(saved);
   state.config = { ...DEFAULT_CONFIG, ...state.config, winGain: { ...DEFAULT_CONFIG.winGain, ...state.config.winGain } };
   state.log ??= [];
-  if (state.round) state.round.fished ??= [];
+  if (state.round) {
+    state.round.fished ??= [];
+    state.round.potMode ??= false;
+    state.round.bets ??= [0, 0];
+  }
   if (state.report && !state.report.money) {
     state.report.money = (state.report as MonthReport & { popularity?: MonthReport['money'] }).popularity ?? {};
   }
@@ -198,7 +205,13 @@ function finishMonth(state: GameState, rng: Rng) {
       before[p.id] ??= p.money;
       p.jokers = seat.jokers;
       const forfeit = res.forfeit ?? 0;
-      if (res.winner === i) p.money += res.gain + forfeit;
+      if (round.potMode) {
+        // Pot mode: pay in what you bet; the winner takes the pot (a tie splits it).
+        p.money -= round.bets[i];
+        if (res.winner === i) p.money += res.pot + forfeit;
+        else if (res.winner === null) p.money += Math.floor(res.pot / 2);
+        else p.money -= forfeit;
+      } else if (res.winner === i) p.money += res.gain + forfeit;
       else if (res.winner !== null) p.money = Math.max(0, p.money - Math.round(res.gain * (cfg.loserPays ?? 0)) - forfeit);
     });
     state.pool.push(...res.returnedToPool);
@@ -219,6 +232,8 @@ function finishMonth(state: GameState, rng: Rng) {
     winner: duel.result.winner,
     gain: duel.result.gain,
     forfeit: duel.result.forfeit,
+    paid: finished.potMode ? [finished.bets[0], finished.bets[1]] : undefined,
+    folded: duel.result.folded ?? null,
     dumped: duel.result.dumped,
     communityTaken: duel.result.communityTaken,
   };
@@ -237,8 +252,9 @@ function finishMonth(state: GameState, rng: Rng) {
   for (const p of state.players) {
     if (p.status !== 'active') continue;
     before[p.id] ??= p.money;
-    const drained = p.jokers.length * cfg.drainPerJoker;
-    p.money = Math.max(0, p.money - drained);
+    // In pot mode Joker upkeep is paid into each ante instead.
+    const drained = cfg.playStyle === 'draw' && cfg.pot ? 0 : p.jokers.length * cfg.drainPerJoker;
+    if (drained) p.money = Math.max(0, p.money - drained);
     money[p.id] = { before: before[p.id], after: p.money, drained };
     if (p.money <= 0) {
       p.status = 'eliminated';

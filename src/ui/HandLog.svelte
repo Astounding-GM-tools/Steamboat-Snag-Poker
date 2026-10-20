@@ -12,6 +12,12 @@
   function outcome(rec: ShowdownRecord): string {
     if (rec.winner === null) return t('log.draw');
     const forfeit = rec.forfeit ?? 0;
+    const folded = rec.folded === 0 ? t('log.youFolded') : rec.folded === 1 ? t('log.theyFolded', { name: name(rec.opponentId) }) : '';
+    if (rec.paid) {
+      // Pot mode: net result is the pot you took (or not) minus what you paid in.
+      const net = (rec.winner === 0 ? rec.gain : 0) - rec.paid[0] + (rec.winner === 0 ? forfeit : -forfeit);
+      return folded + (net >= 0 ? t('log.won', { n: net }) : t('log.lost', { n: -net }));
+    }
     const loss = Math.round(rec.gain * game.config.loserPays) + forfeit;
     return rec.winner === 0 ? t('log.won', { n: rec.gain + forfeit }) : t('log.lost', { n: loss });
   }

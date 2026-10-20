@@ -18,12 +18,17 @@
   const foe = $derived(report.duel.players[1]);
   const won = $derived(res.winner === 0);
   const mine = $derived(report.money[HUMAN_ID]);
-  const loss = $derived(res.winner === 1 ? Math.round(res.gain * game.config.loserPays) : 0);
+  const potMode = $derived(game.round?.potMode ?? false);
+  const paidIn = $derived(potMode ? (game.round?.bets[0] ?? 0) : 0);
+  const loss = $derived(!potMode && res.winner === 1 ? Math.round(res.gain * game.config.loserPays) : 0);
+  const youFolded = $derived(res.folded === 0 && res.winner === 1);
+  const theyFolded = $derived(res.folded === 1 && res.winner === 0);
   const over = $derived(game.phase === 'gameOver' || game.phase === 'victory');
 
   const headline = $derived(
     game.phase === 'gameOver' ? t('end.gameOver')
     : game.phase === 'victory' ? t('end.winGame')
+    : youFolded ? t('end.folded')
     : res.winner === null ? t('end.draw')
     : won ? t('end.victory') : t('end.catastrophe'),
   );
@@ -35,6 +40,9 @@
 
   function duelLine(d: DuelSummary): string {
     const r = d.result;
+    if (r.folded !== null && r.folded !== undefined && r.winner !== null) {
+      return t('end.duelFold', { folder: name(d.players[r.folded]), winner: name(d.players[r.winner]), n: r.pot });
+    }
     if (r.winner === null) return t('end.duelDraw', { a: name(d.players[0]), b: name(d.players[1]) });
     const loser = name(d.players[1 - r.winner]);
     const moved = [...r.dumped, ...r.communityTaken];
@@ -61,17 +69,21 @@
       {#if res.winner === null}
         <p>{t('end.draw.body')}</p>
       {:else if won}
-        <p class="big">{t('end.gain', { n: res.gain })}</p>
+        {#if theyFolded}<p>{t('end.theyFolded', { name: name(foe) })}</p>{/if}
+        <p class="big">{potMode ? t('end.potWon', { n: res.pot }) : t('end.gain', { n: res.gain })}</p>
         {#if res.dumped.length}<p>{t('end.dumped', { jokers: jokerList(res.dumped) })}</p>{/if}
         {#if res.forfeit}<p>{t('end.forfeitWon', { name: name(foe), n: res.forfeit })}</p>{/if}
         {#if res.communityTaken.length}<p>{t('end.dodged', { name: name(foe), jokers: jokerList(res.communityTaken) })}</p>{/if}
       {:else}
+        {#if youFolded}<p>{t('end.youFolded')}</p>{/if}
+        {#if potMode}<p class="big">{t('end.potLost', { name: name(foe), n: res.pot })}</p>{/if}
         {#if loss}<p class="big">{t('end.loss', { n: loss })}</p>{/if}
         {#if res.forfeit}<p class="big">{t('end.forfeitLost', { n: res.forfeit })}</p>{/if}
         {#if res.dumped.length}<p class="big">{t('end.gotDumped', { name: name(foe), jokers: jokerList(res.dumped) })}</p>{/if}
         {#if res.communityTaken.length}<p class="big">{t('end.tookCommunity', { jokers: jokerList(res.communityTaken) })}</p>{/if}
-        {#if !loss && !res.forfeit && !res.dumped.length && !res.communityTaken.length}<p>{t('end.noHarm')}</p>{/if}
+        {#if !potMode && !loss && !res.forfeit && !res.dumped.length && !res.communityTaken.length}<p>{t('end.noHarm')}</p>{/if}
       {/if}
+      {#if paidIn}<p>{t('end.paidIn', { n: paidIn })}</p>{/if}
       {#if mine?.drained}<p>{t('end.drain', { n: mine.drained })}</p>{/if}
       {#if mine}<p class="pop">{t('table.money')}: {dollars(mine.before)} → <b>{dollars(mine.after)}</b></p>{/if}
     </div>

@@ -48,7 +48,8 @@
     if (g.phase === 'gameOver' || g.phase === 'victory') best = recordResult(g.month, g.phase === 'victory');
     setGame(g);
     if (g.phase !== 'duel') {
-      if (g.config.playStyle === 'draw') stage = 'reveal';
+      // A fold has nothing to reveal: straight to the result card.
+      if (g.config.playStyle === 'draw') stage = g.round?.result?.folded != null ? 'result' : 'reveal';
       else {
         // Slots style: let the showdown sit on the table for a beat.
         clearTimeout(endTimer);

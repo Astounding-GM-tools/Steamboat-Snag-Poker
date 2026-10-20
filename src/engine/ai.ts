@@ -6,7 +6,8 @@ import { fullDeck, isJoker, isStd, type Card, type JokerCard, type StdCard } fro
 import type { AiId } from './characters';
 import type { RulesConfig } from './config';
 import { bestScore, CATEGORIES, categoryOf, type Category, type OwnCardRule } from './evaluate';
-import { isComposing, legalSeatActions, subsets, type Action, type RoundState } from './round';
+import { canFold, isComposing, legalSeatActions, subsets, type Action, type RoundState } from './round';
+import { discardCost, streetFee } from './pot';
 import type { Rng } from './rng';
 
 export interface SeatView {
@@ -25,6 +26,13 @@ export interface SeatView {
   discards: StdCard[];
   /** What the other player has discarded this round (face up). */
   opponentDiscarded: StdCard[];
+  /** How many cards this seat has thrown away this crossing (discard fees rise with it). */
+  discardedCount: number;
+  month: number;
+  /** Pot mode: the pot so far, and whether this seat may still fold. */
+  potMode: boolean;
+  pot: number;
+  canFold: boolean;
   deckSize: number;
 }
 
@@ -45,6 +53,11 @@ export function viewFor(round: RoundState, seatIndex: number): SeatView {
     opponentJokerCount: them.jokers.length + them.slots.filter(isJoker).length,
     discards: round.discards,
     opponentDiscarded: them.discarded,
+    discardedCount: me.discarded.length,
+    month: round.month,
+    potMode: round.potMode ?? false,
+    pot: (round.bets ?? [0, 0])[0] + (round.bets ?? [0, 0])[1],
+    canFold: canFold(round, seatIndex),
     deckSize: round.deck.length,
   };
 }
@@ -225,6 +238,9 @@ function expectedStakes(view: SeatView) {
   return (view.communityJoker ? 1 : 0) + view.community.filter(isJoker).length + 0.3 * Math.min(view.opponentJokerCount, 2);
 }
 
+/** How readily each style folds in pot mode: fold when continuing is worth less than this share of the pot. */
+const FOLD_BAR: Partial<Record<AiId, number>> = { careful: 0.1, gambler: 0, shark: -0.1, dreamer: 0, loose: -0.3 };
+
 function drawAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Action {
   const options = subsets(view.hand.map((c) => c.id)).filter((ids) => ids.length <= view.deckSize);
   const discard = (cards: Card[]): Action => ({ type: 'draw', cardIds: cards.map((c) => c.id).slice(0, view.deckSize) });
@@ -235,35 +251,44 @@ function drawAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Ac
     case 'stubborn':
       // Stands pat on anything that isn't truly hopeless.
       return discard(view.hand.filter((c) => isStd(c) && c.rank <= 4));
-    case 'anarchist':
-      // Throws the lot, like a brick.
-      return discard(view.hand);
+    case 'anarchist': {
+      // Throw-happy: always chucks a card or two, usually the small ones.
+      const low = [...view.hand].sort((x, y) => x.rank - y.rank);
+      return discard(low.slice(0, rng.next() < 0.5 ? 1 : 2));
+    }
     case 'clueless':
       return { type: 'draw', cardIds: rng.pick(options) };
     case 'prankster':
-      return rng.next() < 0.7 ? { type: 'draw', cardIds: rng.pick(options) } : smartDraw(view, config, rng, options, 15);
+      return rng.next() < 0.7 ? { type: 'draw', cardIds: rng.pick(options) } : smartDraw(ai, view, config, rng, options, 15);
     case 'dreamer':
-      return rng.next() < 0.5 ? { type: 'draw', cardIds: rng.pick(options) } : smartDraw(view, config, rng, options, 40);
+      return rng.next() < 0.5 ? { type: 'draw', cardIds: rng.pick(options) } : smartDraw(ai, view, config, rng, options, 40);
     case 'loose':
-      return smartDraw(view, config, rng, options, 15);
+      return smartDraw(ai, view, config, rng, options, 15);
     case 'careful':
-      return smartDraw(view, config, rng, options, 40);
+      return smartDraw(ai, view, config, rng, options, 40);
     case 'shark':
-      return smartDraw(view, config, rng, options, 30);
+      return smartDraw(ai, view, config, rng, options, 30);
     case 'gambler':
-      return smartDraw(view, config, rng, options, 50);
+      return smartDraw(ai, view, config, rng, options, 50);
   }
 }
 
-/** Monte Carlo over which cards to throw away, judged by the chance of winning at showdown. */
-function smartDraw(view: SeatView, config: RulesConfig, rng: Rng, options: string[][], samples: number): Action {
+/**
+ * Monte Carlo over which cards to throw away, judged by the chance of winning
+ * at showdown. In pot mode it weighs that chance against what the swap costs,
+ * and folds when no option is worth paying for.
+ */
+function smartDraw(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng, options: string[][], samples: number): Action {
   const pool = unseen(view);
   const size = boardSize(config);
   const oppHandSize = view.opponentHandSize;
+  const fee = view.potMode ? streetFee(config, view.month, view.street + 1) : 0;
+  const laterFees = view.potMode && view.street === 0 ? streetFee(config, view.month, 2) : 0;
   let best = options[0];
   let bestValue = -Infinity;
   for (const ids of options) {
-    let value = 0;
+    let wins = 0;
+    let winValue = 0;
     for (let s = 0; s < samples; s++) {
       const pile = rng.shuffle(pool);
       const hand: Card[] = view.hand.filter((c) => !ids.includes(c.id));
@@ -273,13 +298,25 @@ function smartDraw(view: SeatView, config: RulesConfig, rng: Rng, options: strin
       const opp = pile.slice(-oppHandSize);
       const mine = bestScore(hand, board, ANY_OWN(hand.length));
       const theirs = bestScore(opp, board, ANY_OWN(opp.length));
-      if (mine > theirs) value += 1 + config.winGain[categoryOf(mine)] / 20;
+      if (mine > theirs) {
+        wins++;
+        winValue += 1 + config.winGain[categoryOf(mine)] / 20;
+      }
     }
+    let value: number;
+    if (view.potMode) {
+      // Expected pot at showdown: what's in it, plus both sides' fees from here on.
+      const cost = fee + laterFees + discardCost(view.discardedCount, ids.length);
+      const finalPot = view.pot + cost + fee + laterFees + 1;
+      value = (wins / samples) * finalPot - cost;
+    } else value = winValue;
     if (value > bestValue) {
       bestValue = value;
       best = ids;
     }
   }
+  const bar = FOLD_BAR[ai];
+  if (view.potMode && view.canFold && bar !== undefined && bestValue < bar * view.pot) return { type: 'fold' };
   return { type: 'draw', cardIds: best };
 }
 
@@ -355,7 +392,8 @@ function smartCompose(view: SeatView, config: RulesConfig, rng: Rng, options: Co
   for (const o of options) {
     const pWin = theirs.filter((t) => o.score > t).length / samples;
     const forfeit = o.jokers * (config.jokerForfeit ?? 0);
-    const value = pWin * (config.winGain[categoryOf(o.score)] + o.jokers * jokerValue * jokerBold) - (1 - pWin) * (stakes * jokerValue + forfeit);
+    const prize = view.potMode ? view.pot : config.winGain[categoryOf(o.score)];
+    const value = pWin * (prize + o.jokers * jokerValue * jokerBold) - (1 - pWin) * (stakes * jokerValue + forfeit);
     if (value > bestValue) {
       bestValue = value;
       best = o;
