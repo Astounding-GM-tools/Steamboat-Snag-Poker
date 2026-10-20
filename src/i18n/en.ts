@@ -201,6 +201,7 @@ export const en = {
   'show.tb.suit.you': 'Dead level! Your {win} beats {name}’s {lose} on suit.',
   'show.tb.suit.them': 'Dead level! {name}’s {win} beats your {lose} on suit.',
   'show.nothing': 'nothing',
+  'show.deadCard': 'Joker',
   'show.youWin': 'YOU WIN!',
   'show.youLose': 'YOU LOSE!',
   'show.draw': 'A DEAD HEAT!',

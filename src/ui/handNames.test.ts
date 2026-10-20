@@ -9,7 +9,13 @@ describe('tiebreak', () => {
     const bill = hand('As Ad Kh Kd 8h');
     const you = hand('As Ad Kh Kd 6s');
     expect(describeHand(bill)).toBe(describeHand(you));
-    expect(tiebreak(bill, you)).toEqual({ kind: 'kicker', winner: 'Eight', loser: 'Six' });
+    expect(tiebreak(bill, you)).toEqual({ kind: 'kicker', winner: 'Eight', loser: 'Six', loserDead: false });
+  });
+
+  it('names the Joker when a dead card lost the kicker battle', () => {
+    const ignatz = evaluate([parseCard('Ks'), parseCard('Kd'), parseCard('9c'), parseCard('4h'), parseCard('3s')]);
+    const you = evaluate([parseCard('Ks'), parseCard('Kd'), parseCard('9c'), parseCard('4h'), null]);
+    expect(tiebreak(ignatz, you)).toEqual({ kind: 'kicker', winner: 'Three', loser: 'Joker', loserDead: true });
   });
 
   it('uses "next card" for flushes', () => {

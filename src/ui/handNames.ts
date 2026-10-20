@@ -81,6 +81,8 @@ export interface Tiebreak {
   /** What the winner had at the deciding spot, e.g. "Eight" or "♠". */
   winner: string;
   loser: string;
+  /** The loser had no card at the deciding spot: a dead card (a Joker) sat there. */
+  loserDead?: boolean;
 }
 
 /** Ranks in the order poker compares them: groups by size, then by rank. */
@@ -103,7 +105,7 @@ export function tiebreak(win: HandValue, lose: HandValue): Tiebreak | null {
   for (let i = 0; i < Math.max(a.length, b.length); i++) {
     if (a[i] !== b[i]) {
       const grouped = ['pair', 'twoPair', 'threeOfAKind', 'fourOfAKind'].includes(win.category);
-      return { kind: grouped ? 'kicker' : 'next', winner: a[i] ? single(a[i]) : t('show.nothing'), loser: b[i] ? single(b[i]) : t('show.nothing') };
+      return { kind: grouped ? 'kicker' : 'next', winner: single(a[i]), loser: b[i] ? single(b[i]) : t('show.deadCard'), loserDead: !b[i] };
     }
   }
   for (let i = 0; i < Math.min(win.cards.length, lose.cards.length); i++) {
