@@ -282,8 +282,8 @@ export const en = {
   'joker.11': 'the Unpaid Coal Bill',
   'joker.generic': 'a Joker',
 
-  'preset.draw': 'Rules: Draw (discard, then make your hand)',
-  'preset.kansas': 'Rules: Kansas (5 board, 3 slots, use 2)',
+  'preset.draw': 'Rules: Kansas Shuffle',
+  'preset.kansas': 'Rules: Omaha slots (5 board, 3 slots, use 2)',
   'preset.texas': 'Rules: Texas (5 board, 3 slots, use any)',
   'preset.middle': 'Rules: Middle (5 board, 3 slots, use 1–2)',
   'preset.threePlusThree': 'Rules: 3 + 3 (3 board, 3 slots, use 2–3)',

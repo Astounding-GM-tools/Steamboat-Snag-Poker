@@ -45,7 +45,13 @@ vignette, intertitle cards for all text.
 All structural rules live in one config (`src/engine/config.ts`) with named
 presets, selectable in the rules lab (⚙) and the balance simulation.
 
-### Draw (default)
+### Kansas Shuffle (the game; preset `draw`)
+
+The name: between Texas and Omaha (geographically too), with the Joker
+shuffle after the Flop; and the "Kansas City Shuffle", an old con men's term
+for a swindle where the mark looks one way while the con goes the other, and a
+1926 jazz tune by Bennie Moten.
+
 
 1. **Flop:** 3 community cards are revealed; each player is dealt **3 cards**.
 2. **Flop and Turn:** tap any number of hand cards to **discard** and draw
@@ -114,14 +120,14 @@ and every button shows its price ("Discard 2 · $4").
 
 | Preset | Board (Flop/Turn/River) | Deal per player | Slots | Own cards used |
 |---|---|---|---|---|
-| **Kansas** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | exactly 2 |
+| **Omaha slots** (preset `kansas`) | 3 / 1 / 1 | 3 / 1 / 1 | 3 | exactly 2 |
 | **Texas** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 0–3 |
 | **Middle** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 1–2 |
 | **3 + 3** | 1 / 1 / 1 | 3 / 1 / 1 | 3 | 2–3 |
 | **Classic** (v1) | 1 / 1 / 1 | 3 / 1 / 1 | 2 | exactly 2, Joker in a 4th slot |
 
 In the slots style you place one card per street into a slot (or discard one).
-"Kansas" sits between Texas and Omaha (geographically, too).
+These were stepping stones on the way to Kansas Shuffle.
 
 ## Hand ranking
 

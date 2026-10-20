@@ -66,7 +66,7 @@ const BASE_GAIN: Record<Category, number> = {
   straightFlush: 20,
 };
 
-/** "Kansas": full Hold'em board, three slots, Omaha's use-exactly-two rule. */
+/** Omaha slots (formerly "Kansas"): full Hold'em board, three slots, Omaha's use-exactly-two rule. */
 const KANSAS: RulesConfig = {
   preset: 'kansas',
   playStyle: 'slots',
@@ -90,7 +90,11 @@ const KANSAS: RulesConfig = {
 
 /** Named rule sets for play-testing and simulation. */
 export const PRESETS: Record<string, RulesConfig> = {
-  /** Draw: three cards, discard any on the Flop and Turn, compose your hand on the River. */
+  /**
+   * Kansas Shuffle, the game: three cards, discard any on the Flop and Turn,
+   * compose your hand on the River, play for the pot. Free Jokers are shuffled
+   * into the deck after the Flop.
+   */
   draw: { ...KANSAS, preset: 'draw', playStyle: 'draw', dealSchedule: [3, 0, 0], pot: true },
   kansas: KANSAS,
   texas: { ...KANSAS, preset: 'texas', ownCards: { min: 0, max: 3 } },
