@@ -249,19 +249,24 @@ when (Gaylord Ravenal after the first bust; Maggie once Jiggs is busted).
 
 1. **Title** — riverboat, "START" button, best result, short "How it works"
    card: *Steer public opinion. Avoid ruin. Dump your mess on someone else.*
-2. **The Table** (draw style), one column so it fits a phone:
-   - a single status line: crossing number, your purse, and a **?** button
-     (Willie explains how to play; the fast-deal setting lives there too);
-   - the opponent: name (tap for their **captain card**: portrait, boat,
+2. **The Table** (draw style), one column so it fits a phone, split by the
+   board into **their side** (top) and **yours** (bottom):
+   - top: the opponent's name (tap for their **captain card**: portrait, boat,
      **Willie's reckoning** of what they could be holding right now, how they
-     play, where they first appeared, a bit of trivia), purse, face-down hand,
-     their Jokers face up, and their discards;
-   - the river: community cards and the discard pile; Jokers at stake are
-     named only when there are any;
-   - your hand and Jokers, and one action button.
-   No leaderboard (it is on the result card) and no pause button mid-round
-   (pause from the result card).
-3. **Showdown** (draw style) — the card-by-card reveal described above.
+     play, where they first appeared, trivia), their **coin pile**, face-down
+     hand, Jokers face up, and their discards;
+   - middle: crossing number, street, the **?** button (Willie: how to play,
+     fast-deal setting), the **pot** and the board; Jokers at stake are named
+     only when there are any;
+   - bottom: your hand, Jokers and discards, your **coin pile**, Fold and the
+     priced action button.
+   Coin piles are stacks of silver dollars ($10 a stack) with loose change in
+   front; new coins drop in as a purse grows. Coins fly into the pot from each
+   side as captains pay, and at the verdict the pot flies to the winner's pile.
+3. **Showdown** (draw style) — the card-by-card reveal described above, with
+   the opponent's cards above the board and yours below; board cards are
+   marked ▼ (the opponent's hand uses them) and ▲ (yours does). The veil is
+   light so the coin piles stay visible as the pot is paid out.
 4. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", money change,
    Joker movements, standings, "Meanwhile on the river" league news. No
    countdown: **Next crossing** or **Drop anchor** (pause).

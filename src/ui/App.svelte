@@ -21,6 +21,8 @@
   let stage = $state<'play' | 'reveal' | 'result'>('play');
   let endTimer: ReturnType<typeof setTimeout> | undefined;
   let showLog = $state(false);
+  /** The showdown has shown its verdict: the pot may be paid out on the table. */
+  let settled = $state(true);
 
   function setGame(g: GameState | null) {
     game = g;
@@ -49,7 +51,15 @@
     setGame(g);
     if (g.phase !== 'duel') {
       // A fold has nothing to reveal: straight to the result card.
-      if (g.config.playStyle === 'draw') stage = g.round?.result?.folded != null ? 'result' : 'reveal';
+      if (g.config.playStyle === 'draw') {
+        const folded = g.round?.result?.folded != null;
+        settled = folded;
+        if (folded) {
+          // Nothing to reveal: let the pot fly to the winner, then show the result card.
+          clearTimeout(endTimer);
+          endTimer = setTimeout(() => (stage = 'result'), 1200);
+        } else stage = 'reveal';
+      }
       else {
         // Slots style: let the showdown sit on the table for a beat.
         clearTimeout(endTimer);
@@ -80,12 +90,12 @@
 <div class="film">
   {#if game}
     {#if game.round?.playStyle === 'draw'}
-      <DrawTable {game} {peek} onaction={act} />
+      <DrawTable {game} {peek} {settled} onaction={act} />
     {:else}
       <Table {game} {peek} onaction={act} onmenu={pause} />
     {/if}
     {#if stage === 'reveal' && game.round?.result}
-      <Showdown {game} ondone={() => (stage = 'result')} />
+      <Showdown {game} ondone={() => (stage = 'result')} onverdict={() => (settled = true)} />
     {:else if stage === 'result' && game.report}
       <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} onlog={() => (showLog = true)} />
     {/if}

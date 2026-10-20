@@ -22,6 +22,7 @@
   import CardView from './CardView.svelte';
   import CaptainCard from './CaptainCard.svelte';
   import PotStack from './PotStack.svelte';
+  import CoinPile from './CoinPile.svelte';
   import WillieSays from './WillieSays.svelte';
   import { cardLabel, dollars, jokerList, name } from './format';
   import { describeHand } from './handNames';
@@ -30,8 +31,10 @@
     game: GameState;
     peek: boolean;
     onaction: (a: Action) => void;
+    /** False while the showdown is still being revealed: the pot hasn't been paid out yet. */
+    settled?: boolean;
   }
-  let { game, peek, onaction }: Props = $props();
+  let { game, peek, onaction, settled = true }: Props = $props();
 
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
@@ -196,7 +199,23 @@
 
   // Pot mode: purses shrink as you pay in, and every action shows its price.
   const bets = $derived<[number, number]>(round.potMode ? round.bets : [0, 0]);
-  const paidSoFar = (seat: number) => (playing ? bets[seat] : 0);
+  /**
+   * What each purse shows: during a round, money minus what's in the pot; while
+   * the showdown is being revealed, the purse as it was before the payout; then
+   * the settled amount (the pot flies to the winner as it changes).
+   */
+  function shownMoney(seat: number): number {
+    const p = seat === 0 ? captain : opponent;
+    if (playing) return p.money - bets[seat];
+    if (!settled && round.potMode) return (game.report?.money[p.id]?.before ?? p.money) - bets[seat];
+    return p.money;
+  }
+  const potBets = $derived<[number, number]>(round.potMode && (playing || !settled) ? bets : [0, 0]);
+  const payout = $derived<'me' | 'them' | 'split' | null>(
+    !playing && settled && round.result && round.potMode
+      ? round.result.winner === 0 ? 'me' : round.result.winner === 1 ? 'them' : 'split'
+      : null,
+  );
   const cost = $derived(
     round.potMode && !composing && playing
       ? streetFee(config, round.month, round.street + 1) + discardCost(me.discarded.length, tappedCards.length)
@@ -223,21 +242,14 @@
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div class="table solo" onclick={finishDeal}>
-  <!-- One quiet line: where we are and what's in the purse. -->
-  <header class="status">
-    <span>{t('table.crossing', { month: game.month })}</span>
-    <span class="purse">{dollars(captain.money - paidSoFar(0))}</span>
-    <button class="ghost icon" onclick={() => (showHelp = true)} aria-label={t('willie.helpTitle')}>?</button>
-  </header>
-
-  <!-- Opponent -->
+  <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
     <div class="who">
       <button class="name-btn" onclick={() => (showCaptain = true)}>
         <span class="oval small-oval">{name(opponentId)[0]}</span>
         <span class="name">{name(opponentId)}</span>
       </button>
-      <span class="purse">{dollars(opponent.money - paidSoFar(1))}</span>
+      <div class="pile-right"><CoinPile amount={shownMoney(1)} align="right" label={name(opponentId)} /></div>
     </div>
     <div class="row">
       <div class="hand-backs">
@@ -253,25 +265,26 @@
     </div>
   </section>
 
-  <!-- The river -->
+  <!-- The river: the border between them and you. -->
   <section class="river">
-    <div class="street">{t(`street.${streetName}`)}</div>
+    <div class="river-head">
+      <span class="crossing">{t('table.crossing', { month: game.month })}</span>
+      <span class="street">{t(`street.${streetName}`)}</span>
+      <button class="ghost icon" onclick={() => (showHelp = true)} aria-label={t('willie.helpTitle')}>?</button>
+    </div>
     <div class="river-row">
-      {#if round.potMode}<PotStack {bets} />{/if}
+      {#if round.potMode}<PotStack bets={potBets} {payout} />{/if}
       <div class="community">
         {#each Array.from({ length: boardSize }) as _, i}
           {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
-          <CardView {card} deal="left" used={!!card && usedIds.has(card.id)} />
+          <CardView {card} deal="left" markBelow={!!card && usedIds.has(card.id)} />
         {/each}
-      </div>
-      <div class="discard pile">
-        <CardView small card={round.discards.at(-1) ?? null} placeholder="✕" />
       </div>
     </div>
     {#if stakes.length}<p class="stakes">{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}</p>{/if}
   </section>
 
-  <!-- The Captain -->
+  <!-- Your side of the table. -->
   <section class="captain">
     <div class="row hand-row">
       {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
@@ -294,10 +307,17 @@
           <button class="ghost small-btn" onclick={untapJoker}>− 🃏</button>
         {/if}
       {/if}
+      {#if me.discarded.length}
+        <div class="tossed mine" aria-label={t('table.discard')}>
+          <span class="x">✕</span>
+          {#each me.discarded as card (card.id)}<CardView small {card} />{/each}
+        </div>
+      {/if}
     </div>
 
-    {#if playing}
-      <div class="row controls">
+    <div class="row controls">
+      <CoinPile amount={shownMoney(0)} label={t('character.captain.you')} />
+      {#if playing}
         <span class="hint">
           {#if composing && tapped.length}
             {describeHand(preview!)}{#if tappedJokers.length}<b> · {t('draw.risking', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}</b>{/if}
@@ -307,8 +327,8 @@
           <button class="ghost" onclick={fold} disabled={dealing || !canFold(round, 0)}>{t('draw.fold')}</button>
         {/if}
         <button onclick={go} disabled={dealing}>{buttonLabel}</button>
-      </div>
-    {/if}
+      {/if}
+    </div>
   </section>
 </div>
 
@@ -330,22 +350,35 @@
 {/if}
 
 <style>
-  .status {
-    display: flex;
+  .river-head {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 0.75rem;
-    font-family: var(--title-font);
-    font-size: 0.95rem;
-    color: var(--grey);
+    margin-bottom: 0.4rem;
   }
-  .status .purse {
-    color: var(--paper);
+  .crossing {
+    font-family: var(--title-font);
+    font-size: 0.85rem;
+    color: var(--grey);
+    text-align: left;
+  }
+  .river-head .street {
+    margin: 0;
   }
   .icon {
-    margin-left: auto;
+    justify-self: end;
     padding: 0 0.55em;
     font-size: 1rem;
     border-radius: 50%;
+  }
+  .pile-right {
+    margin-left: auto;
+  }
+  .tossed.mine {
+    margin-left: auto;
+  }
+  .controls {
+    align-items: flex-end;
   }
   .who {
     display: flex;
@@ -374,9 +407,6 @@
     text-decoration: underline dotted var(--grey);
     text-underline-offset: 4px;
   }
-  .who .purse {
-    color: var(--grey);
-  }
   .tossed {
     display: flex;
     gap: 3px;
@@ -386,10 +416,6 @@
   .x {
     color: var(--grey);
     margin-right: 2px;
-  }
-  .pile {
-    cursor: default;
-    padding: 0.3rem;
   }
   .hand-row {
     min-height: 110px;

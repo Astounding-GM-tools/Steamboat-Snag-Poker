@@ -5,7 +5,8 @@
   import { cardLabel, jokerList, longCardName, name } from './format';
   import { describeHand, nickname, tiebreak } from './handNames';
 
-  let { game, ondone }: { game: GameState; ondone: () => void } = $props();
+  /** onverdict: the result is known on screen, so the pot can fly to the winner. */
+  let { game, ondone, onverdict }: { game: GameState; ondone: () => void; onverdict?: () => void } = $props();
 
   const round = $derived(game.round!);
   const result = $derived(round.result!);
@@ -23,16 +24,26 @@
   const revealed = $derived(index < 0 ? [] : steps.slice(0, index + 1).map((s) => s.card));
   const atEnd = $derived(index >= lastIndex && index >= 0);
 
-  const boardFocus = $derived.by(() => {
-    if (index < 0) return myUsed;
+  /** Board cards the opponent's hand uses so far (marked above), and yours (marked below). */
+  const theirBoard = $derived.by(() => {
+    if (index < 0) return new Set<string>();
     if (step) return new Set(step.boardUsed);
     return new Set(result.hands[1].cards.map((c) => c.id));
+  });
+  const verdictShown = $derived((step?.last ?? false) || (index >= 0 && steps.length === 0));
+  $effect(() => {
+    if (verdictShown) onverdict?.();
   });
 
   // No auto-advance: the player takes each reveal in at their own pace.
   function next() {
     if (atEnd) ondone();
     else index++;
+  }
+
+  function skip() {
+    onverdict?.();
+    ondone();
   }
 
   /** Same-named hands: what decided it, from your point of view. */
@@ -65,7 +76,7 @@
     <!-- The board -->
     <div class="cards board">
       {#each round.community as card (card.id)}
-        <CardView small {card} used={boardFocus.has(card.id)} faded={!boardFocus.has(card.id)} />
+        <CardView small {card} markAbove={theirBoard.has(card.id)} markBelow={myUsed.has(card.id)} faded={!theirBoard.has(card.id) && !myUsed.has(card.id)} />
       {/each}
     </div>
 
@@ -116,7 +127,7 @@
 
     <div class="controls">
       <button onclick={next}>{atEnd ? t('show.continue') : t('show.next')}</button>
-      <button class="ghost" onclick={ondone}>{t('show.skip')}</button>
+      <button class="ghost" onclick={skip}>{t('show.skip')}</button>
     </div>
   </div>
 </div>
@@ -129,6 +140,10 @@
     place-items: center;
     padding: 1rem;
     z-index: 20;
+  }
+  /* A lighter veil than other intertitles, so the coin piles stay in view. */
+  .overlay :global(.intertitle) {
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
   }
   .showdown {
     width: min(720px, 100%);
@@ -151,7 +166,7 @@
   }
   .board {
     margin: 0.75rem 0;
-    padding: 0.5rem 0;
+    padding: 1.1rem 0;
     border-top: 1px dashed var(--dim);
     border-bottom: 1px dashed var(--dim);
   }

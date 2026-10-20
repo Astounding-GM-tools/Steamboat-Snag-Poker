@@ -12,6 +12,9 @@
     selected?: boolean;
     ghost?: boolean;
     fresh?: boolean;
+    /** Board card used by the opponent's hand (mark above) or yours (mark below). */
+    markAbove?: boolean;
+    markBelow?: boolean;
     /** Selected to be thrown away. */
     toss?: boolean;
     /** Part of the player's best hand. */
@@ -23,7 +26,7 @@
     ondragstart?: (e: DragEvent) => void;
   }
 
-  let { card = null, faceDown = false, deal = null, small = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
+  let { card = null, faceDown = false, deal = null, markAbove = false, markBelow = false, small = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
 
   const rank = $derived(card && !isJoker(card) ? (card.rank === 10 ? '10' : rankLabel(card.rank)) : '');
   const suit = $derived(card && !isJoker(card) ? SUIT_GLYPH[card.suit] : '');
@@ -53,6 +56,8 @@
     disabled={!onclick && !ondragstart}
   >
     {#if toss}<span class="stamp">✕</span>{/if}
+    {#if markAbove}<span class="mark above" aria-hidden="true">▼</span>{/if}
+    {#if markBelow}<span class="mark below" aria-hidden="true">▲</span>{/if}
     {#if isJoker(card)}
       <span class="jester">🃏</span>
       <span class="jname">{jokerName(card.index).replace(/^the /, '')}</span>
@@ -99,6 +104,20 @@
   .ghost {
     opacity: 0.55;
     border-style: dashed;
+  }
+  .mark {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: var(--paper);
+    line-height: 1;
+  }
+  .mark.above {
+    top: -0.95rem;
+  }
+  .mark.below {
+    bottom: -0.95rem;
   }
   .toss {
     transform: translateY(-10px) rotate(3deg) !important;

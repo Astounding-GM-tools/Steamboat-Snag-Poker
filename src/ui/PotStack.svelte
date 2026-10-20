@@ -6,7 +6,7 @@
    * The pot on the felt. Whenever a captain pays in, a coin flies in from their
    * side of the table (you from below, the opponent from above) with the amount.
    */
-  let { bets }: { bets: [number, number] } = $props();
+  let { bets, payout = null }: { bets: [number, number]; payout?: 'me' | 'them' | 'split' | null } = $props();
 
   interface Flyer {
     id: number;
@@ -15,6 +15,11 @@
   }
 
   const pot = $derived(bets[0] + bets[1]);
+  // The last pot that was on the felt, so it can fly off to the winner when paid out.
+  let lastPot = $state(0);
+  $effect(() => {
+    if (pot > 0) lastPot = pot;
+  });
   const coins = $derived(Math.min(24, Math.ceil(pot / 2)));
   let flyers = $state<Flyer[]>([]);
   let last: [number, number] | null = null;
@@ -41,6 +46,15 @@
     {#each Array.from({ length: coins }) as _, i (i)}<span class="coin"></span>{/each}
   </div>
   <span class="amount">{dollars(pot)}</span>
+  {#if payout && lastPot}
+    {#key payout + lastPot}
+      {#each payout === 'split' ? ['up', 'down'] : [payout === 'me' ? 'down' : 'up'] as dir}
+        <span class="payout {dir}">
+          {#each Array.from({ length: 6 }) as _, i (i)}<span class="coin" style="--d: {i * 0.07}s"></span>{/each}
+        </span>
+      {/each}
+    {/key}
+  {/if}
   {#each flyers as f (f.id)}
     <span class="flyer {f.from}"><span class="coin"></span>+{dollars(f.amount)}</span>
   {/each}
@@ -91,6 +105,26 @@
   }
   .flyer.them {
     --from: -220px;
+  }
+  .payout {
+    position: absolute;
+    left: 50%;
+    top: 20%;
+    pointer-events: none;
+  }
+  .payout .coin {
+    position: absolute;
+    animation: payout 0.9s ease-in var(--d) both;
+  }
+  .payout.down {
+    --to: 260px;
+  }
+  .payout.up {
+    --to: -260px;
+  }
+  @keyframes payout {
+    0% { transform: translate(-50%, 0); opacity: 1; }
+    100% { transform: translate(-50%, var(--to)) scale(0.8); opacity: 0; }
   }
   @keyframes fly {
     0% { transform: translate(-50%, var(--from)) scale(1.4); opacity: 0; }
