@@ -49,3 +49,44 @@ of loading snags then.
 
 *What happened:* the captain threw the 7 and 5 and drew K♠ and J♦; the River
 was the 8♣ (a fourth club).
+
+---
+
+## Pickle #2 — "Three Pairs"
+
+*Same tournament, crossing 68, against Gaylord Ravenal.*
+
+**The situation (on the Turn)**
+- Your hand: **10♣ 3♣ Q♡**
+- Board: **10♦ 6♣ 3♠ Q♦**
+- You already threw away the 5♠ on the Flop. Gaylord threw away the J♠ and
+  5♦ (fishing).
+- You carry **5 snags**; no snags in the deck. River fee $11, your next discard
+  $2.
+
+**The question:** three pairs! Stand pat, or throw one of them away?
+
+**The insight:** a hand only uses five cards. Your best is **Queens and Tens
+with the board's 6 as kicker**; the pair of Threes is dead weight (even as a
+kicker the 6 beats it).
+
+**Option A — stand pat ($11)**
+- Full house if the River brings a Q, 10 or 3 (two of each left): ~15%.
+
+**Option B — throw the 3 ($13)**
+- Full house if your new card *or* the River brings a Q or 10 (four cards, two
+  chances): ~19.5%. If your new card is a 3, you are simply back to Option A.
+- Two pair stays intact; Queens and Tens can carry one snag.
+
+**The lesson:** the third pair is dead weight. Trade it for a fresh card.
+
+*What happened:* the captain threw the 3♣ and drew the **Q♣**: a full house,
+Queens full of Tens. The River was the **3♡**, so standing pat would also have
+made a full house (Queens full of Threes). The river giveth either way.
+
+**The follow-up pickle (on the River):** with Queens full in hand, play the
+full house safely, or break it into **three Queens plus two snags**? Against
+Gaylord's possible hands (sampled at random): the full house loses ~0.1% of the
+time; three Queens loses ~8% (full houses ~5%, straights ~3%, flushes ~1%). But
+Gaylord kept one card through two discards, which raises the odds that he holds
+something that fits the board.
