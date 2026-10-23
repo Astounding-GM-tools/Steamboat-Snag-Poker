@@ -79,6 +79,8 @@ export const en = {
   'captain.stampRiver': 'The river',
   'captain.stampRecord': 'Won–Lost',
   'odds.evens': 'Evens',
+  'odds.on': '{a} to {b} on',
+  'odds.against': '{a} to {b}',
   'odds.off': 'Off',
   'captain.notes': 'Your notes',
   'captain.notesPlaceholder': 'How does this captain play? Jot down your reads…',

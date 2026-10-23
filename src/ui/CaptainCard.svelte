@@ -128,9 +128,9 @@
   .portrait {
     position: relative;
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.35rem;
     margin: 0.4rem 0 1.7rem;
   }
   .stamps {
@@ -145,8 +145,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 4.6rem;
-    padding: 0.3rem 0.45rem;
+    min-width: 4.2rem;
+    padding: 0.25rem 0.35rem;
     border: 3px double var(--paper);
     outline: 1px solid var(--grey);
     outline-offset: 2px;
@@ -163,7 +163,8 @@
     color: var(--grey);
   }
   .stamp .value {
-    font-size: 1.35rem;
+    font-size: 1rem;
+    white-space: nowrap;
   }
   .stamp .small {
     font-size: 0.75rem;
@@ -198,6 +199,14 @@
     font-family: var(--title-font);
     font-size: 4rem;
     background: radial-gradient(circle, #444, #111);
+  }
+  /* On a phone the portrait gives way so the stamps fit beside it. */
+  @media (max-width: 420px) {
+    .oval {
+      width: 84px;
+      height: 108px;
+      font-size: 3rem;
+    }
   }
   h2 {
     margin-bottom: 0.1rem;

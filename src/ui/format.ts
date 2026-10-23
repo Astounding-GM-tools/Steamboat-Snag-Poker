@@ -30,7 +30,10 @@ const ODDS_LADDER: [number, number][] = [
   [50, 1], [100, 1],
 ];
 
-/** A chance as a bookmaker would chalk it up: 0.56 → "4/5", 0.5 → "Evens", 0.1 → "9/1". */
+/**
+ * A chance as a bookmaker would call it: 0.56 → "5 to 4 on" (odds-on: stake 5
+ * to win 4), 0.5 → "Evens", 0.13 → "7 to 1" (odds against).
+ */
 export function bookmakerOdds(p: number): string {
   if (p <= 0) return t('odds.off');
   const against = (1 - p) / p;
@@ -40,7 +43,8 @@ export function bookmakerOdds(p: number): string {
       ? o
       : best,
   );
-  return a === b ? t('odds.evens') : `${a}/${b}`;
+  if (a === b) return t('odds.evens');
+  return a < b ? t('odds.on', { a: b, b: a }) : t('odds.against', { a, b });
 }
 
 export function name(id: string): string {
