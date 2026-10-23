@@ -220,7 +220,7 @@
   .wheel {
     transform-box: fill-box;
     transform-origin: center;
-    animation: spin 3.8s linear infinite;
+    animation: spin 6s linear infinite;
   }
   .stack {
     transform-box: fill-box;
@@ -234,10 +234,10 @@
     animation: puff 2.4s ease-out var(--d) infinite;
   }
   .waves.front {
-    animation: waves 2.2s linear infinite;
+    animation: waves 3.6s linear infinite;
   }
   .waves.back {
-    animation: waves 3.4s linear infinite;
+    animation: waves 5.5s linear infinite;
   }
   .star {
     animation: twinkle var(--d) ease-in-out var(--dl) infinite;
@@ -259,7 +259,7 @@
     animation: cloud var(--dur) linear var(--delay) infinite;
   }
   .bank {
-    animation: bank 24s linear infinite;
+    animation: bank 40s linear infinite;
   }
   /* Clouds cross the whole sky; the copses repeat every 180 units, so the bank loops seamlessly. */
   @keyframes cloud { to { transform: translateX(-300px); } }
