@@ -1,7 +1,19 @@
 /** English strings. Add a sibling file (e.g. no.ts) with the same keys for a new language. */
 export const en = {
   'title.name': 'Steamboat Snag Poker',
-  'title.tagline': 'A Card Game for River Captains',
+  /** A random one is shown on the title screen; add more freely (keep the count in TAGLINES). */
+  'title.tagline.0': 'Because the Night Was Made for Poker',
+  'title.tagline.1': 'Because the River Was Made for Poker',
+  'title.tagline.2': 'A Card Game for River Captains',
+  'title.tagline.3': 'Dump Your Snags Downstream',
+  'title.tagline.4': 'Where Every Pot Has a Catch',
+  'title.tagline.5': 'Mind the Snags, Captain',
+  'title.tagline.6': 'Ante Up and Cast Off',
+  'title.tagline.7': 'Full Steam, Full Boat',
+  'title.tagline.8': 'In-Laws Not Included',
+  'title.tagline.9': 'Play Your Cards, Pass On Your Problems',
+  'title.tagline.10': 'The River Giveth, the River Taketh Away',
+  'title.tagline.11': 'Sharp Cards, Deep Water, Stinking Hides',
   'title.start': 'Cast Off!',
   'title.continue': 'Continue voyage (crossing {month})',
   'title.newVoyage': 'New voyage',
