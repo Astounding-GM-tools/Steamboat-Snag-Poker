@@ -22,6 +22,9 @@ export interface Player {
   /** Duels won and lost this tournament (a tie counts as neither). */
   won?: number;
   lost?: number;
+  /** A rival's duels won and lost against the Captain, from the rival's side. */
+  wonVsYou?: number;
+  lostVsYou?: number;
 }
 
 export interface DuelSummary {
@@ -237,6 +240,10 @@ function finishMonth(state: GameState, rng: Rng) {
       p.jokers = seat.jokers;
       if (res.winner === i) p.won = (p.won ?? 0) + 1;
       else if (res.winner !== null) p.lost = (p.lost ?? 0) + 1;
+      if (p.id !== HUMAN_ID && round.seats[1 - i].playerId === HUMAN_ID) {
+        if (res.winner === i) p.wonVsYou = (p.wonVsYou ?? 0) + 1;
+        else if (res.winner !== null) p.lostVsYou = (p.lostVsYou ?? 0) + 1;
+      }
       const forfeit = res.forfeit ?? 0;
       if (round.potMode) {
         // Pot mode: pay in what you bet; the winner takes the pot (a tie splits it).

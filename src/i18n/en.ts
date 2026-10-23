@@ -78,6 +78,7 @@ export const en = {
   'captain.stampHand': 'This hand',
   'captain.stampRiver': 'The river',
   'captain.stampRecord': 'Won–Lost',
+  'captain.vsYou': '{won}–{lost} vs you',
   'odds.evens': 'Evens',
   'odds.on': '{a} to {b} on',
   'odds.against': '{a} to {b}',

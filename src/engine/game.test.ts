@@ -89,6 +89,11 @@ describe('game', () => {
     // Every decided duel has one winner and one loser; ties count for neither.
     expect(won).toBeGreaterThan(0);
     expect(won).toBe(lost);
+    // Against the Captain, the rivals' wins are the Captain's losses and vice versa.
+    const captain = s.players.find((p) => p.id === HUMAN_ID)!;
+    const rivals = s.players.filter((p) => p.id !== HUMAN_ID);
+    expect(rivals.reduce((n, p) => n + (p.wonVsYou ?? 0), 0)).toBe(captain.lost ?? 0);
+    expect(rivals.reduce((n, p) => n + (p.lostVsYou ?? 0), 0)).toBe(captain.won ?? 0);
   });
 
   it('Morag comes down to the river once Finlay is busted', () => {

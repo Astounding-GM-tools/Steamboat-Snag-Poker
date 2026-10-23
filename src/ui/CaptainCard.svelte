@@ -74,6 +74,7 @@
       <div class="stamp seal">
         <span class="label">{t('captain.stampRecord')}</span>
         <span class="value">{captain.won ?? 0}–{captain.lost ?? 0}</span>
+        <span class="small">{t('captain.vsYou', { won: captain.wonVsYou ?? 0, lost: captain.lostVsYou ?? 0 })}</span>
       </div>
     </div>
     <h2>{name(id)}</h2>
@@ -131,7 +132,7 @@
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     gap: 0.35rem;
-    margin: 0.4rem 0 1.7rem;
+    margin: 0.4rem 0 2.3rem;
   }
   .stamps {
     display: flex;
@@ -179,7 +180,7 @@
   .seal {
     position: absolute;
     left: 50%;
-    bottom: -1.5rem;
+    bottom: -2.1rem;
     min-width: 0;
     padding: 0.15rem 0.6rem;
     border-radius: 999px;
