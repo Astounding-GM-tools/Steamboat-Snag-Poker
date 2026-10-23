@@ -270,9 +270,10 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    card: *Steer public opinion. Avoid ruin. Dump your mess on someone else.*
 2. **The Table** (draw style), one column so it fits a phone, split by the
    board into **their side** (top) and **yours** (bottom):
-   - top: the opponent's name (tap for their **captain card**: portrait, boat,
-     **Willie's reckoning** of what they could be holding right now, how they
-     play, where they first appeared, trivia), their **coin pile**, face-down
+   - top: the opponent's name (tap for their **captain card**: purse, portrait
+     ringed by bookmaker's stamps (odds on this hand, odds on the river, their
+     won–lost record), boat, **Willie's reckoning** of what they could be
+     holding right now, how they play, your notes), their **coin pile**, face-down
      hand, snags face up, and their discards;
    - middle: crossing number, street, the **?** button (Willie: how to play,
      fast-deal setting), the **pot** and the board; snags at stake are named

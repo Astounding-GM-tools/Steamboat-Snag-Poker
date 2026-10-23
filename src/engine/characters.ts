@@ -33,7 +33,7 @@ export interface CharacterDef {
 }
 
 /**
- * The full gallery. Names, boats, blurbs and trivia live in the i18n dictionary
+ * The full gallery. Names, boats and blurbs live in the i18n dictionary
  * under `character.<id>.*`. Each tournament draws its line-up from here.
  */
 export const ROSTER: CharacterDef[] = [

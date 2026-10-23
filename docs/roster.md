@@ -3,7 +3,7 @@
 The gallery is meant to grow to dozens of captains. Each tournament draws a
 mixed line-up from it (see "Line-up" below).
 
-Players only ever see a captain's **personality** (name, boat, a blurb, trivia) plus their own **notes**, typed into the captain
+Players only ever see a captain's **personality** (name, boat, a blurb) plus their own **notes**, typed into the captain
 card and saved in their browser. The **playbook** below is internal: it lives
 in `src/engine/ai.ts` and is written up here for us.
 

@@ -1,15 +1,29 @@
 <script lang="ts">
   import { CATEGORIES, type OpponentOdds, type Player } from '../engine';
   import { t } from '../i18n';
-  import { dollars, name } from './format';
+  import { bookmakerOdds, dollars, name } from './format';
 
   /**
    * A captain's portrait card: who they are, how they play, and (mid-round)
    * Willie's reckoning of what they could be holding.
    */
-  let { captain, odds = null, onclose }: { captain: Player; odds?: OpponentOdds | null; onclose: () => void } = $props();
+  let {
+    captain,
+    players,
+    odds = null,
+    onclose,
+  }: { captain: Player; players: Player[]; odds?: OpponentOdds | null; onclose: () => void } = $props();
   const id = $derived(captain.id);
   const pct = (x: number) => `${Math.round(x * 100)}%`;
+  /**
+   * The bookmaker's rule of thumb for a tournament: your chance of taking it
+   * all is your share of the money still on the river.
+   */
+  const riverChance = $derived.by(() => {
+    const purse = (p: Player) => (p.status === 'active' ? Math.max(0, p.money) : 0);
+    const total = players.reduce((sum, p) => sum + purse(p), 0);
+    return total > 0 ? purse(captain) / total : 0;
+  });
   // The player's own notes on this captain ("folds to any pressure"), kept in this browser.
   const notesKey = $derived(`wwr.notes.${captain.id}`);
   let notes = $state('');
@@ -35,10 +49,35 @@
 <div class="overlay" onclick={onclose} role="presentation">
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="intertitle card" role="dialog" aria-label={name(id)} tabindex="-1" onclick={(e) => e.stopPropagation()}>
-    <div class="oval">{name(id)[0]}</div>
+    <p class="purse">
+      <span class="money">{dollars(captain.money)}</span>
+      {#if captain.jokers.length}<span class="snags">{'🪵'.repeat(captain.jokers.length)}</span>{/if}
+    </p>
+    <div class="portrait">
+      <div class="stamps left">
+        {#if odds}
+          <div class="stamp tilt-l">
+            <span class="label">{t('captain.stampHand')}</span>
+            <span class="value">{bookmakerOdds(odds.beatsYou)}</span>
+            <span class="small">{pct(odds.beatsYou)}</span>
+          </div>
+        {/if}
+      </div>
+      <div class="oval">{name(id)[0]}</div>
+      <div class="stamps right">
+        <div class="stamp tilt-r">
+          <span class="label">{t('captain.stampRiver')}</span>
+          <span class="value">{bookmakerOdds(riverChance)}</span>
+          <span class="small">{pct(riverChance)}</span>
+        </div>
+      </div>
+      <div class="stamp seal">
+        <span class="label">{t('captain.stampRecord')}</span>
+        <span class="value">{captain.won ?? 0}–{captain.lost ?? 0}</span>
+      </div>
+    </div>
     <h2>{name(id)}</h2>
     <p class="boat">{t(`character.${id}.boat`)}</p>
-    <p class="purse">{dollars(captain.money)}{captain.jokers.length ? ` · ${'🪵'.repeat(captain.jokers.length)}` : ''}</p>
     {#if odds}
       <section class="reckoning">
         <h3>{t('willie.hintTitle')}</h3>
@@ -52,13 +91,10 @@
             </div>
           {/if}
         {/each}
-        <p class="beats">{t('draw.oddsBeats', { pct: pct(odds.beatsYou) })}</p>
       </section>
     {/if}
     <p class="blurb">{t(`character.${id}.blurb`)}</p>
     <dl>
-      <dt>{t('captain.trivia')}</dt>
-      <dd>{t(`character.${id}.trivia`)}</dd>
       <dt><label for="captain-notes">{t('captain.notes')}</label></dt>
       <dd>
         <textarea
@@ -84,14 +120,77 @@
     z-index: 45;
   }
   .card {
+    position: relative;
     width: min(480px, 100%);
     max-height: 90vh;
     overflow: auto;
   }
+  .portrait {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.4rem 0 1.7rem;
+  }
+  .stamps {
+    display: flex;
+    align-items: center;
+  }
+  .stamps.left {
+    justify-content: flex-end;
+  }
+  /* Old-fashioned rubber stamps: a double rule, small capitals, a slight tilt. */
+  .stamp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 4.6rem;
+    padding: 0.3rem 0.45rem;
+    border: 3px double var(--paper);
+    outline: 1px solid var(--grey);
+    outline-offset: 2px;
+    font-family: var(--title-font);
+    line-height: 1.1;
+    opacity: 0.9;
+  }
+  .stamp .label {
+    margin: 0;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    text-transform: uppercase;
+    color: var(--grey);
+  }
+  .stamp .value {
+    font-size: 1.35rem;
+  }
+  .stamp .small {
+    font-size: 0.75rem;
+    color: var(--grey);
+  }
+  .tilt-l {
+    transform: rotate(-7deg);
+  }
+  .tilt-r {
+    transform: rotate(6deg);
+  }
+  .seal {
+    position: absolute;
+    left: 50%;
+    bottom: -1.5rem;
+    min-width: 0;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: #111;
+    transform: translateX(-50%) rotate(-3deg);
+  }
+  .seal .value {
+    font-size: 1rem;
+  }
   .oval {
     width: 110px;
     height: 140px;
-    margin: 0 auto 0.75rem;
     border-radius: 50%;
     border: 4px double var(--paper);
     display: grid;
@@ -108,8 +207,25 @@
     font-style: italic;
     color: var(--grey);
   }
+  /* The purse sits in the top-left corner, big enough to read at a glance. */
   .purse {
-    margin: 0.4rem 0 0.8rem;
+    position: absolute;
+    top: 0.9rem;
+    left: 1rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .purse .money {
+    font-family: var(--title-font);
+    font-size: 1.7rem;
+    line-height: 1;
+  }
+  .purse .snags {
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
   }
   .reckoning {
     text-align: left;
@@ -127,11 +243,6 @@
     margin: 0.2rem 0 0.4rem;
     color: var(--grey);
     font-size: 0.9rem;
-  }
-  .reckoning .beats {
-    color: var(--paper);
-    font-weight: bold;
-    margin-top: 0.5rem;
   }
   .bar {
     display: grid;

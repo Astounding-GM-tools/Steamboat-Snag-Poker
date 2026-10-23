@@ -19,6 +19,9 @@ export interface Player {
   status: 'waiting' | 'active' | 'eliminated';
   /** For a waiting captain: joins once this captain is busted ('*' = anyone). */
   joinsAfter?: string;
+  /** Duels won and lost this tournament (a tie counts as neither). */
+  won?: number;
+  lost?: number;
 }
 
 export interface DuelSummary {
@@ -232,6 +235,8 @@ function finishMonth(state: GameState, rng: Rng) {
       const p = player(state, seat.playerId);
       before[p.id] ??= p.money;
       p.jokers = seat.jokers;
+      if (res.winner === i) p.won = (p.won ?? 0) + 1;
+      else if (res.winner !== null) p.lost = (p.lost ?? 0) + 1;
       const forfeit = res.forfeit ?? 0;
       if (round.potMode) {
         // Pot mode: pay in what you bet; the winner takes the pot (a tie splits it).

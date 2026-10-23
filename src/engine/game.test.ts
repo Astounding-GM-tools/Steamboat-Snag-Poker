@@ -82,6 +82,15 @@ describe('game', () => {
     expect(last.hands).toHaveLength(2);
   });
 
+  it('tallies every captain\'s duels won and lost', () => {
+    const s = playOut(5);
+    const won = s.players.reduce((n, p) => n + (p.won ?? 0), 0);
+    const lost = s.players.reduce((n, p) => n + (p.lost ?? 0), 0);
+    // Every decided duel has one winner and one loser; ties count for neither.
+    expect(won).toBeGreaterThan(0);
+    expect(won).toBe(lost);
+  });
+
   it('Morag comes down to the river once Finlay is busted', () => {
     const def = (id: string) => ROSTER.find((c) => c.id === id)!;
     const lineUp = [

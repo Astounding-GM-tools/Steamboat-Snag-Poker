@@ -346,7 +346,7 @@
 {/if}
 
 {#if showCaptain}
-  <CaptainCard captain={opponent} {odds} onclose={() => (showCaptain = false)} />
+  <CaptainCard captain={opponent} players={game.players} {odds} onclose={() => (showCaptain = false)} />
 {/if}
 
 <style>
