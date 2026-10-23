@@ -1,7 +1,7 @@
 <script lang="ts">
   import { CATEGORIES, type OpponentOdds, type Player } from '../engine';
   import { t } from '../i18n';
-  import { bookmakerOdds, dollars, name } from './format';
+  import { bookmakerOdds, dollars, name, nickname } from './format';
 
   /**
    * A captain's portrait card: who they are, how they play, and (mid-round)
@@ -78,6 +78,7 @@
       </div>
     </div>
     <h2>{name(id)}</h2>
+    {#if nickname(id)}<p class="aka">{t('captain.aka', { nick: nickname(id)! })}</p>{/if}
     <p class="boat">{t(`character.${id}.boat`)}</p>
     {#if odds}
       <section class="reckoning">
@@ -211,6 +212,11 @@
   }
   h2 {
     margin-bottom: 0.1rem;
+  }
+  .aka {
+    margin: 0 0 0.2rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
   }
   .boat {
     margin: 0;

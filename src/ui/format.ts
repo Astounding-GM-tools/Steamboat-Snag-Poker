@@ -51,6 +51,18 @@ export function name(id: string): string {
   return t(`character.${id}.name`);
 }
 
+/** A captain's nickname ("Whiteknuckle"), or null if they go by their name. */
+export function nickname(id: string): string | null {
+  const key = `character.${id}.nick`;
+  const nick = t(key);
+  return nick === key ? null : nick;
+}
+
+/** What the river calls a captain where space is short: the nickname if there is one. */
+export function shortName(id: string): string {
+  return nickname(id) ?? name(id);
+}
+
 /** "the Egg Crisis", "the Egg Crisis and the Sandbar", "A, B and C". */
 export function jokerList(jokers: JokerCard[]): string {
   const names = jokers.map((j) => jokerName(j.index));

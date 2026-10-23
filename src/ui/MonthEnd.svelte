@@ -1,7 +1,7 @@
 <script lang="ts">
   import { HUMAN_ID, type DuelSummary, type GameState } from '../engine';
   import { t } from '../i18n';
-  import { dollars, jokerList, name } from './format';
+  import { dollars, jokerList, shortName } from './format';
   import { describeHand } from './handNames';
 
   interface Props {
@@ -41,16 +41,16 @@
   function duelLine(d: DuelSummary): string {
     const r = d.result;
     if (r.folded !== null && r.folded !== undefined && r.winner !== null) {
-      return t('end.duelFold', { folder: name(d.players[r.folded]), winner: name(d.players[r.winner]), n: r.pot });
+      return t('end.duelFold', { folder: shortName(d.players[r.folded]), winner: shortName(d.players[r.winner]), n: r.pot });
     }
-    if (r.winner === null) return t('end.duelDraw', { a: name(d.players[0]), b: name(d.players[1]) });
-    const loser = name(d.players[1 - r.winner]);
+    if (r.winner === null) return t('end.duelDraw', { a: shortName(d.players[0]), b: shortName(d.players[1]) });
+    const loser = shortName(d.players[1 - r.winner]);
     const moved = [...r.dumped, ...r.communityTaken];
     const jokers =
       moved.length === 0 ? ''
       : moved.length === 1 ? ' ' + t('end.newJoker', { name: loser, joker: jokerList(moved) })
       : ' ' + t('end.newJokers', { name: loser, jokers: jokerList(moved) });
-    return t('end.duel', { winner: name(d.players[r.winner]), loser, hand: describeHand(r.hands[r.winner]) }) + jokers;
+    return t('end.duel', { winner: shortName(d.players[r.winner]), loser, hand: describeHand(r.hands[r.winner]) }) + jokers;
   }
 </script>
 
@@ -69,17 +69,17 @@
       {#if res.winner === null}
         <p>{t('end.draw.body')}</p>
       {:else if won}
-        {#if theyFolded}<p>{t('end.theyFolded', { name: name(foe) })}</p>{/if}
+        {#if theyFolded}<p>{t('end.theyFolded', { name: shortName(foe) })}</p>{/if}
         <p class="big">{potMode ? t('end.potWon', { n: res.pot }) : t('end.gain', { n: res.gain })}</p>
         {#if res.dumped.length}<p>{t('end.dumped', { jokers: jokerList(res.dumped) })}</p>{/if}
-        {#if res.forfeit}<p>{t('end.forfeitWon', { name: name(foe), n: res.forfeit })}</p>{/if}
-        {#if res.communityTaken.length}<p>{t('end.dodged', { name: name(foe), jokers: jokerList(res.communityTaken) })}</p>{/if}
+        {#if res.forfeit}<p>{t('end.forfeitWon', { name: shortName(foe), n: res.forfeit })}</p>{/if}
+        {#if res.communityTaken.length}<p>{t('end.dodged', { name: shortName(foe), jokers: jokerList(res.communityTaken) })}</p>{/if}
       {:else}
         {#if youFolded}<p>{t('end.youFolded')}</p>{/if}
-        {#if potMode}<p class="big">{t('end.potLost', { name: name(foe), n: res.pot })}</p>{/if}
+        {#if potMode}<p class="big">{t('end.potLost', { name: shortName(foe), n: res.pot })}</p>{/if}
         {#if loss}<p class="big">{t('end.loss', { n: loss })}</p>{/if}
         {#if res.forfeit}<p class="big">{t('end.forfeitLost', { n: res.forfeit })}</p>{/if}
-        {#if res.dumped.length}<p class="big">{t('end.gotDumped', { name: name(foe), jokers: jokerList(res.dumped) })}</p>{/if}
+        {#if res.dumped.length}<p class="big">{t('end.gotDumped', { name: shortName(foe), jokers: jokerList(res.dumped) })}</p>{/if}
         {#if res.communityTaken.length}<p class="big">{t('end.tookCommunity', { jokers: jokerList(res.communityTaken) })}</p>{/if}
         {#if !potMode && !loss && !res.forfeit && !res.dumped.length && !res.communityTaken.length}<p>{t('end.noHarm')}</p>{/if}
       {/if}
@@ -92,7 +92,7 @@
       <tbody>
         {#each standings as p (p.id)}
           <tr class:out={p.status !== 'active'} class:me={p.id === HUMAN_ID}>
-            <td>{p.id === HUMAN_ID ? t('character.captain.you') : name(p.id)}</td>
+            <td>{p.id === HUMAN_ID ? t('character.captain.you') : shortName(p.id)}</td>
             <td>
               {#if p.status === 'eliminated'}{t('table.out')}
               {:else if p.status === 'waiting'}{t('table.waiting')}
@@ -108,9 +108,9 @@
       <div class="news">
         <h2>{t('end.meanwhile')}</h2>
         {#each report.offscreen as d}<p>{duelLine(d)}</p>{/each}
-        {#if report.sittingOut}<p>{t('end.satOut', { name: name(report.sittingOut) })}</p>{/if}
-        {#each report.eliminated.filter((id) => id !== HUMAN_ID) as id}<p><b>{t('end.eliminated', { name: name(id) })}</b></p>{/each}
-        {#each report.joined as id}<p><b>{t('end.joined', { name: name(id) })}</b></p>{/each}
+        {#if report.sittingOut}<p>{t('end.satOut', { name: shortName(report.sittingOut) })}</p>{/if}
+        {#each report.eliminated.filter((id) => id !== HUMAN_ID) as id}<p><b>{t('end.eliminated', { name: shortName(id) })}</b></p>{/each}
+        {#each report.joined as id}<p><b>{t('end.joined', { name: shortName(id) })}</b></p>{/each}
       </div>
     {/if}
 
@@ -142,8 +142,15 @@
     to { clip-path: circle(150% at 50% 50%); }
   }
   .intertitle {
+    width: 100%;
     max-height: 94vh;
     overflow: auto;
+  }
+  /* A phone: less padding, so the summary fits the screen. */
+  @media (max-width: 480px) {
+    .intertitle {
+      padding: 1.25rem 1rem;
+    }
   }
   .ledger p {
     margin: 0.35rem 0;
@@ -191,7 +198,8 @@
   }
   .buttons {
     display: flex;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     justify-content: center;
     margin-top: 1.5rem;
   }

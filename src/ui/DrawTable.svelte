@@ -24,7 +24,7 @@
   import PotStack from './PotStack.svelte';
   import CoinPile from './CoinPile.svelte';
   import WillieSays from './WillieSays.svelte';
-  import { cardLabel, dollars, jokerList, name } from './format';
+  import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { describeHand } from './handNames';
 
   interface Props {
@@ -247,7 +247,10 @@
     <div class="who">
       <button class="name-btn" onclick={() => (showCaptain = true)}>
         <span class="oval small-oval">{name(opponentId)[0]}</span>
-        <span class="name">{name(opponentId)}</span>
+        <span class="who">
+          <span class="name">{name(opponentId)}</span>
+          {#if nickname(opponentId)}<span class="aka">{t('captain.aka', { nick: nickname(opponentId)! })}</span>{/if}
+        </span>
       </button>
       <div class="pile-right"><CoinPile amount={shownMoney(1)} align="right" label={name(opponentId)} /></div>
     </div>
@@ -400,6 +403,17 @@
     width: 34px;
     height: 42px;
     font-size: 1.2rem;
+  }
+  .who {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.15;
+  }
+  .aka {
+    font-size: 0.75rem;
+    color: var(--grey);
+    letter-spacing: 0.04em;
   }
   .name {
     font-family: var(--title-font);

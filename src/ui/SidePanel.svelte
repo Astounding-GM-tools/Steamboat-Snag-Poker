@@ -1,7 +1,7 @@
 <script lang="ts">
   import { HUMAN_ID, isJoker, player, type GameState } from '../engine';
   import { t } from '../i18n';
-  import { dollars, name } from './format';
+  import { dollars, shortName } from './format';
 
   let { game, opponentId, onmenu }: { game: GameState; opponentId: string; onmenu: () => void } = $props();
 
@@ -32,7 +32,7 @@
   <ul class="league">
     {#each league as p (p.id)}
       <li class:out={p.status !== 'active'} class:me={p.id === HUMAN_ID} class:foe={p.id === opponentId}>
-        <span>{p.id === opponentId ? '► ' : ''}{p.id === HUMAN_ID ? t('character.captain.you') : name(p.id)}</span>
+        <span>{p.id === opponentId ? '► ' : ''}{p.id === HUMAN_ID ? t('character.captain.you') : shortName(p.id)}</span>
         <span>
           {#if p.status === 'eliminated'}{t('table.out')}
           {:else if p.status === 'waiting'}{t('table.waiting')}
