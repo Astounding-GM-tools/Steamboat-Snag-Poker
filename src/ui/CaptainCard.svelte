@@ -15,6 +15,26 @@
    * publication (on 1 January of the 96th year); older ones are long since free.
    */
   const firstSeen = $derived(ROSTER.find((c) => c.id === id)?.firstSeen);
+  // The player's own notes on this captain ("folds to any pressure"), kept in this browser.
+  const notesKey = $derived(`wwr.notes.${captain.id}`);
+  let notes = $state('');
+  $effect(() => {
+    try {
+      notes = localStorage.getItem(notesKey) ?? '';
+    } catch {
+      notes = '';
+    }
+  });
+  function saveNotes(text: string) {
+    notes = text;
+    try {
+      if (text.trim()) localStorage.setItem(notesKey, text);
+      else localStorage.removeItem(notesKey);
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
   const publicDomain = $derived(
     !firstSeen ? '' : firstSeen >= 1923 ? t('captain.pdSince', { year: firstSeen + 96 }) : t('captain.pdLongAgo'),
   );
@@ -51,6 +71,16 @@
       <dd>{t(`character.${id}.source`)}{#if publicDomain}<br />{publicDomain}{/if}</dd>
       <dt>{t('captain.trivia')}</dt>
       <dd>{t(`character.${id}.trivia`)}</dd>
+      <dt><label for="captain-notes">{t('captain.notes')}</label></dt>
+      <dd>
+        <textarea
+          id="captain-notes"
+          rows="3"
+          placeholder={t('captain.notesPlaceholder')}
+          value={notes}
+          oninput={(e) => saveNotes(e.currentTarget.value)}
+        ></textarea>
+      </dd>
     </dl>
     <button onclick={onclose}>{t('willie.ok')}</button>
   </div>
@@ -134,6 +164,16 @@
   }
   .num {
     text-align: right;
+  }
+  textarea {
+    width: 100%;
+    font-family: var(--body-font);
+    font-size: 0.9rem;
+    background: #1a1a18;
+    color: var(--paper);
+    border: 1px dashed var(--grey);
+    padding: 0.4rem;
+    resize: vertical;
   }
   dl {
     text-align: left;

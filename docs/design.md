@@ -331,3 +331,4 @@ as a fallback. Dropping is final.
 - Richer matchmaking (temperature, declining challenges).
 - Distinct snag types with different effects.
 - Larger, rotating roster.
+$$

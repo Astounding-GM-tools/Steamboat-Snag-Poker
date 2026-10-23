@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, PRESETS, type RulesConfig } from './config';
-import { HUMAN_ID } from './characters';
+import { HUMAN_ID, ROSTER, drawLineUp } from './characters';
 import { LOG_SIZE, activeOpponents, migrateGame, newGame, nextMonth, player, submitAction, type GameState } from './game';
 import { legalActions } from './round';
 import { Rng } from './rng';
@@ -82,21 +82,43 @@ describe('game', () => {
     expect(last.hands).toHaveLength(2);
   });
 
-  it('Maggie comes down to the river once Jiggs is busted', () => {
-    let s = newGame(21);
-    expect(player(s, 'maggie').status).toBe('waiting');
-    const jiggs = s.players.find((p) => p.id === 'jiggs')!;
-    jiggs.status = 'eliminated';
-    jiggs.money = 0;
+  it('Morag comes down to the river once Finlay is busted', () => {
+    const def = (id: string) => ROSTER.find((c) => c.id === id)!;
+    const lineUp = [
+      { def: def('finlay'), joins: 'start' },
+      { def: def('nemo'), joins: 'start' },
+      { def: def('lenny'), joins: 'start' },
+      { def: def('morag'), joins: 'finlay' },
+    ];
+    let s = newGame(21, DEFAULT_CONFIG, lineUp);
+    expect(player(s, 'morag').status).toBe('waiting');
+    const finlay = s.players.find((p) => p.id === 'finlay')!;
+    finlay.status = 'eliminated';
+    finlay.money = 0;
     const rng = new Rng(4);
     while (s.phase === 'duel') s = submitAction(s, rng.pick(legalActions(s.round!, 0)));
-    expect(player(s, 'maggie').status).toBe('active');
-    expect(s.report!.joined).toContain('maggie');
+    expect(player(s, 'morag').status).toBe('active');
+    expect(s.report!.joined).toContain('morag');
+  });
+
+  it('draws a mixed line-up: rascals, middling captains, a sharp, and one sharp arriving later', () => {
+    for (let seed = 0; seed < 20; seed++) {
+      const lineUp = drawLineUp(ROSTER, (n) => new Rng(seed * 7 + n).int(n));
+      const starters = lineUp.filter((e) => e.joins === 'start');
+      expect(starters.filter((e) => e.def.tier === 'rascal')).toHaveLength(3);
+      expect(starters.filter((e) => e.def.tier === 'middle')).toHaveLength(3);
+      expect(starters.filter((e) => e.def.tier === 'sharp')).toHaveLength(1);
+      expect(lineUp.filter((e) => e.joins === '*')).toHaveLength(1);
+      expect(lineUp.some((e) => e.def.id === 'morag')).toBe(lineUp.some((e) => e.def.id === 'finlay'));
+      expect(new Set(lineUp.map((e) => e.def.id)).size).toBe(lineUp.length);
+    }
   });
 
   it('with an odd number of captains, the poorest rival sits the crossing out', () => {
-    let s = newGame(31);
-    // Nine captains start (you + 8): odd, so someone sits out.
+    const def = (id: string) => ROSTER.find((c) => c.id === id)!;
+    const lineUp = ['konrad', 'nemo', 'lenny', 'walrus'].map((id) => ({ def: def(id), joins: 'start' }));
+    let s = newGame(31, DEFAULT_CONFIG, lineUp);
+    // Five captains (you + 4): odd, so someone sits out.
     const poorest = [...activeOpponents(s)].sort((a, b) => a.money - b.money || a.id.localeCompare(b.id))[0];
     expect(s.sitterId).toBe(poorest.id);
     expect(s.opponentId).not.toBe(poorest.id);

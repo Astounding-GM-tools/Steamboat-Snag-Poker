@@ -5,7 +5,7 @@
  */
 import { chooseAction, viewFor } from './ai';
 import { jokerCard, type Card, type JokerCard } from './cards';
-import { HUMAN_ID, LEGACY_AI, ROSTER, type AiId, type CharacterDef } from './characters';
+import { HUMAN_ID, LEGACY_AI, ROSTER, drawLineUp, type AiId, type CharacterDef, type LineUpEntry } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { createRound, resolveStreet, type Action, type RoundResult, type RoundState } from './round';
 import { Rng } from './rng';
@@ -111,16 +111,22 @@ export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): 
   return state;
 }
 
-export function newGame(seed: number, config: RulesConfig = DEFAULT_CONFIG, roster: CharacterDef[] = ROSTER): GameState {
+/**
+ * Starts a tournament. The line-up is drawn from the gallery (a mix of rascals,
+ * middling captains and sharps) unless one is given, e.g. by tests.
+ */
+export function newGame(seed: number, config: RulesConfig = DEFAULT_CONFIG, lineUp?: LineUpEntry[]): GameState {
+  const drawRng = new Rng((seed ^ 0x5eed) >>> 0);
+  const entries = lineUp ?? drawLineUp(ROSTER, (n) => drawRng.int(n));
   const players: Player[] = [
     { id: HUMAN_ID, ai: null, money: config.startMoney, jokers: [], status: 'active' },
-    ...roster.map((c): Player => ({
-      id: c.id,
-      ai: c.ai,
-      money: c.startMoney,
+    ...entries.map(({ def, joins }): Player => ({
+      id: def.id,
+      ai: def.ai,
+      money: def.startMoney,
       jokers: [],
-      status: c.joins === 'start' ? 'active' : 'waiting',
-      ...(c.joins === 'start' ? {} : { joinsAfter: c.joins === 'firstElimination' ? '*' : c.joins.after }),
+      status: joins === 'start' ? 'active' : 'waiting',
+      ...(joins === 'start' ? {} : { joinsAfter: joins }),
     })),
   ];
   const state: GameState = {

@@ -33,6 +33,8 @@ export interface SeatView {
   potMode: boolean;
   pot: number;
   canFold: boolean;
+  /** Snags shuffled into the deck this crossing (public knowledge). */
+  deckSnags: number;
   deckSize: number;
 }
 
@@ -58,6 +60,7 @@ export function viewFor(round: RoundState, seatIndex: number): SeatView {
     potMode: round.potMode ?? false,
     pot: (round.bets ?? [0, 0])[0] + (round.bets ?? [0, 0])[1],
     canFold: canFold(round, seatIndex),
+    deckSnags: round.deck.filter(isJoker).length,
     deckSize: round.deck.length,
   };
 }
@@ -82,7 +85,13 @@ export function chooseAction(ai: AiId, view: SeatView, config: RulesConfig, rng:
     case 'shark':
       return smartAction(view, config, rng, { samples: 40, jokerBold: 1.6, noise: 0.5 });
     case 'gambler':
+    case 'predator':
       return smartAction(view, config, rng, { samples: 60, jokerBold: 1, noise: 0 });
+    case 'griefer':
+    case 'swashbuckler':
+      return randomAction(view, rng, 2);
+    case 'defeatist':
+      return smartAction(view, config, rng, { samples: 25, jokerBold: 0.2, noise: 1 });
   }
 }
 
@@ -239,7 +248,15 @@ function expectedStakes(view: SeatView) {
 }
 
 /** How readily each style folds in pot mode: fold when continuing is worth less than this share of the pot. */
-const FOLD_BAR: Partial<Record<AiId, number>> = { careful: 0.1, gambler: 0, shark: -0.1, dreamer: 0, loose: -0.3 };
+const FOLD_BAR: Partial<Record<AiId, number>> = {
+  careful: 0.1,
+  gambler: 0,
+  shark: -0.1,
+  dreamer: 0,
+  loose: -0.3,
+  defeatist: 0.35, // Lenny folds at the first sign of trouble
+  predator: 0.15, // Eliza only stays in with a reason
+};
 
 function drawAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Action {
   const options = subsets(view.hand.map((c) => c.id)).filter((ids) => ids.length <= view.deckSize);
@@ -270,6 +287,21 @@ function drawAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Ac
       return smartDraw(ai, view, config, rng, options, 30);
     case 'gambler':
       return smartDraw(ai, view, config, rng, options, 50);
+    case 'predator':
+      return smartDraw(ai, view, config, rng, options, 50);
+    case 'defeatist':
+      // Never chases: swaps one card at most.
+      return smartDraw(ai, view, config, rng, options.filter((o) => o.length <= 1), 25);
+    case 'swashbuckler':
+      // Goes for the spectacular: big hands count for far more than small ones.
+      return smartDraw(ai, view, config, rng, options, 30, 3);
+    case 'griefer':
+      // Never fishes while snags are in the deck: let someone else catch them.
+      if (view.deckSnags > 0) return { type: 'draw', cardIds: [] };
+      return smartDraw(ai, view, config, rng, options, 15);
+    case 'clueless':
+    case 'prankster':
+      return { type: 'draw', cardIds: rng.pick(options) };
   }
 }
 
@@ -278,7 +310,7 @@ function drawAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Ac
  * at showdown. In pot mode it weighs that chance against what the swap costs,
  * and folds when no option is worth paying for.
  */
-function smartDraw(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng, options: string[][], samples: number): Action {
+function smartDraw(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng, options: string[][], samples: number, ambition = 0): Action {
   const pool = unseen(view);
   const size = boardSize(config);
   const oppHandSize = view.opponentHandSize;
@@ -299,8 +331,10 @@ function smartDraw(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng, opti
       const mine = bestScore(hand, board, ANY_OWN(hand.length));
       const theirs = bestScore(opp, board, ANY_OWN(opp.length));
       if (mine > theirs) {
-        wins++;
-        winValue += 1 + config.winGain[categoryOf(mine)] / 20;
+        // Ambition: how much more a big hand is worth to this captain than a small one.
+        const glory = 1 + (ambition * CATEGORIES.indexOf(categoryOf(mine))) / 8;
+        wins += glory;
+        winValue += glory * (1 + config.winGain[categoryOf(mine)] / 20);
       }
     }
     let value: number;
@@ -374,6 +408,16 @@ function composeAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng):
       return smartCompose(view, config, rng, options, 150, 1.6);
     case 'gambler':
       return smartCompose(view, config, rng, options, 300, 1);
+    case 'predator':
+      // Patient all round, then merciless: loves to bury a beaten rival in snags.
+      return smartCompose(view, config, rng, options, 300, 2);
+    case 'defeatist':
+      return smartCompose(view, config, rng, options, 120, 0.2);
+    case 'swashbuckler':
+      return smartCompose(view, config, rng, options, 100, 1.8);
+    case 'griefer':
+      // Gleefully puts snags in play, whatever the cost.
+      return smartCompose(view, config, rng, options, 100, 2.5);
   }
 }
 
