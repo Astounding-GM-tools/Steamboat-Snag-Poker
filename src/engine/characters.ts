@@ -28,8 +28,6 @@ export interface CharacterDef {
   ai: AiId;
   tier: Tier;
   startMoney: number;
-  /** Year of a public-domain first appearance, for the captain card (omit for originals). */
-  firstSeen?: number;
   /** Only in a tournament alongside this captain, and joins once they are busted. */
   follows?: string;
 }
@@ -41,16 +39,16 @@ export interface CharacterDef {
 export const ROSTER: CharacterDef[] = [
   // Rascals
   { id: 'konrad', ai: 'bully', tier: 'rascal', startMoney: 45 },
-  { id: 'maxMoritz', ai: 'griefer', tier: 'rascal', startMoney: 40, firstSeen: 1865 },
+  { id: 'maxMoritz', ai: 'griefer', tier: 'rascal', startMoney: 40 },
   { id: 'kitty', ai: 'swashbuckler', tier: 'rascal', startMoney: 60 },
-  { id: 'ignatz', ai: 'anarchist', tier: 'rascal', startMoney: 45, firstSeen: 1913 },
-  { id: 'nemo', ai: 'dreamer', tier: 'rascal', startMoney: 50, firstSeen: 1905 },
+  { id: 'ignatz', ai: 'anarchist', tier: 'rascal', startMoney: 45 },
+  { id: 'nemo', ai: 'dreamer', tier: 'rascal', startMoney: 50 },
   { id: 'jimBob', ai: 'loose', tier: 'rascal', startMoney: 55 },
   // Middle
-  { id: 'steamboatBill', ai: 'stubborn', tier: 'middle', startMoney: 50, firstSeen: 1910 },
+  { id: 'steamboatBill', ai: 'stubborn', tier: 'middle', startMoney: 50 },
   { id: 'finlay', ai: 'loose', tier: 'middle', startMoney: 60 },
   { id: 'lenny', ai: 'defeatist', tier: 'middle', startMoney: 55 },
-  { id: 'walrus', ai: 'shark', tier: 'middle', startMoney: 55, firstSeen: 1871 },
+  { id: 'walrus', ai: 'shark', tier: 'middle', startMoney: 55 },
   // Sharps
   { id: 'gaylord', ai: 'gambler', tier: 'sharp', startMoney: 40 },
   { id: 'eliza', ai: 'predator', tier: 'sharp', startMoney: 50 },
