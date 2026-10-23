@@ -21,22 +21,75 @@
 </script>
 
 <div class="title">
-  <svg class="boat" viewBox="0 0 220 120" aria-hidden="true">
+  <!-- A stern-wheeler steaming to the right: the wheel at the back turns so its
+       lower paddles push the water astern; smoke trails back from three stacks
+       that puff as they breathe; the river laps up over the hull. -->
+  <svg class="boat" viewBox="0 -34 240 184" aria-hidden="true">
     <g class="bob">
-      <rect x="70" y="18" width="12" height="34" fill="#f2efe6" stroke="#111" stroke-width="3" />
-      <rect x="100" y="12" width="12" height="40" fill="#f2efe6" stroke="#111" stroke-width="3" />
-      <g class="smoke">
-        <circle cx="76" cy="8" r="6" fill="#bbb" />
-        <circle cx="108" cy="2" r="5" fill="#999" />
-      </g>
-      <rect x="50" y="50" width="100" height="20" fill="#f2efe6" stroke="#111" stroke-width="3" />
-      <path d="M30 70 H180 L165 92 H45 Z" fill="#111" stroke="#f2efe6" stroke-width="3" />
+      <!-- Smoke: particles rising from each stack, drifting astern -->
+      {#each [{ x: 88, y: 50, n: 4 }, { x: 106, y: 28, n: 6 }, { x: 124, y: 40, n: 5 }] as stack, s (s)}
+        {#each Array.from({ length: stack.n }) as _, i (i)}
+          <circle
+            class="puff"
+            cx={stack.x}
+            cy={stack.y}
+            r={2.6 + (i % 3) * 0.8}
+            fill={['#d9d6cd', '#b9b6ad', '#9a978f'][i % 3]}
+            style="--d: {((i * 0.47 + s * 0.31) % 2.4).toFixed(2)}s; --dx: {-18 - i * 4}px; --dy: {-26 - (i % 3) * 6}px"
+          />
+        {/each}
+      {/each}
+
+      <!-- Stacks: short, tall, medium; each breathes on its own beat -->
+      <g class="stack" style="--b: 0s"><rect x="83" y="52" width="10" height="24" fill="#f2efe6" stroke="#111" stroke-width="2.5" /><rect x="81" y="49" width="14" height="5" fill="#111" /></g>
+      <g class="stack" style="--b: 0.5s"><rect x="101" y="30" width="10" height="46" fill="#f2efe6" stroke="#111" stroke-width="2.5" /><rect x="99" y="27" width="14" height="5" fill="#111" /></g>
+      <g class="stack" style="--b: 1s"><rect x="119" y="42" width="10" height="34" fill="#f2efe6" stroke="#111" stroke-width="2.5" /><rect x="117" y="39" width="14" height="5" fill="#111" /></g>
+
+      <!-- Pilot house -->
+      <rect x="150" y="62" width="30" height="14" fill="#f2efe6" stroke="#111" stroke-width="2.5" />
+      <rect x="160" y="65" width="10" height="6" fill="#111" />
+
+      <!-- Main cabin with suit windows -->
+      <rect x="66" y="76" width="124" height="20" fill="#f2efe6" stroke="#111" stroke-width="2.5" />
+      {#each ['♠', '♡', '♢', '♣'] as suit, i (suit)}
+        <text x={86 + i * 28} y="91" text-anchor="middle" font-size="13" fill="#111">{suit}</text>
+      {/each}
+
+      <!-- Hull, bow to the right -->
+      <path d="M52 96 H206 L224 86 L208 116 H58 Z" fill="#111" stroke="#f2efe6" stroke-width="2.5" />
+
+      <!-- Stern wheel -->
       <g class="wheel">
-        <circle cx="168" cy="72" r="16" fill="none" stroke="#f2efe6" stroke-width="3" />
-        <path d="M168 56 V88 M152 72 H184 M157 61 L179 83 M179 61 L157 83" stroke="#f2efe6" stroke-width="2" />
+        <circle cx="36" cy="100" r="20" fill="none" stroke="#f2efe6" stroke-width="2.5" />
+        <circle cx="36" cy="100" r="4" fill="#f2efe6" />
+        {#each Array.from({ length: 8 }) as _, i (i)}
+          <line x1="36" y1="100" x2={36 + 20 * Math.cos((i * Math.PI) / 4)} y2={100 + 20 * Math.sin((i * Math.PI) / 4)} stroke="#f2efe6" stroke-width="2" />
+          <rect
+            x={36 + 20 * Math.cos((i * Math.PI) / 4) - 3}
+            y={100 + 20 * Math.sin((i * Math.PI) / 4) - 3}
+            width="6"
+            height="6"
+            fill="#f2efe6"
+            transform="rotate({i * 45} {36 + 20 * Math.cos((i * Math.PI) / 4)} {100 + 20 * Math.sin((i * Math.PI) / 4)})"
+          />
+        {/each}
       </g>
     </g>
-    <path class="waves" d="M0 100 Q15 92 30 100 T60 100 T90 100 T120 100 T150 100 T180 100 T210 100 T240 100" fill="none" stroke="#f2efe6" stroke-width="3" />
+
+    <!-- The river, over the hull and the bottom of the wheel (clipped to the picture) -->
+    <defs>
+      <clipPath id="river-clip"><rect x="0" y="-34" width="240" height="184" /></clipPath>
+    </defs>
+    <g clip-path="url(#river-clip)">
+      <g class="waves back">
+        <path d="M-30 110 Q-15 104 0 110 T30 110 T60 110 T90 110 T120 110 T150 110 T180 110 T210 110 T240 110 T270 110 T300 110 V150 H-30 Z" fill="#3a3935" />
+        <path d="M-30 110 Q-15 104 0 110 T30 110 T60 110 T90 110 T120 110 T150 110 T180 110 T210 110 T240 110 T270 110 T300 110" fill="none" stroke="#9a978f" stroke-width="2" />
+      </g>
+      <g class="waves front">
+        <path d="M-30 117 Q-15 110 0 117 T30 117 T60 117 T90 117 T120 117 T150 117 T180 117 T210 117 T240 117 T270 117 T300 117 V150 H-30 Z" fill="#2a2926" />
+        <path d="M-30 117 Q-15 110 0 117 T30 117 T60 117 T90 117 T120 117 T150 117 T180 117 T210 117 T240 117 T270 117 T300 117" fill="none" stroke="#f2efe6" stroke-width="2.5" />
+      </g>
+    </g>
   </svg>
 
   <div class="intertitle">
@@ -88,26 +141,51 @@
     padding: 2rem 1rem;
   }
   .boat {
-    width: min(360px, 80vw);
+    width: min(380px, 84vw);
     margin: 0 auto;
     display: block;
+    overflow: visible;
   }
   .bob {
+    transform-box: fill-box;
+    transform-origin: center;
     animation: bob 1.6s ease-in-out infinite;
   }
   .wheel {
-    transform-origin: 168px 72px;
-    animation: spin 2s linear infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: spin 2.4s linear infinite;
   }
-  .smoke {
-    animation: smoke 1.2s steps(3) infinite;
+  .stack {
+    transform-box: fill-box;
+    transform-origin: bottom center;
+    animation: breathe 1.5s ease-in-out var(--b) infinite;
   }
-  .waves {
-    animation: waves 1.2s linear infinite;
+  .puff {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    animation: puff 2.4s ease-out var(--d) infinite;
+  }
+  .waves.front {
+    animation: waves 1.3s linear infinite;
+  }
+  .waves.back {
+    animation: waves 2.1s linear infinite;
   }
   @keyframes bob { 50% { transform: translateY(3px) rotate(-1deg); } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes smoke { 50% { transform: translate(-4px, -4px); opacity: 0.6; } }
+  /* Counter-clockwise: the lower paddles push the water astern as the boat goes right. */
+  @keyframes spin { to { transform: rotate(-360deg); } }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1, 1); }
+    40% { transform: scale(1.12, 0.92); }
+    60% { transform: scale(0.94, 1.06); }
+  }
+  @keyframes puff {
+    0% { transform: translate(0, 0) scale(0.4); opacity: 0.95; }
+    70% { opacity: 0.5; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(2.4); opacity: 0; }
+  }
   @keyframes waves { to { transform: translateX(-30px); } }
   .tagline {
     font-style: italic;
