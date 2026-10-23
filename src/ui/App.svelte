@@ -101,7 +101,7 @@
     {/if}
     {#if showLog}<HandLog {game} onclose={() => (showLog = false)} />{/if}
   {:else}
-    <Title {best} savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} />
+    <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} />
   {/if}
 </div>
 <DebugPanel {config} {seed} {peek} onapply={applyRules} onpeek={(p) => (peek = p)} onlog={game ? () => (showLog = true) : undefined} />

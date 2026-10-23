@@ -1,16 +1,14 @@
 <script lang="ts">
   import { t } from '../i18n';
   import WillieSays from './WillieSays.svelte';
-  import type { Best } from './storage';
 
   interface Props {
-    best: Best;
     /** Month of the voyage in progress, if any. */
     savedMonth: number | null;
     onstart: () => void;
     oncontinue: () => void;
   }
-  let { best, savedMonth, onstart, oncontinue }: Props = $props();
+  let { savedMonth, onstart, oncontinue }: Props = $props();
   let showHowTo = $state(false);
   /** How many taglines the language file has (title.tagline.0 … n-1); one is picked per visit. */
   const TAGLINES = 12;
@@ -156,8 +154,10 @@
   </svg>
 
   <div class="intertitle">
-    <div class="flourish">❦ ❦ ❦</div>
-    <h1>{t('title.name')}</h1>
+    <h1 class="game-title">
+      <span class="line-1">{t('title.line1')}</span>
+      <span class="line-2">{t('title.line2')}</span>
+    </h1>
     <p class="tagline">{t(`title.tagline.${tagline}`)}</p>
     <div class="buttons">
       {#if savedMonth}
@@ -168,10 +168,6 @@
       {/if}
       <button class="ghost" onclick={() => (showHowTo = true)}>{t('title.howTo')}</button>
     </div>
-    <p class="best">
-      {#if !best.wins && !best.longest}{t('title.noBest')}
-      {:else}{t('title.record', { wins: best.wins, months: best.longest })}{/if}
-    </p>
   </div>
 
   {#if confirmAbandon}
@@ -290,9 +286,20 @@
     flex-wrap: wrap;
     margin: 1.5rem 0 1rem;
   }
-  .best {
-    color: var(--grey);
-    margin: 0;
+  .game-title {
+    line-height: 1;
+    margin-bottom: 0.4em;
+  }
+  .game-title span {
+    display: block;
+  }
+  /* "Steamboat" is a word shorter, so it runs a size larger to line up with "Snag Poker". */
+  .line-1 {
+    font-size: 1.06em;
+    letter-spacing: 0.02em;
+  }
+  .line-2 {
+    margin-top: 0.08em;
   }
   .overlay {
     position: fixed;

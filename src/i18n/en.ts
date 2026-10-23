@@ -1,6 +1,8 @@
 /** English strings. Add a sibling file (e.g. no.ts) with the same keys for a new language. */
 export const en = {
   'title.name': 'Steamboat Snag Poker',
+  'title.line1': 'Steamboat',
+  'title.line2': 'Snag Poker',
   /** A random one is shown on the title screen; add more freely (keep the count in TAGLINES). */
   'title.tagline.0': 'Because the Night Was Made for Poker',
   'title.tagline.1': 'Because the River Was Made for Poker',
