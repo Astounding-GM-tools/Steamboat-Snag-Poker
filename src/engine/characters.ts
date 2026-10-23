@@ -89,7 +89,23 @@ export function drawLineUp(roster: CharacterDef[], pick: (n: number) => number):
   return out;
 }
 
-/** Styles of retired captains (and older ids), so older saved games keep playing. */
+/**
+ * Retired captains (borrowed characters from the prototype) and the new
+ * captains who take their seats when an older saved game is loaded.
+ */
+export const RETIRED_IDS: Record<string, string> = {
+  pete: 'konrad',
+  willie: 'jimBob',
+  felix: 'kitty',
+  betty: 'lenny',
+  sherlock: 'eliza',
+  derCaptain: 'walrus',
+  hansFritz: 'maxMoritz',
+  jiggs: 'finlay',
+  maggie: 'morag',
+};
+
+/** Playing styles that older saved games may still name. */
 export const LEGACY_AI: Record<string, AiId> = {
   pete: 'bully',
   willie: 'dreamer',

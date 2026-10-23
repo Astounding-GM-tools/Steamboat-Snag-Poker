@@ -1,4 +1,4 @@
-# Willie's Wild River — Game Design Document
+# Steamboat Snag Poker — Game Design Document
 
 > Source of truth for the prototype. The original Norwegian sketch is kept in
 > [design-original-no.md](design-original-no.md). Items marked **🔧 Variant** are
@@ -262,7 +262,7 @@ every crossing off-screen, trading snags and money with the same rules.
 
 Ten captains, each with a boat and a playing style — see
 [roster.md](roster.md) for the table, sources, starting purses and who joins
-when (Gaylord Ravenal after the first bust; Maggie once Jiggs is busted).
+when (a second sharp after the first bust; Morag once Finlay is busted).
 
 ## Screens
 

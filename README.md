@@ -1,4 +1,4 @@
-# Willie's Wild River
+# Steamboat Snag Poker
 
 A silent-film poker duel prototype. Design: [docs/design.md](docs/design.md).
 

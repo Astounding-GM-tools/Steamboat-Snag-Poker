@@ -10,7 +10,7 @@ opponent's snags if you lose).
 
 ## Pickle #1 — "Nines or the Straight?"
 
-*From a real tournament, crossing 67, against Gaylord Ravenal.*
+*From a real tournament, crossing 67, against Gaylord.*
 
 **The situation (on the Turn)**
 - Your hand: **9♦ 7♠ 5♦**
@@ -54,7 +54,7 @@ was the 8♣ (a fourth club).
 
 ## Pickle #2 — "Three Pairs"
 
-*Same tournament, crossing 68, against Gaylord Ravenal.*
+*Same tournament, crossing 68, against Gaylord.*
 
 **The situation (on the Turn)**
 - Your hand: **10♣ 3♣ Q♡**

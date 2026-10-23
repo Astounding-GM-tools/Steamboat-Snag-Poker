@@ -128,4 +128,17 @@ describe('game', () => {
     const played = s.report!.offscreen.flatMap((d) => d.players);
     expect(played).not.toContain(poorest.id);
   });
+
+  it('hands retired captains\' seats in old saves to their successors', () => {
+    const s = newGame(41);
+    const json = JSON.stringify(s)
+      .replaceAll('"konrad"', '"pete"')
+      .replaceAll('"finlay"', '"jiggs"');
+    const old = JSON.parse(json) as GameState;
+    for (const p of old.players) if (p.id === 'pete') p.ai = 'pete' as never;
+    const fixed = migrateGame(old);
+    expect(fixed.players.some((p) => p.id === 'pete' || p.id === 'jiggs')).toBe(false);
+    const konrad = fixed.players.find((p) => p.id === 'konrad');
+    if (konrad) expect(konrad.ai).toBe('bully');
+  });
 });

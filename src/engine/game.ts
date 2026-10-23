@@ -5,7 +5,7 @@
  */
 import { chooseAction, viewFor } from './ai';
 import { jokerCard, type Card, type JokerCard } from './cards';
-import { HUMAN_ID, LEGACY_AI, ROSTER, drawLineUp, type AiId, type CharacterDef, type LineUpEntry } from './characters';
+import { HUMAN_ID, LEGACY_AI, RETIRED_IDS, ROSTER, drawLineUp, type AiId, type CharacterDef, type LineUpEntry } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { createRound, resolveStreet, type Action, type RoundResult, type RoundState } from './round';
 import { Rng } from './rng';
@@ -88,7 +88,10 @@ const clone = <T>(x: T): T => structuredClone(x);
  * a number (from such a missing setting) is reset to that player's start.
  */
 export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): GameState {
-  const state = clone(saved);
+  // Retired captains hand their seats (ids anywhere in the save) to their successors.
+  let json = JSON.stringify(saved);
+  for (const [old, now] of Object.entries(RETIRED_IDS)) json = json.replaceAll(`"${old}"`, `"${now}"`);
+  const state = JSON.parse(json) as GameState;
   state.config = { ...DEFAULT_CONFIG, ...state.config, winGain: { ...DEFAULT_CONFIG.winGain, ...state.config.winGain } };
   state.log ??= [];
   if (state.round) {
@@ -100,7 +103,10 @@ export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): 
     state.report.money = (state.report as MonthReport & { popularity?: MonthReport['money'] }).popularity ?? {};
   }
   for (const p of state.players) {
-    if (p.ai && LEGACY_AI[p.ai] && !ROSTER.some((c) => c.ai === p.ai)) p.ai = LEGACY_AI[p.ai];
+    // A captain in the current gallery plays by the gallery's playbook; older styles map over.
+    const def = roster.find((c) => c.id === p.id);
+    if (p.ai && def) p.ai = def.ai;
+    else if (p.ai && LEGACY_AI[p.ai]) p.ai = LEGACY_AI[p.ai];
     // Before the river tournament, money was called popularity.
     const legacy = (p as Player & { popularity?: number }).popularity;
     if (p.money === undefined && legacy !== undefined) p.money = legacy;

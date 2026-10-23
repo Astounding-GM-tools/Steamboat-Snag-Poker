@@ -1,7 +1,7 @@
 /** English strings. Add a sibling file (e.g. no.ts) with the same keys for a new language. */
 export const en = {
-  'title.name': "Willie's Wild River",
-  'title.tagline': 'A Game of Steamboat Snag Poker',
+  'title.name': 'Steamboat Snag Poker',
+  'title.tagline': 'A Card Game for River Captains',
   'title.start': 'Cast Off!',
   'title.continue': 'Continue voyage (crossing {month})',
   'title.newVoyage': 'New voyage',
@@ -11,7 +11,7 @@ export const en = {
   'title.abandonNo': 'Stay aboard',
   'title.howTo': 'How it works',
   'title.howToBody':
-    'Whenever steamboat captains cross paths on the river, they sit down for a hand of Steamboat Snag Poker. The last captain still afloat wins the tournament.\n\nYou hold three cards. On the Flop and the Turn you may throw away any of them for new ones, or stand pat. Your discards lie face up, and so do theirs.\n\nWhen the River card comes, you make your hand: tap the cards you want to play. The best community cards fill the rest of your five. The winner takes the pot straight out of the loser’s purse.\n\nSnags are liabilities: stinking cargo, tiresome passengers, thankless duties. Each one costs you upkeep every crossing. To be rid of one, put it in your hand and still win: the loser takes every snag the winner dared to play. Four of a kind has room for a snag; a full house does not. Run out of money and you’re busted.',
+    'Whenever steamboat captains cross paths on the river, they sit down for a hand of Snag Poker. The last captain still afloat wins the tournament.\n\nEveryone puts an ante into the pot. You hold three cards. On the Flop and the Turn you may throw any of them away for new ones (each card costs a little more than the last) or stand pat, and seeing the next card has a small fee too. If your hand looks hopeless, fold on the Flop or the Turn and give up the pot.\n\nWhen the River card comes, you make your hand: tap the cards you want to play, and the best community cards fill the rest of your five. The best hand takes the whole pot.\n\nSnags are liabilities: stinking cargo, tiresome passengers, thankless duties. Each one makes your ante dearer. To be rid of one, put it in your hand and still win: the loser takes every snag the winner dared to play, but lose with snags in your hand and you pay a forfeit for each. Four of a kind has room for a snag; a full house does not.\n\nRun out of money and you’re busted.',
   'title.record': 'Tournaments won: {wins} · Longest run: {months} crossings',
   'title.noBest': 'No voyages yet',
   'title.close': 'Close',
@@ -67,7 +67,7 @@ export const en = {
   'captain.notes': 'Your notes',
   'captain.notesPlaceholder': 'How does this captain play? Jot down your reads…',
   'captain.pdSince': 'This first appearance has been in the public domain since {year}.',
-  'captain.pdLongAgo': 'This first appearance has been in the public domain for decades.',
+  'captain.pdLongAgo': 'This first appearance has long been in the public domain.',
   'draw.fastDeal': 'Fast deal',
   'draw.oddsTitle': 'Here’s what {name} could be holding right now, Cap’n:',
   'draw.oddsBeats': 'That beats your best hand {pct} of the time.',
@@ -286,16 +286,6 @@ export const en = {
   'character.eliza.blurb': 'Charming, patient and terribly polite. Those who lose to her tend to stay lost.',
   'character.eliza.source': 'An original captain of this river.',
   'character.eliza.trivia': 'Named, she insists, after a countess she is in no way related to. Nobody asks what became of Lucrezia I and II.',
-  // Retired captains, kept so older saved games still show their names.
-  'character.pete.name': 'Pete',
-  'character.derCaptain.name': 'Der Captain',
-  'character.hansFritz.name': 'Hans & Fritz',
-  'character.jiggs.name': 'Jiggs',
-  'character.maggie.name': 'Maggie',
-  'character.felix.name': 'Felix',
-  'character.willie.name': 'Willie',
-  'character.betty.name': 'Betty',
-  'character.sherlock.name': 'Sherlock',
 
   'joker.0': 'the Barrel of Rotten Eggs',
   'joker.1': 'the In-Laws',

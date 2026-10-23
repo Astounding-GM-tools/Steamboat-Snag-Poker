@@ -71,7 +71,7 @@ export function chooseAction(ai: AiId, view: SeatView, config: RulesConfig, rng:
   switch (ai) {
     case 'bully':
     case 'stubborn':
-      return peteAction(view);
+      return bullyAction(view);
     case 'clueless':
       return randomAction(view, rng, 3);
     case 'prankster':
@@ -95,8 +95,8 @@ export function chooseAction(ai: AiId, view: SeatView, config: RulesConfig, rng:
   }
 }
 
-/** Pete: always wants the highest card on the table, never touches Jokers. */
-function peteAction(view: SeatView): Action {
+/** The bully: always wants the highest card on the table, never touches a snag. */
+function bullyAction(view: SeatView): Action {
   const best = [...view.hand].sort((a, b) => b.rank - a.rank)[0];
   const worst = [...view.hand].sort((a, b) => a.rank - b.rank)[0];
   if (!best) return legalSeatActions(view, view.deckSize)[0];
@@ -382,7 +382,7 @@ function composeAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng):
     case 'bully':
       return asAction(strongest(noJokers));
     case 'clueless': {
-      // Felix believes Jokers make a hand stronger, so in they all go.
+      // Believes snags make a hand stronger, so in they all go.
       const ids = rng.pick(subsets(view.hand.map((c) => c.id)));
       return { type: 'compose', cardIds: ids, jokers: Math.min(view.jokers.length, 5 - ids.length) };
     }
