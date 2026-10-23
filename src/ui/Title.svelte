@@ -25,6 +25,18 @@
        lower paddles push the water astern; smoke trails back from three stacks
        that puff as they breathe; the river laps up over the hull. -->
   <svg class="boat" viewBox="0 -34 240 184" aria-hidden="true">
+    <!-- Background, slowest first: soft suit-shaped clouds, then the far bank -->
+    <defs>
+      <filter id="soft-cloud" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6" /></filter>
+      <clipPath id="sky-clip"><rect x="0" y="-34" width="240" height="184" /></clipPath>
+    </defs>
+    <g clip-path="url(#sky-clip)">
+      {#each [{ s: '♠', y: -2, size: 44, dur: 46, delay: 0 }, { s: '♥', y: 20, size: 32, dur: 58, delay: -20 }, { s: '♦', y: -14, size: 28, dur: 52, delay: -38 }, { s: '♣', y: 10, size: 38, dur: 64, delay: -48 }] as cloud (cloud.s)}
+        <text class="cloud" x="250" y={cloud.y} font-size={cloud.size} fill="#8f8c84" fill-opacity="0.55" filter="url(#soft-cloud)" style="--dur: {cloud.dur}s; --delay: {cloud.delay}s">{cloud.s}</text>
+      {/each}
+      <path class="bank" d="M-120 106 Q-115.0 88.0 -110.0 106 L-106.0 92.0 L-102.0 106 Q-95.0 84.0 -88.0 106 Q-84.0 92.0 -80.0 106 L-77.0 95.0 L-74.0 106 Q-68.0 86.0 -62.0 106 L-57.5 90.0 L-53.0 106 Q-48.0 90.0 -43.0 106 Q-35.0 82.0 -27.0 106 L-23.5 94.0 L-20.0 106 Q-15.0 88.0 -10.0 106 L-6.0 92.0 L-2.0 106 Q5.0 84.0 12.0 106 Q16.0 92.0 20.0 106 L23.0 95.0 L26.0 106 Q32.0 86.0 38.0 106 L42.5 90.0 L47.0 106 Q52.0 90.0 57.0 106 Q65.0 82.0 73.0 106 L76.5 94.0 L80.0 106 Q85.0 88.0 90.0 106 L94.0 92.0 L98.0 106 Q105.0 84.0 112.0 106 Q116.0 92.0 120.0 106 L123.0 95.0 L126.0 106 Q132.0 86.0 138.0 106 L142.5 90.0 L147.0 106 Q152.0 90.0 157.0 106 Q165.0 82.0 173.0 106 L176.5 94.0 L180.0 106 Q185.0 88.0 190.0 106 L194.0 92.0 L198.0 106 Q205.0 84.0 212.0 106 Q216.0 92.0 220.0 106 L223.0 95.0 L226.0 106 Q232.0 86.0 238.0 106 L242.5 90.0 L247.0 106 Q252.0 90.0 257.0 106 Q265.0 82.0 273.0 106 L276.5 94.0 L280.0 106 Q285.0 88.0 290.0 106 L294.0 92.0 L298.0 106 Q305.0 84.0 312.0 106 Q316.0 92.0 320.0 106 L323.0 95.0 L326.0 106 Q332.0 86.0 338.0 106 L342.5 90.0 L347.0 106 Q352.0 90.0 357.0 106 Q365.0 82.0 373.0 106 L376.5 94.0 L380.0 106 Q385.0 88.0 390.0 106 L394.0 92.0 L398.0 106 Q405.0 84.0 412.0 106 Q416.0 92.0 420.0 106 L423.0 95.0 L426.0 106 Q432.0 86.0 438.0 106 L442.5 90.0 L447.0 106 Q452.0 90.0 457.0 106 Q465.0 82.0 473.0 106 L476.5 94.0 L480.0 106 V112 H-120 Z" fill="#4f4d48" />
+    </g>
+
     <g class="bob">
       <!-- Smoke: particles rising from each stack, drifting astern -->
       {#each [{ x: 88, y: 50, n: 4 }, { x: 106, y: 28, n: 6 }, { x: 124, y: 40, n: 5 }] as stack, s (s)}
@@ -55,25 +67,25 @@
         <text x={86 + i * 28} y="91" text-anchor="middle" font-size="13" fill="#111">{suit}</text>
       {/each}
 
-      <!-- Hull, bow to the right -->
-      <path d="M52 96 H206 L224 86 L208 116 H58 Z" fill="#111" stroke="#f2efe6" stroke-width="2.5" />
-
-      <!-- Stern wheel -->
+      <!-- Stern wheel, partly hidden behind the hull -->
       <g class="wheel">
-        <circle cx="36" cy="100" r="20" fill="none" stroke="#f2efe6" stroke-width="2.5" />
-        <circle cx="36" cy="100" r="4" fill="#f2efe6" />
+        <circle cx="46" cy="100" r="20" fill="none" stroke="#f2efe6" stroke-width="2.5" />
+        <circle cx="46" cy="100" r="4" fill="#f2efe6" />
         {#each Array.from({ length: 8 }) as _, i (i)}
-          <line x1="36" y1="100" x2={36 + 20 * Math.cos((i * Math.PI) / 4)} y2={100 + 20 * Math.sin((i * Math.PI) / 4)} stroke="#f2efe6" stroke-width="2" />
+          <line x1="46" y1="100" x2={46 + 20 * Math.cos((i * Math.PI) / 4)} y2={100 + 20 * Math.sin((i * Math.PI) / 4)} stroke="#f2efe6" stroke-width="2" />
           <rect
-            x={36 + 20 * Math.cos((i * Math.PI) / 4) - 3}
+            x={46 + 20 * Math.cos((i * Math.PI) / 4) - 3}
             y={100 + 20 * Math.sin((i * Math.PI) / 4) - 3}
             width="6"
             height="6"
             fill="#f2efe6"
-            transform="rotate({i * 45} {36 + 20 * Math.cos((i * Math.PI) / 4)} {100 + 20 * Math.sin((i * Math.PI) / 4)})"
+            transform="rotate({i * 45} {46 + 20 * Math.cos((i * Math.PI) / 4)} {100 + 20 * Math.sin((i * Math.PI) / 4)})"
           />
         {/each}
       </g>
+      <!-- Hull, bow to the right -->
+      <path d="M52 96 H206 L224 86 L208 116 H58 Z" fill="#111" stroke="#f2efe6" stroke-width="2.5" />
+
     </g>
 
     <!-- The river, over the hull and the bottom of the wheel (clipped to the picture) -->
@@ -82,12 +94,12 @@
     </defs>
     <g clip-path="url(#river-clip)">
       <g class="waves back">
-        <path d="M-30 110 Q-15 104 0 110 T30 110 T60 110 T90 110 T120 110 T150 110 T180 110 T210 110 T240 110 T270 110 T300 110 V150 H-30 Z" fill="#3a3935" />
-        <path d="M-30 110 Q-15 104 0 110 T30 110 T60 110 T90 110 T120 110 T150 110 T180 110 T210 110 T240 110 T270 110 T300 110" fill="none" stroke="#9a978f" stroke-width="2" />
+        <path d="M-60 110 Q-45 104 -30 110 T0 110 T30 110 T60 110 T90 110 T120 110 T150 110 T180 110 T210 110 T240 110 T270 110 T300 110 T330 110 T360 110 T390 110 T420 110 V150 H-60 Z" fill="#3a3935" />
+        <path d="M-60 110 Q-45 104 -30 110 T0 110 T30 110 T60 110 T90 110 T120 110 T150 110 T180 110 T210 110 T240 110 T270 110 T300 110 T330 110 T360 110 T390 110 T420 110" fill="none" stroke="#9a978f" stroke-width="2" />
       </g>
       <g class="waves front">
-        <path d="M-30 117 Q-15 110 0 117 T30 117 T60 117 T90 117 T120 117 T150 117 T180 117 T210 117 T240 117 T270 117 T300 117 V150 H-30 Z" fill="#2a2926" />
-        <path d="M-30 117 Q-15 110 0 117 T30 117 T60 117 T90 117 T120 117 T150 117 T180 117 T210 117 T240 117 T270 117 T300 117" fill="none" stroke="#f2efe6" stroke-width="2.5" />
+        <path d="M-60 117 Q-45 110 -30 117 T0 117 T30 117 T60 117 T90 117 T120 117 T150 117 T180 117 T210 117 T240 117 T270 117 T300 117 T330 117 T360 117 T390 117 T420 117 V150 H-60 Z" fill="#2a2926" />
+        <path d="M-60 117 Q-45 110 -30 117 T0 117 T30 117 T60 117 T90 117 T120 117 T150 117 T180 117 T210 117 T240 117 T270 117 T300 117 T330 117 T360 117 T390 117 T420 117" fill="none" stroke="#f2efe6" stroke-width="2.5" />
       </g>
     </g>
   </svg>
@@ -173,9 +185,18 @@
   .waves.back {
     animation: waves 2.1s linear infinite;
   }
+  .cloud {
+    animation: cloud var(--dur) linear var(--delay) infinite;
+  }
+  .bank {
+    animation: bank 16s linear infinite;
+  }
+  /* Clouds cross the whole sky; the bank repeats every 100 units, so its loop is seamless. */
+  @keyframes cloud { to { transform: translateX(-300px); } }
+  @keyframes bank { to { transform: translateX(-100px); } }
   @keyframes bob { 50% { transform: translateY(3px) rotate(-1deg); } }
-  /* Counter-clockwise: the lower paddles push the water astern as the boat goes right. */
-  @keyframes spin { to { transform: rotate(-360deg); } }
+  /* Clockwise: the lower paddles sweep left, pushing the water astern as the boat goes right. */
+  @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes breathe {
     0%, 100% { transform: scale(1, 1); }
     40% { transform: scale(1.12, 0.92); }
@@ -186,7 +207,8 @@
     70% { opacity: 0.5; }
     100% { transform: translate(var(--dx), var(--dy)) scale(2.4); opacity: 0; }
   }
-  @keyframes waves { to { transform: translateX(-30px); } }
+  /* One full wavelength per loop, so the last frame matches the first. */
+  @keyframes waves { to { transform: translateX(-60px); } }
   .tagline {
     font-style: italic;
     color: var(--grey);
