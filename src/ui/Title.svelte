@@ -234,10 +234,10 @@
     animation: puff 2.4s ease-out var(--d) infinite;
   }
   .waves.front {
-    animation: waves 3.6s linear infinite;
+    animation: waves 2.8s linear infinite;
   }
   .waves.back {
-    animation: waves 5.5s linear infinite;
+    animation: waves 4.3s linear infinite;
   }
   .star {
     animation: twinkle var(--d) ease-in-out var(--dl) infinite;
