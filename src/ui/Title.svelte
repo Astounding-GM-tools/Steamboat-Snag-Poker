@@ -18,12 +18,12 @@
 
   /** Suit-shaped clouds of very different sizes; each gets a random tilt per visit. */
   const clouds = [
-    { s: '♠', y: -4, size: 58, dur: 70, delay: 0 },
-    { s: '♥', y: 22, size: 22, dur: 52, delay: -12 },
+    { s: '♥', y: -6, size: 56, dur: 70, delay: 0 },
+    { s: '♦', y: 22, size: 20, dur: 52, delay: -12 },
     { s: '♦', y: -20, size: 34, dur: 60, delay: -30 },
-    { s: '♣', y: 8, size: 76, dur: 88, delay: -45 },
-    { s: '♠', y: 30, size: 16, dur: 44, delay: -26 },
-    { s: '♥', y: -12, size: 44, dur: 76, delay: -60 },
+    { s: '♥', y: 6, size: 74, dur: 88, delay: -45 },
+    { s: '♥', y: 30, size: 16, dur: 44, delay: -26 },
+    { s: '♦', y: -10, size: 44, dur: 76, delay: -60 },
   ].map((c) => ({ ...c, tilt: Math.round(Math.random() * 70 - 35) }));
   let confirmAbandon = $state(false);
 
@@ -49,7 +49,7 @@
       </mask>
     </defs>
     <g mask="url(#scene-fade)">
-    <!-- Background, slowest first: soft suit-shaped clouds, then the far bank -->
+    <!-- Background, slowest first: soft heart and diamond clouds, then copses of club and spade trees -->
     <defs>
       <filter id="soft-cloud" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6" /></filter>
       <clipPath id="sky-clip"><rect x="0" y="-34" width="240" height="184" /></clipPath>
@@ -79,7 +79,12 @@
           >{cloud.s}</text>
         </g>
       {/each}
-      <path class="bank" d="M-120 106 Q-115.0 88.0 -110.0 106 L-106.0 92.0 L-102.0 106 Q-95.0 84.0 -88.0 106 Q-84.0 92.0 -80.0 106 L-77.0 95.0 L-74.0 106 Q-68.0 86.0 -62.0 106 L-57.5 90.0 L-53.0 106 Q-48.0 90.0 -43.0 106 Q-35.0 82.0 -27.0 106 L-23.5 94.0 L-20.0 106 Q-15.0 88.0 -10.0 106 L-6.0 92.0 L-2.0 106 Q5.0 84.0 12.0 106 Q16.0 92.0 20.0 106 L23.0 95.0 L26.0 106 Q32.0 86.0 38.0 106 L42.5 90.0 L47.0 106 Q52.0 90.0 57.0 106 Q65.0 82.0 73.0 106 L76.5 94.0 L80.0 106 Q85.0 88.0 90.0 106 L94.0 92.0 L98.0 106 Q105.0 84.0 112.0 106 Q116.0 92.0 120.0 106 L123.0 95.0 L126.0 106 Q132.0 86.0 138.0 106 L142.5 90.0 L147.0 106 Q152.0 90.0 157.0 106 Q165.0 82.0 173.0 106 L176.5 94.0 L180.0 106 Q185.0 88.0 190.0 106 L194.0 92.0 L198.0 106 Q205.0 84.0 212.0 106 Q216.0 92.0 220.0 106 L223.0 95.0 L226.0 106 Q232.0 86.0 238.0 106 L242.5 90.0 L247.0 106 Q252.0 90.0 257.0 106 Q265.0 82.0 273.0 106 L276.5 94.0 L280.0 106 Q285.0 88.0 290.0 106 L294.0 92.0 L298.0 106 Q305.0 84.0 312.0 106 Q316.0 92.0 320.0 106 L323.0 95.0 L326.0 106 Q332.0 86.0 338.0 106 L342.5 90.0 L347.0 106 Q352.0 90.0 357.0 106 Q365.0 82.0 373.0 106 L376.5 94.0 L380.0 106 Q385.0 88.0 390.0 106 L394.0 92.0 L398.0 106 Q405.0 84.0 412.0 106 Q416.0 92.0 420.0 106 L423.0 95.0 L426.0 106 Q432.0 86.0 438.0 106 L442.5 90.0 L447.0 106 Q452.0 90.0 457.0 106 Q465.0 82.0 473.0 106 L476.5 94.0 L480.0 106 V112 H-120 Z" fill="#4f4d48" />
+      <g class="bank">
+        <rect x="-400" y="104" width="1100" height="8" fill="#5a5852" />
+        {#each [{ x: -360.0, s: '♠', size: 29 }, { x: -345.1, s: '♣', size: 21 }, { x: -334.3, s: '♠', size: 21 }, { x: -310.8, s: '♣', size: 19 }, { x: -300.9, s: '♣', size: 27 }, { x: -286.9, s: '♠', size: 21 }, { x: -258.6, s: '♣', size: 18 }, { x: -249.4, s: '♣', size: 22 }, { x: -237.9, s: '♣', size: 18 }, { x: -228.9, s: '♠', size: 26 }, { x: -180.0, s: '♠', size: 29 }, { x: -165.1, s: '♣', size: 21 }, { x: -154.3, s: '♠', size: 21 }, { x: -130.8, s: '♣', size: 19 }, { x: -120.9, s: '♣', size: 27 }, { x: -106.9, s: '♠', size: 21 }, { x: -78.6, s: '♣', size: 18 }, { x: -69.4, s: '♣', size: 22 }, { x: -57.9, s: '♣', size: 18 }, { x: -48.9, s: '♠', size: 26 }, { x: 0.0, s: '♠', size: 29 }, { x: 14.9, s: '♣', size: 21 }, { x: 25.7, s: '♠', size: 21 }, { x: 49.2, s: '♣', size: 19 }, { x: 59.1, s: '♣', size: 27 }, { x: 73.1, s: '♠', size: 21 }, { x: 101.4, s: '♣', size: 18 }, { x: 110.6, s: '♣', size: 22 }, { x: 122.1, s: '♣', size: 18 }, { x: 131.1, s: '♠', size: 26 }, { x: 180.0, s: '♠', size: 29 }, { x: 194.9, s: '♣', size: 21 }, { x: 205.7, s: '♠', size: 21 }, { x: 229.2, s: '♣', size: 19 }, { x: 239.1, s: '♣', size: 27 }, { x: 253.1, s: '♠', size: 21 }, { x: 281.4, s: '♣', size: 18 }, { x: 290.6, s: '♣', size: 22 }, { x: 302.1, s: '♣', size: 18 }, { x: 311.1, s: '♠', size: 26 }, { x: 360.0, s: '♠', size: 29 }, { x: 374.9, s: '♣', size: 21 }, { x: 385.7, s: '♠', size: 21 }, { x: 409.2, s: '♣', size: 19 }, { x: 419.1, s: '♣', size: 27 }, { x: 433.1, s: '♠', size: 21 }, { x: 461.4, s: '♣', size: 18 }, { x: 470.6, s: '♣', size: 22 }, { x: 482.1, s: '♣', size: 18 }, { x: 491.1, s: '♠', size: 26 }, { x: 540.0, s: '♠', size: 29 }, { x: 554.9, s: '♣', size: 21 }, { x: 565.7, s: '♠', size: 21 }, { x: 589.2, s: '♣', size: 19 }, { x: 599.1, s: '♣', size: 27 }, { x: 613.1, s: '♠', size: 21 }, { x: 641.4, s: '♣', size: 18 }, { x: 650.6, s: '♣', size: 22 }, { x: 662.1, s: '♣', size: 18 }, { x: 671.1, s: '♠', size: 26 }] as tree, i (i)}
+          <text x={tree.x} y="108" font-size={tree.size} fill="#5a5852">{tree.s}</text>
+        {/each}
+      </g>
     </g>
 
     <g class="bob">
@@ -215,7 +220,7 @@
   .wheel {
     transform-box: fill-box;
     transform-origin: center;
-    animation: spin 2.4s linear infinite;
+    animation: spin 3.8s linear infinite;
   }
   .stack {
     transform-box: fill-box;
@@ -229,10 +234,10 @@
     animation: puff 2.4s ease-out var(--d) infinite;
   }
   .waves.front {
-    animation: waves 1.3s linear infinite;
+    animation: waves 2.2s linear infinite;
   }
   .waves.back {
-    animation: waves 2.1s linear infinite;
+    animation: waves 3.4s linear infinite;
   }
   .star {
     animation: twinkle var(--d) ease-in-out var(--dl) infinite;
@@ -254,11 +259,11 @@
     animation: cloud var(--dur) linear var(--delay) infinite;
   }
   .bank {
-    animation: bank 16s linear infinite;
+    animation: bank 24s linear infinite;
   }
-  /* Clouds cross the whole sky; the bank repeats every 100 units, so its loop is seamless. */
+  /* Clouds cross the whole sky; the copses repeat every 180 units, so the bank loops seamlessly. */
   @keyframes cloud { to { transform: translateX(-300px); } }
-  @keyframes bank { to { transform: translateX(-100px); } }
+  @keyframes bank { to { transform: translateX(-180px); } }
   @keyframes bob { 50% { transform: translateY(3px) rotate(-1deg); } }
   /* Clockwise: the lower paddles sweep left, pushing the water astern as the boat goes right. */
   @keyframes spin { to { transform: rotate(360deg); } }
