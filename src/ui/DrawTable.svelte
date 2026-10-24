@@ -418,7 +418,7 @@
           {#if me.jokers.length > 2}<span class="snag-count">×{me.jokers.length}</span>{/if}
         </div>
       {/if}
-      <DiscardChips cards={me.discarded} flop={me.flopDiscards} title={t('draw.yourDiscards')} />
+      <DiscardChips tall cards={me.discarded} flop={me.flopDiscards} title={t('draw.yourDiscards')} />
     </div>
 
 

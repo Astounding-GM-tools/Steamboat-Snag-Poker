@@ -10,7 +10,18 @@
    * Shorter than a card, so it sits on the table beside them. Tap it for a
    * closer look.
    */
-  let { cards, flop = cards.length, title }: { cards: Card[]; flop?: number; title: string } = $props();
+  let {
+    cards,
+    flop = cards.length,
+    title,
+    tall = false,
+  }: {
+    cards: Card[];
+    flop?: number;
+    title: string;
+    /** As tall as a full-size card: the stacks line up with the top and bottom of your hand. */
+    tall?: boolean;
+  } = $props();
   const rows = $derived(
     [
       { label: t('street.flop'), cards: cards.slice(0, flop) },
@@ -22,6 +33,7 @@
 <button
   type="button"
   class="discards"
+  class:tall
   aria-label={title}
   disabled={!cards.length}
   onclick={(e) => {
@@ -55,6 +67,18 @@
     outline: none;
     box-shadow: none;
     cursor: pointer;
+  }
+  /* A full-size card is 1.4 times its width: 76px wide, or 54px on a phone. */
+  .tall {
+    height: calc(76px * 1.4);
+  }
+  .tall .chip {
+    height: calc((100% - 4px) / 3);
+  }
+  @media (max-width: 600px) {
+    .tall {
+      height: calc(54px * 1.4);
+    }
   }
   .discards:disabled {
     cursor: default;
