@@ -68,7 +68,7 @@ export const en = {
   'draw.promptCompose': 'Tap the cards you want to play. Snags too, if you dare! The board fills the rest.',
   'draw.street': 'Swap round {n} of 2. On the River you make your hand.',
   'draw.lastStreet': 'Last chance to swap. Next comes the River: make your hand!',
-  'draw.boardOnly': 'Nothing tapped: the board plays alone',
+  'draw.boardOnly': 'No cards tapped, playing the board',
   'draw.risking': 'risking {n} 🪵 ({cost} if you lose)',
   'draw.hint': 'Hint',
   'willie.name': 'Willie',
