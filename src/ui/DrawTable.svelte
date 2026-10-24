@@ -28,7 +28,7 @@
   import DiscardChips from './DiscardChips.svelte';
   import WillieSays from './WillieSays.svelte';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
-  import { describeHand } from './handNames';
+  import { handLabel } from './handNames';
 
   interface Props {
     game: GameState;
@@ -80,6 +80,7 @@
   const preview = $derived(
     composing ? bestHand([...tappedCards, ...tappedJokers], round.community, { min: tapped.length, max: tapped.length }) : null,
   );
+  const callout = $derived(preview ? handLabel(preview) : null);
   const usedIds = $derived(new Set(preview?.cards.map((c) => c.id) ?? []));
 
   const stakes = $derived([...(round.communityJoker ? [round.communityJoker] : []), ...round.community.filter(isJoker)]);
@@ -311,13 +312,13 @@
   );
   const priced = (label: string) => (cost ? `${label} · ${dollars(cost)}` : label);
   const buttonLabel = $derived(
-    tapped.length === 0
-      ? cost
-        ? priced(t('draw.call'))
-        : t('draw.check')
-      : composing
-        ? t('draw.play')
-        : priced(t('draw.discard', { n: tapped.length })),
+    composing
+      ? t('draw.play')
+      : tapped.length
+        ? priced(t('draw.discard', { n: tapped.length }))
+        : cost
+          ? priced(t('draw.call'))
+          : t('draw.check'),
   );
   const showFold = $derived(round.potMode && playing && !composing);
   // Folding gives up everything you have put into the pot so far.
@@ -381,7 +382,19 @@
   <!-- Your side of the table, from the pot outwards: your money, your cards, your decisions. Fixed rows, so nothing moves as the round goes on. -->
   <section class="captain">
     <!-- Your money nearest the pot, no figure: never count your money at the table. -->
-    <div class="my-purse" bind:this={myPurseEl}><Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} /></div>
+    <div class="my-purse" bind:this={myPurseEl}>
+      <Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} />
+      <!-- On the River your coins are idle, so the hand you're making is called over them. Fixed size: it never shifts as you tap. -->
+      {#if playing && composing && callout}
+        <div class="callout" aria-live="polite">
+          <span class="call">{callout.call}</span>
+          <span class="lingo">{callout.lingo ?? ''}</span>
+          <span class="note">
+            {#if tappedJokers.length}{t('draw.risking', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
+          </span>
+        </div>
+      {/if}
+    </div>
     <DiscardChips cards={me.discarded} label={t('draw.discarded')} />
 
     <div class="hand-row">
@@ -407,11 +420,6 @@
       {/if}
     </div>
 
-    <p class="hint">
-      {#if playing && composing && tapped.length}
-        {describeHand(preview!)}{#if tappedJokers.length}<b> · {t('draw.risking', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}</b>{/if}
-      {/if}
-    </p>
 
     <div class="actions" class:idle={!playing}>
       <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0)}>{foldLabel}</button>
@@ -580,17 +588,47 @@
     gap: 0.75rem;
     height: 122px;
   }
-  .hint {
-    height: 1.2rem;
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--grey);
+  .my-purse {
+    position: relative;
+  }
+  .callout {
+    position: absolute;
+    inset: -4px 0;
+    display: grid;
+    grid-template-rows: 1fr 1fr auto;
+    align-items: center;
+    justify-items: center;
+    padding: 4px 0.5rem;
+    background: rgba(10, 10, 9, 0.88);
+    border: 3px double var(--paper);
+    text-align: center;
+    overflow: hidden;
+    animation: callout-in 0.2s ease-out;
+  }
+  .callout span {
+    max-width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .hint b {
-    color: var(--paper);
+  .call {
+    font-family: var(--title-font);
+    font-size: 1.15rem;
+    line-height: 1.1;
+  }
+  .lingo {
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.1;
+  }
+  .note {
+    font-size: 0.75rem;
+    color: var(--grey);
+    min-height: 1em;
+    line-height: 1;
+  }
+  @keyframes callout-in {
+    from { opacity: 0; }
   }
   /* Two fixed halves: changing labels and prices never move them. */
   .actions {

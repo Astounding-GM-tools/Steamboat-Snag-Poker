@@ -289,8 +289,13 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    - bottom, in fixed rows that never shift, from the pot outwards: your
      **purse** (coins only, no figure: you never count your money at the
      table), your discards as small notation chips, your hand and snags (close
-     to your chest), a hint line, and Fold and the action button side by side
-     (the decisions you hold closest).
+     to your chest), and Fold and the action button side by side (the
+     decisions you hold closest). On the River, while you compose, the hand you
+     are making is called in a fixed-size card laid over your idle coins: the
+     plain call ("Deuces full of Aces"), the table talk when there is some
+     ("Ducks full of Bullets!", "Trip Hooks!", "Broadway!"), and any snags at
+     risk. The wording lives in `handLabel` (handNames.ts), shared with the
+     result screens.
    **Purses** (yours, and the opponent's tucked behind their name, which has an
    outline to stay readable) are one coin a dollar: under $10 a few loose coins
    and circling moths (the only low-funds warning); under $50 a small uneven

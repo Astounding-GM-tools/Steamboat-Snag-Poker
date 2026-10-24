@@ -43,6 +43,70 @@ export function describeHand(hand: HandValue): string {
   }
 }
 
+/**
+ * How a hand is called at the table, in two parts: `call`, plain poker
+ * shorthand that every hand has ("Deuces full of Aces", "Heart flush, Ace
+ * high"); and `lingo`, the table talk, when the hand has some ("Ducks full of
+ * Bullets!", "Trip Hooks!", "Broadway!"). Shared by the River preview and the
+ * result screens.
+ */
+export interface HandLabel {
+  call: string;
+  lingo: string | null;
+}
+
+/** A rank's table nickname ("Hooks" for jacks), if it has one. */
+function rankLingo(rank: number): string | null {
+  const key = `lingo.rank.${rank}`;
+  const nick = t(key);
+  return nick === key ? null : nick;
+}
+
+export function handLabel(hand: HandValue): HandLabel {
+  if (!hand.cards.length) return { call: cap(t('hand.nothing')), lingo: null };
+  const g = groups(hand);
+  const r = hand.cards.map((c) => c.rank);
+  const a = g[0][0];
+  const b = g[1]?.[0] ?? 0;
+  // Nickname where there is one, plain name where there isn't: "Cowboys over Fives".
+  const lingoOr = (rank: number) => rankLingo(rank) ?? plural(rank);
+  const either = rankLingo(a) || rankLingo(b);
+  const wheel = r[0] === 14 && r[1] === 5;
+  const top = wheel ? 5 : r[0];
+  const suit = t(`suit.one.${hand.cards[0].suit}`);
+  switch (hand.category) {
+    case 'highCard':
+      return { call: t('call.high', { rank: single(a) }), lingo: null };
+    case 'pair':
+      return { call: t('call.pair', { rank: plural(a) }), lingo: a === 6 ? t('lingo.route66') : rankLingo(a) && `${rankLingo(a)}!` };
+    case 'twoPair':
+      return {
+        call: t('call.twoPair', { a: plural(a), b: plural(b) }),
+        lingo: a === 14 && b === 8 ? t('nick.deadMan') : either ? `${t('call.twoPair', { a: lingoOr(a), b: lingoOr(b) })}!` : null,
+      };
+    case 'threeOfAKind':
+      return { call: t('call.trips', { rank: plural(a) }), lingo: rankLingo(a) && t('lingo.trips', { rank: rankLingo(a)! }) };
+    case 'straight':
+      return { call: t('call.straight', { rank: single(top) }), lingo: wheel ? t('nick.wheel') : r[0] === 14 ? t('nick.broadway') : null };
+    case 'flush':
+      return { call: t('call.flush', { suit, rank: single(a) }), lingo: null };
+    case 'fullHouse': {
+      const ranks = new Set([a, b]);
+      const named = ranks.has(3) && ranks.has(11) ? t('nick.waiter') : ranks.has(3) && ranks.has(13) ? t('nick.butler') : null;
+      return {
+        call: t('call.full', { a: plural(a), b: plural(b) }),
+        lingo: named ?? (either ? `${t('call.full', { a: lingoOr(a), b: lingoOr(b) })}!` : t('nick.fullBoat')),
+      };
+    }
+    case 'fourOfAKind':
+      return { call: t('call.quads', { rank: plural(a) }), lingo: rankLingo(a) && t('lingo.quads', { rank: rankLingo(a)! }) };
+    case 'straightFlush':
+      return r[0] === 14 && r[1] === 13
+        ? { call: t('call.royal', { suit }), lingo: t('nick.royal') }
+        : { call: t('call.straightFlush', { suit, rank: single(top) }), lingo: null };
+  }
+}
+
 /** A traditional (or house) nickname, if the hand has one. */
 export function nickname(hand: HandValue): string | null {
   const g = groups(hand);
