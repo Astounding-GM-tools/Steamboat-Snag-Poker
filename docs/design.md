@@ -292,9 +292,10 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
      to your chest), and Fold and the action button side by side (the
      decisions you hold closest). On the River, while you compose, the hand you
      are making is called in a fixed-size card laid over your idle coins: the
-     plain call ("Deuces full of Aces"), the table talk when there is some
-     ("Ducks full of Bullets!", "Trip Hooks!", "Broadway!"), and any snags at
-     risk. The wording lives in `handLabel` (handNames.ts), shared with the
+     dealer's call, category first ("Two pair, Queens and Jacks"), the
+     table talk when there is some ("Ladies over Hooks", "Trip Hooks",
+     "Broadway"; flavour that teaches the slang), and any snags at risk. The
+     exclamation mark is saved for the winning hand on the result screen. The wording lives in `handLabel` (handNames.ts), shared with the
      result screens.
    **Purses** (yours, and the opponent's tucked behind their name, which has an
    outline to stay readable) are one coin a dollar: under $10 a few loose coins

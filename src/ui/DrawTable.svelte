@@ -387,7 +387,7 @@
       <!-- On the River your coins are idle, so the hand you're making is called over them. Fixed size: it never shifts as you tap. -->
       {#if playing && composing && callout}
         <div class="callout" aria-live="polite">
-          <span class="call">{callout.call}</span>
+          <span class="call" class:long={callout.call.length > 30}>{callout.call}</span>
           <span class="lingo">{callout.lingo ?? ''}</span>
           <span class="note">
             {#if tappedJokers.length}{t('draw.risking', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
@@ -613,8 +613,12 @@
   }
   .call {
     font-family: var(--title-font);
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     line-height: 1.1;
+  }
+  /* "Straight flush, Diamonds, Queen high" still fits a phone. */
+  .call.long {
+    font-size: 0.9rem;
   }
   .lingo {
     font-style: italic;
