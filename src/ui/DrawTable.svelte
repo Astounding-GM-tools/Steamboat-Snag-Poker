@@ -365,7 +365,11 @@
   <section class="river">
     <div class="river-head">
       <span class="crossing">{t('table.crossing', { month: game.month })}</span>
-      <span class="street">{t(`street.${streetName}`)}</span>
+      <span class="street">
+        {t(`street.${streetName}`)}
+        <!-- Every street has a second line (blank at the showdown), so nothing moves. -->
+        <span class="street-sub">{streetName === 'showdown' ? '' : t(`street.sub.${streetName}`)}</span>
+      </span>
       <button class="ghost icon" onclick={() => (showHelp = true)} aria-label={t('willie.helpTitle')}>?</button>
     </div>
     <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
@@ -468,7 +472,18 @@
     text-align: left;
   }
   .river-head .street {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     margin: 0;
+    line-height: 1.1;
+  }
+  .street-sub {
+    min-height: 1.2em;
+    font-family: var(--body-font);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    color: var(--grey);
   }
   .icon {
     justify-self: end;

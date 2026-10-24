@@ -34,7 +34,12 @@ export const en = {
   'street.turn': 'The Turn',
   'street.river': 'The River',
   'street.showdown': 'Showdown!',
-  'street.compose': 'The River: Make Your Hand',
+  'street.compose': 'The River',
+  // A second line under the street name: what's special about this street.
+  'street.sub.flop': 'Swap or stand pat',
+  'street.sub.turn': 'Last chance to swap',
+  'street.sub.river': 'Make your hand',
+  'street.sub.compose': 'Make your hand',
 
   'table.crossing': 'Crossing {month}',
   'table.money': 'Purse',
