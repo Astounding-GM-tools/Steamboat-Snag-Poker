@@ -8,6 +8,7 @@
     isComposing,
     streetFee,
     isJoker,
+    rankLabel,
     opponentOdds,
     HUMAN_ID,
     player,
@@ -24,6 +25,8 @@
   import { cardPrefs, setCardFace } from './cards.svelte';
   import PotStack from './PotStack.svelte';
   import CoinPile from './CoinPile.svelte';
+  import PurseHeap from './PurseHeap.svelte';
+  import SuitIcon from './SuitIcon.svelte';
   import WillieSays from './WillieSays.svelte';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { describeHand } from './handNames';
@@ -294,9 +297,20 @@
     {#if stakes.length}<p class="stakes">{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}</p>{/if}
   </section>
 
-  <!-- Your side of the table. -->
+  <!-- Your side of the table: fixed rows, so nothing here moves as the round goes on. -->
   <section class="captain">
-    <div class="row hand-row">
+    <div class="discards" aria-label={t('table.discard')}>
+      {#if me.discarded.length}
+        <span class="discards-label">{t('draw.discarded')}</span>
+        {#each me.discarded as card (card.id)}
+          {#if !isJoker(card)}
+            <span class="chip">{card.rank === 10 ? '10' : rankLabel(card.rank)}<span class="chip-suit"><SuitIcon suit={card.suit} /></span></span>
+          {/if}
+        {/each}
+      {/if}
+    </div>
+
+    <div class="hand-row">
       {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
         <CardView
           {card}
@@ -317,28 +331,20 @@
           <button class="ghost small-btn" onclick={untapJoker}>− 🪵</button>
         {/if}
       {/if}
-      {#if me.discarded.length}
-        <div class="tossed mine" aria-label={t('table.discard')}>
-          <span class="x">✕</span>
-          {#each me.discarded as card (card.id)}<CardView small {card} />{/each}
-        </div>
-      {/if}
     </div>
 
-    <div class="row controls">
-      <CoinPile amount={shownMoney(0)} label={t('character.captain.you')} />
-      {#if playing}
-        <span class="hint">
-          {#if composing && tapped.length}
-            {describeHand(preview!)}{#if tappedJokers.length}<b> · {t('draw.risking', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}</b>{/if}
-          {/if}
-        </span>
-        {#if showFold}
-          <button class="ghost" onclick={fold} disabled={dealing || !canFold(round, 0)}>{foldLabel}</button>
-        {/if}
-        <button onclick={go} disabled={dealing}>{buttonLabel}</button>
+    <p class="hint">
+      {#if playing && composing && tapped.length}
+        {describeHand(preview!)}{#if tappedJokers.length}<b> · {t('draw.risking', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}</b>{/if}
       {/if}
+    </p>
+
+    <div class="actions" class:idle={!playing}>
+      <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0)}>{foldLabel}</button>
+      <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
     </div>
+
+    <PurseHeap amount={shownMoney(0)} label={t('character.captain.you')} />
   </section>
 </div>
 
@@ -391,12 +397,6 @@
   .pile-right {
     margin-left: auto;
   }
-  .tossed.mine {
-    margin-left: auto;
-  }
-  .controls {
-    align-items: flex-end;
-  }
   .who {
     display: flex;
     align-items: center;
@@ -445,9 +445,110 @@
     color: var(--grey);
     margin-right: 2px;
   }
+  /*
+   * The play screen fills the height (up to a big phone's): the opponent at the
+   * top, you at the bottom, the river in between. The gaps take up any slack,
+   * so neither end moves when something in the middle changes.
+   */
+  .table.solo {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100dvh;
+    max-height: 940px;
+    min-height: 0;
+  }
+  .captain {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  /* What you've thrown away, as card notation: small, readable, out of the way. */
+  .discards {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 1.5rem;
+    overflow: hidden;
+  }
+  .discards-label {
+    font-size: 0.75rem;
+    color: var(--grey);
+    margin-right: 2px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    height: 1.25rem;
+    padding: 0 4px;
+    border-radius: 3px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--title-font);
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+  .chip-suit {
+    width: 0.7rem;
+    height: 0.7rem;
+  }
+  /* Tall enough for a lifted card, so selecting one doesn't push anything. */
   .hand-row {
-    min-height: 110px;
+    display: flex;
     align-items: flex-end;
+    gap: 0.75rem;
+    height: 122px;
+  }
+  .hint {
+    height: 1.2rem;
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--grey);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hint b {
+    color: var(--paper);
+  }
+  /* Two fixed halves: changing labels and prices never move them. */
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .actions button {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .actions.idle {
+    visibility: hidden;
+  }
+  /* Short phones: the gaps and paddings give way first. */
+  @media (max-height: 740px) {
+    .table.solo {
+      gap: 0.3rem;
+    }
+    .table.solo section {
+      padding-top: 0.35rem;
+      padding-bottom: 0.35rem;
+    }
+    .captain {
+      gap: 0.2rem;
+    }
+  }
+  @media (max-width: 600px) {
+    .hand-row {
+      height: 92px;
+      gap: 0.5rem;
+    }
+    .actions button {
+      font-size: 1rem;
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+    }
   }
   .joker-fan {
     display: flex;

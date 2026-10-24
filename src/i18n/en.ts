@@ -95,6 +95,7 @@ export const en = {
   'cards.zoomClose': 'Tap anywhere to put it back.',
   'draw.oddsTitle': 'Here’s what {name} could be holding right now, Cap’n:',
   'draw.theyDiscarded': 'Threw away:',
+  'draw.discarded': 'Discarded',
   'draw.log.pat': '{name} stands pat.',
   'draw.log.discard': '{name} throws away {n}.',
   'log.title': 'Hand log',

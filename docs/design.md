@@ -279,9 +279,14 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    - middle: crossing number, street, the **?** button (Willie: how to play,
      fast-deal setting), the **pot** and the board; snags at stake are named
      only when there are any;
-   - bottom: your hand, snags and discards, your **coin pile**, Fold and the
-     priced action button.
-   Coin piles are stacks of silver dollars ($10 a stack) with loose change in
+   - bottom, in fixed rows that never shift: your discards as small notation
+     chips; your hand and snags; a hint line; Fold and the action button side
+     by side; and your **purse**: the amount and a big untidy heap of coins.
+     Below $40 the purse shows cobwebs, a lost button and pocket lint; below
+     $10, flies. That is the only low-funds warning.
+   The screen fills the height (up to a big phone's): opponent pinned to the
+   top, you to the bottom, the river between; no scrolling.
+   The opponent's coin pile is stacks of silver dollars ($10 a stack) with loose change in
    front; new coins drop in as a purse grows. Coins fly into the pot from each
    side as captains pay, and at the verdict the pot flies to the winner's pile.
 3. **Showdown** (draw style) — the card-by-card reveal described above, with
