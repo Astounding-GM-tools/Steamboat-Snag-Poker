@@ -215,7 +215,10 @@
     const r = round;
     untrack(() => scheduleDeal(r));
   });
-  onDestroy(() => clearTimeout(dealTimer));
+  onDestroy(() => {
+    clearTimeout(dealTimer);
+    clearResting();
+  });
 
   function scheduleDeal(r: typeof round) {
     clearTimeout(dealTimer);
@@ -317,8 +320,15 @@
   const MAX_FLYERS = 40;
   const still = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /** One coin from one spot on screen to another; resolves when it lands. */
-  function fly(from: DOMRect, to: DOMRect, delay: number): Promise<void> {
+  /** Winnings resting on the winner's stacks until the next round lays the purse out with them. */
+  let resting: HTMLElement[] = [];
+  function clearResting() {
+    for (const c of resting) c.remove();
+    resting = [];
+  }
+
+  /** One coin from one spot on screen to another; resolves when it lands. `stay` leaves it there. */
+  function fly(from: DOMRect, to: DOMRect, delay: number, stay = false): Promise<void> {
     const coin = document.createElement('span');
     coin.className = 'flying-coin';
     Object.assign(coin.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` });
@@ -334,6 +344,13 @@
       ],
       { duration: 520, delay, easing: 'ease-in-out', fill: 'backwards' },
     );
+    if (stay) {
+      resting.push(coin);
+      return anim.finished.then(() => {
+        Object.assign(coin.style, { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px`, transform: 'none' });
+        anim.cancel();
+      });
+    }
     return anim.finished.then(() => coin.remove(), () => coin.remove());
   }
 
@@ -351,17 +368,48 @@
     }
   }
 
-  /** The verdict: the pot's coins fly to the winner (on a tie, each side's coins go home). */
+  /** The tops of a purse's stacks, left to right: where winnings come to rest. */
+  function stackTops(purse: HTMLElement): DOMRect[] {
+    const tops = new Map<number, DOMRect>();
+    for (const c of purse.querySelectorAll<HTMLElement>('[data-d]:not(.spent)')) {
+      const r = c.getBoundingClientRect();
+      const key = Math.round(r.left);
+      if (!tops.has(key) || r.top < tops.get(key)!.top) tops.set(key, r);
+    }
+    return [...tops.entries()].sort((a, b) => a[0] - b[0]).map(([, r]) => r);
+  }
+
+  /**
+   * The verdict: each coin in the pot flies to the winner (on a tie, each side's
+   * go home). A captain's own coins return to the very spots they left, which
+   * stay empty until they land, so the stacks refill; the loser's coins come to
+   * rest on top of the winner's stacks, one stack after another.
+   */
   function payOut(to: 'me' | 'them' | 'split') {
     if (!potEl || still()) return;
     const coins = [...potEl.querySelectorAll<HTMLElement>('[data-seat]')].slice(-MAX_FLYERS * 2);
+    const tops: Record<number, DOMRect[]> = {};
+    const piled: Record<number, number> = { 0: 0, 1: 0 };
     coins.forEach((c, i) => {
-      const seat = to === 'split' ? Number(c.dataset.seat) : to === 'me' ? 0 : 1;
+      const from = Number(c.dataset.seat) as 0 | 1;
+      const k = Number(c.dataset.k);
+      const seat = to === 'split' ? from : to === 'me' ? 0 : 1;
       const purse = seat === 0 ? myPurseEl : theirPurseEl;
-      const target = purse?.querySelector('.coins')?.getBoundingClientRect();
-      if (!target) return;
-      const spot = new DOMRect(target.left + target.width * (0.1 + 0.4 * Math.random()), target.bottom - 12, 18, 6);
-      fly(c.getBoundingClientRect(), spot, i * 12);
+      if (!purse) return;
+      const home = from === seat ? purse.querySelector<HTMLElement>(`[data-d="${k - Math.max(0, startMoney(seat) - 400)}"]`) : null;
+      if (home) {
+        home.classList.add('landing');
+        fly(c.getBoundingClientRect(), home.getBoundingClientRect(), i * 14).then(() => home.classList.remove('landing'));
+        return;
+      }
+      tops[seat] ??= stackTops(purse);
+      const list = tops[seat];
+      if (!list.length) return;
+      const n = piled[seat]++;
+      const top = list[n % list.length];
+      const step = top.height * 0.5; // each coin sits half a coin higher on the pile
+      const spot = new DOMRect(top.left, top.top - step * (1 + Math.floor(n / list.length)), top.width, top.height);
+      fly(c.getBoundingClientRect(), spot, i * 14, true);
     });
   }
 
@@ -371,6 +419,7 @@
     const pay = payout;
     untrack(() => {
       if (month !== flownMonth) {
+        clearResting();
         flownMonth = month;
         flown = [0, 0];
       }
