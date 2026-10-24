@@ -27,7 +27,7 @@
   import Purse from './Purse.svelte';
   import DiscardChips from './DiscardChips.svelte';
   import WillieSays from './WillieSays.svelte';
-  import { cardLabel, dollars, jokerList, name, nickname } from './format';
+  import { cardLabel, dollars, jokerList, jokerName, name, nickname } from './format';
   import { handLabel } from './handNames';
 
   interface Props {
@@ -384,13 +384,13 @@
     <!-- Your money nearest the pot, no figure: never count your money at the table. -->
     <div class="my-purse" bind:this={myPurseEl}>
       <Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} />
-      <!-- On the River your coins are idle, so the hand you're making is called over them. Fixed size: it never shifts as you tap. -->
+      <!-- On the River your coins are idle, so the hand you're making is called over them, with any snags riding along (and their forfeit if you lose). Fixed size: it never shifts as you tap. -->
       {#if playing && composing && callout}
         <div class="callout" aria-live="polite">
           <span class="call" class:long={callout.call.length > 30}>{callout.call}</span>
           <span class="lingo">{callout.lingo ?? ''}</span>
           <span class="note">
-            {#if tappedJokers.length}{t('draw.risking', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
+            {#if tappedJokers.length === 1}{t('draw.ridingOne', { name: jokerName(tappedJokers[0].index), cost: dollars(config.jokerForfeit ?? 0) })}{:else if tappedJokers.length}{t('draw.riding', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
           </span>
         </div>
       {/if}
