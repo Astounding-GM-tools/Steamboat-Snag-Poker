@@ -32,6 +32,7 @@
 </script>
 
 <div class="title">
+  <div class="stage">
   <!-- A stern-wheeler steaming to the right: the wheel at the back turns so its
        lower paddles push the water astern; smoke trails back from three stacks
        that puff as they breathe; the river laps up over the hull. -->
@@ -160,12 +161,18 @@
       <span class="line-2">{t('title.line2')}</span>
     </h1>
     <p class="tagline">{t(`title.tagline.${tagline}`)}</p>
-    <div class="buttons">
+  </div>
+  </div>
+
+  <!-- The same two buttons, in the same places, as at the table: black left, white right. -->
+  <div class="dock">
+    <div class="actions" class:single={!savedMonth}>
       {#if savedMonth}
-        <button onclick={oncontinue}>{t('title.continue')}</button>
-        <button class="ghost" onclick={newVoyage}>{t('title.newVoyage')}</button>
+        <button class="ghost" onclick={newVoyage}>{t('title.new')}</button>
+        <button onclick={oncontinue}>{t('title.next')}</button>
       {:else}
-        <button onclick={onstart}>{t('title.start')}</button>
+        <span></span>
+        <button onclick={onstart}>{t('title.new')}</button>
       {/if}
     </div>
   </div>
@@ -192,12 +199,53 @@
 
 <style>
   .title {
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+  }
+  /* The picture and the title card share the room evenly; the buttons keep to the bottom. */
+  .stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
     gap: 1rem;
-    padding: 2rem 1rem;
+    padding: 1rem 1rem 0;
+  }
+  /*
+   * Lined up with the table's buttons (DrawTable .actions): same insets, the
+   * black one as wide as three cards and their gaps, the white one the rest.
+   */
+  .dock {
+    --cw: 76px;
+    --hgap: 0.75rem;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 1rem calc(0.75rem + 2px + 1rem) calc(1rem + 0.75rem);
+  }
+  .actions {
+    display: grid;
+    grid-template-columns: calc(3 * var(--cw) + 2 * var(--hgap)) 1fr;
+    gap: var(--hgap);
+  }
+  .actions button {
+    padding-top: 0.6em;
+    padding-bottom: 0.6em;
+    white-space: nowrap;
+  }
+  .actions button:not(.ghost) {
+    outline-offset: -2px;
+  }
+  @media (max-width: 600px) {
+    .dock {
+      --cw: 54px;
+      --hgap: 0.5rem;
+      padding: 0.75rem calc(0.5rem + 2px + 0.5rem) calc(0.4rem + 0.5rem);
+    }
+    .actions button {
+      font-size: 1.15rem;
+    }
   }
   .boat {
     width: min(380px, 84vw);
@@ -297,6 +345,9 @@
     justify-content: center;
     flex-wrap: wrap;
     margin: 1.5rem 0 1rem;
+  }
+  .menu {
+    padding-bottom: 1.5rem;
   }
   .game-title {
     line-height: 1;

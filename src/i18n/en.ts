@@ -17,6 +17,8 @@ export const en = {
   'title.tagline.10': 'The River Giveth, the River Taketh Away',
   'title.tagline.11': 'Sharp Cards, Deep Water, Stinking Hides',
   'title.start': 'Start game',
+  'title.new': 'New',
+  'title.next': 'Next',
   'title.continue': 'Continue game',
   'title.newVoyage': 'New game',
   'title.abandon': 'Start a new game?',

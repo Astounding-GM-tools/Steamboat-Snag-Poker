@@ -358,8 +358,9 @@ Not reachable in the game for now (the rules lab that opened it is gone); it
 may come back in a Menu.
 
 **Pausing:** Menu returns to the title screen, which then offers
-**Continue game** and **New game** (with a confirmation); with no game in
-progress it offers only **Start game**. How it works is the **?** in the
+the same two buttons as the table, in the same places: **New** (black, left,
+with a confirmation) and **Next** (white, right: carry on); with no game in
+progress only the white **New**. How it works is the **?** in the
 corner of the menu card. Button texts stay plain; the flavour lives in the game.
 The voyage is saved in the browser after every move, so it survives a reload.
 
