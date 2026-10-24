@@ -1,18 +1,13 @@
 <script lang="ts">
-  import { newGame, nextMonth, submitAction, type Action, type GameState, type RulesConfig } from '../engine';
+  import { DEFAULT_CONFIG, newGame, nextMonth, submitAction, type Action, type GameState } from '../engine';
   import CardZoom from './CardZoom.svelte';
-  import DebugPanel from './DebugPanel.svelte';
   import DrawTable from './DrawTable.svelte';
-  import HandLog from './HandLog.svelte';
   import MonthEnd from './MonthEnd.svelte';
   import Showdown from './Showdown.svelte';
   import Table from './Table.svelte';
   import Title from './Title.svelte';
-  import { loadBest, loadConfig, loadGame, recordResult, saveConfig, saveGame } from './storage';
+  import { loadBest, loadGame, recordResult, saveGame } from './storage';
 
-  let config = $state.raw<RulesConfig>(loadConfig());
-  let seed = $state(Date.now() >>> 0);
-  let peek = $state(false);
   let best = $state(loadBest());
   /** Paused or saved voyage, shown as "Continue" on the title screen. */
   let saved = $state.raw<GameState | null>(loadGame());
@@ -21,7 +16,6 @@
   /** After a duel: 'reveal' plays the showdown, then 'result' shows the month's card. */
   let stage = $state<'play' | 'reveal' | 'result'>('play');
   let endTimer: ReturnType<typeof setTimeout> | undefined;
-  let showLog = $state(false);
   /** The showdown has shown its verdict: the pot may be paid out on the table. */
   let settled = $state(true);
 
@@ -33,10 +27,9 @@
     }
   }
 
-  function start(newSeed = Date.now() >>> 0) {
-    seed = newSeed;
+  function start() {
     stage = 'play';
-    setGame(newGame(seed, config));
+    setGame(newGame(Date.now() >>> 0, DEFAULT_CONFIG));
   }
 
   function resume() {
@@ -80,30 +73,22 @@
     stage = 'play';
     game = null;
   }
-
-  function applyRules(c: RulesConfig, s: number) {
-    config = c;
-    saveConfig(c);
-    start(s);
-  }
 </script>
 
 <div class="film">
   {#if game}
     {#if game.round?.playStyle === 'draw'}
-      <DrawTable {game} {peek} {settled} onaction={act} onmenu={pause} />
+      <DrawTable {game} {settled} onaction={act} onmenu={pause} />
     {:else}
-      <Table {game} {peek} onaction={act} onmenu={pause} />
+      <Table {game} peek={false} onaction={act} onmenu={pause} />
     {/if}
     {#if stage === 'reveal' && game.round?.result}
       <Showdown {game} ondone={() => (stage = 'result')} onverdict={() => (settled = true)} />
     {:else if stage === 'result' && game.report}
       <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} />
     {/if}
-    {#if showLog}<HandLog {game} onclose={() => (showLog = false)} />{/if}
   {:else}
     <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} />
   {/if}
 </div>
 <CardZoom />
-<DebugPanel {config} {seed} {peek} onapply={applyRules} onpeek={(p) => (peek = p)} onlog={game ? () => (showLog = true) : undefined} />

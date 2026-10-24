@@ -32,14 +32,13 @@
 
   interface Props {
     game: GameState;
-    peek: boolean;
     onaction: (a: Action) => void;
     /** False while the showdown is still being revealed: the pot hasn't been paid out yet. */
     settled?: boolean;
     /** Back to the main menu (the game is saved after every move). */
     onmenu: () => void;
   }
-  let { game, peek, onaction, settled = true, onmenu }: Props = $props();
+  let { game, onaction, settled = true, onmenu }: Props = $props();
 
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
@@ -266,7 +265,7 @@
     </div>
     <div class="row">
       <div class="hand-backs">
-        {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView small faceDown={!peek} card={peek ? card : null} deal="top" />{/each}
+        {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView small faceDown deal="top" />{/each}
         {#each them.jokers as card (card.id)}<CardView small {card} />{/each}
       </div>
       {#if them.discarded.length}
@@ -344,7 +343,7 @@
       <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
     </div>
 
-    <div class="my-purse"><Purse amount={shownMoney(0)} label={t('character.captain.you')} /></div>
+    <Purse amount={shownMoney(0)} label={t('character.captain.you')} />
   </section>
 </div>
 
@@ -394,18 +393,14 @@
     font-size: 1rem;
     border-radius: 50%;
   }
-  /* Leaves the corner free for the rules-lab gear. */
-  .my-purse {
-    padding-right: 40px;
-  }
   .opp-head {
     display: flex;
     align-items: flex-end;
     margin-bottom: 0.4rem;
   }
   .opp-purse {
-    flex: none;
-    width: 160px;
+    flex: 0 1 160px;
+    min-width: 70px;
     margin-left: -2.5rem;
   }
   .name-btn {
@@ -429,6 +424,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    text-align: left;
     line-height: 1.15;
   }
   .aka {
@@ -442,6 +438,7 @@
     text-shadow: 0 0 2px #000, 0 0 4px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   }
   .name {
+    white-space: nowrap;
     font-family: var(--title-font);
     font-size: 1.3rem;
     text-decoration: underline dotted var(--grey);

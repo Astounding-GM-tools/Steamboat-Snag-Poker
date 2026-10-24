@@ -310,25 +310,6 @@ export const en = {
   'preset.classic': 'Rules: Classic v1 (3 board, 2 slots)',
   'preset.custom': 'Rules: custom',
 
-  'debug.title': 'Rules lab',
-  'debug.preset': 'Preset',
-  'debug.community': 'Board per street',
-  'debug.deal': 'Deal per street',
-  'debug.slots': 'Slots',
-  'debug.ownMin': 'Own cards: min',
-  'debug.ownMax': 'Own cards: max',
-  'debug.jokerMode': 'Community snags',
-  'debug.joker.slot': 'Fourth slot',
-  'debug.joker.shuffled': 'Shuffled into deck',
-  'debug.chance': 'Slot snag chance',
-  'debug.everyMonths': 'Shuffle in one more every N crossings',
-  'debug.totalJokers': 'Snags in game',
-  'debug.drain': 'Upkeep per snag ($)',
-  'debug.loserPays': 'Loser pays (0–1)',
-  'debug.jokerForfeit': 'Forfeit per lost snag ($)',
-  'debug.seed': 'Seed',
-  'debug.peek': 'Peek at opponent hand',
-  'debug.apply': 'New game with these rules',
 } as const;
 
 export type MessageKey = keyof typeof en;

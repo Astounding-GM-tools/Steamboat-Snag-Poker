@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, migrateGame, type GameState, type RulesConfig } from '../engine';
+import { migrateGame, type GameState } from '../engine';
 
 export interface Best {
   /** Tournaments won. */
@@ -32,8 +32,6 @@ export function loadBest(): Best {
     longest: raw.longest ?? raw.months ?? 0,
   };
 }
-export const loadConfig = () => read<RulesConfig>('wwr.config.v4', DEFAULT_CONFIG);
-export const saveConfig = (c: RulesConfig) => write('wwr.config.v4', c);
 
 export function recordResult(months: number, victory: boolean): Best {
   const prev = loadBest();

@@ -10,5 +10,5 @@ npm run sim      # balance simulation per preset (SIM_GAMES=10 SIM_PRESETS=kansa
 ```
 
 - `src/engine` — pure, framework-free rules engine (seeded, serializable state).
-- `src/ui` — Svelte 5 UI. The ⚙ button bottom-right opens the rules lab for switching variants.
+- `src/ui` — Svelte 5 UI. The game plays the default rules; try variants in the balance simulation.
 - `src/i18n` — all UI text.

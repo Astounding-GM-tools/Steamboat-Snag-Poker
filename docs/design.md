@@ -2,7 +2,8 @@
 
 > Source of truth for the prototype. The original Norwegian sketch is kept in
 > [design-original-no.md](design-original-no.md). Items marked **🔧 Variant** are
-> switchable in the debug panel so we can play-test them; items marked **❓ Open**
+> settings in the rules config (`src/engine/config.ts`, try them in the balance
+> simulation); items marked **❓ Open**
 > are undecided.
 
 ## Concept
@@ -47,7 +48,8 @@ vignette, intertitle cards for all text.
 ## Play styles and presets
 
 All structural rules live in one config (`src/engine/config.ts`) with named
-presets, selectable in the rules lab (⚙) and the balance simulation.
+presets, selectable in the balance simulation. The game itself always plays
+`DEFAULT_CONFIG` (the in-game rules lab was retired once the rules settled).
 
 ### Snag Poker (the game; preset `draw`)
 
@@ -302,7 +304,8 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
 
 **Hand log:** the last 10 of the Captain's showdowns (board, both played hands,
 the cards each hand uses, result and snags moved), saved with the voyage.
-Open it from the rules lab (the gear); not shown to players for now.
+Not reachable in the game for now (the rules lab that opened it is gone); it
+may come back in a Menu.
 
 **Pausing:** Menu returns to the title screen, which then offers
 **Continue game** and **New game** (with a confirmation); with no game in
