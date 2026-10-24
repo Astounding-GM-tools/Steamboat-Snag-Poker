@@ -14,8 +14,16 @@
     amount,
     size = 'big',
     showAmount = true,
+    focus = 50,
     label,
-  }: { amount: number; size?: 'big' | 'small'; showAmount?: boolean; label?: string } = $props();
+  }: {
+    amount: number;
+    size?: 'big' | 'small';
+    showAmount?: boolean;
+    /** Where a small pile (and the moths) sits, in % across the purse; neat rows always fill from the right. */
+    focus?: number;
+    label?: string;
+  } = $props();
 
   const DEPLETED = 10;
   const NEAT = 50;
@@ -111,13 +119,13 @@
 
 <div class="purse {mood} {size}" aria-label={label ? `${label} ${dollars(amount)}` : dollars(amount)}>
   {#if showAmount}<span class="amount">{dollars(amount)}</span>{/if}
-  <div class="coins" aria-hidden="true" style="--w: {dims.w}px">
+  <div class="coins" aria-hidden="true" style="--w: {dims.w}px; --focus: {focus}%">
     {#each coins as c (c.i)}
       <span
         class="coin"
         class:flat={c.flat}
         class:fresh={c.i >= freshFrom}
-        style="left: {c.fromRight ? `calc(100% - ${c.x}px)` : `calc(50% + ${c.x}px)`}; bottom: {c.y}px; --tilt: {c.tilt ?? 0}deg; --d: {Math.max(0, c.i - freshFrom) * 0.02}s"
+        style="left: {c.fromRight ? `calc(100% - ${c.x}px)` : `calc(var(--focus) + ${c.x}px)`}; bottom: {c.y}px; --tilt: {c.tilt ?? 0}deg; --d: {Math.max(0, c.i - freshFrom) * 0.02}s"
       ></span>
     {/each}
     {#if mood === 'depleted'}
@@ -212,9 +220,9 @@
   .moth .body {
     fill: #6d6a63;
   }
-  .moth.m0 { left: 30%; bottom: 55%; }
-  .moth.m1 { left: 55%; bottom: 75%; animation-duration: 3.7s; animation-delay: -1.4s; }
-  .moth.m2 { left: 70%; bottom: 40%; animation-duration: 5.2s; animation-delay: -2.6s; }
+  .moth.m0 { left: calc(var(--focus) - 60px); bottom: 55%; }
+  .moth.m1 { left: calc(var(--focus) - 10px); bottom: 75%; animation-duration: 3.7s; animation-delay: -1.4s; }
+  .moth.m2 { left: calc(var(--focus) + 35px); bottom: 40%; animation-duration: 5.2s; animation-delay: -2.6s; }
   @keyframes flutter {
     0% { transform: translate(0, 0) rotate(-8deg); }
     25% { transform: translate(22px, -8px) rotate(10deg); }

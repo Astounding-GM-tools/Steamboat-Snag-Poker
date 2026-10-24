@@ -25,7 +25,7 @@
   import { cardPrefs, setCardFace } from './cards.svelte';
   import PotStack from './PotStack.svelte';
   import Purse from './Purse.svelte';
-  import SuitIcon from './SuitIcon.svelte';
+  import DiscardChips from './DiscardChips.svelte';
   import WillieSays from './WillieSays.svelte';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { describeHand } from './handNames';
@@ -252,29 +252,28 @@
 <div class="table solo" onclick={finishDeal}>
   <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
-    <!-- Their purse sits just behind their name: a glance says rich or moth-eaten. -->
+    <!-- Their purse spreads behind the head: a low pile sits on the right, a rich one grows in behind the name. -->
     <div class="opp-head">
+      <div class="opp-purse"><Purse amount={shownMoney(1)} showAmount={false} focus={84} label={name(opponentId)} /></div>
       <button class="name-btn" onclick={() => (showCaptain = true)}>
-        <span class="oval small-oval">{name(opponentId)[0]}</span>
+        <span class="oval portrait">{name(opponentId)[0]}</span>
         <span class="who">
           <span class="name">{name(opponentId)}</span>
-          {#if nickname(opponentId)}<span class="aka">{t('captain.aka', { nick: nickname(opponentId)! })}</span>{/if}
+          <span class="title">{nickname(opponentId) ? `“${nickname(opponentId)}”` : t(`character.${opponentId}.boat`)}</span>
         </span>
       </button>
-      <div class="opp-purse"><Purse amount={shownMoney(1)} size="small" showAmount={false} label={name(opponentId)} /></div>
     </div>
-    <div class="row">
-      <div class="hand-backs">
-        {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView small faceDown deal="top" />{/each}
-        {#each them.jokers as card (card.id)}<CardView small {card} />{/each}
-      </div>
-      {#if them.discarded.length}
-        <div class="tossed" aria-label={t('draw.theyDiscarded')}>
-          <span class="x">✕</span>
-          {#each them.discarded as card (card.id)}<CardView small {card} />{/each}
+    <div class="opp-cards">
+      {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView small faceDown deal="top" />{/each}
+      {#if them.jokers.length}
+        <!-- However many snags they carry, the fan never grows past its width. -->
+        <div class="snag-fan" style="--n: {them.jokers.length}">
+          {#each them.jokers as card (card.id)}<CardView small {card} />{/each}
         </div>
+        {#if them.jokers.length > 2}<span class="snag-count">×{them.jokers.length}</span>{/if}
       {/if}
     </div>
+    <DiscardChips cards={them.discarded} label={t('draw.theyDiscarded')} />
   </section>
 
   <!-- The river: the border between them and you. -->
@@ -298,16 +297,7 @@
 
   <!-- Your side of the table: fixed rows, so nothing here moves as the round goes on. -->
   <section class="captain">
-    <div class="discards" aria-label={t('table.discard')}>
-      {#if me.discarded.length}
-        <span class="discards-label">{t('draw.discarded')}</span>
-        {#each me.discarded as card (card.id)}
-          {#if !isJoker(card)}
-            <span class="chip">{card.rank === 10 ? '10' : rankLabel(card.rank)}<span class="chip-suit"><SuitIcon suit={card.suit} /></span></span>
-          {/if}
-        {/each}
-      {/if}
-    </div>
+    <DiscardChips cards={me.discarded} label={t('draw.discarded')} />
 
     <div class="hand-row">
       {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
@@ -393,15 +383,49 @@
     font-size: 1rem;
     border-radius: 50%;
   }
-  .opp-head {
+  .opponent {
     display: flex;
-    align-items: flex-end;
-    margin-bottom: 0.4rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .opp-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 76px;
   }
   .opp-purse {
-    flex: 0 1 160px;
-    min-width: 70px;
-    margin-left: -2.5rem;
+    position: absolute;
+    inset: 0;
+  }
+  .portrait {
+    width: 58px;
+    height: 72px;
+    font-size: 1.9rem;
+  }
+  .opp-cards {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 56px;
+  }
+  .snag-fan {
+    --fan: 120px;
+    display: flex;
+    margin-left: 0.6rem;
+    max-width: var(--fan);
+  }
+  .snag-fan :global(.card + .card) {
+    margin-left: min(3px, calc((var(--fan) - var(--cw) * var(--n)) / (var(--n) - 1)));
+  }
+  .snag-fan {
+    --cw: 52px;
+  }
+  .snag-count {
+    font-family: var(--title-font);
+    font-size: 0.9rem;
+    color: var(--grey);
+    margin-left: 4px;
   }
   .name-btn {
     position: relative;
@@ -415,11 +439,6 @@
     color: var(--paper);
     padding: 0;
   }
-  .small-oval {
-    width: 34px;
-    height: 42px;
-    font-size: 1.2rem;
-  }
   .who {
     display: flex;
     flex-direction: column;
@@ -427,14 +446,18 @@
     text-align: left;
     line-height: 1.15;
   }
-  .aka {
-    font-size: 0.75rem;
+  .who {
+    align-items: center;
+  }
+  .title {
+    font-size: 0.8rem;
     color: var(--grey);
     letter-spacing: 0.04em;
+    white-space: nowrap;
   }
   /* An outline keeps the name readable where it overlaps the coins. */
   .name,
-  .aka {
+  .title {
     text-shadow: 0 0 2px #000, 0 0 4px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   }
   .name {
@@ -443,16 +466,6 @@
     font-size: 1.3rem;
     text-decoration: underline dotted var(--grey);
     text-underline-offset: 4px;
-  }
-  .tossed {
-    display: flex;
-    gap: 3px;
-    align-items: center;
-    opacity: 0.8;
-  }
-  .x {
-    color: var(--grey);
-    margin-right: 2px;
   }
   /*
    * The play screen fills the height (up to a big phone's): the opponent at the
@@ -471,36 +484,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-  }
-  /* What you've thrown away, as card notation: small, readable, out of the way. */
-  .discards {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    height: 1.5rem;
-    overflow: hidden;
-  }
-  .discards-label {
-    font-size: 0.75rem;
-    color: var(--grey);
-    margin-right: 2px;
-  }
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 1px;
-    height: 1.25rem;
-    padding: 0 4px;
-    border-radius: 3px;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--title-font);
-    font-size: 0.8rem;
-    opacity: 0.8;
-  }
-  .chip-suit {
-    width: 0.7rem;
-    height: 0.7rem;
   }
   /* Tall enough for a lifted card, so selecting one doesn't push anything. */
   .hand-row {
@@ -547,8 +530,25 @@
     .captain {
       gap: 0.2rem;
     }
+    .opponent {
+      gap: 0.25rem;
+    }
+    .opp-head {
+      min-height: 66px;
+    }
+    .portrait {
+      width: 52px;
+      height: 64px;
+    }
   }
   @media (max-width: 600px) {
+    .snag-fan {
+      --cw: 38px;
+      --fan: 100px;
+    }
+    .opp-cards {
+      height: 54px;
+    }
     .hand-row {
       height: 92px;
       gap: 0.5rem;

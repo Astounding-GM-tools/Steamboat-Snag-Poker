@@ -276,8 +276,12 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    - top: the opponent's name (tap for their **captain card**: purse, portrait
      ringed by bookmaker's stamps (odds on this hand, odds on the river, their
      won–lost record), boat, **Willie's reckoning** of what they could be
-     holding right now, how they play, your notes), their **coin pile**, face-down
-     hand, snags face up, and their discards;
+     holding right now, how they play, your notes) beside a big portrait, with
+     their nickname in quotes under it, or their title ("Captain of the
+     Stonewall") if they have none; their purse spreads behind the head (a
+     small pile on the right, a rich one growing in behind the name); then
+     their face-down hand and snags (a fan that never grows past its width,
+     with a count from three snags), and their discards as notation chips;
    - middle: crossing number, street, the **?** button (Willie: how to play,
      fast-deal setting), the **pot** and the board; snags at stake are named
      only when there are any;
