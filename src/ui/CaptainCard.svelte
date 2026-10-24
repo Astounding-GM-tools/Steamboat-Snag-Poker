@@ -84,14 +84,14 @@
       <section class="reckoning">
         <h3>{t('willie.hintTitle')}</h3>
         <p>{t('draw.oddsTitle', { name: name(id) })}</p>
+        <!-- Every rank, even the impossible ones: a reminder of what beats what. -->
         {#each [...CATEGORIES].reverse() as cat}
-          {#if odds.categories[cat] >= 0.005}
-            <div class="bar">
-              <span>{t(`hand.${cat}`)}</span>
-              <span class="track"><span class="fill" style="width: {odds.categories[cat] * 100}%"></span></span>
-              <span class="num">{pct(odds.categories[cat])}</span>
-            </div>
-          {/if}
+          {@const p = odds.categories[cat]}
+          <div class="bar" class:none={p === 0}>
+            <span>{t(`hand.${cat}`)}</span>
+            <span class="track"><span class="fill" style="width: {p * 100}%"></span></span>
+            <span class="num">{p === 0 ? '–' : p < 0.005 ? '<1%' : pct(p)}</span>
+          </div>
         {/each}
       </section>
     {/if}
@@ -266,6 +266,10 @@
     gap: 0.5rem;
     align-items: center;
     font-size: 0.85rem;
+  }
+  .bar.none {
+    color: var(--grey);
+    opacity: 0.7;
   }
   .track {
     height: 8px;
