@@ -308,8 +308,8 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    come off it as money goes into the pot (no switching to a pile or moths
    mid-round), and winnings show when the next round lays it out afresh.
    **Discards** sit at the end of each side's card row as notation chips (7♣)
-   in two little stacks of up to three, the Flop's then the Turn's along the
-   edge,
+   in two little stacks of up to three, the Flop's along the edge and the
+   Turn's beside it,
    shorter than a card so the block sits on the table beside them; tap it for
    a close-up of them all, by street, crossed through and named.
    Whose discard it was stays visible on purpose: it is the read on what they

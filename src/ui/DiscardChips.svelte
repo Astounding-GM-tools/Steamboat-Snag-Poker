@@ -6,7 +6,7 @@
 
   /**
    * Thrown-away cards as card notation (7♣) at the end of a card row, in two
-   * little stacks of up to three: the Flop's, then the Turn's along the edge.
+   * little stacks of up to three: the Flop's along the edge, the Turn's beside it.
    * Shorter than a card, so it sits on the table beside them. Tap it for a
    * closer look.
    */
@@ -44,6 +44,7 @@
     flex: none;
     align-self: flex-end;
     display: flex;
+    flex-direction: row-reverse;
     gap: 3px;
     width: 47px;
     height: 55px;
