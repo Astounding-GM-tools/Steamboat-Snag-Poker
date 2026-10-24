@@ -330,7 +330,8 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    the purse to its spot in the pot, so emptied stacks show what has gone in.
    At the verdict the pot's coins fly to the winner.
 3. **Showdown** (draw style) — on the table, no modal. Their played cards
-   flip in place, one per **Next** (cards held back stay down, dimmed; played
+   flip in place, one per **Next**; at the verdict the cards they held back are
+   shown too, dimmed, so you see how they play (played
    snags flip in their fan); the board marks ▼ the cards their hand uses and ▲
    yours. Their hand so far is called where the street name was (same height,
    nothing moves): the call, the table talk, and "Still open: Three of a kind ·

@@ -483,11 +483,14 @@
       </button>
     </div>
     <div class="opp-cards">
-      <!-- At the showdown their played cards flip in place, one per Next; any they kept back stay down, dimmed. -->
+      <!-- At the showdown their played cards flip in place, one per Next. -->
       {#each theirPlayed.filter((c) => !isJoker(c)) as card (card.id)}
         {#if faceUp.has(card.id)}<CardView {card} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
       {/each}
-      {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView faceDown deal="top" faded={shownDown} />{/each}
+      <!-- Held back, but at the verdict shown too (dimmed): you get to see how they play. -->
+      {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
+        {#if decided}<CardView {card} faded fresh={stage === 'reveal'} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
+      {/each}
       {#if theirSnags.length}
         <!-- However many snags they carry, the fan never grows past its width. Played snags flip like their cards. -->
         <div class="snag-fan" style="--n: {theirSnags.length}">
@@ -869,7 +872,10 @@
     text-overflow: ellipsis;
   }
   /* Their callout takes the street name's place at the head of the river. */
+  /* No frame: the river head's own space is frame enough. */
   .callout.theirs {
+    border: none;
+    background: none;
     position: relative;
     inset: auto;
     height: 3.5rem;
@@ -920,7 +926,12 @@
   .actions button:not(.ghost) {
     outline-offset: -2px;
   }
+  .actions {
+    margin-top: 0.5rem;
+  }
   .actions button {
+    padding-top: 0.6em;
+    padding-bottom: 0.6em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -941,6 +952,9 @@
     .river-head,
     .callout.theirs {
       height: 3.3rem;
+    }
+    .actions {
+      margin-top: 0.3rem;
     }
     .table.solo section {
       padding-top: 0.35rem;
@@ -993,8 +1007,13 @@
     .hand-row {
       height: 92px;
     }
+  }
+  @media (max-width: 600px) and (max-height: 740px) {
+    .hand-row {
+      height: 84px;
+    }
     .actions button {
-      font-size: 1rem;
+      font-size: 1.15rem;
       padding-left: 0.5em;
       padding-right: 0.5em;
     }

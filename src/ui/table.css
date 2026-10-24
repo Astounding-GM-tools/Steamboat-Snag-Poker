@@ -19,9 +19,7 @@ section {
 .river {
   grid-area: river;
   text-align: center;
-  border-style: double;
-  border-width: 4px;
-  border-color: var(--grey);
+  border: none;
   background: repeating-linear-gradient(0deg, transparent 0 18px, rgba(255, 255, 255, 0.03) 18px 20px);
 }
 .captain {
