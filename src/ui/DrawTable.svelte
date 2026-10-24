@@ -555,8 +555,8 @@
         <p class="blurb">{t(`character.${opponentId}.blurb`)}</p>
         {#if odds}
           <p class="harbour">{t('draw.oddsTitle', { name: name(opponentId) })}</p>
-          <!-- Every rank, even the impossible ones: a reminder of what beats what. -->
-          {#each [...CATEGORIES].reverse() as cat}
+          <!-- Every rank, even the impossible ones (a reminder of what beats what); not the all-but-mythical straight flush. -->
+          {#each [...CATEGORIES].filter((c) => c !== 'straightFlush').reverse() as cat}
             {@const p = odds.categories[cat]}
             <div class="bar" class:none={p === 0}>
               <span>{t(`hand.${cat}`)}</span>

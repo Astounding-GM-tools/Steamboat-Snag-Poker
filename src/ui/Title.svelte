@@ -217,6 +217,9 @@
    * black one as wide as three cards and their gaps, the white one the rest.
    */
   .dock {
+    /* Above the title card's spotlight shadow, which dims everything around it. */
+    position: relative;
+    z-index: 1;
     --cw: 76px;
     --hgap: 0.75rem;
     width: 100%;
