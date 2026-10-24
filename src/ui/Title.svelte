@@ -222,7 +222,8 @@
     width: 100%;
     max-width: 760px;
     margin: 0 auto;
-    padding: 1rem calc(0.75rem + 2px + 1rem) calc(1rem + 0.75rem);
+    /* The table's own padding + its section padding + the section's 2px border. */
+    padding: 1rem calc(1rem + 1rem + 2px) calc(0.75rem + 0.75rem + 2px);
   }
   .actions {
     display: grid;
@@ -241,10 +242,15 @@
     .dock {
       --cw: 54px;
       --hgap: 0.5rem;
-      padding: 0.75rem calc(0.5rem + 2px + 0.5rem) calc(0.4rem + 0.5rem);
+      padding: 0.75rem calc(0.5rem + 0.5rem + 2px) calc(0.4rem + 0.5rem + 2px);
     }
     .actions button {
       font-size: 1.15rem;
+    }
+  }
+  @media (max-width: 600px) and (max-height: 740px) {
+    .dock {
+      padding-bottom: calc(0.25rem + 0.35rem + 2px);
     }
   }
   .boat {

@@ -804,14 +804,23 @@
    * top, you at the bottom, the river in between. The gaps take up any slack,
    * so neither end moves when something in the middle changes.
    */
+  /*
+   * The table keeps to the bottom of the screen, so its two buttons sit exactly
+   * where the title screen's do; any spare height goes above the opponent.
+   */
   .table.solo {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 1.75rem;
+    justify-content: flex-end;
+    gap: clamp(0.6rem, 2.5vh, 1.75rem);
     min-height: 100dvh;
     padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-bottom: 0.75rem;
+  }
+  @media (max-width: 600px) {
+    .table.solo {
+      padding-bottom: 0.4rem;
+    }
   }
   /* Card width and the gap between cards: the buttons below line up with them. */
   .captain {

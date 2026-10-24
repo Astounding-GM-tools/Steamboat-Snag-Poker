@@ -315,8 +315,9 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    Whose discard it was stays visible on purpose: it is the read on what they
    kept. (Later, a sharp mode could hide them, as real draw poker does: only
    the count shows.) Snag fans never grow past their width, with a count badge.
-   The table keeps its natural height, centred on the screen with even gaps
-   between the opponent, the river and you (tighter on short phones; it fits
+   The table keeps its natural height, anchored to the bottom so its two
+   buttons sit exactly where the title screen's do, with even gaps between the
+   opponent, the river and you that give way on shorter screens (it fits
    the smallest Safari view, about 375×635, without scrolling). The players
    have no frames; the river between them is separation enough. The opponent's
    name and title sit over their coins, with a tall portrait beside both, and
