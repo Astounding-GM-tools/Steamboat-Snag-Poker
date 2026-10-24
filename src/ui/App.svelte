@@ -98,7 +98,7 @@
     {#if stage === 'reveal' && game.round?.result}
       <Showdown {game} ondone={() => (stage = 'result')} onverdict={() => (settled = true)} />
     {:else if stage === 'result' && game.report}
-      <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} onlog={() => (showLog = true)} />
+      <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} />
     {/if}
     {#if showLog}<HandLog {game} onclose={() => (showLog = false)} />{/if}
   {:else}

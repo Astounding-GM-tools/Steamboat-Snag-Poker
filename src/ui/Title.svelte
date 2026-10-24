@@ -153,7 +153,8 @@
     </g>
   </svg>
 
-  <div class="intertitle">
+  <div class="intertitle menu">
+    <button class="ghost icon help" onclick={() => (showHowTo = true)} aria-label={t('title.howTo')}>?</button>
     <h1 class="game-title">
       <span class="line-1">{t('title.line1')}</span>
       <span class="line-2">{t('title.line2')}</span>
@@ -161,12 +162,11 @@
     <p class="tagline">{t(`title.tagline.${tagline}`)}</p>
     <div class="buttons">
       {#if savedMonth}
-        <button onclick={oncontinue}>{t('title.continue', { month: savedMonth })}</button>
+        <button onclick={oncontinue}>{t('title.continue')}</button>
         <button class="ghost" onclick={newVoyage}>{t('title.newVoyage')}</button>
       {:else}
         <button onclick={onstart}>{t('title.start')}</button>
       {/if}
-      <button class="ghost" onclick={() => (showHowTo = true)}>{t('title.howTo')}</button>
     </div>
   </div>
 
@@ -278,6 +278,18 @@
   .tagline {
     font-style: italic;
     color: var(--grey);
+  }
+  .menu {
+    position: relative;
+  }
+  /* How it works, tucked into the corner of the menu card. */
+  .help {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    padding: 0 0.55em;
+    font-size: 1rem;
+    border-radius: 50%;
   }
   .buttons {
     display: flex;

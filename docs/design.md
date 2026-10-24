@@ -64,8 +64,8 @@ presets, selectable in the rules lab (⚙) and the balance simulation.
   Bennie Moten's 1926 tune.
 
 1. **Flop:** 3 community cards are revealed; each player is dealt **3 cards**.
-2. **Flop and Turn:** tap any number of hand cards to **discard** and draw
-   replacements, or **stand pat**. Snags cannot be
+2. **Flop and Turn:** tap any number of hand cards to **swap** them for
+   replacements, or **call** to keep the hand. Snags cannot be
    discarded. Discards lie **face up**: the opponent can read what you threw
    away, and you can read theirs.
 3. **Make your hand (on the River):** when the River card comes there is no
@@ -289,14 +289,16 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    light so the coin piles stay visible as the pot is paid out.
 4. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", money change,
    snag movements, standings, "Meanwhile on the river" league news. No
-   countdown: **Next crossing** or **Drop anchor** (pause).
+   countdown: **Next** or **Menu** (pause).
 
 **Hand log:** the last 10 of the Captain's showdowns (board, both played hands,
 the cards each hand uses, result and snags moved), saved with the voyage.
-Open it from the result card or the rules lab.
+Open it from the rules lab (the gear); not shown to players for now.
 
-**Pausing:** Drop anchor returns to the title screen, which then offers
-**Continue voyage** and **New voyage** (with an "Abandon ship?" confirmation).
+**Pausing:** Menu returns to the title screen, which then offers
+**Continue game** and **New game** (with a confirmation); with no game in
+progress it offers only **Start game**. How it works is the **?** in the
+corner of the menu card. Button texts stay plain; the flavour lives in the game.
 The voyage is saved in the browser after every move, so it survives a reload.
 
 **Hand nicknames** (in the language file, easy to extend): Dead Man's Hand
