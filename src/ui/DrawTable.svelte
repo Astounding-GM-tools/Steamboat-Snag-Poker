@@ -148,9 +148,21 @@
   /** After Play hand the played cards leave the hand for the slots: show them first, the rest dimmed. */
   const myPlayed = $derived(shownDown ? me.slots.filter((c): c is Card => c !== null && !isJoker(c)) : []);
   const myPlayedSnagIds = $derived(new Set(shownDown ? me.slots.filter((c): c is Card => c !== null && isJoker(c)).map((c) => c.id) : []));
-  const mySnags = $derived([...me.jokers, ...(shownDown ? me.slots.filter((c): c is Card => c !== null && isJoker(c)) : [])]);
-  const theirSnags = $derived([...them.jokers, ...theirPlayed.filter(isJoker)]);
-  const myPlayedSnags = $derived(shownDown ? me.slots.filter((c) => c && isJoker(c)).length : 0);
+  /**
+   * A side's snags in its fan. The hand is already resolved when the showdown
+   * starts (the loser keeps the snags it played, and takes the winner's), so
+   * until the verdict each fan shows the snags as they were when the hand was
+   * played, then the outcome: snags dumped on the loser land in their fan.
+   */
+  function fan(seat: typeof me): Card[] {
+    const played = seat.slots.filter((c): c is Card => c !== null && isJoker(c));
+    if (!shownDown || settled) return seat.jokers;
+    const moved = new Set([...result!.dumped, ...result!.communityTaken].map((c) => c.id));
+    const kept = seat.jokers.filter((j) => !moved.has(j.id) && !played.some((p) => p.id === j.id));
+    return [...kept, ...played];
+  }
+  const mySnags = $derived(fan(me));
+  const theirSnags = $derived(fan(them));
 
   const callout = $derived(preview ? handLabel(preview) : null);
   const usedIdsPlay = $derived(new Set(preview?.cards.map((c) => c.id) ?? []));
@@ -259,11 +271,6 @@
       const next = me.jokers.find((j) => !tapped.includes(j.id));
       if (next && tapped.length < 5) tapped = [...tapped, next.id];
     } else if (!composing || tapped.length < 5) tapped = [...tapped, card.id];
-  }
-
-  function untapJoker() {
-    const last = [...tapped].reverse().find((id) => me.jokers.some((j) => j.id === id));
-    if (last) tapped = tapped.filter((id) => id !== last);
   }
 
   function go() {
@@ -486,14 +493,8 @@
       <Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} />
       <!-- On the River your coins are idle, so the hand you're making is called over them, with the count of snags riding along and their forfeit. Fixed size: it never shifts as you tap. -->
       {#if shownDown && myCall}
-        <!-- At the showdown: the hand you played, opposite theirs. -->
-        <div class="callout">
-          <span class="call" class:long={myCall.call.length > 30}>{myCall.call}</span>
-          <span class="lingo">{myCall.lingo ?? ''}</span>
-          <span class="note">
-            {#if myPlayedSnags === 1}{t('draw.ridingOne', { cost: dollars(config.jokerForfeit ?? 0) })}{:else if myPlayedSnags}{t('draw.riding', { n: t(`number.${myPlayedSnags}`), cost: dollars(myPlayedSnags * (config.jokerForfeit ?? 0)) })}{/if}
-          </span>
-        </div>
+        <!-- At the showdown your coins show again (the pot may fly to them); your hand is one line above. -->
+        <p class="my-hand">{myCall.lingo ?? myCall.call}</p>
       {:else if playing && composing && callout}
         <div class="callout" aria-live="polite">
           <span class="call" class:long={callout.call.length > 30}>{callout.call}</span>
@@ -524,9 +525,6 @@
           {#each mySnags as card (card.id)}
             <CardView {card} selected={tapped.includes(card.id)} used={shownDown && myPlayedSnagIds.has(card.id)} onclick={playing && composing ? () => tap(card) : undefined} />
           {/each}
-          {#if composing && tappedJokers.length}
-            <button class="ghost small-btn unsnag" onclick={untapJoker} aria-label={t('draw.untapSnag')}>−</button>
-          {/if}
           {#if mySnags.length > 2}<span class="snag-count">×{mySnags.length}</span>{/if}
         </div>
       {/if}
@@ -785,6 +783,21 @@
   .my-purse {
     position: relative;
   }
+  .my-hand {
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    margin: 0;
+    text-align: center;
+    font-style: italic;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 0 3px #000, 0 0 6px #000;
+    pointer-events: none;
+  }
   .callout {
     position: absolute;
     inset: -4px 0;
@@ -950,15 +963,6 @@
   .snag-fan.live :global(.card:hover) {
     z-index: 3;
   }
-  /* Takes one tapped snag back out; sits on the fan so it costs no room. */
-  .unsnag {
-    position: absolute;
-    left: -6px;
-    bottom: -6px;
-    z-index: 4;
-    padding: 0 0.45em;
-    border-radius: 50%;
-  }
   .faces {
     border: none;
     padding: 0;
@@ -986,9 +990,5 @@
     align-items: center;
     cursor: pointer;
     margin-top: 0.75rem;
-  }
-  .small-btn {
-    font-size: 0.85rem;
-    padding: 0.2em 0.6em;
   }
 </style>

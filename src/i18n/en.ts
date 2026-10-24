@@ -106,7 +106,6 @@ export const en = {
   'draw.oddsTitle': 'Here’s what {name} could be holding right now, Cap’n:',
   'draw.theirDiscards': 'Discarded by {name}',
   'draw.yourDiscards': 'Your discards',
-  'draw.untapSnag': 'Take a snag back',
   'draw.log.pat': '{name} stands pat.',
   'draw.log.discard': '{name} throws away {n}.',
   'log.title': 'Hand log',
