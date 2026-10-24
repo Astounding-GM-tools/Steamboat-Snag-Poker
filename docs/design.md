@@ -294,8 +294,8 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
      are making is called in a fixed-size card laid over your idle coins: the
      dealer's call, category first ("Two pair, Queens and Jacks"), the
      table talk when there is some ("Ladies over Hooks", "Trip Hooks",
-     "Broadway"; flavour that teaches the slang), and any snags riding along ("Mail Run riding · $5", "Two snags riding · $10";
-     a long name gives way, the price stays). The
+     "Broadway"; flavour that teaches the slang), and any snags riding along ("Two snag cards riding $10"; the
+     names are on the cards just below). The
      exclamation mark is saved for the winning hand on the result screen. The wording lives in `handLabel` (handNames.ts), shared with the
      result screens.
    **Purses** (yours, and the opponent's tucked behind their name, which has an
