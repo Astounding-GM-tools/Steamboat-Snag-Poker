@@ -603,16 +603,24 @@
     max-height: 940px;
     min-height: 0;
   }
+  /* Card width and the gap between cards: the buttons below line up with them. */
   .captain {
+    --cw: 76px;
+    --hgap: 0.75rem;
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+  }
+  /* No frames for the players: the river between them is separation enough. */
+  .opponent,
+  .captain {
+    border-color: transparent;
   }
   /* Tall enough for a lifted card, so selecting one doesn't push anything. */
   .hand-row {
     display: flex;
     align-items: flex-end;
-    gap: 0.75rem;
+    gap: var(--hgap);
     height: 122px;
   }
   .my-purse {
@@ -662,10 +670,15 @@
     from { opacity: 0; }
   }
   /* Two fixed halves: changing labels and prices never move them. */
+  /* Fold as wide as your three cards; the main button under your snags and discards. */
   .actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    grid-template-columns: calc(3 * var(--cw) + 2 * var(--hgap)) 1fr;
+    gap: var(--hgap);
+  }
+  /* The main button's outline goes inside its edge, so both buttons stand the same size. */
+  .actions button:not(.ghost) {
+    outline-offset: -2px;
   }
   .actions button {
     white-space: nowrap;
@@ -709,9 +722,12 @@
   .opp-cards {
       height: 54px;
     }
+    .captain {
+      --cw: 54px;
+      --hgap: 0.5rem;
+    }
     .hand-row {
       height: 92px;
-      gap: 0.5rem;
     }
     .actions button {
       font-size: 1rem;
