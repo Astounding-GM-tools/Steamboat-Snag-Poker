@@ -30,7 +30,7 @@
   }}
 >
   {#each rows as row}
-    <span class="row">
+    <span class="stack">
       {#each row.cards as card (card.id)}
         {#if !isJoker(card)}<span class="chip">{card.rank === 10 ? '10' : rankLabel(card.rank)}<span class="suit"><SuitIcon suit={card.suit} /></span></span>{/if}
       {/each}
@@ -46,8 +46,8 @@
     display: flex;
     flex-direction: row-reverse;
     gap: 3px;
-    width: 47px;
-    height: 55px;
+    width: 63px;
+    height: 61px;
     padding: 0;
     margin: 0 0 0 auto;
     background: none;
@@ -60,28 +60,29 @@
     cursor: default;
     opacity: 1;
   }
-  .row {
+  .stack {
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     gap: 2px;
-    width: 22px;
+    width: 30px;
   }
   .chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 1px;
-    height: 17px;
+    height: 19px;
     border-radius: 3px;
     background: var(--paper);
     color: var(--ink);
     font-family: var(--title-font);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     letter-spacing: 0;
     opacity: 0.8;
   }
   .suit {
-    width: 0.6rem;
-    height: 0.6rem;
+    width: 0.65rem;
+    height: 0.65rem;
   }
 </style>

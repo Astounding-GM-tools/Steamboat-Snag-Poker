@@ -712,7 +712,7 @@
   @media (max-width: 600px) {
     .snag-fan.mine {
       --cw: 54px;
-      --fan: 92px;
+      --fan: 80px;
     }
   }
   .snag-fan.live :global(.card:hover) {
