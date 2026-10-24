@@ -11,6 +11,11 @@ export function jokerName(index: number): string {
   return t(`joker.${index % JOKER_NAMES}`);
 }
 
+/** A snag's name as printed on the card, without the "the" that sentences need: "Mail Run". */
+export function snagTitle(index: number): string {
+  return jokerName(index).replace(/^the /, '');
+}
+
 export function cardLabel(card: Card): string {
   if (isJoker(card)) return jokerName(card.index);
   const rank = card.rank === 10 ? '10' : rankLabel(card.rank);

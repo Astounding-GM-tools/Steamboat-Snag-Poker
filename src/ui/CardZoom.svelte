@@ -3,7 +3,7 @@
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import { cardPrefs } from './cards.svelte';
-  import { longCardName } from './format';
+  import { longCardName, snagTitle } from './format';
 
   /** The card held up for a closer look (long-press any card), with its name spelled out. */
   const card = $derived(cardPrefs.zoomed);
@@ -17,7 +17,7 @@
   <div class="zoom" onclick={close} role="dialog" aria-modal="true" aria-label={longCardName(card)} tabindex="-1">
     <CardView {card} huge />
     <p class="caption">
-      {#if isJoker(card)}{t('card.snag')}: {longCardName(card)}{:else}{longCardName(card)}{/if}
+      {#if isJoker(card)}{t('card.snag')}: {snagTitle(card.index)}{:else}{longCardName(card)}{/if}
     </p>
     <p class="hint">{t('cards.zoomClose')}</p>
   </div>

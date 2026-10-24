@@ -1,7 +1,7 @@
 <script lang="ts">
   import { isJoker, rankLabel, type Card } from '../engine';
   import { t } from '../i18n';
-  import { jokerName } from './format';
+  import { snagTitle } from './format';
   import SuitIcon from './SuitIcon.svelte';
   import { cardPrefs } from './cards.svelte';
 
@@ -104,7 +104,7 @@
     {#if isJoker(card)}
       <span class="jtitle">{t('card.snag')}</span>
       <span class="jester">🪵</span>
-      <span class="jname">{jokerName(card.index).replace(/^the /, '')}</span>
+      <span class="jname">{snagTitle(card.index)}</span>
     {:else}
       <span class="pip-corner"><SuitIcon suit={playing!.suit} /></span>
       <span class="pip-value" class:ten={rank === '10'}>{rank}</span>

@@ -27,7 +27,7 @@
   import Purse from './Purse.svelte';
   import DiscardChips from './DiscardChips.svelte';
   import WillieSays from './WillieSays.svelte';
-  import { cardLabel, dollars, jokerList, jokerName, name, nickname } from './format';
+  import { cardLabel, dollars, jokerList, name, nickname, snagTitle } from './format';
   import { handLabel } from './handNames';
 
   interface Props {
@@ -390,7 +390,7 @@
           <span class="call" class:long={callout.call.length > 30}>{callout.call}</span>
           <span class="lingo">{callout.lingo ?? ''}</span>
           <span class="note">
-            {#if tappedJokers.length === 1}{t('draw.ridingOne', { name: jokerName(tappedJokers[0].index), cost: dollars(config.jokerForfeit ?? 0) })}{:else if tappedJokers.length}{t('draw.riding', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
+            {#if tappedJokers.length === 1}{t('draw.ridingOne', { name: snagTitle(tappedJokers[0].index), cost: dollars(config.jokerForfeit ?? 0) })}{:else if tappedJokers.length}{t('draw.riding', { n: tappedJokers.length, cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
           </span>
         </div>
       {/if}
