@@ -2,6 +2,7 @@
   import { onDestroy, untrack } from 'svelte';
   import {
     STREETS,
+    CATEGORIES,
     bestHand,
     canFold,
     discardCost,
@@ -22,7 +23,6 @@
   } from '../engine';
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
-  import CaptainCard from './CaptainCard.svelte';
   import { cardPrefs, setCardFace } from './cards.svelte';
   import Pot from './Pot.svelte';
   import Standings from './Standings.svelte';
@@ -54,6 +54,17 @@
   let tapped = $state<string[]>([]);
   let showHelp = $state(false);
   let showCaptain = $state(false);
+  // Their details close when the next round is dealt.
+  let infoMonth = -1;
+  $effect(() => {
+    const m = game.month;
+    untrack(() => {
+      if (m !== infoMonth) {
+        infoMonth = m;
+        showCaptain = false;
+      }
+    });
+  });
   /** Jokers you just fished out of the deck, for Willie to announce. */
   let fishedNews = $state<string | null>(null);
   let fishedSeen = 0;
@@ -470,7 +481,7 @@
     <!-- Name and title over their coins; a tall portrait beside both. -->
     <div class="opp-head">
       <div class="opp-left">
-        <button class="name-btn" onclick={() => (showCaptain = true)}>
+        <button class="name-btn" onclick={() => (showCaptain = !showCaptain)}>
           <span class="who">
             <span class="name">{name(opponentId)}</span>
             <span class="title">{nickname(opponentId) ? `“${nickname(opponentId)}”` : t(`character.${opponentId}.boat`)}</span>
@@ -478,7 +489,7 @@
         </button>
         <div class="opp-purse" bind:this={theirPurseEl}><Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} /></div>
       </div>
-      <button class="portrait-btn" onclick={() => (showCaptain = true)} aria-label={name(opponentId)}>
+      <button class="portrait-btn" onclick={() => (showCaptain = !showCaptain)} aria-label={name(opponentId)}>
         <span class="oval portrait">{name(opponentId)[0]}</span>
       </button>
     </div>
@@ -537,6 +548,25 @@
       {#if standing}<div class="standings-over"><Standings {game} /></div>{/if}
     </div>
     {#if stakes.length}<p class="stakes">{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}</p>{/if}
+    {#if showCaptain}
+      <!-- Their details take the river's place (tap to go back to the board): who they are and, mid-round, Willie's reckoning. -->
+      <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+      <div class="river-info" onclick={() => (showCaptain = false)}>
+        <p class="blurb">{t(`character.${opponentId}.blurb`)}</p>
+        {#if odds}
+          <p class="harbour">{t('draw.oddsTitle', { name: name(opponentId) })}</p>
+          <!-- Every rank, even the impossible ones: a reminder of what beats what. -->
+          {#each [...CATEGORIES].reverse() as cat}
+            {@const p = odds.categories[cat]}
+            <div class="bar" class:none={p === 0}>
+              <span>{t(`hand.${cat}`)}</span>
+              <span class="track"><span class="fill" style="width: {p * 100}%"></span></span>
+              <span class="num">{p === 0 ? '–' : p < 0.005 ? '<1%' : `${Math.round(p * 100)}%`}</span>
+            </div>
+          {/each}
+        {/if}
+      </div>
+    {/if}
   </section>
 
   <!-- Your side of the table, from the pot outwards: your money, your cards, your decisions. Fixed rows, so nothing moves as the round goes on. -->
@@ -585,8 +615,12 @@
     </div>
 
 
-    <div class="actions" class:idle={!playing && !revealing && !standing}>
-      {#if standing}
+    <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain}>
+      {#if showCaptain}
+        <!-- Their details are up: the white button takes you back, the black one waits. -->
+        <button class="ghost" disabled>{standing ? t('end.pause') : revealing ? t('show.skip') : foldLabel}</button>
+        <button onclick={() => (showCaptain = false)}>{t('draw.back')}</button>
+      {:else if standing}
         <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
         <button onclick={() => onnext?.()}>{t('end.next')}</button>
       {:else if revealing}
@@ -621,9 +655,6 @@
   </WillieSays>
 {/if}
 
-{#if showCaptain}
-  <CaptainCard captain={opponent} players={game.players} {odds} onclose={() => (showCaptain = false)} />
-{/if}
 
 <style>
   /* The head and the showdown callout that replaces it are the same height: nothing moves. */
@@ -698,6 +729,60 @@
     height: 100%;
     min-height: 110px;
     font-size: 2.8rem;
+  }
+  .river {
+    position: relative;
+  }
+  .river-info {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 0.4rem 0.75rem;
+    background: rgba(12, 12, 11, 0.97);
+    text-align: left;
+    overflow: auto;
+    cursor: pointer;
+    animation: callout-in 0.2s ease-out;
+  }
+  .river-info .blurb {
+    margin: 0 0 0.4rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
+    color: var(--paper);
+  }
+  .river-info .harbour {
+    margin: 0 0 0.2rem;
+    font-size: 0.8rem;
+    color: var(--grey);
+  }
+  .bar {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr 2.4rem;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.75rem;
+    line-height: 1.15;
+  }
+  .bar.none {
+    color: var(--grey);
+    opacity: 0.7;
+  }
+  .track {
+    height: 7px;
+    background: #222;
+    border: 1px solid var(--dim);
+  }
+  .track .fill {
+    display: block;
+    height: 100%;
+    background: var(--paper);
+  }
+  .num {
+    text-align: right;
   }
   .river-body {
     position: relative;
@@ -984,7 +1069,61 @@
     .opp-cards {
       --hgap: 0.5rem;
     }
-    .river-body {
+    .river {
+    position: relative;
+  }
+  .river-info {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 0.4rem 0.75rem;
+    background: rgba(12, 12, 11, 0.97);
+    text-align: left;
+    overflow: auto;
+    cursor: pointer;
+    animation: callout-in 0.2s ease-out;
+  }
+  .river-info .blurb {
+    margin: 0 0 0.4rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
+    color: var(--paper);
+  }
+  .river-info .harbour {
+    margin: 0 0 0.2rem;
+    font-size: 0.8rem;
+    color: var(--grey);
+  }
+  .bar {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr 2.4rem;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.75rem;
+    line-height: 1.15;
+  }
+  .bar.none {
+    color: var(--grey);
+    opacity: 0.7;
+  }
+  .track {
+    height: 7px;
+    background: #222;
+    border: 1px solid var(--dim);
+  }
+  .track .fill {
+    display: block;
+    height: 100%;
+    background: var(--paper);
+  }
+  .num {
+    text-align: right;
+  }
+  .river-body {
     position: relative;
   }
   .river-body.cleared > :not(.standings-over) {

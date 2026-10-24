@@ -97,9 +97,9 @@ Turn and River cards and replacement cards slide in too. A **Fast deal**
 checkbox speeds it up (remembered per browser), and a click on the table
 finishes the deal at once. Actions are disabled until the deal is done.
 
-**Willie's reckoning** (on the opponent's captain card) shows what they could be holding
-(chance of each hand category, and how often it beats your best hand), based
-only on what you can see.
+**Willie's reckoning** (in the opponent's details) shows what they could be
+harbouring: the chance of each hand category, every rank listed, based only
+on what you can see.
 
 **The reveal:** your hand is announced first (with its nickname, if any). Then
 the opponent's played cards are turned over one at a time — teasers first
@@ -273,10 +273,10 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    card: *Steer public opinion. Avoid ruin. Dump your mess on someone else.*
 2. **The Table** (draw style), one column so it fits a phone, split by the
    board into **their side** (top) and **yours** (bottom):
-   - top: the opponent's name (tap for their **captain card**: purse, portrait
-     ringed by bookmaker's stamps (odds on this hand, odds on the river, their
-     won–lost record), boat, **Willie's reckoning** of what they could be
-     holding right now, how they play, your notes) beside a big portrait, with
+   - top: the opponent's name (tap it or the portrait for their **details**,
+     shown in the river's place, no modal: their description and, mid-round,
+     **Willie's reckoning**; the white button reads Back and the black one
+     waits until you're back) beside a big portrait, with
      their nickname in quotes under it, or their title ("Captain of the
      Stonewall") if they have none, portrait on the right; their purse spreads
      behind the head from the left (facing the pot), a rich one growing in
