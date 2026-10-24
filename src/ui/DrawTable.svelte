@@ -24,8 +24,7 @@
   import CaptainCard from './CaptainCard.svelte';
   import { cardPrefs, setCardFace } from './cards.svelte';
   import PotStack from './PotStack.svelte';
-  import CoinPile from './CoinPile.svelte';
-  import PurseHeap from './PurseHeap.svelte';
+  import Purse from './Purse.svelte';
   import SuitIcon from './SuitIcon.svelte';
   import WillieSays from './WillieSays.svelte';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
@@ -254,7 +253,8 @@
 <div class="table solo" onclick={finishDeal}>
   <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
-    <div class="who">
+    <!-- Their purse sits just behind their name: a glance says rich or moth-eaten. -->
+    <div class="opp-head">
       <button class="name-btn" onclick={() => (showCaptain = true)}>
         <span class="oval small-oval">{name(opponentId)[0]}</span>
         <span class="who">
@@ -262,7 +262,7 @@
           {#if nickname(opponentId)}<span class="aka">{t('captain.aka', { nick: nickname(opponentId)! })}</span>{/if}
         </span>
       </button>
-      <div class="pile-right"><CoinPile amount={shownMoney(1)} align="right" label={name(opponentId)} /></div>
+      <div class="opp-purse"><Purse amount={shownMoney(1)} size="small" showAmount={false} label={name(opponentId)} /></div>
     </div>
     <div class="row">
       <div class="hand-backs">
@@ -344,7 +344,7 @@
       <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
     </div>
 
-    <PurseHeap amount={shownMoney(0)} label={t('character.captain.you')} />
+    <div class="my-purse"><Purse amount={shownMoney(0)} label={t('character.captain.you')} /></div>
   </section>
 </div>
 
@@ -394,16 +394,23 @@
     font-size: 1rem;
     border-radius: 50%;
   }
-  .pile-right {
-    margin-left: auto;
+  /* Leaves the corner free for the rules-lab gear. */
+  .my-purse {
+    padding-right: 40px;
   }
-  .who {
+  .opp-head {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    align-items: flex-end;
     margin-bottom: 0.4rem;
   }
+  .opp-purse {
+    flex: none;
+    width: 160px;
+    margin-left: -2.5rem;
+  }
   .name-btn {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -428,6 +435,11 @@
     font-size: 0.75rem;
     color: var(--grey);
     letter-spacing: 0.04em;
+  }
+  /* An outline keeps the name readable where it overlaps the coins. */
+  .name,
+  .aka {
+    text-shadow: 0 0 2px #000, 0 0 4px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
   }
   .name {
     font-family: var(--title-font);
