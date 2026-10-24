@@ -5,9 +5,10 @@
   import { cardPrefs } from './cards.svelte';
 
   /**
-   * Thrown-away cards as card notation (7♣) at the end of a card row: the Flop
-   * discards on the top row, the Turn's below, up to three each. Shorter than
-   * a card, so it sits on the table beside them. Tap it for a closer look.
+   * Thrown-away cards as card notation (7♣) at the end of a card row, in two
+   * little stacks of up to three: the Flop's, then the Turn's along the edge.
+   * Shorter than a card, so it sits on the table beside them. Tap it for a
+   * closer look.
    */
   let { cards, flop = cards.length, title }: { cards: Card[]; flop?: number; title: string } = $props();
   const rows = $derived(
@@ -43,10 +44,9 @@
     flex: none;
     align-self: flex-end;
     display: flex;
-    flex-direction: column;
     gap: 3px;
-    width: 70px;
-    height: 41px;
+    width: 47px;
+    height: 55px;
     padding: 0;
     margin: 0 0 0 auto;
     background: none;
@@ -61,15 +61,16 @@
   }
   .row {
     display: flex;
+    flex-direction: column;
     gap: 2px;
-    height: 19px;
+    width: 22px;
   }
   .chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 1px;
-    width: 22px;
+    height: 17px;
     border-radius: 3px;
     background: var(--paper);
     color: var(--ink);
