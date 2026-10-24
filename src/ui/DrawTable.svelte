@@ -384,7 +384,7 @@
     <!-- Your money nearest the pot, no figure: never count your money at the table. -->
     <div class="my-purse" bind:this={myPurseEl}>
       <Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} />
-      <!-- On the River your coins are idle, so the hand you're making is called over them, with the count of snag cards riding along and their forfeit. Fixed size: it never shifts as you tap. -->
+      <!-- On the River your coins are idle, so the hand you're making is called over them, with the count of snags riding along and their forfeit. Fixed size: it never shifts as you tap. -->
       {#if playing && composing && callout}
         <div class="callout" aria-live="polite">
           <span class="call" class:long={callout.call.length > 30}>{callout.call}</span>
