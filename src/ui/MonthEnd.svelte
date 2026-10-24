@@ -32,6 +32,9 @@
     : won ? t('end.victory') : t('end.catastrophe'),
   );
 
+  /** Rivals still afloat when you go broke: with only one, they take the river. */
+  const rivalsLeft = $derived(game.players.filter((p) => p.id !== HUMAN_ID && p.status === 'active'));
+
   const statusOrder = { active: 0, waiting: 1, eliminated: 2 } as const;
   const standings = $derived(
     [...game.players].sort((a, b) => statusOrder[a.status] - statusOrder[b.status] || b.money - a.money),
@@ -59,7 +62,8 @@
     <h1>{headline}</h1>
 
     {#if game.phase === 'gameOver'}
-      <p>{t('end.gameOverBody', { month: game.month })}</p>
+      <p>{t('end.gameOverBody')}</p>
+      <p>{rivalsLeft.length === 1 ? t('end.gameOverKing', { name: shortName(rivalsLeft[0].id) }) : t('end.gameOverMany')}</p>
     {:else if game.phase === 'victory'}
       <p>{t('end.lastStanding', { month: game.month })}</p>
     {/if}
