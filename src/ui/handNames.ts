@@ -44,14 +44,13 @@ export function describeHand(hand: HandValue): string {
 }
 
 /**
- * How a hand is called at the table, in two parts: `call`, the dealer's
- * announcement, category first, that every hand has ("Two pair, Queens and
- * Jacks", "Full house, Deuces full of Aces"); and `lingo`, the players' table
- * talk, when the hand has some ("Ladies over Hooks", "Trip Hooks",
- * "Broadway"). The lingo is flavour that teaches the slang; it gets an
- * exclamation mark only when asked (the winning hand on the result screen),
- * since they grow tiresome fast. Shared by the River preview and the result
- * screens.
+ * How a hand is called at the table, in two parts. `call` is plain words a
+ * newcomer can follow, category first, that every hand has ("Two pair, Queens
+ * and Jacks", "Full house, Aces and Sixes"). `lingo` is the players' table
+ * talk, when the hand has some, with the extra precision ("Bullets full of
+ * Kicks", "Ladies over Hooks", "Trip Hooks", "Broadway"): flavour that teaches
+ * the slang. It gets an exclamation mark only when asked (the winning hand),
+ * since they grow tiresome fast. Shared by the River preview and the showdown.
  */
 export interface HandLabel {
   call: string;

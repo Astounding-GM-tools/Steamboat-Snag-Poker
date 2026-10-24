@@ -38,7 +38,8 @@ describe('handLabel', () => {
     expect(label('Jh Js 9c 5d 2s')).toEqual({ call: 'Pair of Jacks', lingo: 'Hooks' });
     expect(label('Qh Qs Jc Jd 2s')).toEqual({ call: 'Two pair, Queens and Jacks', lingo: 'Ladies over Hooks' });
     expect(label('Qh Qs Qc 5d 2s')).toEqual({ call: 'Three of a kind, Queens', lingo: 'Trip Ladies' });
-    expect(label('2h 2s 2c Ad As')).toEqual({ call: 'Full house, Deuces full of Aces', lingo: 'Ducks full of Bullets' });
+    expect(label('2h 2s 2c Ad As')).toEqual({ call: 'Full house, Deuces and Aces', lingo: 'Ducks full of Bullets' });
+    expect(label('Ah As Ac 6d 6s')).toEqual({ call: 'Full house, Aces and Sixes', lingo: 'Bullets full of Kicks' });
     expect(label('As Ad Ac Ah 7s')).toEqual({ call: 'Four of a kind, Aces', lingo: 'Four Bullets' });
   });
 
@@ -51,7 +52,7 @@ describe('handLabel', () => {
     expect(label('Kh Ks 9c 9d 2s').lingo).toBe('Cowboys over Nines');
     expect(label('Kh Ks 5c 5d 2s').lingo).toBe('Cowboys over Nickels');
     expect(label('9h 9s 6c 5d 2s')).toEqual({ call: 'Pair of Nines', lingo: null });
-    expect(label('9h 9s 9c 6d 6s').lingo).toBe('A full boat');
+    expect(label('9h 9s 9c 6d 6s').lingo).toBe('Nines full of Kicks');
   });
 
   it('knows the named hands', () => {
@@ -60,6 +61,7 @@ describe('handLabel', () => {
     expect(label('Ah Ks Qc Jd Ts')).toEqual({ call: 'Straight, Ace high', lingo: 'Broadway' });
     expect(label('5h 4s 3c 2d As')).toEqual({ call: 'Straight, Five high', lingo: 'The Wheel' });
     expect(label('6h 6s 9c 5d 2s').lingo).toBe('Route 66');
+    expect(label('6h 6s 6c 5d 2s').lingo).toBe('Trip Kicks');
     expect(label('As Ks Qs Js Ts')).toEqual({ call: 'Royal flush, Spades', lingo: 'The Royal Flush' });
   });
 
