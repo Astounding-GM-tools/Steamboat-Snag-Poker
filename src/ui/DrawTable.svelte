@@ -95,10 +95,11 @@
   const result = $derived(round.result);
   const shownDown = $derived(!!result && result.folded == null);
   const steps = $derived(shownDown ? planReveal(round, 1, new Rng(round.month * 31 + round.discards.length)) : []);
-  let revealIndex = $state(0);
-  $effect(() => {
-    if (stage === 'reveal') untrack(() => (revealIndex = 0));
-  });
+  // How many of their cards are face up, counted per round: a new showdown starts
+  // at its first card at once (a reset after the fact would let the last
+  // round's count fire this round's verdict, and pay out the pot, too early).
+  let revealPos = $state({ month: -1, i: 0 });
+  const revealIndex = $derived(revealPos.month === game.month ? revealPos.i : 0);
   const revealing = $derived(stage === 'reveal' && shownDown);
   /** After the round (not the last): the standings on the table. */
   const standing = $derived(stage === 'result' && game.phase === 'monthEnd' && !!game.report);
@@ -134,7 +135,7 @@
   );
   function revealNext() {
     if (verdictShown) onrevealed?.();
-    else revealIndex++;
+    else revealPos = { month: game.month, i: revealIndex + 1 };
   }
   function revealSkip() {
     onverdict?.();
