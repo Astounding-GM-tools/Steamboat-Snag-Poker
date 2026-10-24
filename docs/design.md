@@ -286,9 +286,11 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    - middle: crossing number, street, the **?** button (Willie: how to play,
      fast-deal setting), the **pot** and the board; snags at stake are named
      only when there are any;
-   - bottom, in fixed rows that never shift: your discards as small notation
-     chips; your hand and snags; a hint line; Fold and the action button side
-     by side; and your **purse**: the amount and your coins.
+   - bottom, in fixed rows that never shift, from the pot outwards: your
+     **purse** (coins only, no figure: you never count your money at the
+     table), your discards as small notation chips, your hand and snags (close
+     to your chest), a hint line, and Fold and the action button side by side
+     (the decisions you hold closest).
    **Purses** (yours, and the opponent's tucked behind their name, which has an
    outline to stay readable) are one coin a dollar: under $10 a few loose coins
    and circling moths (the only low-funds warning); under $50 a small uneven
@@ -304,7 +306,7 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    its middle line, yours just below, each filling in from the left (a row
    holds about $150 on a phone; a simulation puts one side's stake at a median
    of $21, 99% under $74, max about $93, see `scripts/pots.sim.ts`). Purses
-   face the pot from the left (yours: coins left, amount right) and spend from
+   face the pot from the left and spend from
    the left, the front row first; each coin flies from the spot it stood on in
    the purse to its spot in the pot, so emptied stacks show what has gone in.
    At the verdict the pot's coins fly to the winner.

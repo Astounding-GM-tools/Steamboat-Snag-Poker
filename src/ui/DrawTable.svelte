@@ -378,8 +378,10 @@
     {#if stakes.length}<p class="stakes">{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}</p>{/if}
   </section>
 
-  <!-- Your side of the table: fixed rows, so nothing here moves as the round goes on. -->
+  <!-- Your side of the table, from the pot outwards: your money, your cards, your decisions. Fixed rows, so nothing moves as the round goes on. -->
   <section class="captain">
+    <!-- Your money nearest the pot, no figure: never count your money at the table. -->
+    <div class="my-purse" bind:this={myPurseEl}><Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} /></div>
     <DiscardChips cards={me.discarded} label={t('draw.discarded')} />
 
     <div class="hand-row">
@@ -416,7 +418,6 @@
       <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
     </div>
 
-    <div class="my-purse" bind:this={myPurseEl}><Purse amount={shownMoney(0)} start={startMoney(0)} focus={28} label={t('character.captain.you')} /></div>
   </section>
 </div>
 
