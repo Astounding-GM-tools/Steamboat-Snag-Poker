@@ -128,19 +128,27 @@ describe('game', () => {
     }
   });
 
-  it('with an odd number of captains, the poorest rival sits the crossing out', () => {
+  it('with an odd number of captains, a random rival sits the round out and pays snag upkeep', () => {
     const def = (id: string) => ROSTER.find((c) => c.id === id)!;
     const lineUp = ['konrad', 'nemo', 'lenny', 'walrus'].map((id) => ({ def: def(id), joins: 'start' }));
     let s = newGame(31, DEFAULT_CONFIG, lineUp);
-    // Five captains (you + 4): odd, so someone sits out.
-    const poorest = [...activeOpponents(s)].sort((a, b) => a.money - b.money || a.id.localeCompare(b.id))[0];
-    expect(s.sitterId).toBe(poorest.id);
-    expect(s.opponentId).not.toBe(poorest.id);
+    // Five captains (you + 4): odd, so a rival (never you) sits out.
+    const sitter = s.sitterId!;
+    expect(activeOpponents(s).map((p) => p.id)).toContain(sitter);
+    expect(s.opponentId).not.toBe(sitter);
+    // Give the sitter two snags from the pool: they pay upkeep for them, and no ante.
+    const p = player(s, sitter);
+    p.jokers.push(...s.pool.splice(0, 2));
+    const before = p.money;
     const rng = new Rng(9);
     while (s.phase === 'duel') s = submitAction(s, rng.pick(legalActions(s.round!, 0)));
-    expect(s.report!.sittingOut).toBe(poorest.id);
-    const played = s.report!.offscreen.flatMap((d) => d.players);
-    expect(played).not.toContain(poorest.id);
+    expect(s.report!.sittingOut).toBe(sitter);
+    expect(s.report!.offscreen.flatMap((d) => d.players)).not.toContain(sitter);
+    expect(player(s, sitter).money).toBe(before - 2 * DEFAULT_CONFIG.drainPerJoker);
+    expect(s.report!.money[sitter].drained).toBe(2 * DEFAULT_CONFIG.drainPerJoker);
+    // Next round someone else sits out.
+    s = nextMonth(s);
+    expect(s.sitterId).not.toBe(sitter);
   });
 
   it('hands retired captains\' seats in old saves to their successors', () => {

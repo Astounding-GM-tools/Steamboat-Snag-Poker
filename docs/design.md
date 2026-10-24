@@ -239,10 +239,11 @@ about 29 to about 20 months.
 The game is not just your duels: a small league of opponents plays each other
 every crossing off-screen, trading snags and money with the same rules.
 
-- Each crossing you duel one opponent; the remaining active opponents are paired
-  randomly. With an odd number of captains, **the poorest rival sits the
-  crossing out**: no ante and so no snag upkeep, a breather for the nearly
-  broke. The sitter is never your opponent that crossing.
+- Each round you duel one opponent; the remaining active opponents are paired
+  randomly. With an odd number of captains, **a random rival sits the round
+  out** (never you, and not the same one twice running when there's a
+  choice). The sitter pays **snag upkeep** but no ante (there's no hand), so
+  nobody can hide: the endgame doesn't drag while a poor captain waits it out.
 - Off-screen duels are **fully simulated** with the same engine and AIs (cheap,
   and keeps the snag economy honest). ❓ Could later be replaced by a
   probability shortcut if needed.

@@ -38,8 +38,8 @@ Each tournament draws, at random (seeded):
 - **followers** (Morag) only alongside the captain they follow.
 
 So a typical tournament starts with you plus seven rivals, with one or two more
-arriving later. With an odd number of captains on the river, the poorest rival
-sits each crossing out.
+arriving later. With an odd number of captains on the river, a random rival sits
+each round out (never you, never twice running) and pays snag upkeep.
 
 ## Retired (borrowed characters, replaced for release)
 

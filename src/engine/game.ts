@@ -77,7 +77,7 @@ export interface GameState {
   pool: JokerCard[];
   phase: Phase;
   opponentId: string | null;
-  /** This crossing's sitter: with an odd number of captains, the poorest sits out. */
+  /** This round's sitter: with an odd number of captains, a random rival sits out (and pays snag upkeep). */
   sitterId?: string | null;
   lastOpponentId: string | null;
   round: RoundState | null;
@@ -173,13 +173,15 @@ export function activeOpponents(state: GameState): Player[] {
  */
 /**
  * With an odd number of captains on the river (you included), someone has to
- * sit the crossing out: the poorest rival. It costs them nothing, not even
- * snag upkeep, which is paid with the ante: a breather for the nearly broke.
+ * sit the round out: a rival drawn at random (never you, and not the same one
+ * twice running when there's a choice). Sitting out isn't free: the sitter pays
+ * their snag upkeep (but no ante, as there's no hand), so nobody can hide.
  */
-export function chooseSitter(state: GameState): Player | null {
+export function chooseSitter(state: GameState, rng: Rng): Player | null {
   const rivals = activeOpponents(state);
   if ((rivals.length + 1) % 2 === 0 || rivals.length < 2) return null;
-  return [...rivals].sort((a, b) => a.money - b.money || a.id.localeCompare(b.id))[0];
+  const fresh = rivals.filter((p) => p.id !== state.sitterId);
+  return rng.pick(fresh.length ? fresh : rivals);
 }
 
 export function pickOpponent(state: GameState, rng: Rng): Player {
@@ -190,7 +192,7 @@ export function pickOpponent(state: GameState, rng: Rng): Player {
 
 function startMonthMut(state: GameState): GameState {
   const rng = new Rng(state.rngState);
-  state.sitterId = chooseSitter(state)?.id ?? null;
+  state.sitterId = chooseSitter(state, rng)?.id ?? null;
   const opponent = pickOpponent(state, rng);
   state.opponentId = opponent.id;
   const human = player(state, HUMAN_ID);
@@ -292,8 +294,10 @@ function finishMonth(state: GameState, rng: Rng) {
   for (const p of state.players) {
     if (p.status !== 'active') continue;
     before[p.id] ??= p.money;
-    // In pot mode Joker upkeep is paid into each ante instead.
-    const drained = cfg.playStyle === 'draw' && cfg.pot ? 0 : p.jokers.length * cfg.drainPerJoker;
+    // In pot mode Joker upkeep is paid into each ante instead, except by the
+    // captain sitting the round out, who has no ante but still pays upkeep.
+    const potUpkeep = cfg.playStyle === 'draw' && cfg.pot;
+    const drained = !potUpkeep || p.id === state.sitterId ? p.jokers.length * cfg.drainPerJoker : 0;
     if (drained) p.money = Math.max(0, p.money - drained);
     money[p.id] = { before: before[p.id], after: p.money, drained };
     if (p.money <= 0) {

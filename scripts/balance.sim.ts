@@ -24,7 +24,7 @@ it('balance', () => {
   for (const presetName of PRESET_NAMES) {
     const config = { ...PRESETS[presetName], ...overrides };
     for (const captainAi of ['clueless', 'careful', 'gambler'] as AiId[]) {
-      let months = 0, wins = 0, peakJokers = 0, captainDuels = 0, captainWins = 0, jokersShed = 0;
+      let months = 0, winMonths = 0, wins = 0, peakJokers = 0, captainDuels = 0, captainWins = 0, jokersShed = 0;
       const cats: Record<string, number> = {};
       const t0 = performance.now();
       for (let g = 0; g < GAMES; g++) {
@@ -49,13 +49,16 @@ it('balance', () => {
         }
         months += s.month;
         peakJokers += maxJ;
-        if (s.phase === 'victory') wins++;
+        if (s.phase === 'victory') {
+          wins++;
+          winMonths += s.month; // how long a won tournament takes: the endgame drag shows here
+        }
       }
       const ms = (performance.now() - t0) / GAMES;
       const pct = (n: number, d: number) => `${((100 * n) / Math.max(1, d)).toFixed(0)}%`;
       rows.push(
         `${presetName.padEnd(15)} captain=${captainAi.padEnd(9)} avgMonths=${(months / GAMES).toFixed(1).padStart(5)} ` +
-          `gameWin=${pct(wins, GAMES).padStart(4)} duelWin=${pct(captainWins, captainDuels).padStart(4)} ` +
+          `gameWin=${pct(wins, GAMES).padStart(4)} winMonths=${(winMonths / Math.max(1, wins)).toFixed(1).padStart(5)} duelWin=${pct(captainWins, captainDuels).padStart(4)} ` +
           `shed/game=${(jokersShed / GAMES).toFixed(1)} peakJ=${(peakJokers / GAMES).toFixed(1)} ${ms.toFixed(0)}ms/game`,
       );
       if (captainAi === 'gambler') {
