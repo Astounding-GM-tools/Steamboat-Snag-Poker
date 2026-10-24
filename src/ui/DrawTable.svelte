@@ -628,6 +628,10 @@
   .opp-left .name-btn {
     align-self: flex-end;
   }
+  /* Lifted clear of their cards, into the room under the name. */
+  .opp-purse {
+    transform: translateY(-12px);
+  }
   .portrait-btn {
     flex: none;
     display: flex;
