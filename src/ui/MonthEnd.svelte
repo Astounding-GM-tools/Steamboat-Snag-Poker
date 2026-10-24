@@ -68,6 +68,8 @@
       <p>{t('end.lastStanding', { month: game.month })}</p>
     {/if}
 
+    <!-- The end of the tournament says only what matters; the round's details were on the table. -->
+    {#if !over}
     <div class="ledger">
       {#if res.winner === null}
         <p>{t('end.draw.body')}</p>
@@ -115,6 +117,8 @@
         {#each report.eliminated.filter((id) => id !== HUMAN_ID) as id}<p><b>{t('end.eliminated', { name: shortName(id) })}</b></p>{/each}
         {#each report.joined as id}<p><b>{t('end.joined', { name: shortName(id) })}</b></p>{/each}
       </div>
+    {/if}
+
     {/if}
 
     <div class="buttons">
