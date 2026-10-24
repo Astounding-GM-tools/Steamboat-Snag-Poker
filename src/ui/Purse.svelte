@@ -9,15 +9,24 @@
    * stack on the left of the row); and every further $100 starts a new row in
    * front, staggered and filling in from the right, until the chip leader's
    * purse looks like a bank.
+   *
+   * The picture is laid out once a round, from the purse at the start of it
+   * (`start`). During the round coins only come off that layout as money goes
+   * into the pot (stacks get shorter; they never turn into a pile, and the
+   * moths don't come mid-round); a winnings-swollen purse is laid out afresh
+   * when the next round begins.
    */
   let {
     amount,
+    start = amount,
     size = 'big',
     showAmount = true,
     focus = 50,
     label,
   }: {
     amount: number;
+    /** The purse at the start of the round, which sets the picture. */
+    start?: number;
     size?: 'big' | 'small';
     showAmount?: boolean;
     /** Where a small pile (and the moths) sits, in % across the purse; neat rows always fill from the right. */
@@ -31,8 +40,10 @@
   const MAX_ROWS = 4;
   const STACK = 10;
 
-  const n = $derived(Math.max(0, Math.min(amount, ROW * MAX_ROWS)));
-  const mood = $derived(amount < DEPLETED ? 'depleted' : amount < NEAT ? 'low' : 'rich');
+  const n = $derived(Math.max(0, Math.min(start, ROW * MAX_ROWS)));
+  const mood = $derived(start < DEPLETED ? 'depleted' : start < NEAT ? 'low' : 'rich');
+  /** Coins still in the purse: the last ones laid out are the first to go into the pot. */
+  const left = $derived(Math.max(0, Math.min(n, amount)));
 
   /** Coin size in px: width, how much each coin adds to a stack, and the step between stacks. */
   const dims = $derived(size === 'big' ? { w: 20, step: 3.2, gap: 22, rise: 9 } : { w: 13, step: 2, gap: 14, rise: 5 });
@@ -106,7 +117,7 @@
   let freshFrom = $state(Infinity);
   let last: number | null = null;
   $effect(() => {
-    const now = n;
+    const now = left;
     untrack(() => {
       if (last !== null && now > last) {
         freshFrom = last;
@@ -120,7 +131,7 @@
 <div class="purse {mood} {size}" aria-label={label ? `${label} ${dollars(amount)}` : dollars(amount)}>
   {#if showAmount}<span class="amount">{dollars(amount)}</span>{/if}
   <div class="coins" aria-hidden="true" style="--w: {dims.w}px; --focus: {focus}%">
-    {#each coins as c (c.i)}
+    {#each coins.slice(0, left) as c (c.i)}
       <span
         class="coin"
         class:flat={c.flat}

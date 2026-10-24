@@ -214,6 +214,11 @@
     if (!settled && round.potMode) return (game.report?.money[p.id]?.before ?? p.money) - bets[seat];
     return p.money;
   }
+  /** The purse at the start of this round: it sets how the purse is drawn until the next one. */
+  function startMoney(seat: number): number {
+    const p = seat === 0 ? captain : opponent;
+    return playing ? p.money : (game.report?.money[p.id]?.before ?? p.money);
+  }
   const potBets = $derived<[number, number]>(round.potMode && (playing || !settled) ? bets : [0, 0]);
   const payout = $derived<'me' | 'them' | 'split' | null>(
     !playing && settled && round.result && round.potMode
@@ -254,7 +259,7 @@
   <section class="opponent">
     <!-- Their purse spreads behind the head: a low pile sits on the right, a rich one grows in behind the name. -->
     <div class="opp-head">
-      <div class="opp-purse"><Purse amount={shownMoney(1)} showAmount={false} focus={84} label={name(opponentId)} /></div>
+      <div class="opp-purse"><Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={84} label={name(opponentId)} /></div>
       <button class="name-btn" onclick={() => (showCaptain = true)}>
         <span class="oval portrait">{name(opponentId)[0]}</span>
         <span class="who">
@@ -333,7 +338,7 @@
       <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
     </div>
 
-    <Purse amount={shownMoney(0)} label={t('character.captain.you')} />
+    <Purse amount={shownMoney(0)} start={startMoney(0)} label={t('character.captain.you')} />
   </section>
 </div>
 

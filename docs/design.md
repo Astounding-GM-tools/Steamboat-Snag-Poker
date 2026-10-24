@@ -294,6 +294,9 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    pile; from $50 neat stacks of ten filling a row from the right, the odd
    dollars in a short stack on its left; every further $100 starts a staggered
    row in front, so the chip leader is obvious at a glance.
+   A purse is laid out at the start of each round; during the round coins only
+   come off it as money goes into the pot (no switching to a pile or moths
+   mid-round), and winnings show when the next round lays it out afresh.
    The screen fills the height (up to a big phone's): opponent pinned to the
    top, you to the bottom, the river between; no scrolling.
    Coins fly into the pot from each side as captains pay, and at the verdict
