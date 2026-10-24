@@ -1,20 +1,19 @@
 <script lang="ts">
-  import { untrack } from 'svelte';
   import { dollars } from './format';
 
   /**
    * A captain's money as coins on the table, one coin a dollar. It reads at a
    * glance: under $10 a few coins lie loose and the moths circle; under $50 a
-   * small uneven pile; from $50, neat stacks of ten (the odd dollars in a short
-   * stack on the left of the row); and every further $100 starts a new row in
-   * front, staggered and filling in from the right, until the chip leader's
-   * purse looks like a bank.
+   * small uneven pile; from $50, neat stacks of ten from the left (the odd
+   * dollars in a short stack first); and every further $100 starts a new row
+   * in front, staggered, until the chip leader's purse looks like a bank.
    *
    * The picture is laid out once a round, from the purse at the start of it
-   * (`start`). During the round coins only come off that layout as money goes
-   * into the pot (stacks get shorter; they never turn into a pile, and the
-   * moths don't come mid-round); a winnings-swollen purse is laid out afresh
-   * when the next round begins.
+   * (`start`). During the round coins only leave it, from the left (the side
+   * facing the pot): the front row first, the active stack top down, so the
+   * emptied stacks show what has gone in. Spent coins keep their place,
+   * hidden, so the table can fly them to the pot from where they stood. A
+   * winnings-swollen purse is laid out afresh when the next round begins.
    */
   let {
     amount,
@@ -29,7 +28,7 @@
     start?: number;
     size?: 'big' | 'small';
     showAmount?: boolean;
-    /** Where a small pile (and the moths) sits, in % across the purse; neat rows always fill from the right. */
+    /** Where a small pile (and the moths) sits, in % across the purse; neat rows start at the left. */
     focus?: number;
     label?: string;
   } = $props();
@@ -42,10 +41,10 @@
 
   const n = $derived(Math.max(0, Math.min(start, ROW * MAX_ROWS)));
   const mood = $derived(start < DEPLETED ? 'depleted' : start < NEAT ? 'low' : 'rich');
-  /** Coins still in the purse: the last ones laid out are the first to go into the pot. */
-  const left = $derived(Math.max(0, Math.min(n, amount)));
+  /** Dollars gone into the pot this round: coins with a lower `d` than this are spent. */
+  const spent = $derived(Math.max(0, n - Math.max(0, amount)));
 
-  /** Coin size in px: width, how much each coin adds to a stack, and the step between stacks. */
+  /** Coin size in px: width, how much each coin adds to a stack, the step between stacks, and how far back rows rise. */
   const dims = $derived(size === 'big' ? { w: 20, step: 3.2, gap: 22, rise: 9 } : { w: 13, step: 2, gap: 14, rise: 5 });
 
   /** A fixed random number per coin and purpose, so a coin keeps its place. */
@@ -57,86 +56,83 @@
   }
 
   interface Coin {
-    /** Order the coin arrived in (for the drop-in animation). */
-    i: number;
-    /** Offset from the centre of the purse in px (or, for neat rows, in from its right edge). */
+    /** Spending order: coin 0 is the first to go into the pot. */
+    d: number;
+    /** Left edge offset in px: from the purse's left edge (neat rows) or from the focus point. */
     x: number;
-    fromRight?: boolean;
     /** Height above the table, in px. */
     y: number;
+    fromLeft?: boolean;
     flat?: boolean;
     tilt?: number;
+    /** Drawing order of rows: back rows first. */
+    z?: number;
+  }
+
+  /** Stacks (lists of coin heights) to coins, spent from the first stack, top down. */
+  function spendOrder(stacks: { x: number; y0: number; h: number; fromLeft?: boolean }[], step: number, from: number): Coin[] {
+    const out: Coin[] = [];
+    let d = from;
+    for (const s of stacks) {
+      for (let c = s.h - 1; c >= 0; c--) out.push({ d: d++, x: s.x, y: s.y0 + c * step, fromLeft: s.fromLeft });
+    }
+    return out;
   }
 
   const coins = $derived.by((): Coin[] => {
     const { w, step, gap, rise } = dims;
-    const out: Coin[] = [];
     if (mood === 'depleted') {
-      // A handful of loose coins lying about.
-      for (let i = 0; i < n; i++) {
-        out.push({ i, x: (rand(i, 1) * 2 - 1) * w * 4.5, y: 0, flat: true, tilt: Math.round(rand(i, 2) * 40 - 20) });
-      }
-      return out;
+      // A handful of loose coins lying about, spent from the left.
+      return Array.from({ length: n }, (_, i) => ({ x: (rand(i, 1) * 2 - 1) * w * 4.5, y: 0, flat: true, tilt: Math.round(rand(i, 2) * 40 - 20) }))
+        .sort((a, b) => a.x - b.x)
+        .map((c, d) => ({ ...c, d }));
     }
     if (mood === 'low') {
-      // A few uneven stacks huddled in the middle, tallest towards the centre.
+      // A few uneven stacks huddled together, tallest towards the middle.
       const k = Math.min(6, Math.max(2, Math.ceil(n / 9)));
       const weights = Array.from({ length: k }, (_, s) => 0.6 + rand(s + n, 3));
       const total = weights.reduce((a, b) => a + b, 0);
       const heights = weights.map((wt) => Math.floor((wt / total) * n));
       heights[0] += n - heights.reduce((a, b) => a + b, 0);
       heights.sort((a, b) => b - a);
-      const order = heights.map((_, s) => (s % 2 ? -1 : 1) * Math.ceil(s / 2)).map((slot, s) => ({ slot, h: heights[s] }));
-      let i = 0;
-      for (const { slot, h } of order.sort((a, b) => a.slot - b.slot)) {
-        for (let c = 0; c < h; c++, i++) {
-          out.push({ i, x: slot * (w - 3) + (rand(i, 4) * 3 - 1.5), y: c * step });
-        }
-      }
-      return out;
+      const stacks = heights
+        .map((h, s) => ({ slot: (s % 2 ? -1 : 1) * Math.ceil(s / 2), h }))
+        .sort((a, b) => a.slot - b.slot)
+        .map(({ slot, h }, s) => ({ x: slot * (w - 3) + (rand(s, 4) * 3 - 1.5), y0: 0, h }));
+      return spendOrder(stacks, step, 0);
     }
-    // Rows of neat stacks; each row holds $100 and fills in from the right.
+    // Rows of neat stacks from the left, $100 a row; the front row is spent first.
     const rows = Math.ceil(n / ROW);
-    let i = 0;
-    for (let r = 0; r < rows; r++) {
+    const out: Coin[] = [];
+    let d = 0;
+    for (let r = rows - 1; r >= 0; r--) {
       const inRow = r < rows - 1 ? ROW : n - ROW * (rows - 1);
-      const full = Math.floor(inRow / STACK);
-      const odd = inRow % STACK;
-      const stagger = r % 2 ? gap / 2 : 0; // every other row shifts in by half a stack
+      const heights = [...(inRow % STACK ? [inRow % STACK] : []), ...Array(Math.floor(inRow / STACK)).fill(STACK)];
+      const stagger = r % 2 ? gap / 2 : 0; // every other row shifts by half a stack
       const lift = (rows - 1 - r) * rise; // rows behind sit higher up
-      const stacks = [...(odd ? [odd] : []), ...Array(full).fill(STACK)];
-      stacks.forEach((h, s) => {
-        const fromEdge = (stacks.length - 1 - s) * gap + w / 2 + 1 + stagger;
-        for (let c = 0; c < h; c++, i++) out.push({ i, x: fromEdge, y: lift + c * step, fromRight: true });
-      });
+      const row = spendOrder(
+        heights.map((h, s) => ({ x: s * gap + w / 2 + 1 + stagger, y0: lift, h, fromLeft: true })),
+        step,
+        d,
+      );
+      d += row.length;
+      out.push(...row.map((c) => ({ ...c, z: r })));
     }
     return out;
   });
-
-  // Coins that just arrived drop in; when the purse shrinks they simply go.
-  let freshFrom = $state(Infinity);
-  let last: number | null = null;
-  $effect(() => {
-    const now = left;
-    untrack(() => {
-      if (last !== null && now > last) {
-        freshFrom = last;
-        setTimeout(() => (freshFrom = Infinity), 900);
-      }
-      last = now;
-    });
-  });
+  /** Back rows first, then each stack from the bottom up. */
+  const drawn = $derived([...coins].sort((a, b) => (a.z ?? 0) - (b.z ?? 0) || a.y - b.y));
 </script>
 
 <div class="purse {mood} {size}" aria-label={label ? `${label} ${dollars(amount)}` : dollars(amount)}>
-  {#if showAmount}<span class="amount">{dollars(amount)}</span>{/if}
   <div class="coins" aria-hidden="true" style="--w: {dims.w}px; --focus: {focus}%">
-    {#each coins.slice(0, left) as c (c.i)}
+    {#each drawn as c (c.d)}
       <span
         class="coin"
         class:flat={c.flat}
-        class:fresh={c.i >= freshFrom}
-        style="left: {c.fromRight ? `calc(100% - ${c.x}px)` : `calc(var(--focus) + ${c.x}px)`}; bottom: {c.y}px; --tilt: {c.tilt ?? 0}deg; --d: {Math.max(0, c.i - freshFrom) * 0.02}s"
+        class:spent={c.d < spent}
+        data-d={c.d}
+        style="left: {c.fromLeft ? `${c.x}px` : `calc(var(--focus) + ${c.x}px)`}; bottom: {c.y}px; --tilt: {c.tilt ?? 0}deg"
       ></span>
     {/each}
     {#if mood === 'depleted'}
@@ -153,6 +149,7 @@
       {/each}
     {/if}
   </div>
+  {#if showAmount}<span class="amount">{dollars(amount)}</span>{/if}
 </div>
 
 <style>
@@ -202,12 +199,9 @@
   .coin.flat {
     transform: translateX(-50%) rotate(var(--tilt));
   }
-  .fresh {
-    animation: drop 0.45s cubic-bezier(0.3, 1.4, 0.5, 1) var(--d) both;
-  }
-  @keyframes drop {
-    from { transform: translate(-50%, -40px); opacity: 0; }
-    to { transform: translateX(-50%); opacity: 1; }
+  /* Gone into the pot; it keeps its place so its flight can start from there. */
+  .spent {
+    visibility: hidden;
   }
 
   /* An empty purse: the moths come out. */
@@ -246,8 +240,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .moth,
-    .moth .wings,
-    .fresh {
+    .moth .wings {
       animation: none;
     }
   }

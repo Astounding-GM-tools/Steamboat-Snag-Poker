@@ -278,8 +278,9 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
      won–lost record), boat, **Willie's reckoning** of what they could be
      holding right now, how they play, your notes) beside a big portrait, with
      their nickname in quotes under it, or their title ("Captain of the
-     Stonewall") if they have none; their purse spreads behind the head (a
-     small pile on the right, a rich one growing in behind the name); then
+     Stonewall") if they have none, portrait on the right; their purse spreads
+     behind the head from the left (facing the pot), a rich one growing in
+     behind the name; then
      their face-down hand and snags (a fan that never grows past its width,
      with a count from three snags), and their discards as notation chips;
    - middle: crossing number, street, the **?** button (Willie: how to play,
@@ -299,8 +300,14 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    mid-round), and winnings show when the next round lays it out afresh.
    The screen fills the height (up to a big phone's): opponent pinned to the
    top, you to the bottom, the river between; no scrolling.
-   Coins fly into the pot from each side as captains pay, and at the verdict
-   the pot flies to the winner.
+   The **pot** is coins too, no figure: the opponent's stacks of ten just above
+   its middle line, yours just below, each filling in from the left (a row
+   holds about $150 on a phone; a simulation puts one side's stake at a median
+   of $21, 99% under $74, max about $93, see `scripts/pots.sim.ts`). Purses
+   face the pot from the left (yours: coins left, amount right) and spend from
+   the left, the front row first; each coin flies from the spot it stood on in
+   the purse to its spot in the pot, so emptied stacks show what has gone in.
+   At the verdict the pot's coins fly to the winner.
 3. **Showdown** (draw style) — the card-by-card reveal described above, with
    the opponent's cards above the board and yours below; board cards are
    marked ▼ (the opponent's hand uses them) and ▲ (yours does). The veil is

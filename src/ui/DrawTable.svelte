@@ -23,7 +23,7 @@
   import CardView from './CardView.svelte';
   import CaptainCard from './CaptainCard.svelte';
   import { cardPrefs, setCardFace } from './cards.svelte';
-  import PotStack from './PotStack.svelte';
+  import Pot from './Pot.svelte';
   import Purse from './Purse.svelte';
   import DiscardChips from './DiscardChips.svelte';
   import WillieSays from './WillieSays.svelte';
@@ -219,12 +219,91 @@
     const p = seat === 0 ? captain : opponent;
     return playing ? p.money : (game.report?.money[p.id]?.before ?? p.money);
   }
-  const potBets = $derived<[number, number]>(round.potMode && (playing || !settled) ? bets : [0, 0]);
+  const potBets = $derived<[number, number]>(round.potMode ? bets : [0, 0]);
   const payout = $derived<'me' | 'them' | 'split' | null>(
     !playing && settled && round.result && round.potMode
       ? round.result.winner === 0 ? 'me' : round.result.winner === 1 ? 'them' : 'split'
       : null,
   );
+  // Coins fly: from the purse's active coin (where it stood) to its spot in the
+  // pot as a captain pays in, and from the pot to the winner at the verdict.
+  let myPurseEl = $state<HTMLElement>();
+  let theirPurseEl = $state<HTMLElement>();
+  let potEl = $state<HTMLElement>();
+  let flownMonth = -1;
+  let flown: [number, number] = [0, 0];
+  let paidMonth = -1;
+  const MAX_FLYERS = 40;
+  const still = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /** One coin from one spot on screen to another; resolves when it lands. */
+  function fly(from: DOMRect, to: DOMRect, delay: number): Promise<void> {
+    const coin = document.createElement('span');
+    coin.className = 'flying-coin';
+    Object.assign(coin.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` });
+    document.body.append(coin);
+    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+    const scale = to.width / from.width;
+    const anim = coin.animate(
+      [
+        { transform: 'translate(0, 0)' },
+        { transform: `translate(${dx / 2}px, ${dy / 2 - 24}px) scale(${(1 + scale) / 2 + 0.15})`, offset: 0.5 },
+        { transform: `translate(${dx}px, ${dy}px) scale(${scale})` },
+      ],
+      { duration: 520, delay, easing: 'ease-in-out', fill: 'backwards' },
+    );
+    return anim.finished.then(() => coin.remove(), () => coin.remove());
+  }
+
+  /** A captain paid dollars a..b into the pot: each coin leaves its purse spot and lands on its pot spot. */
+  function payIn(seat: 0 | 1, a: number, b: number) {
+    const purse = seat === 0 ? myPurseEl : theirPurseEl;
+    if (!purse || !potEl || still()) return;
+    const offset = Math.max(0, startMoney(seat) - 400); // purses show at most $400
+    for (let k = a; k < Math.min(b, a + MAX_FLYERS); k++) {
+      const src = purse.querySelector(`[data-d="${k - offset}"]`);
+      const dst = potEl.querySelector<HTMLElement>(`[data-seat="${seat}"][data-k="${k}"]`);
+      if (!src || !dst) continue;
+      dst.classList.add('landing');
+      fly(src.getBoundingClientRect(), dst.getBoundingClientRect(), (k - a) * 45).then(() => dst.classList.remove('landing'));
+    }
+  }
+
+  /** The verdict: the pot's coins fly to the winner (on a tie, each side's coins go home). */
+  function payOut(to: 'me' | 'them' | 'split') {
+    if (!potEl || still()) return;
+    const coins = [...potEl.querySelectorAll<HTMLElement>('[data-seat]')].slice(-MAX_FLYERS * 2);
+    coins.forEach((c, i) => {
+      const seat = to === 'split' ? Number(c.dataset.seat) : to === 'me' ? 0 : 1;
+      const purse = seat === 0 ? myPurseEl : theirPurseEl;
+      const target = purse?.querySelector('.coins')?.getBoundingClientRect();
+      if (!target) return;
+      const spot = new DOMRect(target.left + target.width * (0.1 + 0.4 * Math.random()), target.bottom - 12, 18, 6);
+      fly(c.getBoundingClientRect(), spot, i * 12);
+    });
+  }
+
+  $effect(() => {
+    const b = potBets;
+    const month = game.month;
+    const pay = payout;
+    untrack(() => {
+      if (month !== flownMonth) {
+        flownMonth = month;
+        flown = [0, 0];
+      }
+      ([0, 1] as const).forEach((seat) => {
+        if (b[seat] > flown[seat]) payIn(seat, flown[seat], b[seat]);
+      });
+      flown = [b[0], b[1]];
+      if (pay && paidMonth !== month) {
+        paidMonth = month;
+        payOut(pay);
+      }
+    });
+  });
+
   const cost = $derived(
     round.potMode && !composing && playing
       ? streetFee(config, round.month, round.street + 1) + discardCost(me.discarded.length, tappedCards.length)
@@ -257,15 +336,15 @@
 <div class="table solo" onclick={finishDeal}>
   <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
-    <!-- Their purse spreads behind the head: a low pile sits on the right, a rich one grows in behind the name. -->
+    <!-- Their purse spreads behind the head from the left (facing the pot); a rich one grows in behind the name. -->
     <div class="opp-head">
-      <div class="opp-purse"><Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={84} label={name(opponentId)} /></div>
+      <div class="opp-purse" bind:this={theirPurseEl}><Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} /></div>
       <button class="name-btn" onclick={() => (showCaptain = true)}>
-        <span class="oval portrait">{name(opponentId)[0]}</span>
         <span class="who">
           <span class="name">{name(opponentId)}</span>
           <span class="title">{nickname(opponentId) ? `“${nickname(opponentId)}”` : t(`character.${opponentId}.boat`)}</span>
         </span>
+        <span class="oval portrait">{name(opponentId)[0]}</span>
       </button>
     </div>
     <div class="opp-cards">
@@ -288,14 +367,13 @@
       <span class="street">{t(`street.${streetName}`)}</span>
       <button class="ghost icon" onclick={() => (showHelp = true)} aria-label={t('willie.helpTitle')}>?</button>
     </div>
-    <div class="river-row">
-      {#if round.potMode}<PotStack bets={potBets} {payout} />{/if}
-      <div class="community">
-        {#each Array.from({ length: boardSize }) as _, i}
-          {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
-          <CardView {card} deal="left" markBelow={!!card && usedIds.has(card.id)} />
-        {/each}
-      </div>
+    <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
+    {#if round.potMode}<div class="pot-band" bind:this={potEl}><Pot bets={potBets} paid={!!payout} /></div>{/if}
+    <div class="community">
+      {#each Array.from({ length: boardSize }) as _, i}
+        {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
+        <CardView {card} deal="left" markBelow={!!card && usedIds.has(card.id)} />
+      {/each}
     </div>
     {#if stakes.length}<p class="stakes">{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}</p>{/if}
   </section>
@@ -338,7 +416,7 @@
       <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
     </div>
 
-    <Purse amount={shownMoney(0)} start={startMoney(0)} label={t('character.captain.you')} />
+    <div class="my-purse" bind:this={myPurseEl}><Purse amount={shownMoney(0)} start={startMoney(0)} focus={28} label={t('character.captain.you')} /></div>
   </section>
 </div>
 
@@ -396,6 +474,7 @@
   .opp-head {
     position: relative;
     display: flex;
+    justify-content: flex-end;
     align-items: center;
     min-height: 76px;
   }
@@ -407,6 +486,9 @@
     width: 58px;
     height: 72px;
     font-size: 1.9rem;
+  }
+  .pot-band {
+    margin: 0.2rem 0 0.5rem;
   }
   .opp-cards {
     display: flex;
@@ -551,7 +633,10 @@
       --cw: 38px;
       --fan: 100px;
     }
-    .opp-cards {
+    .pot-band {
+    margin: 0.2rem 0 0.5rem;
+  }
+  .opp-cards {
       height: 54px;
     }
     .hand-row {

@@ -188,3 +188,17 @@ button.ghost {
     --w: 38px !important;
   }
 }
+
+/* A coin in flight between a purse and the pot (see DrawTable). */
+.flying-coin {
+  position: fixed;
+  z-index: 40;
+  border-radius: 50%;
+  background: linear-gradient(#fff, #a9a69e);
+  border: 1px solid #111;
+  pointer-events: none;
+}
+/* A pot coin whose flight hasn't landed yet. */
+.landing {
+  visibility: hidden !important;
+}
