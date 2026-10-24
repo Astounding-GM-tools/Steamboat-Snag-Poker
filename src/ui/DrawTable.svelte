@@ -14,6 +14,7 @@
     player,
     viewFor,
     Rng,
+    planReveal,
     type Action,
     type Card,
     type GameState,
@@ -28,7 +29,7 @@
   import DiscardChips from './DiscardChips.svelte';
   import WillieSays from './WillieSays.svelte';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
-  import { handLabel } from './handNames';
+  import { handLabel, tiebreak } from './handNames';
 
   interface Props {
     game: GameState;
@@ -37,8 +38,14 @@
     settled?: boolean;
     /** Back to the main menu (the game is saved after every move). */
     onmenu: () => void;
+    /** 'reveal': the showdown plays out on the table, one of their cards per Next. */
+    stage?: 'play' | 'reveal' | 'result';
+    /** The verdict is on the table: the pot can fly to the winner. */
+    onverdict?: () => void;
+    /** The showdown is over (or skipped). */
+    onrevealed?: () => void;
   }
-  let { game, onaction, settled = true, onmenu }: Props = $props();
+  let { game, onaction, settled = true, onmenu, stage = 'play', onverdict, onrevealed }: Props = $props();
 
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
@@ -80,8 +87,69 @@
   const preview = $derived(
     composing ? bestHand([...tappedCards, ...tappedJokers], round.community, { min: tapped.length, max: tapped.length }) : null,
   );
+  // The showdown, on the table: their played cards flip in place, one per Next,
+  // with their hand so far called where the street name was.
+  const result = $derived(round.result);
+  const shownDown = $derived(!!result && result.folded == null);
+  const steps = $derived(shownDown ? planReveal(round, 1, new Rng(round.month * 31 + round.discards.length)) : []);
+  let revealIndex = $state(0);
+  $effect(() => {
+    if (stage === 'reveal') untrack(() => (revealIndex = 0));
+  });
+  const revealing = $derived(stage === 'reveal' && shownDown);
+  const revealStep = $derived(revealing && steps.length ? steps[Math.min(revealIndex, steps.length - 1)] : null);
+  const verdictShown = $derived(revealing && (!steps.length || !!revealStep?.last));
+  $effect(() => {
+    if (verdictShown) untrack(() => onverdict?.());
+  });
+  const theirPlayed = $derived(shownDown ? them.slots.filter((c): c is Card => c !== null) : []);
+  const playedIds = $derived(new Set(theirPlayed.map((c) => c.id)));
+  /** Their cards face up: those flipped so far, or all they played once the showdown is over. */
+  const faceUp = $derived(
+    !shownDown ? new Set<string>() : revealing ? new Set(steps.slice(0, revealIndex + 1).map((s) => s.card.id)) : playedIds,
+  );
+  const theirHand = $derived(revealStep?.hand ?? (shownDown ? result!.hands[1] : null));
+  /** Once the verdict is in, only the winning hand gets its exclamation mark. */
+  const decided = $derived(shownDown && (verdictShown || stage === 'result'));
+  const theirCall = $derived(theirHand ? handLabel(theirHand, { exclaim: decided && result?.winner === 1 }) : null);
+  /** The third line: what could still come, or what decided it. */
+  const theirNote = $derived.by(() => {
+    if (!revealing || !result) return '';
+    if (!verdictShown && revealStep) {
+      const pct = `${Math.round(revealStep.threat * 100)}%`;
+      if (revealStep.possible.length) return t('show.stillOpen', { hand: t(`call.cat.${revealStep.possible[0]}`), pct });
+      return revealStep.threat > 0 ? t('show.against', { pct }) : '';
+    }
+    if (result.winner === null) return '';
+    const tb = tiebreak(result.hands[result.winner], result.hands[1 - result.winner]);
+    return tb ? t(`show.tb.${tb.kind}.${result.winner === 0 ? 'you' : 'them'}`, { name: name(opponentId), win: tb.winner, lose: tb.loser }) : '';
+  });
+  const verdictLabel = $derived(
+    result?.winner === 0 ? t('show.youWin') : result?.winner === 1 ? t('show.youLose') : t('show.draw'),
+  );
+  function revealNext() {
+    if (verdictShown) onrevealed?.();
+    else revealIndex++;
+  }
+  function revealSkip() {
+    onverdict?.();
+    onrevealed?.();
+  }
+  /** Board cards each hand uses: theirs marked above, yours below. */
+  const theirBoard = $derived(
+    revealStep ? new Set(revealStep.boardUsed) : shownDown && !revealing ? new Set(result!.hands[1].cards.map((c) => c.id)) : new Set<string>(),
+  );
+  const myCall = $derived(shownDown ? handLabel(result!.hands[0], { exclaim: decided && result?.winner === 0 }) : null);
+  /** After Play hand the played cards leave the hand for the slots: show them first, the rest dimmed. */
+  const myPlayed = $derived(shownDown ? me.slots.filter((c): c is Card => c !== null && !isJoker(c)) : []);
+  const myPlayedSnagIds = $derived(new Set(shownDown ? me.slots.filter((c): c is Card => c !== null && isJoker(c)).map((c) => c.id) : []));
+  const mySnags = $derived([...me.jokers, ...(shownDown ? me.slots.filter((c): c is Card => c !== null && isJoker(c)) : [])]);
+  const theirSnags = $derived([...them.jokers, ...theirPlayed.filter(isJoker)]);
+  const myPlayedSnags = $derived(shownDown ? me.slots.filter((c) => c && isJoker(c)).length : 0);
+
   const callout = $derived(preview ? handLabel(preview) : null);
-  const usedIds = $derived(new Set(preview?.cards.map((c) => c.id) ?? []));
+  const usedIdsPlay = $derived(new Set(preview?.cards.map((c) => c.id) ?? []));
+  const usedIds = $derived(shownDown ? new Set(result!.hands[0].cards.map((c) => c.id)) : usedIdsPlay);
 
   const stakes = $derived([...(round.communityJoker ? [round.communityJoker] : []), ...round.community.filter(isJoker)]);
   const streetName = $derived(composing ? 'compose' : round.street <= 2 ? STREETS[round.street] : 'showdown');
@@ -353,12 +421,18 @@
       </button>
     </div>
     <div class="opp-cards">
-      {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView faceDown deal="top" />{/each}
-      {#if them.jokers.length}
-        <!-- However many snags they carry, the fan never grows past its width. -->
-        <div class="snag-fan" style="--n: {them.jokers.length}">
-          {#each them.jokers as card (card.id)}<CardView {card} />{/each}
-          {#if them.jokers.length > 2}<span class="snag-count">×{them.jokers.length}</span>{/if}
+      <!-- At the showdown their played cards flip in place, one per Next; any they kept back stay down, dimmed. -->
+      {#each theirPlayed.filter((c) => !isJoker(c)) as card (card.id)}
+        {#if faceUp.has(card.id)}<CardView {card} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
+      {/each}
+      {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView faceDown deal="top" faded={shownDown} />{/each}
+      {#if theirSnags.length}
+        <!-- However many snags they carry, the fan never grows past its width. Played snags flip like their cards. -->
+        <div class="snag-fan" style="--n: {theirSnags.length}">
+          {#each theirSnags as card (card.id)}
+            {#if !playedIds.has(card.id) || faceUp.has(card.id)}<CardView {card} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
+          {/each}
+          {#if theirSnags.length > 2}<span class="snag-count">×{theirSnags.length}</span>{/if}
         </div>
       {/if}
       <DiscardChips cards={them.discarded} flop={them.flopDiscards} title={t('draw.theirDiscards', { name: name(opponentId) })} />
@@ -367,7 +441,15 @@
 
   <!-- The river: the border between them and you. -->
   <section class="river">
-    <div class="river-head">
+    {#if revealing && theirCall}
+      <!-- The showdown: their hand so far, called where the street name was. -->
+      <div class="callout theirs" aria-live="polite">
+        <span class="call" class:long={theirCall.call.length > 30}>{theirCall.call}</span>
+        <span class="lingo">{theirCall.lingo ?? ''}</span>
+        <span class="note">{theirNote}</span>
+      </div>
+    {:else}
+      <div class="river-head">
       <span class="crossing">{t('table.crossing', { month: game.month })}</span>
       <span class="street">
         {t(`street.${streetName}`)}
@@ -376,12 +458,13 @@
       </span>
       <button class="ghost icon" onclick={() => (showHelp = true)} aria-label={t('willie.helpTitle')}>?</button>
     </div>
+    {/if}
     <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
     {#if round.potMode}<div class="pot-band" bind:this={potEl}><Pot bets={potBets} paid={!!payout} /></div>{/if}
     <div class="community">
       {#each Array.from({ length: boardSize }) as _, i}
         {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
-        <CardView {card} deal="left" markBelow={!!card && usedIds.has(card.id)} />
+        <CardView {card} deal="left" markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} />
       {/each}
     </div>
     {#if stakes.length}<p class="stakes">{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}</p>{/if}
@@ -393,7 +476,16 @@
     <div class="my-purse" bind:this={myPurseEl}>
       <Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} />
       <!-- On the River your coins are idle, so the hand you're making is called over them, with the count of snags riding along and their forfeit. Fixed size: it never shifts as you tap. -->
-      {#if playing && composing && callout}
+      {#if shownDown && myCall}
+        <!-- At the showdown: the hand you played, opposite theirs. -->
+        <div class="callout">
+          <span class="call" class:long={myCall.call.length > 30}>{myCall.call}</span>
+          <span class="lingo">{myCall.lingo ?? ''}</span>
+          <span class="note">
+            {#if myPlayedSnags === 1}{t('draw.ridingOne', { cost: dollars(config.jokerForfeit ?? 0) })}{:else if myPlayedSnags}{t('draw.riding', { n: t(`number.${myPlayedSnags}`), cost: dollars(myPlayedSnags * (config.jokerForfeit ?? 0)) })}{/if}
+          </span>
+        </div>
+      {:else if playing && composing && callout}
         <div class="callout" aria-live="polite">
           <span class="call" class:long={callout.call.length > 30}>{callout.call}</span>
           <span class="lingo">{callout.lingo ?? ''}</span>
@@ -404,35 +496,43 @@
       {/if}
     </div>
     <div class="hand-row">
+      <!-- At the showdown: the cards you played, then any you kept back, dimmed. -->
+      {#each myPlayed as card (card.id)}<CardView {card} used />{/each}
       {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
         <CardView
           {card}
           selected={composing && tapped.includes(card.id)}
           toss={!composing && tapped.includes(card.id)}
           used={composing && usedIds.has(card.id)}
+          faded={shownDown}
           deal="left"
           onclick={playing ? () => tap(card) : undefined}
         />
       {/each}
-      {#if me.jokers.length}
+      {#if mySnags.length}
         <!-- However many snags you carry, the fan never grows past its width. -->
-        <div class="snag-fan mine" class:live={composing} style="--n: {me.jokers.length}">
-          {#each me.jokers as card (card.id)}
-            <CardView {card} selected={tapped.includes(card.id)} onclick={playing && composing ? () => tap(card) : undefined} />
+        <div class="snag-fan mine" class:live={composing} style="--n: {mySnags.length}">
+          {#each mySnags as card (card.id)}
+            <CardView {card} selected={tapped.includes(card.id)} used={shownDown && myPlayedSnagIds.has(card.id)} onclick={playing && composing ? () => tap(card) : undefined} />
           {/each}
           {#if composing && tappedJokers.length}
             <button class="ghost small-btn unsnag" onclick={untapJoker} aria-label={t('draw.untapSnag')}>−</button>
           {/if}
-          {#if me.jokers.length > 2}<span class="snag-count">×{me.jokers.length}</span>{/if}
+          {#if mySnags.length > 2}<span class="snag-count">×{mySnags.length}</span>{/if}
         </div>
       {/if}
       <DiscardChips tall cards={me.discarded} flop={me.flopDiscards} title={t('draw.yourDiscards')} />
     </div>
 
 
-    <div class="actions" class:idle={!playing}>
-      <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0)}>{foldLabel}</button>
-      <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
+    <div class="actions" class:idle={!playing && !revealing}>
+      {#if revealing}
+        <button class="ghost" onclick={revealSkip}>{t('show.skip')}</button>
+        <button onclick={revealNext}>{verdictShown ? `${verdictLabel} ▸` : t('show.next')}</button>
+      {:else}
+        <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0)}>{foldLabel}</button>
+        <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
+      {/if}
     </div>
 
   </section>
@@ -463,10 +563,12 @@
 {/if}
 
 <style>
+  /* The head and the showdown callout that replaces it are the same height: nothing moves. */
   .river-head {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
+    height: 3.5rem;
     margin-bottom: 0.4rem;
   }
   .crossing {
@@ -667,6 +769,24 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  /* Their callout takes the street name's place at the head of the river. */
+  .callout.theirs {
+    position: relative;
+    inset: auto;
+    height: 3.5rem;
+    margin-bottom: 0.4rem;
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+  .callout.theirs .call {
+    font-size: 1rem;
+  }
+  .callout.theirs .call.long {
+    font-size: 0.85rem;
+  }
+  .callout.theirs .lingo {
+    font-size: 0.85rem;
   }
   .call {
     font-family: var(--title-font);

@@ -71,7 +71,7 @@
 </script>
 
 {#if faceDown}
-  <div class="card back" class:small class:deal-left={deal === 'left'} class:deal-top={deal === 'top'}></div>
+  <div class="card back" class:small class:faded class:deal-left={deal === 'left'} class:deal-top={deal === 'top'}></div>
 {:else if !card}
   <div class="card empty" class:small>{placeholder}</div>
 {:else}
