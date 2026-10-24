@@ -5,9 +5,16 @@
   import { cardPrefs } from './cards.svelte';
   import { longCardName, snagTitle } from './format';
 
-  /** The card held up for a closer look (long-press any card), with its name spelled out. */
+  /**
+   * The card held up for a closer look (long-press any card), with its name
+   * spelled out; or a side's discards laid out, crossed through.
+   */
   const card = $derived(cardPrefs.zoomed);
-  const close = () => (cardPrefs.zoomed = null);
+  const discards = $derived(cardPrefs.discards);
+  const close = () => {
+    cardPrefs.zoomed = null;
+    cardPrefs.discards = null;
+  };
 </script>
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && close()} />
@@ -19,6 +26,20 @@
     <p class="caption">
       {#if isJoker(card)}{t('card.snag')}: {snagTitle(card.index)}{:else}{longCardName(card)}{/if}
     </p>
+    <p class="hint">{t('cards.zoomClose')}</p>
+  </div>
+{:else if discards}
+  <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+  <div class="zoom" onclick={close} role="dialog" aria-modal="true" aria-label={discards.title} tabindex="-1">
+    <p class="caption">{discards.title}</p>
+    <div class="spread">
+      {#each discards.cards as c (c.id)}
+        <figure>
+          <CardView card={c} huge crossed width="min(26vw, 110px)" />
+          <figcaption>{longCardName(c).replace(/^the /, '')}</figcaption>
+        </figure>
+      {/each}
+    </div>
     <p class="hint">{t('cards.zoomClose')}</p>
   </div>
 {/if}
@@ -44,6 +65,27 @@
     padding: 0 1rem;
   }
   .caption::first-letter {
+    text-transform: uppercase;
+  }
+  .spread {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 0.75rem;
+    padding: 0 1rem;
+  }
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  figcaption {
+    font-size: 0.8rem;
+    color: var(--grey);
+    text-align: center;
+  }
+  figcaption::first-letter {
     text-transform: uppercase;
   }
   .hint {

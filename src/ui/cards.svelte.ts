@@ -13,8 +13,15 @@ function readFace(): CardFace {
   }
 }
 
-/** Card display settings shared by every card on screen, and the card held up for a closer look. */
-export const cardPrefs = $state<{ face: CardFace; zoomed: Card | null }>({ face: readFace(), zoomed: null });
+/**
+ * Card display settings shared by every card on screen, the card held up for
+ * a closer look, and a side's discards laid out for inspection.
+ */
+export const cardPrefs = $state<{ face: CardFace; zoomed: Card | null; discards: { title: string; cards: Card[] } | null }>({
+  face: readFace(),
+  zoomed: null,
+  discards: null,
+});
 
 export function setCardFace(face: CardFace) {
   cardPrefs.face = face;

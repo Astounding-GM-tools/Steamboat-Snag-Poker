@@ -354,11 +354,11 @@
         <!-- However many snags they carry, the fan never grows past its width. -->
         <div class="snag-fan" style="--n: {them.jokers.length}">
           {#each them.jokers as card (card.id)}<CardView small {card} />{/each}
+          {#if them.jokers.length > 2}<span class="snag-count">×{them.jokers.length}</span>{/if}
         </div>
-        {#if them.jokers.length > 2}<span class="snag-count">×{them.jokers.length}</span>{/if}
       {/if}
+      <DiscardChips cards={them.discarded} title={t('draw.theirDiscards', { name: name(opponentId) })} />
     </div>
-    <DiscardChips cards={them.discarded} label={t('draw.theyDiscarded')} />
   </section>
 
   <!-- The river: the border between them and you. -->
@@ -395,8 +395,6 @@
         </div>
       {/if}
     </div>
-    <DiscardChips cards={me.discarded} label={t('draw.discarded')} />
-
     <div class="hand-row">
       {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
         <CardView
@@ -409,15 +407,18 @@
         />
       {/each}
       {#if me.jokers.length}
-        <div class="joker-fan" class:live={composing}>
+        <!-- However many snags you carry, the fan never grows past its width. -->
+        <div class="snag-fan mine" class:live={composing} style="--n: {me.jokers.length}">
           {#each me.jokers as card (card.id)}
             <CardView {card} selected={tapped.includes(card.id)} onclick={playing && composing ? () => tap(card) : undefined} />
           {/each}
+          {#if composing && tappedJokers.length}
+            <button class="ghost small-btn unsnag" onclick={untapJoker} aria-label={t('draw.untapSnag')}>−</button>
+          {/if}
+          {#if me.jokers.length > 2}<span class="snag-count">×{me.jokers.length}</span>{/if}
         </div>
-        {#if composing && tappedJokers.length}
-          <button class="ghost small-btn" onclick={untapJoker}>− 🪵</button>
-        {/if}
       {/if}
+      <DiscardChips cards={me.discarded} title={t('draw.yourDiscards')} />
     </div>
 
 
@@ -501,9 +502,9 @@
   }
   .opp-cards {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 4px;
-    height: 56px;
+    height: 72px;
   }
   .snag-fan {
     --fan: 120px;
@@ -517,11 +518,22 @@
   .snag-fan {
     --cw: 52px;
   }
+  .snag-fan {
+    position: relative;
+  }
+  /* How many snags, as a badge on the fan: more than two can't be counted by eye. */
   .snag-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    z-index: 4;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: var(--ink);
+    border: 1px solid var(--grey);
     font-family: var(--title-font);
-    font-size: 0.9rem;
-    color: var(--grey);
-    margin-left: 4px;
+    font-size: 0.75rem;
+    line-height: 1.3;
   }
   .name-btn {
     position: relative;
@@ -692,15 +704,28 @@
       padding-right: 0.5em;
     }
   }
-  .joker-fan {
-    display: flex;
-    margin-left: 0.5rem;
+  .snag-fan.mine {
+    --cw: 76px;
+    --fan: 220px;
+    margin-left: 0;
   }
-  .joker-fan :global(.card + .card) {
-    margin-left: -40px;
+  @media (max-width: 600px) {
+    .snag-fan.mine {
+      --cw: 54px;
+      --fan: 76px;
+    }
   }
-  .joker-fan.live :global(.card:hover) {
+  .snag-fan.live :global(.card:hover) {
     z-index: 3;
+  }
+  /* Takes one tapped snag back out; sits on the fan so it costs no room. */
+  .unsnag {
+    position: absolute;
+    left: -6px;
+    bottom: -6px;
+    z-index: 4;
+    padding: 0 0.45em;
+    border-radius: 50%;
   }
   .faces {
     border: none;

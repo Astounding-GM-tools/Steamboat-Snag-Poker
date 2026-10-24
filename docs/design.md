@@ -282,13 +282,13 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
      behind the head from the left (facing the pot), a rich one growing in
      behind the name; then
      their face-down hand and snags (a fan that never grows past its width,
-     with a count from three snags), and their discards as notation chips;
+     with a count badge from three snags), and their discards;
    - middle: crossing number, street, the **?** button (Willie: how to play,
      fast-deal setting), the **pot** and the board; snags at stake are named
      only when there are any;
    - bottom, in fixed rows that never shift, from the pot outwards: your
      **purse** (coins only, no figure: you never count your money at the
-     table), your discards as small notation chips, your hand and snags (close
+     table), your hand and snags (close
      to your chest), and Fold and the action button side by side (the
      decisions you hold closest). On the River, while you compose, the hand you
      are making is called in a fixed-size card laid over your idle coins: the
@@ -307,6 +307,12 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    A purse is laid out at the start of each round; during the round coins only
    come off it as money goes into the pot (no switching to a pile or moths
    mid-round), and winnings show when the next round lays it out afresh.
+   **Discards** sit at the end of each side's card row as notation chips (7♣)
+   in a block of three rows of two (never more than six), in the order thrown;
+   tap the block for a close-up of them all, crossed through and named.
+   Whose discard it was stays visible on purpose: it is the read on what they
+   kept. (Later, a sharp mode could hide them, as real draw poker does: only
+   the count shows.) Snag fans never grow past their width, with a count badge.
    The screen fills the height (up to a big phone's): opponent pinned to the
    top, you to the bottom, the river between; no scrolling.
    The **pot** is coins too, no figure: the opponent's stacks of ten just above

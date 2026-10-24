@@ -13,6 +13,10 @@
     small?: boolean;
     /** The big close-up view (long-press any card). */
     huge?: boolean;
+    /** Close-up width, when several cards share the view (a CSS length). */
+    width?: string;
+    /** Stamped with a cross: a thrown-away card in the close-up. */
+    crossed?: boolean;
     selected?: boolean;
     ghost?: boolean;
     fresh?: boolean;
@@ -30,7 +34,7 @@
     ondragstart?: (e: DragEvent) => void;
   }
 
-  let { card = null, faceDown = false, deal = null, markAbove = false, markBelow = false, small = false, huge = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
+  let { card = null, faceDown = false, deal = null, markAbove = false, markBelow = false, small = false, huge = false, width, crossed = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
 
   const rank = $derived(card && !isJoker(card) ? (card.rank === 10 ? '10' : rankLabel(card.rank)) : '');
   const playing = $derived(card && !isJoker(card) ? card : null);
@@ -76,6 +80,7 @@
     class="card face"
     class:small
     class:huge
+    style={width ? `--w: ${width}` : undefined}
     class:pair={cardPrefs.face === 'pair'}
     class:passive={!onclick && !ondragstart}
     class:selected
@@ -98,7 +103,7 @@
     oncontextmenu={(e) => e.preventDefault()}
     aria-disabled={!onclick && !ondragstart}
   >
-    {#if toss}<span class="stamp">✕</span>{/if}
+    {#if toss || crossed}<span class="stamp">✕</span>{/if}
     {#if markAbove}<span class="mark above" aria-hidden="true">▼</span>{/if}
     {#if markBelow}<span class="mark below" aria-hidden="true">▲</span>{/if}
     {#if isJoker(card)}
