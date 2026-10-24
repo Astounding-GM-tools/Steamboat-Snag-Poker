@@ -337,23 +337,27 @@
 <div class="table solo" onclick={finishDeal}>
   <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
-    <!-- Their purse spreads behind the head from the left (facing the pot); a rich one grows in behind the name. -->
+    <!-- Name and title over their coins; a tall portrait beside both. -->
     <div class="opp-head">
-      <div class="opp-purse" bind:this={theirPurseEl}><Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} /></div>
-      <button class="name-btn" onclick={() => (showCaptain = true)}>
-        <span class="who">
-          <span class="name">{name(opponentId)}</span>
-          <span class="title">{nickname(opponentId) ? `“${nickname(opponentId)}”` : t(`character.${opponentId}.boat`)}</span>
-        </span>
+      <div class="opp-left">
+        <button class="name-btn" onclick={() => (showCaptain = true)}>
+          <span class="who">
+            <span class="name">{name(opponentId)}</span>
+            <span class="title">{nickname(opponentId) ? `“${nickname(opponentId)}”` : t(`character.${opponentId}.boat`)}</span>
+          </span>
+        </button>
+        <div class="opp-purse" bind:this={theirPurseEl}><Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} /></div>
+      </div>
+      <button class="portrait-btn" onclick={() => (showCaptain = true)} aria-label={name(opponentId)}>
         <span class="oval portrait">{name(opponentId)[0]}</span>
       </button>
     </div>
     <div class="opp-cards">
-      {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView small faceDown deal="top" />{/each}
+      {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}<CardView faceDown deal="top" />{/each}
       {#if them.jokers.length}
         <!-- However many snags they carry, the fan never grows past its width. -->
         <div class="snag-fan" style="--n: {them.jokers.length}">
-          {#each them.jokers as card (card.id)}<CardView small {card} />{/each}
+          {#each them.jokers as card (card.id)}<CardView {card} />{/each}
           {#if them.jokers.length > 2}<span class="snag-count">×{them.jokers.length}</span>{/if}
         </div>
       {/if}
@@ -497,29 +501,46 @@
     gap: 0.5rem;
   }
   .opp-head {
-    position: relative;
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    min-height: 76px;
+    align-items: stretch;
+    gap: 0.5rem;
   }
-  .opp-purse {
-    position: absolute;
-    inset: 0;
+  .opp-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
   }
+  .opp-left .name-btn {
+    align-self: flex-end;
+  }
+  .portrait-btn {
+    flex: none;
+    display: flex;
+    padding: 0;
+    background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+  }
+  /* From the top of the name to the bottom of their coins. */
   .portrait {
-    width: 58px;
-    height: 72px;
-    font-size: 1.9rem;
+    width: 92px;
+    height: 100%;
+    min-height: 110px;
+    font-size: 2.8rem;
   }
   .pot-band {
     margin: 0.2rem 0 0.5rem;
   }
   .opp-cards {
+    --hgap: 0.75rem;
     display: flex;
     align-items: flex-end;
-    gap: 4px;
-    height: 72px;
+    gap: var(--hgap);
+  }
+  .opp-cards .snag-fan {
+    margin-left: 0;
   }
   .snag-fan {
     --fan: 120px;
@@ -531,7 +552,7 @@
     margin-left: min(3px, calc((var(--fan) - var(--cw) * var(--n)) / (var(--n) - 1)));
   }
   .snag-fan {
-    --cw: 52px;
+    --cw: 76px;
   }
   .snag-fan {
     position: relative;
@@ -598,10 +619,11 @@
   .table.solo {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 100dvh;
-    max-height: 940px;
-    min-height: 0;
+    justify-content: center;
+    gap: 1.75rem;
+    min-height: 100dvh;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
   }
   /* Card width and the gap between cards: the buttons below line up with them. */
   .captain {
@@ -691,7 +713,12 @@
   /* Short phones: the gaps and paddings give way first. */
   @media (max-height: 740px) {
     .table.solo {
-      gap: 0.3rem;
+      gap: 0.4rem;
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+    }
+    .portrait {
+      min-height: 100px;
     }
     .table.solo section {
       padding-top: 0.35rem;
@@ -703,18 +730,14 @@
     .opponent {
       gap: 0.25rem;
     }
-    .opp-head {
-      min-height: 66px;
-    }
-    .portrait {
-      width: 52px;
-      height: 64px;
-    }
   }
   @media (max-width: 600px) {
     .snag-fan {
-      --cw: 38px;
-      --fan: 100px;
+      --cw: 54px;
+      --fan: 80px;
+    }
+    .opp-cards {
+      --hgap: 0.5rem;
     }
     .pot-band {
     margin: 0.2rem 0 0.5rem;
