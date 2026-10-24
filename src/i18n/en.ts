@@ -35,6 +35,7 @@ export const en = {
   'street.river': 'The River',
   'street.showdown': 'Showdown!',
   'street.compose': 'The River',
+  'street.standings': 'Standings',
   // A second line under the street name: what's special about this street.
   'street.sub.flop': 'Swap or stand pat',
   'street.sub.turn': 'Last chance to swap',
@@ -61,6 +62,7 @@ export const en = {
   'table.league': 'On the river',
   'table.out': 'out',
   'table.waiting': 'later',
+  'table.new': 'new',
   'table.menu': 'Menu',
   'table.yourBest': 'Your hand: {hand}',
 

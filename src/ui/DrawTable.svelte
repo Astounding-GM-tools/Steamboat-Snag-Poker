@@ -25,6 +25,7 @@
   import CaptainCard from './CaptainCard.svelte';
   import { cardPrefs, setCardFace } from './cards.svelte';
   import Pot from './Pot.svelte';
+  import Standings from './Standings.svelte';
   import Purse from './Purse.svelte';
   import DiscardChips from './DiscardChips.svelte';
   import WillieSays from './WillieSays.svelte';
@@ -44,8 +45,10 @@
     onverdict?: () => void;
     /** The showdown is over (or skipped). */
     onrevealed?: () => void;
+    /** From the standings: deal the next round. */
+    onnext?: () => void;
   }
-  let { game, onaction, settled = true, onmenu, stage = 'play', onverdict, onrevealed }: Props = $props();
+  let { game, onaction, settled = true, onmenu, stage = 'play', onverdict, onrevealed, onnext }: Props = $props();
 
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
@@ -97,6 +100,8 @@
     if (stage === 'reveal') untrack(() => (revealIndex = 0));
   });
   const revealing = $derived(stage === 'reveal' && shownDown);
+  /** After the round (not the last): the standings on the table. */
+  const standing = $derived(stage === 'result' && game.phase === 'monthEnd' && !!game.report);
   const revealStep = $derived(revealing && steps.length ? steps[Math.min(revealIndex, steps.length - 1)] : null);
   const verdictShown = $derived(revealing && (!steps.length || !!revealStep?.last));
   $effect(() => {
@@ -452,20 +457,24 @@
       <div class="river-head">
       <span class="crossing">{t('table.crossing', { month: game.month })}</span>
       <span class="street">
-        {t(`street.${streetName}`)}
+        {standing ? t('street.standings') : t(`street.${streetName}`)}
         <!-- Every street has a second line (blank at the showdown), so nothing moves. -->
-        <span class="street-sub">{streetName === 'showdown' ? '' : t(`street.sub.${streetName}`)}</span>
+        <span class="street-sub">{standing || streetName === 'showdown' ? '' : t(`street.sub.${streetName}`)}</span>
       </span>
       <button class="ghost icon" onclick={() => (showHelp = true)} aria-label={t('willie.helpTitle')}>?</button>
     </div>
     {/if}
-    <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
-    {#if round.potMode}<div class="pot-band" bind:this={potEl}><Pot bets={potBets} paid={!!payout} /></div>{/if}
-    <div class="community">
-      {#each Array.from({ length: boardSize }) as _, i}
-        {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
-        <CardView {card} deal="left" markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} />
-      {/each}
+    <!-- After the round the standings take the pot's and the board's place (those stay, hidden, so nothing moves). -->
+    <div class="river-body" class:cleared={standing}>
+      <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
+      {#if round.potMode}<div class="pot-band" bind:this={potEl}><Pot bets={potBets} paid={!!payout} /></div>{/if}
+      <div class="community">
+        {#each Array.from({ length: boardSize }) as _, i}
+          {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
+          <CardView {card} deal="left" markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} />
+        {/each}
+      </div>
+      {#if standing}<div class="standings-over"><Standings {game} /></div>{/if}
     </div>
     {#if stakes.length}<p class="stakes">{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}</p>{/if}
   </section>
@@ -525,8 +534,11 @@
     </div>
 
 
-    <div class="actions" class:idle={!playing && !revealing}>
-      {#if revealing}
+    <div class="actions" class:idle={!playing && !revealing && !standing}>
+      {#if standing}
+        <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
+        <button onclick={() => onnext?.()}>{t('end.next')}</button>
+      {:else if revealing}
         <button class="ghost" onclick={revealSkip}>{t('show.skip')}</button>
         <button onclick={revealNext}>{verdictShown ? `${verdictLabel} ▸` : t('show.next')}</button>
       {:else}
@@ -631,6 +643,25 @@
     height: 100%;
     min-height: 110px;
     font-size: 2.8rem;
+  }
+  .river-body {
+    position: relative;
+  }
+  .river-body.cleared > :not(.standings-over) {
+    visibility: hidden;
+  }
+  .standings-over {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    animation: callout-in 0.3s ease-out;
+  }
+  .standings-over :global(.standings) {
+    width: 100%;
+  }
+  .standings-over {
+    padding: 0.2rem 0;
   }
   .pot-band {
     margin: 0.2rem 0 0.5rem;
@@ -840,6 +871,10 @@
     .portrait {
       min-height: 100px;
     }
+    .river-head,
+    .callout.theirs {
+      height: 3.3rem;
+    }
     .table.solo section {
       padding-top: 0.35rem;
       padding-bottom: 0.35rem;
@@ -859,7 +894,26 @@
     .opp-cards {
       --hgap: 0.5rem;
     }
-    .pot-band {
+    .river-body {
+    position: relative;
+  }
+  .river-body.cleared > :not(.standings-over) {
+    visibility: hidden;
+  }
+  .standings-over {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    animation: callout-in 0.3s ease-out;
+  }
+  .standings-over :global(.standings) {
+    width: 100%;
+  }
+  .standings-over {
+    padding: 0.2rem 0;
+  }
+  .pot-band {
     margin: 0.2rem 0 0.5rem;
   }
   .opp-cards {

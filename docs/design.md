@@ -329,13 +329,27 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    the left, the front row first; each coin flies from the spot it stood on in
    the purse to its spot in the pot, so emptied stacks show what has gone in.
    At the verdict the pot's coins fly to the winner.
-3. **Showdown** (draw style) — the card-by-card reveal described above, with
-   the opponent's cards above the board and yours below; board cards are
-   marked ▼ (the opponent's hand uses them) and ▲ (yours does). The veil is
-   light so the coin piles stay visible as the pot is paid out.
-4. **Round end** — intertitle: "VICTORY!" / "CATASTROPHE!", money change,
-   snag movements, standings, "Meanwhile on the river" league news. No
-   countdown: **Next** or **Menu** (pause).
+3. **Showdown** (draw style) — on the table, no modal. Their played cards
+   flip in place, one per **Next** (cards held back stay down, dimmed; played
+   snags flip in their fan); the board marks ▼ the cards their hand uses and ▲
+   yours. Their hand so far is called where the street name was (same height,
+   nothing moves): the call, the table talk, and "Still open: Three of a kind ·
+   27% against you" (the chance the cards still down beat you). Your callout
+   over your coins shows the hand you played. At the last card the verdict goes
+   on the white button ("You win! ▸"), any tiebreak on their callout, and the
+   pot flies to the winner. **Skip** on the black button.
+4. **Round end** — on the table too: the river shows the **standings** (the
+   pot and board stay underneath, hidden, so its height never changes). One
+   row per captain afloat (plus any who went broke this round, struck through,
+   once; a newcomer marked "new"), sorted by purse: the rows start in the old
+   order and slide to the new one (▲ ▼), the purses count to their new amounts,
+   with the round's +/−; you are always in bold. No headline and no "Meanwhile
+   on the river": it's all on the table. **Next** deals the next round;
+   **Menu** on the black button. Only the end of the tournament gets a big
+   intertitle: "INSOLVENT! Your funds are gone, and you are out of the game."
+   then "{name} is the KING OF THE RIVER!" (one rival left) or "You can't
+   afford the ante for the next round. Better luck next time!"; or, if you are
+   the last one afloat, "KING OF THE RIVER!".
 
 **Hand log:** the last 10 of the Captain's showdowns (board, both played hands,
 the cards each hand uses, result and snags moved), saved with the voyage.

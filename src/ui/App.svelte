@@ -78,13 +78,13 @@
 <div class="film">
   {#if game}
     {#if game.round?.playStyle === 'draw'}
-      <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={() => (stage = 'result')} />
+      <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={() => (stage = 'result')} onnext={next} />
     {:else}
       <Table {game} peek={false} onaction={act} onmenu={pause} />
     {/if}
     {#if stage === 'reveal' && game.round?.result && game.round.playStyle !== 'draw'}
       <Showdown {game} ondone={() => (stage = 'result')} onverdict={() => (settled = true)} />
-    {:else if stage === 'result' && game.report}
+    {:else if stage === 'result' && game.report && (game.round?.playStyle !== 'draw' || game.phase !== 'monthEnd')}
       <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} />
     {/if}
   {:else}
