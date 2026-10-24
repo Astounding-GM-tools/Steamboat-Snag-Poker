@@ -59,7 +59,7 @@ button.ghost {
 
 .film {
   position: relative;
-  min-height: 100vh;
+  min-height: 100svh;
   background: radial-gradient(ellipse at center, #2a2926 0%, var(--screen) 60%, #000 100%);
   filter: grayscale(1) contrast(1.08);
   animation: flicker 0.18s infinite steps(2);

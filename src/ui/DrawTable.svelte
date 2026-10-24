@@ -23,11 +23,11 @@
   } from '../engine';
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
-  import { cardPrefs, setCardFace } from './cards.svelte';
   import Pot from './Pot.svelte';
   import Standings from './Standings.svelte';
   import Purse from './Purse.svelte';
   import DiscardChips from './DiscardChips.svelte';
+  import HowTo from './HowTo.svelte';
   import WillieSays from './WillieSays.svelte';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { handLabel, tiebreak } from './handNames';
@@ -53,6 +53,14 @@
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
   let showHelp = $state(false);
+  // How it works covers the table down to the two buttons, which close it.
+  let tableEl = $state<HTMLElement>();
+  let actionsEl = $state<HTMLElement>();
+  let helpBottom = $state(0);
+  function openHelp() {
+    if (tableEl && actionsEl) helpBottom = tableEl.getBoundingClientRect().bottom - actionsEl.getBoundingClientRect().top + 6;
+    showHelp = true;
+  }
   let showCaptain = $state(false);
   // Their details close when the next round is dealt.
   let infoMonth = -1;
@@ -194,34 +202,16 @@
   // A new street or a new month clears the selection.
   // --- The deal -----------------------------------------------------------
   // Cards appear one at a time like a real deal: hole cards round the table
-  // (you, them, you, them…), then the board. Fast deal speeds it up; a click
+  // (you, them, you, them…), then the board. Reduced motion speeds it up; a click
   // on the table finishes it at once.
-  const FAST_KEY = 'wwr.fastDeal';
-  let fastDeal = $state(readFast());
+  /** Fast deal for people who prefer reduced motion; everyone else gets the real deal. */
+  const fastDeal = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   let dealt = $state(new Set<string>());
   let pending = $state<string[]>([]);
   let dealtMonth = -1;
   let dealTimer: ReturnType<typeof setTimeout> | undefined;
   const dealing = $derived(pending.length > 0);
 
-  /** Fast deal is on if chosen, and always for people who prefer reduced motion. */
-  function readFast(): boolean {
-    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-    try {
-      return localStorage.getItem(FAST_KEY) === '1';
-    } catch {
-      return false;
-    }
-  }
-
-  function setFast(on: boolean) {
-    fastDeal = on;
-    try {
-      localStorage.setItem(FAST_KEY, on ? '1' : '0');
-    } catch {
-      /* storage unavailable */
-    }
-  }
 
   $effect(() => {
     const r = round;
@@ -230,6 +220,13 @@
   onDestroy(() => {
     clearTimeout(dealTimer);
     clearResting();
+  });
+  // Coins resting on a purse are placed on the screen, not the table: if the
+  // screen changes size (a phone turned), they go, and the purse shows the rest.
+  $effect(() => {
+    const onResize = () => clearResting();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   });
 
   function scheduleDeal(r: typeof round) {
@@ -475,7 +472,8 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="table solo" onclick={finishDeal}>
+<div class="table solo" onclick={finishDeal} bind:this={tableEl}>
+  {#if showHelp}<div class="help-layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
   <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
     <!-- Name and title over their coins; a tall portrait beside both. -->
@@ -532,7 +530,7 @@
         <!-- Every street has a second line (blank at the showdown), so nothing moves. -->
         <span class="street-sub">{standing || streetName === 'showdown' ? '' : t(`street.sub.${streetName}`)}</span>
       </span>
-      <button class="ghost icon" onclick={() => (showHelp = true)} aria-label={t('willie.helpTitle')}>?</button>
+      <button class="ghost icon" onclick={openHelp} aria-label={t('title.howTo')}>?</button>
     </div>
     {/if}
     <!-- After the round the standings take the pot's and the board's place (those stay, hidden, so nothing moves). -->
@@ -615,8 +613,12 @@
     </div>
 
 
-    <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain}>
-      {#if showCaptain}
+    <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp} bind:this={actionsEl}>
+      {#if showHelp}
+        <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
+        <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>
+        <button onclick={() => (showHelp = false)}>{t('draw.close')}</button>
+      {:else if showCaptain}
         <!-- Their details are up: the white button takes you back, the black one waits. -->
         <button class="ghost" disabled>{standing ? t('end.pause') : revealing ? t('show.skip') : foldLabel}</button>
         <button onclick={() => (showCaptain = false)}>{t('draw.back')}</button>
@@ -635,19 +637,6 @@
   </section>
 </div>
 
-{#if showHelp}
-  <WillieSays title={t('willie.helpTitle')} onclose={() => (showHelp = false)}>
-    {#each t('title.howToBody').split('\n\n') as para}<p>{para}</p>{/each}
-    <label class="fast"><input type="checkbox" checked={fastDeal} onchange={(e) => setFast(e.currentTarget.checked)} /> {t('draw.fastDeal')}</label>
-    <fieldset class="faces">
-      <legend>{t('cards.face')}</legend>
-      <label class="fast"><input type="radio" name="card-face" checked={cardPrefs.face === 'value'} onchange={() => setCardFace('value')} /> {t('cards.faceValue')}</label>
-      <label class="fast"><input type="radio" name="card-face" checked={cardPrefs.face === 'pair'} onchange={() => setCardFace('pair')} /> {t('cards.facePair')}</label>
-    </fieldset>
-    <p class="tip">{t('cards.zoomTip')}</p>
-    <button class="ghost menu-btn" onclick={() => ((showHelp = false), onmenu())}>{t('table.menu')}</button>
-  </WillieSays>
-{/if}
 
 {#if fishedNews}
   <WillieSays onclose={() => (fishedNews = null)}>
@@ -732,6 +721,16 @@
   }
   .river {
     position: relative;
+  }
+  .table.solo {
+    position: relative;
+  }
+  .help-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
   }
   .river-info {
     position: absolute;
@@ -898,7 +897,7 @@
     flex-direction: column;
     justify-content: flex-end;
     gap: clamp(0.6rem, 2.5vh, 1.75rem);
-    min-height: 100dvh;
+    min-height: 100svh;
     padding-top: 1rem;
     padding-bottom: 0.75rem;
   }
@@ -1033,119 +1032,41 @@
   .actions.idle {
     visibility: hidden;
   }
-  /* Short phones: the gaps and paddings give way first. */
-  @media (max-height: 740px) {
-    .table.solo {
-      gap: 0.4rem;
-      padding-top: 0.25rem;
-      padding-bottom: 0.25rem;
-    }
-    .portrait {
-      min-height: 100px;
-    }
-    .river-head,
-    .callout.theirs {
-      height: 3.3rem;
-    }
-    .actions {
-      margin-top: 0.3rem;
-    }
-    .table.solo section {
-      padding-top: 0.35rem;
-      padding-bottom: 0.35rem;
-    }
-    .captain {
-      gap: 0.2rem;
-    }
-    .opponent {
-      gap: 0.25rem;
-    }
+  /* Short screens, decided once at load (so hiding a phone's browser bars never changes it): the gaps and paddings give way first. */
+  :global(.short) .table.solo {
+    gap: 0.4rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
   }
+  :global(.short) .portrait {
+    min-height: 100px;
+  }
+  :global(.short) .river-head,
+  :global(.short) .callout.theirs {
+    height: 3.3rem;
+  }
+  :global(.short) .actions {
+    margin-top: 0.3rem;
+  }
+  :global(.short) .table.solo section {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+  :global(.short) .captain {
+    gap: 0.2rem;
+  }
+  :global(.short) .opponent {
+    gap: 0.25rem;
+  }
+  /* Phones: smaller cards (and the gaps the buttons line up with), bigger button type. */
   @media (max-width: 600px) {
     .snag-fan {
       --cw: 54px;
       --fan: 80px;
     }
+    /* Their cards may rise into the room under their coins, so the row takes less height. */
     .opp-cards {
       --hgap: 0.5rem;
-    }
-    .river {
-    position: relative;
-  }
-  .river-info {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2px;
-    padding: 0.4rem 0.75rem;
-    background: rgba(12, 12, 11, 0.97);
-    text-align: left;
-    overflow: auto;
-    cursor: pointer;
-    animation: callout-in 0.2s ease-out;
-  }
-  .river-info .blurb {
-    margin: 0 0 0.4rem;
-    font-size: 0.85rem;
-    line-height: 1.3;
-    color: var(--paper);
-  }
-  .river-info .harbour {
-    margin: 0 0 0.2rem;
-    font-size: 0.8rem;
-    color: var(--grey);
-  }
-  .bar {
-    display: grid;
-    grid-template-columns: 7.5rem 1fr 2.4rem;
-    gap: 0.5rem;
-    align-items: center;
-    font-size: 0.75rem;
-    line-height: 1.15;
-  }
-  .bar.none {
-    color: var(--grey);
-    opacity: 0.7;
-  }
-  .track {
-    height: 7px;
-    background: #222;
-    border: 1px solid var(--dim);
-  }
-  .track .fill {
-    display: block;
-    height: 100%;
-    background: var(--paper);
-  }
-  .num {
-    text-align: right;
-  }
-  .river-body {
-    position: relative;
-  }
-  .river-body.cleared > :not(.standings-over) {
-    visibility: hidden;
-  }
-  .standings-over {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    animation: callout-in 0.3s ease-out;
-  }
-  .standings-over :global(.standings) {
-    width: 100%;
-  }
-  .standings-over {
-    padding: 0.2rem 0;
-  }
-  .pot-band {
-    margin: 0.2rem 0 0.5rem;
-  }
-  .opp-cards {
       height: 54px;
     }
     .captain {
@@ -1155,15 +1076,13 @@
     .hand-row {
       height: 92px;
     }
-  }
-  @media (max-width: 600px) and (max-height: 740px) {
-    .hand-row {
-      height: 84px;
-    }
     .actions button {
       font-size: 1.15rem;
       padding-left: 0.5em;
       padding-right: 0.5em;
+    }
+    :global(.short) .hand-row {
+      height: 84px;
     }
   }
   .snag-fan.mine {
@@ -1179,33 +1098,5 @@
   }
   .snag-fan.live :global(.card:hover) {
     z-index: 3;
-  }
-  .faces {
-    border: none;
-    padding: 0;
-    margin: 0.75rem 0 0;
-    font-size: 0.85rem;
-  }
-  .faces legend {
-    padding: 0;
-    color: var(--grey);
-  }
-  .faces .fast {
-    margin-top: 0.3rem;
-  }
-  .menu-btn {
-    margin-top: 0.5rem;
-  }
-  .tip {
-    font-size: 0.85rem;
-    color: var(--grey);
-  }
-  .fast {
-    font-size: 0.85rem;
-    display: flex;
-    gap: 0.4rem;
-    align-items: center;
-    cursor: pointer;
-    margin-top: 0.75rem;
   }
 </style>

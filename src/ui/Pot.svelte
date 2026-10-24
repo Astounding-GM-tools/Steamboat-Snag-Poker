@@ -63,9 +63,8 @@
   .paid .coin {
     visibility: hidden;
   }
-  @media (max-height: 740px) {
-    .half {
-      height: 28px;
-    }
+  /* Short screens (decided once at load, so hiding browser bars never changes it). */
+  :global(.short) .half {
+    height: 28px;
   }
 </style>

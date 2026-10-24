@@ -358,6 +358,15 @@ the cards each hand uses, result and snags moved), saved with the voyage.
 Not reachable in the game for now (the rules lab that opened it is gone); it
 may come back in a Menu.
 
+**Starting:** a brand-new player (no saved game) goes straight to the table.
+**How it works** (the ? on the table or the title) is a plain page over the
+screen, closed by the white Close button; on the table the black one is Menu.
+No options: the deal is the real deal (fast only for reduced motion), cards
+show the big value.
+**Phones:** the layout is set against the smallest viewport (browser bars
+showing) and compact mode is decided once at load, so bars sliding away never
+shift it.
+
 **Pausing:** Menu returns to the title screen, which then offers
 the same two buttons as the table, in the same places: **New** (black, left,
 with a confirmation) and **Next** (white, right: carry on); with no game in

@@ -180,10 +180,9 @@
     height: 40px;
   }
   /* Short phones: a lower purse; tall stacks may rise into the gap above. */
-  @media (max-height: 740px) {
-    .big .coins {
-      height: 56px;
-    }
+  /* Short screens (decided once at load, so hiding browser bars never changes it). */
+  :global(.short) .big .coins {
+    height: 56px;
   }
   /* A silver dollar lying flat, seen at an angle; stacked, each one shows its rim. */
   .coin {

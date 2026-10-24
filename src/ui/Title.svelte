@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t } from '../i18n';
-  import WillieSays from './WillieSays.svelte';
+  import HowTo from './HowTo.svelte';
 
   interface Props {
     /** Month of the voyage in progress, if any. */
@@ -33,6 +33,7 @@
 
 <div class="title">
   <div class="stage">
+  {#if showHowTo}<HowTo />{/if}
   <!-- A stern-wheeler steaming to the right: the wheel at the back turns so its
        lower paddles push the water astern; smoke trails back from three stacks
        that puff as they breathe; the river laps up over the hull. -->
@@ -167,7 +168,10 @@
   <!-- The same two buttons, in the same places, as at the table: black left, white right. -->
   <div class="dock">
     <div class="actions" class:single={!savedMonth}>
-      {#if savedMonth}
+      {#if showHowTo}
+        <span></span>
+        <button onclick={() => (showHowTo = false)}>{t('draw.close')}</button>
+      {:else if savedMonth}
         <button class="ghost" onclick={newVoyage}>{t('title.new')}</button>
         <button onclick={oncontinue}>{t('title.next')}</button>
       {:else}
@@ -190,21 +194,18 @@
     </div>
   {/if}
 
-  {#if showHowTo}
-    <WillieSays title={t('title.howTo')} onclose={() => (showHowTo = false)}>
-      {#each t('title.howToBody').split('\n\n') as para}<p>{para}</p>{/each}
-    </WillieSays>
-  {/if}
+
 </div>
 
 <style>
   .title {
-    min-height: 100dvh;
+    min-height: 100svh;
     display: flex;
     flex-direction: column;
   }
   /* The picture and the title card share the room evenly; the buttons keep to the bottom. */
   .stage {
+    position: relative;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -251,8 +252,8 @@
       font-size: 1.15rem;
     }
   }
-  @media (max-width: 600px) and (max-height: 740px) {
-    .dock {
+  @media (max-width: 600px) {
+    :global(.short) .dock {
       padding-bottom: calc(0.25rem + 0.35rem + 2px);
     }
   }

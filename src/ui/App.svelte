@@ -73,6 +73,11 @@
     stage = 'play';
     game = null;
   }
+
+  // A brand-new player (no game saved) goes straight to the table: there's only
+  // one thing to do. The title screen is for choosing between a game in
+  // progress and a new one.
+  if (!loadGame()) start();
 </script>
 
 <div class="film">
