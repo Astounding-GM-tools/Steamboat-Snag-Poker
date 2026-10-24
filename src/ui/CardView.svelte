@@ -243,9 +243,10 @@
     font-size: calc(var(--w) * 0.66);
     line-height: 1;
   }
+  /* "10" is two figures wide, so it runs tighter to stand as tall as the rest. */
   .pip-value.ten {
-    font-size: calc(var(--w) * 0.5);
-    letter-spacing: -0.06em;
+    font-size: calc(var(--w) * 0.64);
+    letter-spacing: -0.1em;
   }
   .pip-side {
     display: none;
@@ -259,8 +260,8 @@
     font-size: calc(var(--w) * 0.5);
   }
   .pair .pip-value.ten {
-    left: 3%;
-    font-size: calc(var(--w) * 0.4);
+    left: 2%;
+    font-size: calc(var(--w) * 0.48);
   }
   .pair .pip-side {
     display: block;
