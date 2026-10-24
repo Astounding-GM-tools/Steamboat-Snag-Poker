@@ -25,7 +25,7 @@ export const en = {
   'title.abandonNo': 'Cancel',
   'title.howTo': 'How it works',
   'title.howToBody':
-    'Whenever steamboat captains cross paths on the river, they sit down for a hand of Snag Poker. The last captain still afloat wins the tournament.\n\nEveryone puts an ante into the pot. You hold three cards. On the Flop and the Turn you may swap any of them for new ones (each card costs a little more than the last), or call to keep your hand; either way, seeing the next card has a small fee. If your hand looks hopeless, fold on the Flop or the Turn and give up the pot.\n\nWhen the River card comes, you make your hand: tap the cards you want to play, then Play hand, and the best community cards fill the rest of your five. The best hand takes the whole pot.\n\nSnags are liabilities: stinking cargo, tiresome passengers, thankless duties. Each one makes your ante dearer. To be rid of one, put it in your hand and still win: the loser takes every snag the winner dared to play, but lose with snags in your hand and you pay a forfeit for each. Four of a kind has room for a snag; a full house does not.\n\nRun out of money and you’re busted.',
+    'Whenever steamboat captains cross paths on the river, they sit down for a hand of Snag Poker. The last captain still afloat wins the tournament.\n\nEveryone puts an ante into the pot. You hold three cards. On the Flop and the Turn you may swap any of them for new ones (each card costs a little more than the last), or keep your hand. Seeing the next card may cost a small fee: you check when it’s free and call when it isn’t. If your hand looks hopeless, fold on the Flop or the Turn and give up the pot.\n\nWhen the River card comes, you make your hand: tap the cards you want to play, then Play hand, and the best community cards fill the rest of your five. The best hand takes the whole pot.\n\nSnags are liabilities: stinking cargo, tiresome passengers, thankless duties. Each one makes your ante dearer. To be rid of one, put it in your hand and still win: the loser takes every snag the winner dared to play, but lose with snags in your hand and you pay a forfeit for each. Four of a kind has room for a snag; a full house does not.\n\nRun out of money and you’re busted.',
   'title.record': 'Tournaments won: {wins} · Longest run: {months} crossings',
   'title.noBest': 'No voyages yet',
   'title.close': 'Close',
@@ -59,11 +59,12 @@ export const en = {
   'table.menu': 'Menu',
   'table.yourBest': 'Your hand: {hand}',
 
-  'draw.standPat': 'Call',
+  'draw.check': 'Check',
+  'draw.call': 'Call',
   'draw.fold': 'Fold',
   'draw.discard': 'Swap {n}',
   'draw.play': 'Play hand',
-  'draw.promptDiscard': 'Tap cards to swap, or call to keep your hand. Snags can’t be swapped.',
+  'draw.promptDiscard': 'Tap cards to swap, or keep your hand. Snags can’t be swapped.',
   'draw.promptCompose': 'Tap the cards you want to play. Snags too, if you dare! The board fills the rest.',
   'draw.street': 'Swap round {n} of 2. On the River you make your hand.',
   'draw.lastStreet': 'Last chance to swap. Next comes the River: make your hand!',

@@ -65,7 +65,8 @@ presets, selectable in the rules lab (⚙) and the balance simulation.
 
 1. **Flop:** 3 community cards are revealed; each player is dealt **3 cards**.
 2. **Flop and Turn:** tap any number of hand cards to **swap** them for
-   replacements, or **call** to keep the hand. Snags cannot be
+   replacements, or keep the hand: **check** when the next card is free,
+   **call** when there is a fee. **Fold** shows what it gives up. Snags cannot be
    discarded. Discards lie **face up**: the opponent can read what you threw
    away, and you can read theirs.
 3. **Make your hand (on the River):** when the River card comes there is no

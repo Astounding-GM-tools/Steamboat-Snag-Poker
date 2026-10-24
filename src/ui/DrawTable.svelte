@@ -34,8 +34,10 @@
     onaction: (a: Action) => void;
     /** False while the showdown is still being revealed: the pot hasn't been paid out yet. */
     settled?: boolean;
+    /** Back to the main menu (the game is saved after every move). */
+    onmenu: () => void;
   }
-  let { game, peek, onaction, settled = true }: Props = $props();
+  let { game, peek, onaction, settled = true, onmenu }: Props = $props();
 
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
@@ -225,12 +227,16 @@
   const priced = (label: string) => (cost ? `${label} · ${dollars(cost)}` : label);
   const buttonLabel = $derived(
     tapped.length === 0
-      ? priced(t('draw.standPat'))
+      ? cost
+        ? priced(t('draw.call'))
+        : t('draw.check')
       : composing
         ? t('draw.play')
         : priced(t('draw.discard', { n: tapped.length })),
   );
   const showFold = $derived(round.potMode && playing && !composing);
+  // Folding gives up everything you have put into the pot so far.
+  const foldLabel = $derived(bets[0] ? `${t('draw.fold')} · ${dollars(bets[0])}` : t('draw.fold'));
 
   function fold() {
     if (!playing || dealing || !canFold(round, 0)) return;
@@ -328,7 +334,7 @@
           {/if}
         </span>
         {#if showFold}
-          <button class="ghost" onclick={fold} disabled={dealing || !canFold(round, 0)}>{t('draw.fold')}</button>
+          <button class="ghost" onclick={fold} disabled={dealing || !canFold(round, 0)}>{foldLabel}</button>
         {/if}
         <button onclick={go} disabled={dealing}>{buttonLabel}</button>
       {/if}
@@ -346,6 +352,7 @@
       <label class="fast"><input type="radio" name="card-face" checked={cardPrefs.face === 'pair'} onchange={() => setCardFace('pair')} /> {t('cards.facePair')}</label>
     </fieldset>
     <p class="tip">{t('cards.zoomTip')}</p>
+    <button class="ghost menu-btn" onclick={() => ((showHelp = false), onmenu())}>{t('table.menu')}</button>
   </WillieSays>
 {/if}
 
@@ -464,6 +471,9 @@
   }
   .faces .fast {
     margin-top: 0.3rem;
+  }
+  .menu-btn {
+    margin-top: 0.5rem;
   }
   .tip {
     font-size: 0.85rem;
