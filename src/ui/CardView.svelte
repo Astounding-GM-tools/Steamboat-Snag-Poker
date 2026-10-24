@@ -1,7 +1,9 @@
 <script lang="ts">
   import { isJoker, rankLabel, type Card } from '../engine';
   import { t } from '../i18n';
-  import { SUIT_GLYPH, jokerName } from './format';
+  import { jokerName } from './format';
+  import SuitIcon from './SuitIcon.svelte';
+  import { cardPrefs } from './cards.svelte';
 
   interface Props {
     card?: Card | null;
@@ -9,6 +11,8 @@
     /** Slide in as if dealt: from the dealer at the left, or from above for the opponent. */
     deal?: 'left' | 'top' | null;
     small?: boolean;
+    /** The big close-up view (long-press any card). */
+    huge?: boolean;
     selected?: boolean;
     ghost?: boolean;
     fresh?: boolean;
@@ -26,10 +30,40 @@
     ondragstart?: (e: DragEvent) => void;
   }
 
-  let { card = null, faceDown = false, deal = null, markAbove = false, markBelow = false, small = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
+  let { card = null, faceDown = false, deal = null, markAbove = false, markBelow = false, small = false, huge = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
 
   const rank = $derived(card && !isJoker(card) ? (card.rank === 10 ? '10' : rankLabel(card.rank)) : '');
-  const suit = $derived(card && !isJoker(card) ? SUIT_GLYPH[card.suit] : '');
+  const playing = $derived(card && !isJoker(card) ? card : null);
+
+  // A long press on any face-up card holds it up for a closer look; the click
+  // that ends the press is swallowed so it does not also select the card.
+  const HOLD_MS = 450;
+  let holdTimer: ReturnType<typeof setTimeout> | undefined;
+  let holdStart = { x: 0, y: 0 };
+  let held = false;
+  function pressStart(e: PointerEvent) {
+    if (huge || !card) return;
+    held = false;
+    holdStart = { x: e.clientX, y: e.clientY };
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(() => {
+      held = true;
+      cardPrefs.zoomed = card;
+    }, HOLD_MS);
+  }
+  function pressMove(e: PointerEvent) {
+    if (Math.hypot(e.clientX - holdStart.x, e.clientY - holdStart.y) > 10) clearTimeout(holdTimer);
+  }
+  function pressEnd() {
+    clearTimeout(holdTimer);
+  }
+  function click() {
+    if (held) {
+      held = false;
+      return;
+    }
+    onclick?.();
+  }
 </script>
 
 {#if faceDown}
@@ -41,6 +75,9 @@
     type="button"
     class="card face"
     class:small
+    class:huge
+    class:pair={cardPrefs.face === 'pair'}
+    class:passive={!onclick && !ondragstart}
     class:selected
     class:ghost
     class:fresh
@@ -51,9 +88,15 @@
     class:faded
     class:joker={isJoker(card)}
     draggable={!!ondragstart}
-    {onclick}
+    onclick={click}
     {ondragstart}
-    disabled={!onclick && !ondragstart}
+    onpointerdown={pressStart}
+    onpointermove={pressMove}
+    onpointerup={pressEnd}
+    onpointerleave={pressEnd}
+    onpointercancel={pressEnd}
+    oncontextmenu={(e) => e.preventDefault()}
+    aria-disabled={!onclick && !ondragstart}
   >
     {#if toss}<span class="stamp">✕</span>{/if}
     {#if markAbove}<span class="mark above" aria-hidden="true">▼</span>{/if}
@@ -63,8 +106,9 @@
       <span class="jester">🪵</span>
       <span class="jname">{jokerName(card.index).replace(/^the /, '')}</span>
     {:else}
-      <span class="corner">{rank}<br />{suit}</span>
-      <span class="pip">{suit}</span>
+      <span class="pip-corner"><SuitIcon suit={playing!.suit} /></span>
+      <span class="pip-value" class:ten={rank === '10'}>{rank}</span>
+      <span class="pip-side"><SuitIcon suit={playing!.suit} /></span>
     {/if}
   </button>
 {/if}
@@ -84,6 +128,10 @@
   .small {
     --w: 52px;
   }
+  .huge {
+    --w: min(64vw, 280px);
+    border-radius: 14px;
+  }
   .face {
     background: var(--paper);
     color: var(--ink);
@@ -91,11 +139,17 @@
     box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.6);
     cursor: grab;
   }
-  .face:disabled {
-    cursor: default;
-    opacity: 1;
+  .face {
+    /* A long press opens the close-up, not the phone's own menu. */
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
   }
-  .face:hover:not(:disabled) {
+  .face.passive {
+    cursor: default;
+  }
+  .face:hover:not(.passive) {
     transform: translateY(-4px) rotate(-1deg);
   }
   .selected {
@@ -169,21 +223,53 @@
     0% { transform: scale(1.3) rotate(6deg); }
     100% { transform: scale(1) rotate(0); }
   }
-  .corner {
+  /*
+   * Two faces, chosen in Willie's help: the value big in the middle with the
+   * suit in the corner (the default), or value and suit side by side.
+   */
+  .pip-corner {
     position: absolute;
-    top: 4px;
-    left: 6px;
-    font-size: calc(var(--w) * 0.22);
-    line-height: 1;
-    text-align: center;
+    top: 6%;
+    left: 7%;
+    width: calc(var(--w) * 0.36);
+    height: calc(var(--w) * 0.36);
   }
-  .pip {
+  .pip-value {
     position: absolute;
     inset: 0;
     display: grid;
     place-items: center;
-    font-size: calc(var(--w) * 0.55);
-    padding-top: 10%;
+    padding-top: 30%;
+    font-size: calc(var(--w) * 0.66);
+    line-height: 1;
+  }
+  .pip-value.ten {
+    font-size: calc(var(--w) * 0.5);
+    letter-spacing: -0.06em;
+  }
+  .pip-side {
+    display: none;
+  }
+  .pair .pip-corner {
+    display: none;
+  }
+  .pair .pip-value {
+    inset: 0 auto 0 8%;
+    padding-top: 0;
+    font-size: calc(var(--w) * 0.5);
+  }
+  .pair .pip-value.ten {
+    left: 3%;
+    font-size: calc(var(--w) * 0.4);
+  }
+  .pair .pip-side {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 9%;
+    width: calc(var(--w) * 0.36);
+    height: calc(var(--w) * 0.36);
+    transform: translateY(-50%);
   }
   .joker {
     background: repeating-linear-gradient(45deg, #ddd 0 6px, #bbb 6px 12px);

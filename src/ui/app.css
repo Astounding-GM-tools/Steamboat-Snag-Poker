@@ -181,7 +181,7 @@ button.ghost {
 
 /* Phones: smaller cards so a five-card board fits across. */
 @media (max-width: 600px) {
-  .card {
+  .card:not(.huge) {
     --w: 54px !important;
   }
   .card.small {

@@ -21,6 +21,7 @@
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import CaptainCard from './CaptainCard.svelte';
+  import { cardPrefs, setCardFace } from './cards.svelte';
   import PotStack from './PotStack.svelte';
   import CoinPile from './CoinPile.svelte';
   import WillieSays from './WillieSays.svelte';
@@ -339,6 +340,12 @@
   <WillieSays title={t('willie.helpTitle')} onclose={() => (showHelp = false)}>
     {#each t('title.howToBody').split('\n\n') as para}<p>{para}</p>{/each}
     <label class="fast"><input type="checkbox" checked={fastDeal} onchange={(e) => setFast(e.currentTarget.checked)} /> {t('draw.fastDeal')}</label>
+    <fieldset class="faces">
+      <legend>{t('cards.face')}</legend>
+      <label class="fast"><input type="radio" name="card-face" checked={cardPrefs.face === 'value'} onchange={() => setCardFace('value')} /> {t('cards.faceValue')}</label>
+      <label class="fast"><input type="radio" name="card-face" checked={cardPrefs.face === 'pair'} onchange={() => setCardFace('pair')} /> {t('cards.facePair')}</label>
+    </fieldset>
+    <p class="tip">{t('cards.zoomTip')}</p>
   </WillieSays>
 {/if}
 
@@ -444,6 +451,23 @@
   }
   .joker-fan.live :global(.card:hover) {
     z-index: 3;
+  }
+  .faces {
+    border: none;
+    padding: 0;
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+  }
+  .faces legend {
+    padding: 0;
+    color: var(--grey);
+  }
+  .faces .fast {
+    margin-top: 0.3rem;
+  }
+  .tip {
+    font-size: 0.85rem;
+    color: var(--grey);
   }
   .fast {
     font-size: 0.85rem;

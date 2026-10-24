@@ -1,5 +1,6 @@
 <script lang="ts">
   import { newGame, nextMonth, submitAction, type Action, type GameState, type RulesConfig } from '../engine';
+  import CardZoom from './CardZoom.svelte';
   import DebugPanel from './DebugPanel.svelte';
   import DrawTable from './DrawTable.svelte';
   import HandLog from './HandLog.svelte';
@@ -104,4 +105,5 @@
     <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} />
   {/if}
 </div>
+<CardZoom />
 <DebugPanel {config} {seed} {peek} onapply={applyRules} onpeek={(p) => (peek = p)} onlog={game ? () => (showLog = true) : undefined} />
