@@ -1,29 +1,39 @@
 <script lang="ts">
   import { isJoker, rankLabel, type Card } from '../engine';
+  import { t } from '../i18n';
   import SuitIcon from './SuitIcon.svelte';
   import { cardPrefs } from './cards.svelte';
 
   /**
-   * Thrown-away cards as card notation (7♣), in a small block of three rows of
-   * two at the end of a hand row: never more than six, in the order thrown.
-   * Tap it for a closer look at them all.
+   * Thrown-away cards as card notation (7♣) at the end of a card row: the Flop
+   * discards on the top row, the Turn's below, up to three each. Shorter than
+   * a card, so it sits on the table beside them. Tap it for a closer look.
    */
-  let { cards, title }: { cards: Card[]; title: string } = $props();
-  const shown = $derived(cards.filter((c) => !isJoker(c)));
+  let { cards, flop = cards.length, title }: { cards: Card[]; flop?: number; title: string } = $props();
+  const rows = $derived(
+    [
+      { label: t('street.flop'), cards: cards.slice(0, flop) },
+      { label: t('street.turn'), cards: cards.slice(flop) },
+    ].map((r) => ({ ...r, cards: r.cards.filter((c) => !isJoker(c)) })),
+  );
 </script>
 
 <button
   type="button"
   class="discards"
   aria-label={title}
-  disabled={!shown.length}
+  disabled={!cards.length}
   onclick={(e) => {
     e.stopPropagation();
-    cardPrefs.discards = { title, cards: shown };
+    cardPrefs.discards = { title, rows: rows.filter((r) => r.cards.length) };
   }}
 >
-  {#each shown as card (card.id)}
-    {#if !isJoker(card)}<span class="chip">{card.rank === 10 ? '10' : rankLabel(card.rank)}<span class="suit"><SuitIcon suit={card.suit} /></span></span>{/if}
+  {#each rows as row}
+    <span class="row">
+      {#each row.cards as card (card.id)}
+        {#if !isJoker(card)}<span class="chip">{card.rank === 10 ? '10' : rankLabel(card.rank)}<span class="suit"><SuitIcon suit={card.suit} /></span></span>{/if}
+      {/each}
+    </span>
   {/each}
 </button>
 
@@ -31,13 +41,12 @@
   /* Always the same size, so the first discard doesn't push anything. */
   .discards {
     flex: none;
-    display: grid;
-    grid-template-columns: repeat(2, 26px);
-    grid-auto-rows: 22px;
-    align-content: start;
+    align-self: flex-end;
+    display: flex;
+    flex-direction: column;
     gap: 3px;
-    width: 55px;
-    height: 72px;
+    width: 70px;
+    height: 41px;
     padding: 0;
     margin: 0 0 0 auto;
     background: none;
@@ -50,21 +59,27 @@
     cursor: default;
     opacity: 1;
   }
+  .row {
+    display: flex;
+    gap: 2px;
+    height: 19px;
+  }
   .chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 1px;
+    width: 22px;
     border-radius: 3px;
     background: var(--paper);
     color: var(--ink);
     font-family: var(--title-font);
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     letter-spacing: 0;
     opacity: 0.8;
   }
   .suit {
-    width: 0.65rem;
-    height: 0.65rem;
+    width: 0.6rem;
+    height: 0.6rem;
   }
 </style>

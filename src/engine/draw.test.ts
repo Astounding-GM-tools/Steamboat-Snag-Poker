@@ -44,6 +44,9 @@ describe('draw style', () => {
     resolveStreet(r, [{ type: 'draw', cardIds: ['2c', 'Kd'] }, { type: 'draw', cardIds: [] }], config);
     expect(r.seats[0].hand).toHaveLength(3);
     expect(r.seats[0].discarded.map((c) => c.id).sort()).toEqual(['2c', 'Kd']);
+    // Remembered per street, so the table can show Flop and Turn discards apart.
+    expect(r.seats[0].flopDiscards).toBe(2);
+    expect(r.seats[1].flopDiscards).toBe(0);
     expect(r.street).toBe(1);
     expect(r.community).toHaveLength(4);
   });

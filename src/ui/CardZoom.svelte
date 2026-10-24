@@ -32,14 +32,17 @@
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
   <div class="zoom" onclick={close} role="dialog" aria-modal="true" aria-label={discards.title} tabindex="-1">
     <p class="caption">{discards.title}</p>
-    <div class="spread">
-      {#each discards.cards as c (c.id)}
-        <figure>
-          <CardView card={c} huge crossed width="min(26vw, 110px)" />
-          <figcaption>{longCardName(c).replace(/^the /, '')}</figcaption>
-        </figure>
-      {/each}
-    </div>
+    {#each discards.rows as row}
+      <p class="street">{row.label}</p>
+      <div class="spread">
+        {#each row.cards as c (c.id)}
+          <figure>
+            <CardView card={c} huge crossed width="min(24vw, 100px)" />
+            <figcaption>{longCardName(c).replace(/^the /, '')}</figcaption>
+          </figure>
+        {/each}
+      </div>
+    {/each}
     <p class="hint">{t('cards.zoomClose')}</p>
   </div>
 {/if}
@@ -66,6 +69,11 @@
   }
   .caption::first-letter {
     text-transform: uppercase;
+  }
+  .street {
+    margin: 0 0 -0.6rem;
+    font-family: var(--title-font);
+    color: var(--grey);
   }
   .spread {
     display: grid;

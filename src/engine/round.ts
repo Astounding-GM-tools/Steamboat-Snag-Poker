@@ -30,6 +30,8 @@ export interface Seat {
   slots: (Card | null)[];
   /** Cards this seat discarded this round (face up). */
   discarded: StdCard[];
+  /** Draw style: how many of `discarded` were thrown on the Flop (the rest on the Turn). */
+  flopDiscards?: number;
 }
 
 export const STREETS = ['flop', 'turn', 'river'] as const;
@@ -261,6 +263,7 @@ function applyAction(round: RoundState, seat: Seat, action: Action) {
     return;
   }
   if (action.type === 'draw') {
+    if (round.street === 0) seat.flopDiscards = action.cardIds.length;
     for (const id of action.cardIds) discardCard(round, seat, id);
     for (let i = 0; i < action.cardIds.length; i++) drawToSeat(round, seat);
     return;

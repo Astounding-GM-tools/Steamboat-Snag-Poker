@@ -357,7 +357,7 @@
           {#if them.jokers.length > 2}<span class="snag-count">×{them.jokers.length}</span>{/if}
         </div>
       {/if}
-      <DiscardChips cards={them.discarded} title={t('draw.theirDiscards', { name: name(opponentId) })} />
+      <DiscardChips cards={them.discarded} flop={them.flopDiscards} title={t('draw.theirDiscards', { name: name(opponentId) })} />
     </div>
   </section>
 
@@ -418,7 +418,7 @@
           {#if me.jokers.length > 2}<span class="snag-count">×{me.jokers.length}</span>{/if}
         </div>
       {/if}
-      <DiscardChips cards={me.discarded} title={t('draw.yourDiscards')} />
+      <DiscardChips cards={me.discarded} flop={me.flopDiscards} title={t('draw.yourDiscards')} />
     </div>
 
 
@@ -712,7 +712,7 @@
   @media (max-width: 600px) {
     .snag-fan.mine {
       --cw: 54px;
-      --fan: 76px;
+      --fan: 72px;
     }
   }
   .snag-fan.live :global(.card:hover) {

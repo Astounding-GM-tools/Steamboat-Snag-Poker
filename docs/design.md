@@ -308,8 +308,9 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    come off it as money goes into the pot (no switching to a pile or moths
    mid-round), and winnings show when the next round lays it out afresh.
    **Discards** sit at the end of each side's card row as notation chips (7♣)
-   in a block of three rows of two (never more than six), in the order thrown;
-   tap the block for a close-up of them all, crossed through and named.
+   in two rows, the Flop's on top and the Turn's below (up to three each),
+   shorter than a card so the block sits on the table beside them; tap it for
+   a close-up of them all, by street, crossed through and named.
    Whose discard it was stays visible on purpose: it is the read on what they
    kept. (Later, a sharp mode could hide them, as real draw poker does: only
    the count shows.) Snag fans never grow past their width, with a count badge.
