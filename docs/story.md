@@ -38,6 +38,16 @@ the lines are drafts to argue over, not copy.
 Open: how she and the player meet, and what she wants in return for lessons
 (help finding Finlay is the obvious bargain).
 
+## Characters with secrets
+
+- **Max Moritz, Captain of the Mischief.** At the table, one very tall captain
+  in a very long coat (the only hint: *"The coat giggles."*). Story Mode
+  reveals the truth: Wilhelm Busch's two rascals, Max and Moritz, one standing
+  on the other's shoulders. Once seated, one of them slips out under the table
+  to swap cards and peek at hands. Their play style (the "griefer": not out to
+  win, out to make you lose) fits; the reveal could come with a new rule for
+  that match (they can see one of your cards, say), or simply as the joke.
+
 ## The tutorial (chapter one)
 
 A few hands against Morag with **arranged decks**, each hand teaching one
@@ -78,6 +88,13 @@ Snag Poker."*
   Player: *"I can take him off your hands, Captain… if you beat me at Snag."*
 - Any captain asked for help: *"Sure, I'll carry your message to St. Louis…
   if you can beat me at Snag Poker!"*
+
+## Next steps
+
+1. A **character pass**: every captain's name, title, description and voice,
+   with Story Mode in mind (who they are, what they want, what they say).
+2. Then Story Mode in earnest: the dialogue layer, Morag's lessons, the first
+   meetings.
 
 ## Open questions
 

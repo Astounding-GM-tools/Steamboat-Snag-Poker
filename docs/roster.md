@@ -16,7 +16,7 @@ active trademark). The right-hand column says which.
 | Captain | Boat | Tier | Style | Playbook (internal) | Rights |
 |---|---|---|---|---|---|
 | **Konrad "Whiteknuckle" Marlowe** | *Roi des Belges* | rascal | bully | Grips his biggest cards; discards anything below a ten; never risks a snag; never folds. | Original (nod to Joseph Conrad, *Heart of Darkness*, 1899, free) |
-| **Max & Moritz** (two boys in a coat) | *Mischief* | rascal | griefer | Not out to win, out to make you lose: never draws while snags are in the deck (let someone else fish them up); gleefully loads snags into its hands; never folds. | Free: Wilhelm Busch, 1865 |
+| **Max Moritz** (secretly Max & Moritz, two boys in a coat) | *Mischief* | rascal | griefer | Not out to win, out to make you lose: never draws while snags are in the deck (let someone else fish them up); gleefully loads snags into its hands; never folds. | Free: Wilhelm Busch, 1865 |
 | **Kitty Sawyer** | *Queen Rose* | rascal | swashbuckler | Drama queen: chases big hands (values a flush or full house far above a pair), loves a last-minute triumph; bold with snags; never folds. | Original (nod to Twain's Tom Sawyer, free) |
 | **Ignatz** | *Brickyard* | rascal | anarchist | Throw-happy: always chucks a card or two, usually the small ones; now and then hurls every snag he has. | Free in the EU (Herriman died 1944); check *Krazy Kat* trademarks before featuring prominently |
 | **Nemo** | *Slumber* | rascal | dreamer | Half the time random, half the time a calculating player. | Free (McCay died 1934); name shortened from "Little Nemo" |
@@ -53,7 +53,7 @@ older saved games still show their names.
 - **The Duke and the King** (Twain's river con men, free): natural bluffers.
 - **Baron Munchausen** (free): the famous liar.
 - **Happy Hooligan**, **the Yellow Kid** (both free).
-- **Full-table boats:** the Walrus, the Carpenter and Max & Moritz on the
+- **Full-table boats:** the Walrus, the Carpenter and Max Moritz on the
   *Cacophony*; a table of sharps on a grand showboat.
 
 ## Later: New Game Plus and Public Domain Day
