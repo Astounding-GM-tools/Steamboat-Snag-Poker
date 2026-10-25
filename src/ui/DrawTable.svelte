@@ -73,7 +73,7 @@
   const complies = $derived.by(() => {
     const want = line?.require;
     // A move asked for later in the conversation: no playing ahead of it.
-    if (!want) return !talk?.lines.slice(talk.i).some((l) => l.require);
+    if (!want) return !lessonAhead;
     if (want === 'fold') return false;
     if (tapped.length !== want.length || tappedJokers.length) return false;
     // Whole cards first, then ranks, so `4c` and `4` both find their four.
@@ -83,6 +83,8 @@
       return k >= 0 && open.splice(k, 1).length > 0;
     });
   });
+  /** A move still to be taught in this conversation (and not yet asked for): the table holds its tongue until then. */
+  const lessonAhead = $derived(!line?.require && !!talk?.lines.slice(talk.i).some((l) => l.require));
   let oppCardsEl = $state<HTMLElement>();
   let communityEl = $state<HTMLElement>();
   let speechAt = $state({ top: 0, bottom: 0 });
@@ -282,7 +284,8 @@
   const theirSnags = $derived(fan(them));
 
   const callout = $derived(preview ? handLabel(preview) : null);
-  const usedIdsPlay = $derived(new Set(preview?.cards.map((c) => c.id) ?? []));
+  // Like the callout, the marks under the board wait for the lesson.
+  const usedIdsPlay = $derived(new Set(lessonAhead ? [] : (preview?.cards.map((c) => c.id) ?? [])));
   const usedIds = $derived(shownDown ? new Set(result!.hands[0].cards.map((c) => c.id)) : usedIdsPlay);
 
   const stakes = $derived([...(round.communityJoker ? [round.communityJoker] : []), ...round.community.filter(isJoker)]);
@@ -745,7 +748,7 @@
       {#if shownDown && myCall}
         <!-- At the showdown your coins show again (the pot may fly to them); your hand is one line above. -->
         <p class="my-hand">{myCall.lingo ?? myCall.call}</p>
-      {:else if playing && composing && callout}
+      {:else if playing && composing && callout && !lessonAhead}
         <div class="callout" aria-live="polite">
           <span class="call" class:long={callout.call.length > 30}>{callout.call}</span>
           <span class="lingo">{callout.lingo ?? ''}</span>

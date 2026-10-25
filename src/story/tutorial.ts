@@ -173,11 +173,10 @@ export const tutorialScript: Script = {
           text: 'Look again. Your ducks have a friend.',
           replies: [{ label: 'Ducks?' }],
         },
-        { size: 'aside', who: M, text: 'Hush. Play your hand.' },
         {
           size: 'aside',
           who: M,
-          text: 'The River. Pick cards to go with the ones in the middle.',
+          text: 'Later, child. This is the River: pick cards to go with the ones in the middle.',
           replies: [{ label: 'Five?' }],
         },
         {

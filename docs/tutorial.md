@@ -58,12 +58,12 @@ deuces, which look like a disaster for half a second.
    must swap the ace and the king, and only those.
 9. **You:** *"Twos! You tricked me!"*
 10. *"Look again. Your ducks have a friend."* → **Ducks?**
-11. *"Hush. Play your hand."* (No explanation yet: it comes at the showdown.)
-
 **The River**
 
-12. *"The River. Pick cards to go with the ones in the middle."* → **Five?**
-13. *"Five make a hand. Tap all three of yours."* → you must tap 2♦ 2♥ Q♥ and
+11. *"Later, child. This is the River: pick cards to go with the ones in the
+    middle."* (No explanation of the ducks yet: it comes at the showdown.) →
+    **Five?**
+12. *"Five make a hand. Tap all three of yours."* → you must tap 2♦ 2♥ Q♥ and
     **Play hand**.
 
 **The showdown** (scene)
