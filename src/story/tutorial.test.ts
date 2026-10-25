@@ -55,6 +55,30 @@ describe('the tutorial', () => {
     expect(g.round!.bets).toEqual([4, 4]);
   });
 
+  it('round three: three eights with Respect riding beat her two pair, and she takes your Respect', () => {
+    let g = skipToButtons(1);
+    const ids = (seat: number) => g.round!.seats[seat].hand.map((c) => c.id).sort();
+    expect(ids(0)).toEqual(['8d', '8s', 'Kc']);
+    g = submitAction(g, { type: 'draw', cardIds: [] }); // call
+    g = submitAction(g, { type: 'draw', cardIds: [] }); // and again
+    expect(g.round!.community.map((c) => c.id)).toEqual(['8h', 'Ad', '4c', '4s', 'Jh']);
+    g = submitAction(g, { type: 'compose', cardIds: ['8s', '8d'], jokers: 1 });
+    const res = g.round!.result!;
+    expect(res.winner).toBe(0);
+    expect(res.hands.map((h) => h.category)).toEqual(['threeOfAKind', 'twoPair']);
+    expect(g.players.map((p) => p.jokers.map((j) => j.index).sort())).toEqual([[], [OATH, RESPECT].sort()]);
+  });
+
+  it('round three: the full house wins too, but keeps your Respect', () => {
+    let g = skipToButtons(1);
+    g = submitAction(g, { type: 'draw', cardIds: [] });
+    g = submitAction(g, { type: 'draw', cardIds: [] });
+    g = submitAction(g, { type: 'compose', cardIds: ['8s', '8d'], jokers: 0 });
+    expect(g.round!.result!.hands[0].category).toBe('fullHouse');
+    expect(g.round!.result!.winner).toBe(0);
+    expect(g.players.map((p) => p.jokers.map((j) => j.index))).toEqual([[RESPECT], [OATH]]);
+  });
+
   it('is the same deal whatever the seed', () => {
     const deal = (seed: number) => newTutorial(seed).round!.seats.map((s) => s.hand.map((c) => c.id));
     expect(deal(2)).toEqual(deal(99));

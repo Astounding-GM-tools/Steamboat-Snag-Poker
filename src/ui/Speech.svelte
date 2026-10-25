@@ -34,10 +34,13 @@
     require?: string[] | 'fold';
     /**
      * Only after this outcome (for lines after the verdict): you won the hand
-     * or lost it with the game going on, or the game is over, all the money
-     * yours or all of it theirs.
+     * or lost it with the game going on (a win either `dumped` a snag on them
+     * or `kept` yours), or the game is over, all the money yours or all of
+     * it theirs.
      */
-    when?: 'won' | 'lost' | 'wonAll' | 'lostAll';
+    when?: 'won' | 'dumped' | 'kept' | 'lost' | 'wonAll' | 'lostAll';
+    /** They show their hand (even after a fold): the cards turn face up, and the words follow. */
+    show?: boolean;
     /** Over your side of the table instead (the table puts lines after a hand there, so the cards they talk about stay in view). */
     at?: 'low';
   }
@@ -102,6 +105,7 @@
 <div
   class="speech {line.size}"
   class:low={line.at === 'low'}
+  class:after-show={line.show}
   class:notch={opponent && line.size !== 'full'}
   class:waits={!onnext}
   style={grow ? `bottom: ${bottom}px; min-height: calc(100% - ${top + bottom}px)` : `top: ${top}px; bottom: ${bottom}px`}
@@ -188,6 +192,11 @@
   }
   .words {
     animation: appear 0.2s ease-out;
+  }
+  /* Cards first, then the words about them. */
+  .after-show .words {
+    animation-delay: 0.8s;
+    animation-fill-mode: backwards;
   }
   p {
     margin: 0;

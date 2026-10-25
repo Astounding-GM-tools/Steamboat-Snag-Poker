@@ -345,6 +345,13 @@
     return () => window.removeEventListener('resize', onResize);
   });
 
+  // A line where they show their hand: their cards stay face up for the rest of the round.
+  let showedMonth = $state(-1);
+  $effect(() => {
+    if (line?.show) showedMonth = game.month;
+  });
+  const theyShowed = $derived(showedMonth === game.month);
+
   /** A round whose deal waits for the lines spoken before it. */
   let heldDeal = $state<typeof round | null>(null);
   $effect(() => {
@@ -403,8 +410,11 @@
   let fired = new Set<string>();
   function fire(trigger: Trigger): boolean {
     const key = `${game.month}:${trigger}`;
-    const outcome = result?.winner === 0 ? (game.phase === 'victory' ? 'wonAll' : 'won') : game.phase === 'gameOver' ? 'lostAll' : 'lost';
-    const lines = script?.[trigger]?.filter((l) => !l.when || l.when === outcome);
+    const won = result?.winner === 0;
+    const outcomes = won
+      ? [game.phase === 'victory' ? 'wonAll' : 'won', result!.dumped.length ? 'dumped' : 'kept']
+      : [game.phase === 'gameOver' ? 'lostAll' : 'lost'];
+    const lines = script?.[trigger]?.filter((l) => !l.when || outcomes.includes(l.when));
     if (!lines?.length || fired.has(key)) return false;
     fired.add(key);
     // After the hand, the table speaks over your side: her cards and the board are what's being talked about.
@@ -680,8 +690,8 @@
       {/each}
       <!-- Held back, but turned over too (dimmed), one per Next after the played ones: you get to see how they play. -->
       {#each them.hand.filter((c) => dealt.has(c.id)) as card, k (card.id)}
-        {@const turned = decided || (revealing && revealIndex >= steps.length + k)}
-        {#if turned}<CardView {card} faded fresh={revealing && revealIndex === steps.length + k} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
+        {@const turned = decided || theyShowed || (revealing && revealIndex >= steps.length + k)}
+        {#if turned}<CardView {card} faded={shownDown} fresh={(revealing && revealIndex === steps.length + k) || (theyShowed && !shownDown)} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
       {/each}
       </div>
       <div class="fan-cell">

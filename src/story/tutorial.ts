@@ -41,6 +41,19 @@ const roundTwo: ArrangedHand = {
   opponent: [STAND_PAT, STAND_PAT],
 };
 
+/**
+ * Round three, room for a snag: the first hand for buttons, both snags in
+ * play. You: 8♠ 8♦ K♣ and Grudging Respect; Morag: A♣ K♦ 6♥ and the Solemn
+ * Oath. The Flop 8♥ A♦ 4♣, the Turn 4♠, the River J♥. You call twice (no
+ * swaps: the deck is arranged). On the River your eights make a full house,
+ * which has no room for a snag; three eights with Respect riding still beat
+ * her two pair (aces and fours, the Oath riding), and hand her your Respect.
+ */
+const roundThree: ArrangedHand = {
+  deck: ['8h', 'Ad', '4c', '8s', 'Ac', '8d', 'Kd', 'Kc', '6h', '4s', 'Jh'],
+  opponent: [STAND_PAT, STAND_PAT, { type: 'compose', cardIds: ['Ac'], jokers: 1 }],
+};
+
 /** The snags the lessons hand out: yours to pawn off on her, hers to pawn off on you. */
 export const RESPECT = 12;
 export const OATH = 13;
@@ -84,7 +97,7 @@ export function newTutorial(seed: number): GameState {
   const morag = ROSTER.find((c) => c.id === 'morag')!;
   return newGame(seed, config, [{ def: morag, joins: 'start' }], {
     story: TUTORIAL,
-    arranged: [roundOne, roundTwo],
+    arranged: [roundOne, roundTwo, roundThree],
   });
 }
 
@@ -239,6 +252,7 @@ export const tutorialScript: Script = {
           size: 'scene',
           who: M,
           text: 'Wise. My queen of hearts made the best flush there is.',
+          show: true,
           replies: [{ label: 'Best?' }],
         },
         {
@@ -261,7 +275,7 @@ export const tutorialScript: Script = {
         },
       ],
     },
-    // From here on it's a real game, shuffled, for a pot of buttons: a knockout.
+    // Round three, for buttons with both snags in play, is still arranged: the snag lesson. From round four, the knockout.
     {
       // Drafts: the snag explanation is still to be written properly.
       deal: [
@@ -291,8 +305,34 @@ export const tutorialScript: Script = {
           text: 'Now it costs a button to see the next card. You can fold, or pay to stay in the game: that’s a call.',
           replies: [{ label: 'Call?' }],
         },
+        { size: 'aside', who: M, text: 'Yes. Call.', require: [] },
       ],
-      verdict: AFTER,
+      turn: [{ size: 'aside', who: M, text: 'And again, to see the River.', require: [] }],
+      // Drafts from here to the end of the round.
+      river: [{ size: 'aside', who: M, text: 'A snag takes a place in your hand. Has yours room?' }],
+      verdict: [
+        {
+          when: 'dumped',
+          size: 'scene',
+          who: M,
+          text: ['Hmph. Grudging Respect, landed on me.', 'I suppose you’ve earned it.'],
+          replies: [{ label: 'Next', effect: 'next', end: true }],
+        },
+        {
+          when: 'kept',
+          size: 'scene',
+          who: M,
+          text: ['A full house: a fine hand, with no room for a snag.', 'The pot is yours. So is your Respect, still.'],
+          replies: [{ label: 'Next', effect: 'next', end: true }],
+        },
+        {
+          when: 'lost',
+          size: 'scene',
+          who: M,
+          text: ['And now you carry my Oath.', 'Mind your cards, child.'],
+          replies: [{ label: 'Next', effect: 'next', end: true }],
+        },
+      ],
     },
   ],
   later: { verdict: AFTER },
