@@ -47,6 +47,11 @@ Open: how she and the player meet, and what she wants in return for lessons
   to swap cards and peek at hands. Their play style (the "griefer": not out to
   win, out to make you lose) fits; the reveal could come with a new rule for
   that match (they can see one of your cards, say), or simply as the joke.
+- They **take turns on top.** Between rounds the coat changes hands: the
+  portrait shows whichever boy is wearing the top half this round, and the
+  play style follows him (one cautious, one reckless, say), while the other is
+  off doing mischief under the table. One captain on the table, two
+  personalities to read: attentive players can learn to tell them apart.
 
 ## The tutorial (chapter one)
 
