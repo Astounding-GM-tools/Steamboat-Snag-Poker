@@ -30,6 +30,7 @@
   import HowTo from './HowTo.svelte';
   import Speech, { autoMs, type Reply, type SpeechLine } from './Speech.svelte';
   import Countdown from './Countdown.svelte';
+  import type { RoundScript, Trigger } from '../story/script';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { handLabel, tiebreak } from './handNames';
 
@@ -50,8 +51,10 @@
     onnext?: () => void;
     /** An answer in a conversation set something going at the table (`snag:hides`, `pot:5`…). */
     ontalk?: (effect: string) => void;
+    /** This round's lines, spoken as the round reaches each trigger. */
+    script?: RoundScript;
   }
-  let { game, onaction, settled = true, onmenu, stage = 'play', onverdict, onrevealed, onnext, ontalk = import.meta.env.DEV ? (e) => console.info('talk effect:', e) : undefined }: Props = $props();
+  let { game, onaction, settled = true, onmenu, stage = 'play', onverdict, onrevealed, onnext, script, ontalk = import.meta.env.DEV ? (e) => console.info('talk effect:', e) : undefined }: Props = $props();
 
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
@@ -69,7 +72,8 @@
   /** The line is waiting for a move at the table: the white button only takes that one. */
   const complies = $derived.by(() => {
     const want = line?.require;
-    if (!want) return true;
+    // A move asked for later in the conversation: no playing ahead of it.
+    if (!want) return !talk?.lines.slice(talk.i).some((l) => l.require);
     if (tapped.length !== want.length || tappedJokers.length) return false;
     // Whole cards first, then ranks, so `4c` and `4` both find their four.
     const open = [...want].sort((a, b) => b.length - a.length);
@@ -234,12 +238,15 @@
     result?.winner === 0 ? t('show.youWin') : result?.winner === 1 ? t('show.youLose') : t('show.draw'),
   );
   function revealNext() {
-    if (verdictShown) onrevealed?.();
+    // Past the verdict: the round's closing lines first, if it has any.
+    if (verdictShown && !fire('verdict')) onrevealed?.();
     else revealPos = { month: game.month, i: revealIndex + 1 };
   }
   function revealSkip() {
     onverdict?.();
-    onrevealed?.();
+    // Skipping to the verdict still hears the round's closing lines, over the finished showdown.
+    revealPos = { month: game.month, i: steps.length - 1 };
+    if (!fire('verdict')) onrevealed?.();
   }
   /** Board cards each hand uses: theirs marked above, yours below. */
   const theirBoard = $derived(
@@ -310,8 +317,26 @@
     return () => window.removeEventListener('resize', onResize);
   });
 
+  /** A round whose deal waits for the lines spoken before it. */
+  let heldDeal = $state<typeof round | null>(null);
+  $effect(() => {
+    if (heldDeal && !talk) {
+      const r = heldDeal;
+      heldDeal = null;
+      untrack(() => scheduleDeal(r));
+    }
+  });
+
   function scheduleDeal(r: typeof round) {
     clearTimeout(dealTimer);
+    // A new round with lines before the deal: they are spoken first.
+    if (dealtMonth !== game.month && fire('deal')) {
+      dealtMonth = game.month;
+      dealt = new Set();
+      pending = [];
+      heldDeal = r;
+      return;
+    }
     const base = dealtMonth === game.month ? new Set(dealt) : new Set<string>();
     dealtMonth = game.month;
     const mine = r.seats[0].hand.map((c) => c.id).filter((id) => !base.has(id));
@@ -345,6 +370,23 @@
     dealt = new Set([...dealt, ...pending]);
     pending = [];
   }
+
+  // The round's script: each trigger's lines once, when the round gets there.
+  let fired = new Set<string>();
+  function fire(trigger: Trigger): boolean {
+    const key = `${game.month}:${trigger}`;
+    const lines = script?.[trigger];
+    if (!lines?.length || fired.has(key)) return false;
+    fired.add(key);
+    say(lines);
+    return true;
+  }
+  // A street's lines once its cards are on the table.
+  $effect(() => {
+    if (!playing || dealing || heldDeal) return;
+    const trigger: Trigger = composing ? 'river' : round.street === 0 ? 'flop' : 'turn';
+    untrack(() => fire(trigger));
+  });
 
   let lastKey = '';
   $effect.pre(() => {
@@ -578,7 +620,8 @@
             <span class="title">{nickname(opponentId) ? `“${nickname(opponentId)}”` : t(`character.${opponentId}.boat`)}</span>
           </span>
         </button>
-        <div class="opp-purse" bind:this={theirPurseEl}><Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} /></div>
+        <!-- No pot, no money on the table (the first lessons). -->
+        <div class="opp-purse" bind:this={theirPurseEl}>{#if round.potMode}<Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} />{/if}</div>
       </div>
       <button class="portrait-btn" onclick={() => (showCaptain = !showCaptain)} aria-label={name(opponentId)}>
         <span class="oval portrait">{name(opponentId)[0]}{#if line && lineMs && line.who === opponentId && line.size !== 'full'}{#key line}<Countdown ms={lineMs} />{/key}{/if}</span>
@@ -633,7 +676,8 @@
     <!-- After the round the standings take the pot's and the board's place (those stay, hidden, so nothing moves). -->
     <div class="river-body" class:cleared={standing}>
       <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
-      {#if round.potMode}<div class="pot-band" bind:this={potEl}><Pot bets={potBets} paid={!!payout} /></div>{/if}
+      <!-- With no pot (the first lessons) it stays, empty, so the table keeps its shape. -->
+      <div class="pot-band" bind:this={potEl}><Pot bets={potBets} paid={!!payout} /></div>
       <div class="community" bind:this={communityEl}>
         {#each Array.from({ length: boardSize }) as _, i}
           {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
@@ -668,7 +712,7 @@
   <section class="captain">
     <!-- Your money nearest the pot, no figure: never count your money at the table. -->
     <div class="my-purse" bind:this={myPurseEl}>
-      <Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} />
+      {#if round.potMode}<Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} />{/if}
       <!-- On the River your coins are idle, so the hand you're making is called over them, with the count of snags riding along and their forfeit. Fixed size: it never shifts as you tap. -->
       {#if shownDown && myCall}
         <!-- At the showdown your coins show again (the pot may fly to them); your hand is one line above. -->
@@ -749,7 +793,7 @@
       <button onclick={revealNext}>{verdictShown ? `${verdictLabel} ▸` : t('show.next')}</button>
     {:else}
       <!-- A line asking for a move: only that move will do (no folding your way out of a lesson). -->
-      <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0) || !!line?.require}>{foldLabel}</button>
+      <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0) || !complies || !!line?.require}>{foldLabel}</button>
       <button onclick={go} disabled={!playing || dealing || !complies}>{buttonLabel}</button>
     {/if}
   </div>
@@ -818,6 +862,15 @@
     line-height: 1.15;
   }
   /* Lifted clear of their cards, into the room under the name. */
+  /* A purse's place keeps its height when there is no money on the table, so nothing moves. */
+  .opp-purse,
+  .my-purse {
+    min-height: 72px;
+  }
+  :global(.short) .opp-purse,
+  :global(.short) .my-purse {
+    min-height: 56px;
+  }
   .opp-purse {
     transform: translateY(-12px);
   }

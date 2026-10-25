@@ -1,6 +1,7 @@
 # The tutorial: Morag's lessons
 
-Status: **script in progress**. Chapter one of the story, and canon: the
+Status: **round one is playable** at `/?tutorial` (the deck and lines in
+`src/story/tutorial.ts`); the rest is script in progress. Chapter one of the story, and canon: the
 deckhand meets Morag MacTavish, who is looking for her husband, and learns
 Snag Poker from the one person on the river who disapproves of it. See
 [story.md](story.md) for the caption system and the story around it.

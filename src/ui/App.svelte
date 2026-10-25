@@ -7,6 +7,11 @@
   import Table from './Table.svelte';
   import Title from './Title.svelte';
   import { loadBest, loadGame, recordResult, saveGame } from './storage';
+  import { newTutorial, tutorialScript, TUTORIAL } from '../story/tutorial';
+  import type { Script } from '../story/script';
+
+  /** Lessons and story encounters, by the id a game carries. */
+  const scripts: Record<string, Script> = { [TUTORIAL]: tutorialScript };
 
   let best = $state(loadBest());
   /** Paused or saved voyage, shown as "Continue" on the title screen. */
@@ -21,7 +26,8 @@
 
   function setGame(g: GameState | null) {
     game = g;
-    if (g) {
+    // A lesson is played, not saved: it never takes the place of your voyage.
+    if (g && !g.story) {
       saveGame(g);
       saved = loadGame();
     }
@@ -30,6 +36,20 @@
   function start() {
     stage = 'play';
     setGame(newGame(Date.now() >>> 0, DEFAULT_CONFIG));
+  }
+
+  function startTutorial() {
+    stage = 'play';
+    setGame(newTutorial(Date.now() >>> 0));
+  }
+  // For now the lessons start from the address (…/?tutorial) or, in development, the console.
+  if (new URLSearchParams(location.search).has('tutorial')) startTutorial();
+  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).startTutorial = startTutorial;
+
+  /** Something an answer in a conversation set going. */
+  function talkEffect(effect: string) {
+    if (effect === 'end') pause();
+    else if (import.meta.env.DEV) console.info('talk effect:', effect);
   }
 
   function resume() {
@@ -41,7 +61,7 @@
   function act(action: Action) {
     if (!game) return;
     const g = submitAction(game, action);
-    if (g.phase === 'gameOver' || g.phase === 'victory') best = recordResult(g.month, g.phase === 'victory');
+    if (!g.story && (g.phase === 'gameOver' || g.phase === 'victory')) best = recordResult(g.month, g.phase === 'victory');
     setGame(g);
     if (g.phase !== 'duel') {
       // A fold has nothing to reveal: straight to the result card.
@@ -78,7 +98,7 @@
 <div class="film">
   {#if game}
     {#if game.round?.playStyle === 'draw'}
-      <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={() => (stage = 'result')} onnext={next} />
+      <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={() => (stage = 'result')} onnext={next} script={game.story ? scripts[game.story]?.[game.month - 1] : undefined} ontalk={talkEffect} />
     {:else}
       <Table {game} peek={false} onaction={act} onmenu={pause} />
     {/if}

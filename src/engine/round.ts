@@ -85,6 +85,30 @@ export interface RoundPlayer {
 }
 
 /**
+ * A hand dealt to order, for lessons and story encounters: the cards in the
+ * order they come off the deck (the Flop, then the hole cards round the table,
+ * you first, then each swap's replacements as they are drawn, the Turn, the
+ * River), and the opponent's moves street by street (null: their own choice).
+ * The rest of the deck is shuffled underneath.
+ */
+export interface ArrangedHand {
+  deck: string[];
+  opponent?: (Action | null)[];
+}
+
+/** A shuffled deck with `order` on top, its first card the first drawn. */
+function stackDeck(order: string[], rng: Rng): Card[] {
+  const deck = fullDeck();
+  const top = order.map((id) => {
+    const card = deck.find((c) => c.id === id);
+    if (!card) throw new Error(`Not a card, or used twice: ${id}`);
+    deck.splice(deck.indexOf(card), 1);
+    return card;
+  });
+  return [...rng.shuffle(deck), ...top.reverse()];
+}
+
+/**
  * Creates a round and deals the Flop. Takes any Jokers it needs from `pool`
  * (mutated). Returns the round, ready for the players' Flop actions.
  */
@@ -94,6 +118,7 @@ export function createRound(
   pool: JokerCard[],
   config: RulesConfig,
   rng: Rng,
+  arranged?: ArrangedHand,
 ): RoundState {
   const seat = (p: RoundPlayer): Seat => ({
     playerId: p.id,
@@ -106,7 +131,7 @@ export function createRound(
     month,
     playStyle: config.playStyle,
     seats: [seat(players[0]), seat(players[1])],
-    deck: rng.shuffle(fullDeck()),
+    deck: arranged ? stackDeck(arranged.deck, rng) : rng.shuffle(fullDeck()),
     community: [],
     communityJoker: null,
     street: 0,
@@ -127,7 +152,8 @@ export function createRound(
 
   dealStreet(round, config);
 
-  if (config.jokerMode === 'shuffled') {
+  // An arranged hand keeps its order: no snags shuffled in.
+  if (config.jokerMode === 'shuffled' && !arranged) {
     const count = Math.min(pool.length, Math.floor((month - 1) / config.shuffledJokerEveryMonths));
     const jokers: Card[] = [];
     for (let i = 0; i < count; i++) jokers.push(takeFromPool(pool, rng));

@@ -7,7 +7,7 @@ import { chooseAction, viewFor } from './ai';
 import { jokerCard, type Card, type JokerCard } from './cards';
 import { HUMAN_ID, LEGACY_AI, RETIRED_IDS, ROSTER, drawLineUp, type AiId, type CharacterDef, type LineUpEntry } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
-import { createRound, resolveStreet, type Action, type RoundResult, type RoundState } from './round';
+import { createRound, isLegal, resolveStreet, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
 import { Rng } from './rng';
 
 export interface Player {
@@ -84,6 +84,10 @@ export interface GameState {
   report: MonthReport | null;
   /** The Captain's most recent showdowns, newest first. */
   log: ShowdownRecord[];
+  /** A lesson or story encounter, by script id: it is played, not saved or recorded. */
+  story?: string;
+  /** Hands dealt to order, one per round from the first; later rounds are shuffled as usual. */
+  arranged?: ArrangedHand[];
 }
 
 const clone = <T>(x: T): T => structuredClone(x);
@@ -127,7 +131,12 @@ export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): 
  * Starts a tournament. The line-up is drawn from the gallery (a mix of rascals,
  * middling captains and sharps) unless one is given, e.g. by tests.
  */
-export function newGame(seed: number, config: RulesConfig = DEFAULT_CONFIG, lineUp?: LineUpEntry[]): GameState {
+export function newGame(
+  seed: number,
+  config: RulesConfig = DEFAULT_CONFIG,
+  lineUp?: LineUpEntry[],
+  extra: Pick<GameState, 'story' | 'arranged'> = {},
+): GameState {
   const drawRng = new Rng((seed ^ 0x5eed) >>> 0);
   const entries = lineUp ?? drawLineUp(ROSTER, (n) => drawRng.int(n));
   const players: Player[] = [
@@ -153,6 +162,7 @@ export function newGame(seed: number, config: RulesConfig = DEFAULT_CONFIG, line
     round: null,
     report: null,
     log: [],
+    ...extra,
   };
   return startMonthMut(state);
 }
@@ -196,7 +206,7 @@ function startMonthMut(state: GameState): GameState {
   const opponent = pickOpponent(state, rng);
   state.opponentId = opponent.id;
   const human = player(state, HUMAN_ID);
-  state.round = createRound(state.month, [human, opponent], state.pool, state.config, rng);
+  state.round = createRound(state.month, [human, opponent], state.pool, state.config, rng, state.arranged?.[state.month - 1]);
   state.phase = 'duel';
   state.report = null;
   state.rngState = rng.state;
@@ -210,7 +220,9 @@ export function submitAction(prev: GameState, action: Action): GameState {
   const rng = new Rng(state.rngState);
   const round = state.round!;
   const opponent = player(state, state.opponentId!);
-  const reply = chooseAction(opponent.ai!, viewFor(round, 1), state.config, rng);
+  // An arranged hand may script the opponent's move (if it is still a legal one).
+  const scripted = state.arranged?.[state.month - 1]?.opponent?.[round.history.length];
+  const reply = scripted && isLegal(round, 1, scripted) ? scripted : chooseAction(opponent.ai!, viewFor(round, 1), state.config, rng);
   resolveStreet(round, [action, reply], state.config);
   if (round.result) finishMonth(state, rng);
   state.rngState = rng.state;

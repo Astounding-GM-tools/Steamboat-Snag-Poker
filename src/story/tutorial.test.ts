@@ -1,0 +1,31 @@
+import { describe, expect, it } from 'vitest';
+import { submitAction } from '../engine';
+import { newTutorial } from './tutorial';
+
+describe('the tutorial', () => {
+  it('round one plays as scripted: Ducks full of Ladies beat three aces', () => {
+    let g = newTutorial(1);
+    const ids = () => g.round!.seats.map((s) => s.hand.map((c) => c.id).sort());
+    expect(g.round!.potMode).toBe(false);
+    expect(g.round!.community.map((c) => c.id)).toEqual(['As', '7h', '2c']);
+    expect(ids()).toEqual([['Ah', 'Kh', 'Qh'], ['9s', 'Ac', 'Ad']]);
+
+    g = submitAction(g, { type: 'draw', cardIds: [] }); // keep them
+    expect(g.round!.community.at(-1)!.id).toBe('Qs');
+
+    g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kh'] }); // the ace and the king
+    expect(ids()[0]).toEqual(['2d', '2h', 'Qh']);
+    expect(g.round!.community.at(-1)!.id).toBe('5d');
+
+    g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2d', '2h'], jokers: 0 });
+    const res = g.round!.result!;
+    expect(res.winner).toBe(0);
+    expect(res.hands[0].category).toBe('fullHouse');
+    expect(res.hands[1].category).toBe('threeOfAKind');
+  });
+
+  it('is the same deal whatever the seed', () => {
+    const deal = (seed: number) => newTutorial(seed).round!.seats.map((s) => s.hand.map((c) => c.id));
+    expect(deal(2)).toEqual(deal(99));
+  });
+});
