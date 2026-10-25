@@ -111,9 +111,39 @@ the tell: that is the lesson.
    when one first comes up, in the pickle. An earlier line that may still
    find a place: *"You should NEVER play for money!"*)
 
-## Round three and on: the knockout (buttons)
+## Round three: room for a snag (buttons, still arranged)
 
-No more arranged decks: from the first hand for buttons it is a real game,
+The buttons are out and both snags are in play, but the deck is still
+arranged: the last lesson before the knockout.
+
+| | You | Morag | Board |
+|---|---|---|---|
+| Deal | 8♠ 8♦ K♣ + Grudging Respect | A♣ K♦ 6♥ + the Solemn Oath | |
+| Flop | call | stands pat | 8♥ A♦ 4♣ |
+| Turn | call | stands pat | 4♠ |
+| River | your choice | A♣ + the Oath: two pair, aces and fours | J♥ |
+
+The rules are the regular game's: five cards to a hand, and a snag takes one
+of the five places. So on the River the eights make a full house, with no
+room for a snag (you win, and keep your Respect); three eights with Respect
+riding still beat her two pair (you win, and she takes your Respect).
+Nothing is said about it: the callout shows the full house turn into three
+of a kind as the snag goes in.
+
+- **Before the deal** (over the empty board, so both snags stay in view): her
+  snag introductions (drafts).
+- **The Flop:** the first-call scene, then *"Yes. Call."* (you must call; no
+  swaps, the deck is arranged). **The Turn:** *"And again, to see the
+  River."*
+- **After the hand** (drafts): she took your Respect: *"Hmph. Grudging
+  Respect, landed on me. / I suppose you've earned it."* You kept it: *"A full
+  house: a fine hand, with no room for a snag. / The pot is yours. So is your
+  Respect, still."* You lost: *"And now you carry my Oath. / Mind your cards,
+  child."*
+
+## Round four and on: the knockout (buttons)
+
+No more arranged decks: from round four it is a real game,
 shuffled, until one side has all the buttons. (Any further constructed lesson
 goes in before the pot and the snags arrive.)
 
