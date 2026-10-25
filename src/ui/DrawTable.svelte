@@ -437,6 +437,11 @@
     untrack(() => fire(trigger));
   });
 
+  // Nothing covers the table while their cards turn: anything still up goes (the lines after the verdict come later, low).
+  $effect(() => {
+    if (revealing && !verdictShown && line && line.at !== 'low') untrack(() => (talk = null));
+  });
+
   // A round that ends in a fold has no showdown: its closing lines come as it ends.
   $effect(() => {
     if (!playing && result?.folded != null)
@@ -472,8 +477,8 @@
       ? { type: 'compose', cardIds: tappedCards.map((c) => c.id), jokers: tappedJokers.length }
       : { type: 'draw', cardIds: tappedCards.map((c) => c.id) };
     tapped = [];
-    // The move a line was waiting for: it closes as the move is made.
-    if (line?.require) nextLine();
+    // The move a line was waiting for closes it as it's made; so does any table talk still up: play comes first.
+    if (line?.require || (line && !line.replies && line.size === 'aside')) nextLine();
     onaction(action);
   }
 
