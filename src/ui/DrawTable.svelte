@@ -85,6 +85,8 @@
   });
   /** A move still to be taught in this conversation (and not yet asked for): the table holds its tongue until then. */
   const lessonAhead = $derived(!line?.require && !!talk?.lines.slice(talk.i).some((l) => l.require));
+  /** Your lines come from your side of the table, theirs from theirs (and lines after a hand sit low, over the finished table). */
+  const lowLine = $derived(!!line && line.size !== 'full' && (line.who === 'you' || line.at === 'low'));
   let oppCardsEl = $state<HTMLElement>();
   let communityEl = $state<HTMLElement>();
   let speechAt = $state({ top: 0, bottom: 0 });
@@ -94,11 +96,15 @@
     const table = tableEl.getBoundingClientRect();
     const cards = oppCardsEl.getBoundingClientRect();
     const buttons = actionsEl.getBoundingClientRect().top - 10;
-    if (line.at === 'low' && myPurseEl) {
-      // Over your side: below the name of your hand (which stays readable), down to the buttons.
-      const named = myPurseEl.querySelector('.my-hand')?.getBoundingClientRect().bottom;
-      const from = (named ?? myPurseEl.getBoundingClientRect().top) + 8;
-      speechAt = { top: from - table.top, bottom: table.bottom - buttons };
+    if (lowLine && myPurseEl) {
+      const purse = myPurseEl.getBoundingClientRect();
+      // Your own asides sit over your purse, where your stacks go.
+      if (line.size === 'aside') speechAt = { top: purse.top - table.top, bottom: table.bottom - purse.bottom };
+      else {
+        // Over your side: below the name of your hand (which stays readable), down to the buttons.
+        const named = myPurseEl.querySelector('.my-hand')?.getBoundingClientRect().bottom;
+        speechAt = { top: (named ?? purse.top) + 8 - table.top, bottom: table.bottom - buttons };
+      }
       return;
     }
     const from = line.size === 'full' ? table.top + parseFloat(getComputedStyle(tableEl).paddingTop) : cards.top;
@@ -254,7 +260,9 @@
     if (result.winner === 0) return t('show.youWin');
     if (result.winner === null) return round.potMode ? t('show.split') : t('show.draw');
     const lost = (round.potMode ? round.bets[0] : 0) + (result.forfeit ?? 0);
-    return lost ? t('show.lost', { amount: money(lost) }) : t('show.youLose');
+    if (lost) return t('show.lost', { amount: money(lost) });
+    // A fold with nothing in the pot isn't a defeat (in a lesson it may be the wise move).
+    return result.folded === 0 ? t('show.folded') : t('show.youLose');
   });
   function revealNext() {
     // Past the verdict: the round's closing lines first, if it has any.
@@ -642,7 +650,7 @@
       opponent={line.who === opponentId && line.at !== 'low'}
       top={speechAt.top}
       bottom={speechAt.bottom}
-      grow={line.at === 'low'}
+      grow={lowLine && line.size !== 'aside'}
       onnext={line.replies || line.require ? undefined : () => nextLine()}
     />
   {/if}

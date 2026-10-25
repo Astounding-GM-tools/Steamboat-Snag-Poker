@@ -268,6 +268,7 @@ export const en = {
   'show.draw': 'A dead heat!',
   'show.split': 'Pot split',
   'show.lost': '{amount} lost',
+  'show.folded': 'Folded',
   'call.cat.highCard': 'High card', 'call.cat.pair': 'Pair', 'call.cat.twoPair': 'Two pair',
   'call.cat.threeOfAKind': 'Three of a kind', 'call.cat.straight': 'Straight', 'call.cat.flush': 'Flush',
   'call.cat.fullHouse': 'Full house', 'call.cat.fourOfAKind': 'Four of a kind', 'call.cat.straightFlush': 'Straight flush',
