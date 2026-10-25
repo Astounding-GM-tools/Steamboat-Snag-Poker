@@ -1,8 +1,9 @@
 # Story Mode: design notes
 
-Status: **planning**. The caption overlay is built (`Speech.svelte`, try
-`sayDemo()` in the dev console); everything else here is a proposal. The
-lines are drafts to argue over, not copy.
+Status: **the tutorial is built and live** (Morag's lessons, see
+[tutorial.md](tutorial.md)), and with it the caption system: speakers,
+placement, beats, replies, moves asked for, outcomes and snags. The story
+itself is still a proposal; its lines are drafts to argue over, not copy.
 
 ## Principles
 
@@ -214,8 +215,8 @@ job.
 1. A **character pass**: every captain's name, title, description and voice,
    with the story in mind (who they are, what they want, what they say).
 2. Fill in the landings: who is there, what they want, the format.
-3. The caption system's closing mechanics (countdown, replies, compliance)
-   and the first effects, then Morag's lessons.
+3. Story mode itself: encounters built on what the tutorial already uses
+   (arranged hands, scripts by trigger, snags that outlive a game).
 
 ## Open questions
 
