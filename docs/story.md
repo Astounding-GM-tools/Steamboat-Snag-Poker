@@ -32,8 +32,8 @@ on a new device Morag asks *"Have we met, Captain?"*, and the buttons answer
 
 ## The story
 
-**Muscatine.** The old captain (everyone calls him Father; he may be no one's
-father) has just landed a Big Snag: deliver a horseless carriage to the World's
+**Muscatine.** The old captain, **Steamboat Bill** (everyone aboard calls him
+Father; the player is no relation, just his trusted deckhand), has just landed a Big Snag: deliver a horseless carriage to the World's
 Fair in St. Louis. That is how fin-de-siècle logistics work. It is all
 downriver from here, an easy passage.
 
@@ -165,8 +165,9 @@ Cap'n, Herr Kapitän; Kitty's "Captain of my heart".
   River Gaming*), which she quotes when it suits her.
 - As a tutor: exacting, dry, secretly fond of a good pupil. Praise from her is
   rare and therefore worth something.
-- Perhaps a passenger from Muscatine: teaches you on the first evening,
-  disapproves all the way downriver, and is quietly proud of you at the Fair.
+- She **is** the tutorial. In the story she probably returns as a passenger
+  on the player's boat (name to be found), chasing Finlay downriver,
+  disapproving all the way, quietly proud of you at the Fair.
 
 ## The tutorial (chapter one)
 
@@ -181,6 +182,13 @@ It teaches the caption system as well as the rules.
    for money!"* A stack of buttons appears on each side, and they play for
    the pot.
 4. **Snags,** perhaps: one rides along; you win, and it goes to her.
+
+**The ending is the player's.** Once the buttons are out, after any hand
+Morag may say: *"And now you know why you must stay away from Snag Poker. Now
+hand me my buttons back."* *Not yet* plays on; *Sure, thanks* ends it. Played
+on, it ends for good when either side is out of buttons. The last caption says
+where each button goes, so the labels can stay short: *Menu* (black) and
+*Story* (white).
 
 Needs from the engine: an arranged deck per hand (the shuffle is already
 seeded), and the pot switched off per round (`potMode` exists). Needs from the
@@ -231,7 +239,8 @@ job.
 
 ## Open questions
 
-- Father: who he is to the deckhand, and who calls him ashore.
+- Who calls Steamboat Bill ashore.
+- The name of the boat.
 - How Morag comes aboard, and whether she stays to the Fair.
 - What happens when you run out of money mid-river (a loan from Gaylord?).
 - Banter volume in Tournament mode.
