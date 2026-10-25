@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { anteFor, nextMonth, streetFee, submitAction } from '../engine';
-import { OATH, RESPECT, newTutorial, skipToButtons } from './tutorial';
+import { OATH, RESPECT, newTutorial, rematch, skipToButtons } from './tutorial';
 
 describe('the tutorial', () => {
   it('round one plays as scripted: Ducks full of Ladies beat three aces', () => {
@@ -87,6 +87,24 @@ describe('the tutorial', () => {
     g = submitAction(g, { type: 'compose', cardIds: ['8s', '8d'], jokers: 1 });
     expect(g.phase).toBe('victory');
     expect(g.players[1].jokers.map((j) => j.index).sort()).toEqual([OATH, RESPECT].sort());
+  });
+
+  it('a rematch after the end: a fresh knockout, 20 buttons each, the snags back where they started', () => {
+    let g = skipToButtons(1);
+    g.players[1].money = 5;
+    g = submitAction(g, { type: 'draw', cardIds: [] });
+    g = submitAction(g, { type: 'draw', cardIds: [] });
+    g = submitAction(g, { type: 'compose', cardIds: ['8s', '8d'], jokers: 1 });
+    expect(g.phase).toBe('victory');
+    g = rematch(g);
+    expect(g.phase).toBe('duel');
+    expect(g.month).toBe(4);
+    expect(g.round!.potMode).toBe(true);
+    expect(g.players.map((p) => [p.status, p.jokers.map((j) => j.index)])).toEqual([
+      ['active', [RESPECT]],
+      ['active', [OATH]],
+    ]);
+    expect(g.players.map((p) => p.money)).toEqual([20, 20]);
   });
 
   it('is the same deal whatever the seed', () => {

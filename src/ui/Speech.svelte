@@ -41,6 +41,8 @@
     when?: 'won' | 'dumped' | 'kept' | 'lost' | 'wonAll' | 'lostAll';
     /** They show their hand (even after a fold): the cards turn face up, and the words follow. */
     show?: boolean;
+    /** Only reached by a reply that goes to it (by `id`): the conversation passes it by otherwise. */
+    branch?: boolean;
     /** Only while these snags (by number) are where it says: with `you`, or with `them`. Snags outlive the game. */
     holding?: { snag: number; by: 'you' | 'them' }[];
     /**

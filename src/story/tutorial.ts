@@ -93,6 +93,14 @@ export function skipToButtons(seed: number): GameState {
   return nextMonth(giveButtons(g));
 }
 
+/** Another knockout after the last: 20 buttons each again, Respect back with you and the Oath with her. */
+export function rematch(prev: GameState): GameState {
+  const state = giveButtons(prev);
+  for (const p of state.players) p.status = 'active';
+  state.phase = 'monthEnd';
+  return nextMonth(state);
+}
+
 export function newTutorial(seed: number): GameState {
   const morag = ROSTER.find((c) => c.id === 'morag')!;
   return newGame(seed, config, [{ def: morag, joins: 'start' }], {
@@ -115,7 +123,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['Cleaned out by a deckhand.', 'And I do hold a grudging respect for you, it seems. Well done.'],
-    replies: [{ label: 'Next' }],
+    replies: [{ label: 'Rematch', go: 'rematch' }, { label: 'Next' }],
   },
   {
     when: 'wonAll',
@@ -123,7 +131,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['Cleaned out by a deckhand.', 'Yet your snag remains with you.'],
-    replies: [{ label: 'Next' }],
+    replies: [{ label: 'Rematch', go: 'rematch' }, { label: 'Next' }],
   },
   {
     when: 'lostAll',
@@ -131,7 +139,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['You are out of buttons.', 'But I do find myself holding a grudging respect for you.'],
-    replies: [{ label: 'Next' }],
+    replies: [{ label: 'Rematch', go: 'rematch' }, { label: 'Next' }],
   },
   {
     // Not yet written: the plain loss, Respect still yours.
@@ -140,7 +148,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['You are out of buttons.', 'And your snag remains with you.'],
-    replies: [{ label: 'Next' }],
+    replies: [{ label: 'Rematch', go: 'rematch' }, { label: 'Next' }],
   },
   {
     holding: [{ snag: OATH, by: 'you' }],
@@ -148,6 +156,15 @@ const AFTER: SpeechLine[] = [
     who: M,
     text: ['Now you know what Snag Poker is.', 'Do you swear never to play this game for money?'],
     replies: [{ label: 'I swear' }, { label: 'Yes. I do.' }],
+  },
+  {
+    // A rematch for buttons: no money, so her oath is safe. Draft.
+    id: 'rematch',
+    branch: true,
+    size: 'scene',
+    who: M,
+    text: ['Buttons are not money, child.', 'My oath is quite safe. Deal.'],
+    replies: [{ label: 'Deal', effect: 'rematch', end: true }],
   },
 ];
 

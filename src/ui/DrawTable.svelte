@@ -132,7 +132,9 @@
   /** On to the line named `go`, or the next in order; past the last, the conversation is over. */
   function nextLine(go?: string) {
     if (!talk) return;
-    const i = go ? talk.lines.findIndex((l) => l.id === go) : talk.i + 1;
+    const lines = talk.lines;
+    // In order, a branch is passed by: only a reply leads there.
+    const i = go ? lines.findIndex((l) => l.id === go) : lines.findIndex((l, k) => k > talk!.i && !l.branch);
     talk = i >= 0 && i < talk.lines.length ? { ...talk, i } : null;
     if (!talk) talkOver();
   }

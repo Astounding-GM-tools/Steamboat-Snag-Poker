@@ -7,7 +7,7 @@
   import Table from './Table.svelte';
   import Title from './Title.svelte';
   import { loadBest, loadGame, recordResult, saveGame } from './storage';
-  import { giveButtons, newTutorial, skipToButtons, tutorialScript, TUTORIAL } from '../story/tutorial';
+  import { giveButtons, newTutorial, rematch, skipToButtons, tutorialScript, TUTORIAL } from '../story/tutorial';
   import { roundScript, type Script } from '../story/script';
 
   /** Lessons and story encounters, by the id a game carries. */
@@ -61,7 +61,11 @@
   function talkEffect(effect: string) {
     if (effect === 'end') pause();
     else if (effect === 'next') next();
-    else if (effect === 'buttons' && game) {
+    else if (effect === 'rematch' && game) {
+      // Another knockout, for buttons, from the start.
+      stage = 'play';
+      setGame(rematch(game));
+    } else if (effect === 'buttons' && game) {
       // The lesson's last arranged round is over: out come the buttons, and on to a real game.
       game = giveButtons(game);
       next();
