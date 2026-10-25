@@ -171,28 +171,8 @@ Cap'n, Herr Kapitän; Kitty's "Captain of my heart".
 
 ## The tutorial (chapter one)
 
-A few hands against Morag with **arranged decks**, each teaching one thing.
-It teaches the caption system as well as the rules.
-
-1. **Swapping,** with no pot at all: a compliance caption, *"Throw away that
-   four, child. It is doing you no favours."*
-2. **Check, call, fold** and making a hand from the board: a reply.
-3. **The pot.** *"The most vile aspect of this dreadful game is the betting.
-   Here, we can play for buttons, so you get the gist. You should NEVER play
-   for money!"* A stack of buttons appears on each side, and they play for
-   the pot.
-4. **Snags,** perhaps: one rides along; you win, and it goes to her.
-
-**The ending is the player's.** Once the buttons are out, after any hand
-Morag may say: *"And now you know why you must stay away from Snag Poker. Now
-hand me my buttons back."* *Not yet* plays on; *Sure, thanks* ends it. Played
-on, it ends for good when either side is out of buttons. The last caption says
-where each button goes, so the labels can stay short: *Menu* (black) and
-*Story* (white).
-
-Needs from the engine: an arranged deck per hand (the shuffle is already
-seeded), and the pot switched off per round (`potMode` exists). Needs from the
-UI: a button face for the coins.
+Morag's lessons, three rounds and a pickle played for buttons: the script,
+the arranged decks and what the build needs are in [tutorial.md](tutorial.md).
 
 ## Landings (a dozen to aim for; six good ones will do)
 
