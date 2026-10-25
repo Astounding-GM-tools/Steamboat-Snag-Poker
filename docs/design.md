@@ -321,8 +321,8 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    table: them, the river, you, the two buttons. A card is two columns wide,
    so card rows line up edge to edge: three cards in columns 1–6, the snag fan
    in 7–10, the discards in 11–12; Fold spans 1–6 and the main button 7–12; the
-   board sits centred in 2–11; the opponent's name and coins take 1–9 and the
-   portrait 10–12. Captions will span named rows (center only, center and
+   board sits centred in 2–11; the opponent's name and coins take 1–8 and a
+   round portrait 9–12, rising a little above its row. Captions will span named rows (center only, center and
    bottom, or everything above the buttons).
    The table keeps its natural height, anchored to the bottom so its two
    buttons sit exactly where the title screen's do, with even gaps between the

@@ -692,42 +692,53 @@
   .opponent {
     row-gap: 0.5rem;
   }
-  /* Name and title over their coins in columns 1–9; the portrait in 10–12. */
+  /* Name and title over their coins in columns 1–8; the portrait in 9–12. */
   .opp-head {
     display: grid;
     grid-template-columns: subgrid;
     grid-column: 1 / -1;
   }
   .opp-left {
-    grid-column: 1 / 10;
+    grid-column: 1 / 9;
     min-width: 0;
     display: flex;
     flex-direction: column;
   }
-  /* Centred in the space beside the portrait. */
+  /* Centred in the space beside the portrait; a long title wraps rather than spill. */
   .opp-left .name-btn {
     align-self: center;
+    max-width: 100%;
+  }
+  .opp-left .title {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.15;
   }
   /* Lifted clear of their cards, into the room under the name. */
   .opp-purse {
     transform: translateY(-12px);
   }
+  /* The portrait sits on the bottom of the head row and may rise above it, so it never makes the row taller. */
   .portrait-btn {
-    grid-column: 10 / 13;
-    display: flex;
-    align-items: center;
+    grid-column: 9 / 13;
+    position: relative;
+    display: block;
     padding: 0;
     background: none;
     border: none;
     outline: none;
     box-shadow: none;
   }
-  /* A round portrait, as wide as its three columns, centred beside name and coins. */
+  /* A round portrait, as wide as its four columns. */
   .portrait {
+    position: absolute;
+    right: 0;
+    bottom: 0;
     width: 100%;
+    height: auto;
     aspect-ratio: 1;
     border-radius: 50%;
-    font-size: 2.6rem;
+    font-size: 3.2rem;
   }
   .river {
     position: relative;
