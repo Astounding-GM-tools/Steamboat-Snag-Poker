@@ -24,9 +24,20 @@ const roundOne: ArrangedHand = {
   opponent: [STAND_PAT, STAND_PAT, { type: 'compose', cardIds: ['Ac', 'Ad'], jokers: 0 }],
 };
 
+/**
+ * Round two, the wise fold. You: J♠ J♦ 3♣, a pair; Morag: Q♥ 10♥ 5♣, a flush
+ * on the Flop (A♥ K♥ 9♥), the best there is. She stands pat twice; the Turn
+ * brings a fourth heart, you have none, and her untouched hand says the rest.
+ * (The J♥ would have made her a royal flush.)
+ */
+const roundTwo: ArrangedHand = {
+  deck: ['Ah', 'Kh', '9h', 'Js', 'Qh', 'Jd', 'Th', '3c', '5c', '4h'],
+  opponent: [STAND_PAT, STAND_PAT],
+};
+
 export function newTutorial(seed: number): GameState {
   const morag = ROSTER.find((c) => c.id === 'morag')!;
-  return newGame(seed, config, [{ def: morag, joins: 'start' }], { story: TUTORIAL, arranged: [roundOne] });
+  return newGame(seed, config, [{ def: morag, joins: 'start' }], { story: TUTORIAL, arranged: [roundOne, roundTwo] });
 }
 
 const M = 'morag';
@@ -67,8 +78,31 @@ export const tutorialScript: Script = [
         text: 'Deuces, child. Ducks, on the river. Aces are bullets, and so on. Knowing how ducks beat bullets is the same as knowing when to fold and when to call.',
         replies: [{ label: 'Call?' }, { label: 'Fold?' }],
       },
-      // Round two isn't written yet: for now the lesson ends here.
-      { size: 'scene', who: M, text: 'I forgot to show you. Here, look.', replies: [{ label: 'Next', effect: 'end', end: true }] },
+      { size: 'scene', who: M, text: 'I forgot to show you. Here, look.', replies: [{ label: 'Next', effect: 'next', end: true }] },
+    ],
+  },
+  {
+    flop: [{ size: 'aside', who: M, text: 'Want to trade in any card, or check up on what comes next?', require: [] }],
+    turn: [
+      { size: 'aside', who: M, text: 'When there’s no cost to stay in the game, that is a Check.' },
+      { size: 'aside', who: M, text: 'Four hearts in the middle, and I’ve not traded a card. Well?', replies: [{ label: 'Fold?' }] },
+      { size: 'aside', who: M, text: 'Fold.', require: 'fold' },
+    ],
+    verdict: [
+      { size: 'scene', who: M, text: 'Wise. My queen of hearts made the best flush there is.', replies: [{ label: 'Best?' }] },
+      {
+        size: 'scene',
+        who: M,
+        text: 'Nothing on this table could beat it. And that’s how you dodge snags: you win, or you fold wisely.',
+        replies: [{ label: 'Snag?' }],
+      },
+      // The pickle isn't written yet: for now the lesson ends with the buttons.
+      {
+        size: 'scene',
+        who: M,
+        text: 'Ah yes, snags. We’d need some stakes for that. Here, have some buttons, so we have something for the pot.',
+        replies: [{ label: 'Next', effect: 'end', end: true }],
+      },
     ],
   },
 ];

@@ -74,6 +74,7 @@
     const want = line?.require;
     // A move asked for later in the conversation: no playing ahead of it.
     if (!want) return !talk?.lines.slice(talk.i).some((l) => l.require);
+    if (want === 'fold') return false;
     if (tapped.length !== want.length || tappedJokers.length) return false;
     // Whole cards first, then ranks, so `4c` and `4` both find their four.
     const open = [...want].sort((a, b) => b.length - a.length);
@@ -388,6 +389,11 @@
     untrack(() => fire(trigger));
   });
 
+  // A round that ends in a fold has no showdown: its closing lines come as it ends.
+  $effect(() => {
+    if (!playing && result?.folded != null) untrack(() => fire('verdict'));
+  });
+
   let lastKey = '';
   $effect.pre(() => {
     const key = `${game.month}:${round.street}`;
@@ -583,13 +589,14 @@
           ? priced(t('draw.call'))
           : t('draw.check'),
   );
-  const showFold = $derived(round.potMode && playing && !composing);
+  const showFold = $derived(playing && !composing);
   // Folding gives up everything you have put into the pot so far.
   const foldLabel = $derived(bets[0] ? `${t('draw.fold')} · ${dollars(bets[0])}` : t('draw.fold'));
 
   function fold() {
     if (!playing || dealing || !canFold(round, 0)) return;
     tapped = [];
+    if (line?.require === 'fold') nextLine();
     onaction({ type: 'fold' });
   }
 
@@ -793,7 +800,7 @@
       <button onclick={revealNext}>{verdictShown ? `${verdictLabel} ▸` : t('show.next')}</button>
     {:else}
       <!-- A line asking for a move: only that move will do (no folding your way out of a lesson). -->
-      <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0) || !complies || !!line?.require}>{foldLabel}</button>
+      <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0) || (line?.require ? line.require !== 'fold' : !complies)}>{foldLabel}</button>
       <button onclick={go} disabled={!playing || dealing || !complies}>{buttonLabel}</button>
     {/if}
   </div>

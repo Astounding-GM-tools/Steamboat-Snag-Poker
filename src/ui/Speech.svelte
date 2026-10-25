@@ -27,9 +27,10 @@
     /**
      * The line waits for a move at the table: these cards tapped, and only
      * these, then the white button. A rank (`4`, `T`, `A`) matches any suit;
-     * a card (`4c`) only itself. An empty list is standing pat. The move closes it.
+     * a card (`4c`) only itself. An empty list is standing pat; `fold` is the
+     * black button. The move closes it.
      */
-    require?: string[];
+    require?: string[] | 'fold';
   }
 
   /** How long a line stays up when it closes by itself. */

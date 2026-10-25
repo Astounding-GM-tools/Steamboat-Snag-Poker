@@ -221,13 +221,13 @@ export function subsets<T>(items: readonly T[]): T[][] {
 }
 
 /**
- * Pot mode: you may fold on the Flop or the Turn, whatever you've swapped. Never
- * on the River: by then folding would only be a way to dodge snags, so you face
- * the showdown and take what comes.
+ * Draw style: you may fold on the Flop or the Turn, whatever you've swapped
+ * (with a pot, or in a lesson without one). Never on the River: by then folding
+ * would only be a way to dodge snags, so you face the showdown and take what comes.
  */
 export function canFold(round: RoundState, seatIndex: number): boolean {
   void seatIndex;
-  return round.potMode && !round.result && round.street < 2;
+  return round.playStyle === 'draw' && !round.result && round.street < 2;
 }
 
 /** Pot mode: what an action costs the seat (street fee plus discard fees). */

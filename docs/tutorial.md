@@ -1,7 +1,7 @@
 # The tutorial: Morag's lessons
 
-Status: **round one is playable** at `/?tutorial` (the deck and lines in
-`src/story/tutorial.ts`); the rest is script in progress. Chapter one of the story, and canon: the
+Status: **rounds one and two are playable** at `/?tutorial` (the decks and
+lines in `src/story/tutorial.ts`); the pickle is still to design. Chapter one of the story, and canon: the
 deckhand meets Morag MacTavish, who is looking for her husband, and learns
 Snag Poker from the one person on the river who disapproves of it. See
 [story.md](story.md) for the caption system and the story around it.
@@ -74,22 +74,41 @@ deuces, which look like a disaster for half a second.
     call."* → **Call?** / **Fold?**
 16. *"I forgot to show you. Here, look."* She deals round two.
 
-## Round two: check, then fold (no pot)
+## Round two: the wise fold (no pot)
 
-A hand that goes nowhere: you check on the Flop and fold on the Turn. Calling
-waits for round three, since with no pot there is no fee to call.
+| | You | Morag | Board |
+|---|---|---|---|
+| Deal | J♠ J♦ 3♣ | Q♥ 10♥ 5♣ | |
+| Flop | check | stands pat | A♥ K♥ 9♥ |
+| Turn | fold | stands pat | 4♥ |
 
-- On the Flop you can only **Check**.
-- On the Turn, something like *"That hand is going nowhere. Fold it."* → you
-  must **Fold**.
-- *"And that's how you dodge snags: you win, or you fold wisely."* →
-  **Snag?**
-- *"Ah yes, snags. We'd need some stakes for that. Here, have some buttons, so
-  we have something for the pot."* The buttons appear, a stack on each side.
-  (An earlier line that may still find a place: *"You should NEVER play for
-  money!"*)
+Your pair of jacks is decent on the Flop. Morag has a flush already, the best
+there is (no other flush beats it, no straight flush can be made; the J♥
+would have made her a royal). The Turn brings a fourth heart: any heart makes
+a flush, you hold none, and she has not traded a single card. Her discards are
+the tell: that is the lesson.
 
-Deck: to be arranged.
+**The Flop** (aside)
+
+1. *"Want to trade in any card, or check up on what comes next?"* → you must
+   **Check**.
+
+**The Turn** (asides)
+
+2. *"When there's no cost to stay in the game, that is a Check."*
+3. *"Four hearts in the middle, and I've not traded a card. Well?"* →
+   **Fold?**
+4. *"Fold."* → you must **Fold**.
+
+**After the fold** (scene)
+
+5. *"Wise. My queen of hearts made the best flush there is."* → **Best?**
+6. *"Nothing on this table could beat it. And that's how you dodge snags: you
+   win, or you fold wisely."* → **Snag?**
+7. *"Ah yes, snags. We'd need some stakes for that. Here, have some buttons, so
+   we have something for the pot."* The buttons appear. (Snags are explained
+   when one first comes up, in the pickle. An earlier line that may still
+   find a place: *"You should NEVER play for money!"*)
 
 ## Round three and on: the pickle (buttons)
 
@@ -127,7 +146,6 @@ Deck: to be designed.
 
 ## Open
 
-- Round two's deck, and Morag's line on the Turn.
 - The pickle's deck, and whether a snag rides in it.
 - The first-call line is long for an aside: shown as a scene before the
   decision, or trimmed.

@@ -49,6 +49,7 @@
   /** Something an answer in a conversation set going. */
   function talkEffect(effect: string) {
     if (effect === 'end') pause();
+    else if (effect === 'next') next();
     else if (import.meta.env.DEV) console.info('talk effect:', effect);
   }
 
@@ -68,11 +69,13 @@
       if (g.config.playStyle === 'draw') {
         const folded = g.round?.result?.folded != null;
         settled = folded;
-        if (folded) {
+        if (!folded) stage = 'reveal';
+        // A lesson's fold ends in conversation (which says where to go), not in the standings.
+        else if (!g.story) {
           // Nothing to reveal: let the pot fly to the winner, then show the result card.
           clearTimeout(endTimer);
           endTimer = setTimeout(() => (stage = 'result'), 1200);
-        } else stage = 'reveal';
+        }
       }
       else {
         // Slots style: let the showdown sit on the table for a beat.
