@@ -93,8 +93,16 @@
     if (!line || !tableEl || !actionsEl || !oppCardsEl || !communityEl) return;
     const table = tableEl.getBoundingClientRect();
     const cards = oppCardsEl.getBoundingClientRect();
+    const buttons = actionsEl.getBoundingClientRect().top - 10;
+    if (line.at === 'low' && myPurseEl) {
+      // Over your side: below the name of your hand (which stays readable), down to the buttons.
+      const named = myPurseEl.querySelector('.my-hand')?.getBoundingClientRect().bottom;
+      const from = (named ?? myPurseEl.getBoundingClientRect().top) + 8;
+      speechAt = { top: from - table.top, bottom: table.bottom - buttons };
+      return;
+    }
     const from = line.size === 'full' ? table.top + parseFloat(getComputedStyle(tableEl).paddingTop) : cards.top;
-    const to = line.size === 'aside' ? cards.bottom : line.size === 'scene' ? communityEl.getBoundingClientRect().bottom : actionsEl.getBoundingClientRect().top - 10;
+    const to = line.size === 'aside' ? cards.bottom : line.size === 'scene' ? communityEl.getBoundingClientRect().bottom : buttons;
     speechAt = { top: from - table.top, bottom: table.bottom - to };
   }
   $effect(() => {
@@ -391,7 +399,8 @@
     const lines = script?.[trigger]?.filter((l) => !l.when || l.when === outcome);
     if (!lines?.length || fired.has(key)) return false;
     fired.add(key);
-    say(lines);
+    // After the hand, the table speaks over your side: her cards and the board are what's being talked about.
+    say(trigger === 'verdict' ? lines.map((l) => (l.size === 'full' ? l : { ...l, at: 'low' })) : lines);
     return true;
   }
   // A street's lines once its cards are on the table.
@@ -630,9 +639,10 @@
     <Speech
       {line}
       name={speakerName(line.who)}
-      opponent={line.who === opponentId}
+      opponent={line.who === opponentId && line.at !== 'low'}
       top={speechAt.top}
       bottom={speechAt.bottom}
+      grow={line.at === 'low'}
       onnext={line.replies || line.require ? undefined : () => nextLine()}
     />
   {/if}
@@ -651,7 +661,7 @@
         <div class="opp-purse" bind:this={theirPurseEl}>{#if round.potMode}<Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} />{/if}</div>
       </div>
       <button class="portrait-btn" onclick={() => (showCaptain = !showCaptain)} aria-label={name(opponentId)}>
-        <span class="oval portrait">{name(opponentId)[0]}{#if line && lineMs && line.who === opponentId && line.size !== 'full'}{#key line}<Countdown ms={lineMs} />{/key}{/if}</span>
+        <span class="oval portrait">{name(opponentId)[0]}{#if line && lineMs && line.who === opponentId && line.size !== 'full' && line.at !== 'low'}{#key line}<Countdown ms={lineMs} />{/key}{/if}</span>
       </button>
     </div>
     <div class="opp-cards" bind:this={oppCardsEl}>
@@ -1176,6 +1186,9 @@
   }
   .table.solo > .actions {
     grid-row: 4;
+    /* Above the film's vignette and grain: the buttons must read clearly, whatever the edges do. */
+    position: relative;
+    z-index: 51;
   }
   .table.solo > section > :global(*) {
     grid-column: 1 / -1;

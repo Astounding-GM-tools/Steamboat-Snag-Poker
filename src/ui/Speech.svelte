@@ -38,6 +38,8 @@
      * yours or all of it theirs.
      */
     when?: 'won' | 'lost' | 'wonAll' | 'lostAll';
+    /** Over your side of the table instead (the table puts lines after a hand there, so the cards they talk about stay in view). */
+    at?: 'low';
   }
 
   /** How long a line stays up when it closes by itself. */
@@ -76,6 +78,7 @@
     opponent,
     top,
     bottom,
+    grow = false,
     onnext,
   }: {
     line: SpeechLine;
@@ -85,19 +88,23 @@
     opponent: boolean;
     top: number;
     bottom: number;
+    /** Grows upward past `top` when the words need more room (`top` is then its least height's edge). */
+    grow?: boolean;
     /** Tapping the caption: absent while the line waits for an answer or a move. */
     onnext?: () => void;
   } = $props();
 
   const ms = $derived(autoMs(line));
+
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 <div
   class="speech {line.size}"
+  class:low={line.at === 'low'}
   class:notch={opponent && line.size !== 'full'}
   class:waits={!onnext}
-  style="top: {top}px; bottom: {bottom}px"
+  style={grow ? `bottom: ${bottom}px; min-height: calc(100% - ${top + bottom}px)` : `top: ${top}px; bottom: ${bottom}px`}
   onclick={(e) => (e.stopPropagation(), onnext?.())}
   role="status"
   aria-live="polite"
@@ -192,12 +199,26 @@
     text-wrap: balance;
     animation: appear 0.3s ease-out backwards;
   }
+  /* Separate sentences, separate paragraphs (in an aside, beats sit closer). */
+  .beat + .beat {
+    margin-top: 0.9em;
+  }
+  .aside .beat + .beat {
+    margin-top: 0.2em;
+  }
   .aside p {
     font-size: 1rem;
     line-height: 1.25;
   }
   .scene p {
     font-size: 1.2rem;
+  }
+  /* Over your side there's a little less room. */
+  .low p {
+    font-size: 1.05rem;
+  }
+  .low .who {
+    margin-bottom: 0.35rem;
   }
   .full p {
     font-size: 1.25rem;

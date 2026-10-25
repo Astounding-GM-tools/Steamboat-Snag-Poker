@@ -233,9 +233,9 @@
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: subgrid;
-    /* Above the title card's spotlight shadow, which dims everything around it. */
+    /* Above the title card's spotlight shadow, and the film's vignette and grain: the buttons must read clearly. */
     position: relative;
-    z-index: 1;
+    z-index: 51;
   }
   .actions {
     grid-column: 1 / -1;

@@ -197,7 +197,10 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
-          text: 'Deuces, child. Ducks, on the river. Aces are bullets, and so on. Knowing how ducks beat bullets is the same as knowing when to fold and when to call.',
+          text: [
+            'Deuces, child. Ducks, on the river. Aces are bullets, and so on.',
+            'Knowing how ducks beat bullets is the same as knowing when to fold and when to call.',
+          ],
           replies: [{ label: 'Call?' }, { label: 'Fold?' }],
         },
         {
