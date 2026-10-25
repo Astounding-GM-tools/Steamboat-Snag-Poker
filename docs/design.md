@@ -359,7 +359,7 @@ the cards each hand uses, result and snags moved), saved with the voyage.
 Not reachable in the game for now (the rules lab that opened it is gone); it
 may come back in a Menu.
 
-**Starting:** a brand-new player (no saved game) goes straight to the table.
+**Starting:** the title screen first, for everyone (a brand-new player gets just the white New).
 **How it works** (the ? on the table or the title) is a plain page over the
 screen, closed by the white Close button; on the table the black one is Menu.
 No options: the deal is the real deal (fast only for reduced motion), cards
