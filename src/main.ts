@@ -1,5 +1,6 @@
 import { mount } from 'svelte';
 import App from './ui/App.svelte';
+import { filmCadence } from './ui/cadence';
 import './ui/app.css';
 import './ui/table.css';
 
@@ -8,3 +9,4 @@ import './ui/table.css';
 document.documentElement.classList.toggle('short', window.innerHeight <= 740);
 
 mount(App, { target: document.getElementById('app')! });
+filmCadence();
