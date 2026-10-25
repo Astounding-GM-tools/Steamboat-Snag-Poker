@@ -518,6 +518,11 @@
     for (const c of resting) c.remove();
     resting = [];
   }
+  // Resting coins are drawn over the whole table: a caption over your side would show them through it, so they wait under it.
+  $effect(() => {
+    const hide = lowLine;
+    for (const c of resting) c.style.visibility = hide ? 'hidden' : '';
+  });
 
   /** One coin from one spot on screen to another; resolves when it lands. `stay` leaves it there. */
   function fly(from: DOMRect, to: DOMRect, delay: number, stay = false): Promise<void> {
