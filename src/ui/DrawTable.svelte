@@ -209,7 +209,11 @@
   /** After the round (not the last): the standings on the table. */
   const standing = $derived(stage === 'result' && game.phase === 'monthEnd' && !!game.report);
   const revealStep = $derived(revealing && steps.length ? steps[Math.min(revealIndex, steps.length - 1)] : null);
-  const verdictShown = $derived(revealing && (!steps.length || !!revealStep?.last));
+  /** The cards they kept back turn over after the played ones, one at a time like the rest (dimmed: they don't count). */
+  const heldBack = $derived(shownDown ? them.hand.filter((c) => dealt.has(c.id)) : []);
+  const lastStep = $derived(steps.length + heldBack.length - 1);
+  /** The verdict waits until the last card is on the felt. */
+  const verdictShown = $derived(revealing && revealIndex >= lastStep);
   $effect(() => {
     if (verdictShown) untrack(() => onverdict?.());
   });
@@ -223,21 +227,25 @@
   /** Once the verdict is in, only the winning hand gets its exclamation mark. */
   const decided = $derived(shownDown && (verdictShown || stage === 'result'));
   const theirCall = $derived(theirHand ? handLabel(theirHand, { exclaim: decided && result?.winner === 1 }) : null);
-  /** The third line: what could still come, or what decided it. */
+  /** The third line, once the last card is down: what decided it, on a tie-break. (No odds while the cards turn: let them play out.) */
   const theirNote = $derived.by(() => {
-    if (!revealing || !result) return '';
-    if (!verdictShown && revealStep) {
-      const pct = `${Math.round(revealStep.threat * 100)}%`;
-      if (revealStep.possible.length) return t('show.stillOpen', { hand: t(`call.cat.${revealStep.possible[0]}`), pct });
-      return revealStep.threat > 0 ? t('show.against', { pct }) : '';
-    }
+    if (!revealing || !result || !verdictShown) return '';
     if (result.winner === null) return '';
     const tb = tiebreak(result.hands[result.winner], result.hands[1 - result.winner]);
     return tb ? t(`show.tb.${tb.kind}.${result.winner === 0 ? 'you' : 'them'}`, { name: name(opponentId), win: tb.winner, lose: tb.loser }) : '';
   });
-  const verdictLabel = $derived(
-    result?.winner === 0 ? t('show.youWin') : result?.winner === 1 ? t('show.youLose') : t('show.draw'),
-  );
+  /**
+   * The result, where the pot was, once the last card is down (or a fold ends
+   * the hand) and the coins have gone: a win, or what it cost you.
+   */
+  const outcomeShown = $derived(!playing && !!result && (decided || result.folded != null));
+  const outcomeText = $derived.by(() => {
+    if (!result) return '';
+    if (result.winner === 0) return t('show.youWin');
+    if (result.winner === null) return round.potMode ? t('show.split') : t('show.draw');
+    const lost = (round.potMode ? round.bets[0] : 0) + (result.forfeit ?? 0);
+    return lost ? t('show.lost', { amount: money(lost) }) : t('show.youLose');
+  });
   function revealNext() {
     // Past the verdict: the round's closing lines first, if it has any.
     if (verdictShown && !fire('verdict')) onrevealed?.();
@@ -246,7 +254,7 @@
   function revealSkip() {
     onverdict?.();
     // Skipping to the verdict still hears the round's closing lines, over the finished showdown.
-    revealPos = { month: game.month, i: steps.length - 1 };
+    revealPos = { month: game.month, i: lastStep };
     if (!fire('verdict')) onrevealed?.();
   }
   /** Board cards each hand uses: theirs marked above, yours below. */
@@ -586,8 +594,8 @@
   );
   /** A price on the table: dollars, or in the lessons, buttons. */
   const money = (n: number) => (game.currency === 'buttons' ? t(n === 1 ? 'money.button' : 'money.buttons', { n }) : dollars(n));
-  /** On the action buttons there's only room for the figure: buttons go uncounted, dollars keep their sign. */
-  const price = (n: number) => (game.currency === 'buttons' ? String(n) : dollars(n));
+  /** On the action buttons there's only room for a sign and the figure: $3, or ⚇3 (a button, two holes). */
+  const price = (n: number) => (game.currency === 'buttons' ? `⚇${n}` : dollars(n));
   const priced = (label: string) => (cost ? `${label} · ${price(cost)}` : label);
   const buttonLabel = $derived(
     composing
@@ -649,9 +657,10 @@
       {#each theirPlayed.filter((c) => !isJoker(c)) as card (card.id)}
         {#if faceUp.has(card.id)}<CardView {card} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
       {/each}
-      <!-- Held back, but at the verdict shown too (dimmed): you get to see how they play. -->
-      {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
-        {#if decided}<CardView {card} faded fresh={stage === 'reveal'} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
+      <!-- Held back, but turned over too (dimmed), one per Next after the played ones: you get to see how they play. -->
+      {#each them.hand.filter((c) => dealt.has(c.id)) as card, k (card.id)}
+        {@const turned = decided || (revealing && revealIndex >= steps.length + k)}
+        {#if turned}<CardView {card} faded fresh={revealing && revealIndex === steps.length + k} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
       {/each}
       </div>
       <div class="fan-cell">
@@ -693,7 +702,10 @@
     <div class="river-body" class:cleared={standing}>
       <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
       <!-- With no pot (the first lessons) it stays, empty, so the table keeps its shape. -->
-      <div class="pot-band" bind:this={potEl}><Pot bets={potBets} paid={!!payout} /></div>
+      <div class="pot-band" bind:this={potEl}>
+        <Pot bets={potBets} paid={!!payout} />
+        {#if outcomeShown}<p class="outcome" class:won={result?.winner === 0} aria-live="polite">{outcomeText}</p>{/if}
+      </div>
       <div class="community" bind:this={communityEl}>
         {#each Array.from({ length: boardSize }) as _, i}
           {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
@@ -806,7 +818,7 @@
       <button onclick={() => onnext?.()}>{t('end.next')}</button>
     {:else if revealing}
       <button class="ghost" onclick={revealSkip}>{t('show.skip')}</button>
-      <button onclick={revealNext}>{verdictShown ? `${verdictLabel} ▸` : t('show.next')}</button>
+      <button onclick={revealNext}>{t('show.next')}</button>
     {:else}
       <!-- A line asking for a move: only that move will do (no folding your way out of a lesson). -->
       <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0) || (line?.require ? line.require !== 'fold' : !complies)}>{foldLabel}</button>
@@ -994,7 +1006,36 @@
     padding: 0.2rem 0;
   }
   .pot-band {
+    position: relative;
     margin: 0.2rem 0 0.5rem;
+  }
+  /* The result takes the pot's place once the coins have flown. */
+  .outcome {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    font-family: var(--title-font);
+    font-size: 1.6rem;
+    letter-spacing: 0.06em;
+    color: var(--grey);
+    animation: outcome 0.4s ease-out 0.8s backwards;
+  }
+  .outcome.won {
+    font-size: 2rem;
+    color: var(--paper);
+  }
+  @keyframes outcome {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .outcome {
+      animation: none;
+    }
   }
   /*
    * Card rows (theirs and yours) on the grid: three cards in columns 1–6, the

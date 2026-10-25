@@ -126,7 +126,7 @@ goes in before the pot and the snags arrive.)
   your Respect; how it goes is anyone's guess, and it can be played again and
   again.
 - The buttons are drawn as sewing buttons, and prices on the action buttons
-  are bare figures (*Call · 1*).
+  use ⚇ for a button (*Call · ⚇1*).
 
 **When the snags arrive** (first hand only; drafts, the snag explanation still
 to be written properly)
@@ -142,16 +142,13 @@ to be written properly)
 next card. You can fold, or pay to stay in the game: that's a call."* →
 **Call?**
 
-**After every hand** (no standings between hands)
+**The knockout runs until one side is unbuttoned** (no standings between
+hands, no offer to stop: poker is the long game, Snag Poker doubly so).
 
-- You won: *"And now you know why you must stay away from Snag Poker. Now hand
-  me my buttons back."* → **Not yet** (the next hand) / **Sure, thanks** →
-  *"Good. And remember: never for money."* (the end)
 - You have all the buttons: *"Cleaned out by a deckhand. Not a word of this to
   Finlay."*
 - She has all the buttons: *"And that, child, is why you never play for
   money."*
-- After a lost hand the next one is dealt without a word.
 
 For now every ending goes back to the title. Later the last caption offers
 **Menu** (black) and **Story** (white).

@@ -90,22 +90,8 @@ export function newTutorial(seed: number): GameState {
 
 const M = 'morag';
 
-/** After every hand of the knockout: an offer after a win, and the last word when someone is out of buttons. */
+/** The knockout ends when one side is unbuttoned: her last word, whichever way it went. */
 const AFTER: SpeechLine[] = [
-  {
-    when: 'won',
-    size: 'scene',
-    who: M,
-    text: 'And now you know why you must stay away from Snag Poker. Now hand me my buttons back.',
-    replies: [{ label: 'Not yet', effect: 'next', end: true }, { label: 'Sure, thanks' }],
-  },
-  {
-    when: 'won',
-    size: 'scene',
-    who: M,
-    text: 'Good. And remember: never for money.',
-    replies: [{ label: 'Next', effect: 'end', end: true }],
-  },
   {
     when: 'wonAll',
     size: 'scene',
