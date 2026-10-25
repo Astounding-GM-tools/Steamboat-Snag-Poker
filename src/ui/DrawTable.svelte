@@ -134,11 +134,16 @@
     if (!talk) return;
     const i = go ? talk.lines.findIndex((l) => l.id === go) : talk.i + 1;
     talk = i >= 0 && i < talk.lines.length ? { ...talk, i } : null;
+    if (!talk) talkOver();
   }
   function answer(reply: Reply) {
     if (reply.effect) ontalk?.(reply.effect);
     if (reply.end) talk = null;
     else nextLine(reply.go);
+  }
+  /** A story's conversation after a hand, over: on to the next hand (or home, if someone is out of money), without a word more. */
+  function talkOver() {
+    if (script && !playing) onrevealed?.();
   }
   const speakerName = (who: string) => (who === 'you' ? t('character.captain.you') : who === 'willie' ? t('willie.name') : name(who));
   const lineMs = $derived(line ? autoMs(line) : null);
@@ -418,8 +423,9 @@
   function fire(trigger: Trigger): boolean {
     const key = `${game.month}:${trigger}`;
     const won = result?.winner === 0;
+    // Dumped or kept only while the game goes on: at the end, the last word says it all.
     const outcomes = won
-      ? [game.phase === 'victory' ? 'wonAll' : 'won', result!.dumped.length ? 'dumped' : 'kept']
+      ? game.phase === 'victory' ? ['wonAll'] : ['won', result!.dumped.length ? 'dumped' : 'kept']
       : [game.phase === 'gameOver' ? 'lostAll' : 'lost'];
     const holder = (snag: number) => (captain.jokers.some((j) => j.index === snag) ? 'you' : opponent.jokers.some((j) => j.index === snag) ? 'them' : null);
     const lines = script?.[trigger]?.filter(

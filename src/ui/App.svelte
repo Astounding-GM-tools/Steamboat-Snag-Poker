@@ -47,8 +47,14 @@
   if (import.meta.env.DEV) {
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;
-    // Straight to the knockout for buttons.
-    w.tutorialButtons = () => ((stage = 'play'), setGame(skipToButtons(Date.now() >>> 0)));
+    // Straight to the first hand for buttons; give purses (yours, hers) to try an ending.
+    w.tutorialButtons = (mine?: number, hers?: number) => {
+      const g = skipToButtons(Date.now() >>> 0);
+      if (mine) g.players[0].money = mine;
+      if (hers) g.players[1].money = hers;
+      stage = 'play';
+      setGame(g);
+    };
   }
 
   /** Something an answer in a conversation set going. */

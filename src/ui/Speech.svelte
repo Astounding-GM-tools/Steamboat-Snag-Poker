@@ -36,7 +36,7 @@
      * Only after this outcome (for lines after the verdict): you won the hand
      * or lost it with the game going on (a win either `dumped` a snag on them
      * or `kept` yours), or the game is over, all the money yours or all of
-     * it theirs.
+     * it theirs. After a story's lines the table moves on by itself.
      */
     when?: 'won' | 'dumped' | 'kept' | 'lost' | 'wonAll' | 'lostAll';
     /** They show their hand (even after a fold): the cards turn face up, and the words follow. */

@@ -105,8 +105,8 @@ const M = 'morag';
 
 /**
  * The knockout ends when one side is unbuttoned: her last word reads both the
- * buttons (who won) and the snags (what it meant: they outlive the game).
- * Drafts.
+ * buttons (who won) and the snags (what it meant: they outlive the game). If
+ * you are left holding her Oath, she has you swear it, whichever you press.
  */
 const AFTER: SpeechLine[] = [
   {
@@ -114,32 +114,40 @@ const AFTER: SpeechLine[] = [
     holding: [{ snag: RESPECT, by: 'them' }],
     size: 'scene',
     who: M,
-    text: ['Cleaned out by a deckhand, and left holding your Respect.', 'Not a word of this to Finlay.'],
-    replies: [{ label: 'Next', effect: 'end', end: true }],
+    text: ['Cleaned out by a deckhand.', 'And I do hold a grudging respect for you, it seems. Well done.'],
+    replies: [{ label: 'Next' }],
   },
   {
     when: 'wonAll',
     holding: [{ snag: RESPECT, by: 'you' }],
     size: 'scene',
     who: M,
-    text: ['Cleaned out by a deckhand.', 'You may keep your Respect. I shan’t be needing it.'],
-    replies: [{ label: 'Next', effect: 'end', end: true }],
+    text: ['Cleaned out by a deckhand.', 'Yet your snag remains with you.'],
+    replies: [{ label: 'Next' }],
   },
   {
     when: 'lostAll',
     holding: [{ snag: RESPECT, by: 'them' }],
     size: 'scene',
     who: M,
-    text: ['Out of buttons, child.', 'But you made me take your Respect, and I shall keep it.'],
-    replies: [{ label: 'Next', effect: 'end', end: true }],
+    text: ['You are out of buttons.', 'But I do find myself holding a grudging respect for you.'],
+    replies: [{ label: 'Next' }],
   },
   {
+    // Not yet written: the plain loss, Respect still yours.
     when: 'lostAll',
     holding: [{ snag: RESPECT, by: 'you' }],
     size: 'scene',
     who: M,
-    text: 'And that, child, is why you never play for money.',
-    replies: [{ label: 'Next', effect: 'end', end: true }],
+    text: ['You are out of buttons.', 'And your snag remains with you.'],
+    replies: [{ label: 'Next' }],
+  },
+  {
+    holding: [{ snag: OATH, by: 'you' }],
+    size: 'scene',
+    who: M,
+    text: ['Now you know what Snag Poker is.', 'Do you swear never to play this game for money?'],
+    replies: [{ label: 'I swear' }, { label: 'Yes. I do.' }],
   },
 ];
 
@@ -242,7 +250,7 @@ export const tutorialScript: Script = {
           size: 'scene',
           who: M,
           text: 'I forgot to show you. Here, look.',
-          replies: [{ label: 'Next', effect: 'next', end: true }],
+          replies: [{ label: 'Next' }],
         },
       ],
     },
@@ -337,22 +345,24 @@ export const tutorialScript: Script = {
           size: 'scene',
           who: M,
           text: ['Hmph. Grudging Respect, landed on me.', 'I suppose you’ve earned it.'],
-          replies: [{ label: 'Next', effect: 'next', end: true }],
+          replies: [{ label: 'Next' }],
         },
         {
           when: 'kept',
           size: 'scene',
           who: M,
           text: ['A full house: a fine hand, with no room for a snag.', 'The pot is yours. So is your Respect, still.'],
-          replies: [{ label: 'Next', effect: 'next', end: true }],
+          replies: [{ label: 'Next' }],
         },
         {
           when: 'lost',
           size: 'scene',
           who: M,
           text: ['And now you carry my Oath.', 'Mind your cards, child.'],
-          replies: [{ label: 'Next', effect: 'next', end: true }],
+          replies: [{ label: 'Next' }],
         },
+        // Someone may go broke on this very hand.
+        ...AFTER,
       ],
     },
   ],
