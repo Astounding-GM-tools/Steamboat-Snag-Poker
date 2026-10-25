@@ -305,7 +305,7 @@ export const en = {
   'character.finlay.boat': 'Captain of the Night Out',
   'character.finlay.blurb': 'A bricklayer who struck it rich and never got used to it. Slips down to the river whenever his wife isn’t looking.',
   'character.morag.name': 'Morag MacTavish',
-  'character.morag.boat': 'Captain of the Rolling Pin',
+  'character.morag.boat': 'Tutor',
   'character.morag.blurb': 'Came to fetch her husband home. Stayed to clean out the table.',
   'character.lenny.name': 'Lenny King',
   'character.lenny.boat': 'Captain of the Cardboard Violin',

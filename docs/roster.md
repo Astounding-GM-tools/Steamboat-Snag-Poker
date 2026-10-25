@@ -27,7 +27,7 @@ active trademark). The right-hand column says which.
 | **The Walrus** (and the Carpenter) | *Cacophony* | middle | shark | Calculating, and loves a snag tucked into three of a kind. | Free: Lewis Carroll, 1871 |
 | **Gaylord Montague, Esq.** | rides any boat with a game | sharp | gambler | Counts every card; folds poor odds; snags only when the odds favour it. | Original |
 | **Eliza Bathory** | *Lucrezia III* | sharp | predator | Patient: folds weak hands readily; then ruthless, burying beaten rivals in snags. | Original (name after the historical countess, d. 1614) |
-| **Morag MacTavish** | *Rolling Pin* | (follower) | careful | Tight, patient, punishing; rarely risks a snag. Joins once Finlay is busted, and only in tournaments with Finlay. | Original |
+| **Morag MacTavish** | Tutor (no boat) | (follower) | careful | Tight, patient, punishing; rarely risks a snag. Joins once Finlay is busted, and only in tournaments with Finlay. | Original |
 
 ## Line-up
 

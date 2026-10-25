@@ -115,13 +115,14 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
-          text: 'You, there! Have you seen my lout of a husband?',
+          text: ['You, there!', 'Have you seen my lout of a husband?'],
           replies: [{ label: 'Lout?' }, { label: 'Who?' }],
         },
         {
           size: 'scene',
           who: M,
-          text: 'Finlay MacTavish by name, good-for-nothing by nature. Always sneaking off to play Snag Poker.',
+          // Non-breaking hyphens: good‑for‑nothing stays in one piece.
+          text: ['Finlay MacTavish by name, good‑for‑nothing by nature.', 'Always sneaking off to play Snag Poker.'],
           replies: [{ label: 'Snag?' }],
         },
         {

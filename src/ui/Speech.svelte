@@ -19,7 +19,8 @@
     size: SpeechSize;
     /** A captain's id, `you` or `willie`. */
     who: string;
-    text: string;
+    /** The words; a list is said in beats, each part on a line of its own, a moment after the last. */
+    text: string | string[];
     /** One reply (on the white button) or two (black, white). The line waits for an answer. */
     replies?: [Reply] | [Reply, Reply];
     /** Closes by itself: `true` for a time fitted to the line, or a number of ms. Asides do by default. */
@@ -43,8 +44,12 @@
   export function autoMs(line: SpeechLine): number | null {
     const auto = line.auto ?? (line.size === 'aside' && !line.replies && !line.require);
     if (typeof auto === 'number') return auto;
-    return auto ? 3500 + line.text.length * 45 : null;
+    return auto ? 3500 + beats(line).join(' ').length * 45 + (beats(line).length - 1) * BEAT_MS : null;
   }
+
+  /** The pause before each further beat of a line. */
+  export const BEAT_MS = 1400;
+  export const beats = (line: SpeechLine): string[] => (Array.isArray(line.text) ? line.text : [line.text]);
 </script>
 
 <script lang="ts">
@@ -60,7 +65,8 @@
    * - `full`: everything but the buttons, for an introduction or a lesson.
    *
    * The opponent's lines have a notch pointing up at their portrait on the
-   * table. Anyone else (Willie, a passer-by, you) has their name over the
+   * table, and need no name (but the full size, covering the portrait, has
+   * both). Anyone else (Willie, a passer-by, you) has their name over the
    * line and their portrait in the caption's corner, where the countdown runs.
    * The table places it (`top`, `bottom` in px within the table).
    */
@@ -104,8 +110,10 @@
       </span>
     {/if}
     <div class="words">
-      {#if !opponent || line.size !== 'aside'}<span class="who">{name}</span>{/if}
-      <p>{line.text}</p>
+      {#if !opponent || line.size === 'full'}<span class="who">{name}</span>{/if}
+      <p>
+        {#each beats(line) as beat, i}<span class="beat" style="animation-delay: {i * BEAT_MS}ms">{beat}</span>{/each}
+      </p>
     </div>
   {/key}
 </div>
@@ -178,6 +186,12 @@
     margin: 0;
     line-height: 1.35;
   }
+  /* Each beat on a line of its own, broken evenly: captions read best balanced. */
+  .beat {
+    display: block;
+    text-wrap: balance;
+    animation: appear 0.3s ease-out backwards;
+  }
   .aside p {
     font-size: 1rem;
     line-height: 1.25;
@@ -217,7 +231,8 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .speech,
-    .words {
+    .words,
+    .beat {
       animation: none;
     }
   }
