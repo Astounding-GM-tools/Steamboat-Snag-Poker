@@ -186,7 +186,7 @@ Then, if you are left holding her Oath: *"Now you know what Snag Poker is. / Do
 you swear never to play this game for money?"* → **I swear** / **Yes. I
 do.** (Whichever you press, you swear.)
 
-Every ending also offers **Rematch** (black; **Next** on the white): it's a
+Every ending also offers a rematch, **Again?** (black; **Next** on the white): it's a
 tutorial, and buttons aren't money, so her oath is safe: *"Buttons are not
 money, child. / My oath is quite safe. Deal."* (draft) A fresh knockout
 follows, 20 buttons each, Respect back with you and the Oath with her.
