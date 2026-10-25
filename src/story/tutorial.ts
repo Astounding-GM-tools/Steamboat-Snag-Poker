@@ -308,8 +308,7 @@ export const tutorialScript: Script = {
         { size: 'aside', who: M, text: 'Yes. Call.', require: [] },
       ],
       turn: [{ size: 'aside', who: M, text: 'And again, to see the River.', require: [] }],
-      // Drafts from here to the end of the round.
-      river: [{ size: 'aside', who: M, text: 'A snag takes a place in your hand. Has yours room?' }],
+      // No word on the River: the callout shows the full house turn into three of a kind as the snag goes in. Drafts from here on.
       verdict: [
         {
           when: 'dumped',
