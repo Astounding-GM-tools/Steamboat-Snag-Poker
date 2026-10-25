@@ -103,17 +103,39 @@ export function newTutorial(seed: number): GameState {
 
 const M = 'morag';
 
-/** The knockout ends when one side is unbuttoned: her last word, whichever way it went. */
+/**
+ * The knockout ends when one side is unbuttoned: her last word reads both the
+ * buttons (who won) and the snags (what it meant: they outlive the game).
+ * Drafts.
+ */
 const AFTER: SpeechLine[] = [
   {
     when: 'wonAll',
+    holding: [{ snag: RESPECT, by: 'them' }],
     size: 'scene',
     who: M,
-    text: 'Cleaned out by a deckhand. Not a word of this to Finlay.',
+    text: ['Cleaned out by a deckhand, and left holding your Respect.', 'Not a word of this to Finlay.'],
+    replies: [{ label: 'Next', effect: 'end', end: true }],
+  },
+  {
+    when: 'wonAll',
+    holding: [{ snag: RESPECT, by: 'you' }],
+    size: 'scene',
+    who: M,
+    text: ['Cleaned out by a deckhand.', 'You may keep your Respect. I shan’t be needing it.'],
     replies: [{ label: 'Next', effect: 'end', end: true }],
   },
   {
     when: 'lostAll',
+    holding: [{ snag: RESPECT, by: 'them' }],
+    size: 'scene',
+    who: M,
+    text: ['Out of buttons, child.', 'But you made me take your Respect, and I shall keep it.'],
+    replies: [{ label: 'Next', effect: 'end', end: true }],
+  },
+  {
+    when: 'lostAll',
+    holding: [{ snag: RESPECT, by: 'you' }],
     size: 'scene',
     who: M,
     text: 'And that, child, is why you never play for money.',

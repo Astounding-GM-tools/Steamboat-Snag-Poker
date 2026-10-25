@@ -421,7 +421,10 @@
     const outcomes = won
       ? [game.phase === 'victory' ? 'wonAll' : 'won', result!.dumped.length ? 'dumped' : 'kept']
       : [game.phase === 'gameOver' ? 'lostAll' : 'lost'];
-    const lines = script?.[trigger]?.filter((l) => !l.when || outcomes.includes(l.when));
+    const holder = (snag: number) => (captain.jokers.some((j) => j.index === snag) ? 'you' : opponent.jokers.some((j) => j.index === snag) ? 'them' : null);
+    const lines = script?.[trigger]?.filter(
+      (l) => (!l.when || outcomes.includes(l.when)) && (l.holding ?? []).every((h) => holder(h.snag) === h.by),
+    );
     if (!lines?.length || fired.has(key)) return false;
     fired.add(key);
     // After the hand, the table speaks over your side: her cards and the board are what's being talked about.

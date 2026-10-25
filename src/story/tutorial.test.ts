@@ -79,6 +79,16 @@ describe('the tutorial', () => {
     expect(g.players.map((p) => p.jokers.map((j) => j.index))).toEqual([[RESPECT], [OATH]]);
   });
 
+  it('when she goes broke she keeps the snags: they outlive the game', () => {
+    let g = skipToButtons(1);
+    g.players[1].money = 5; // not enough for the ante and two calls
+    g = submitAction(g, { type: 'draw', cardIds: [] });
+    g = submitAction(g, { type: 'draw', cardIds: [] });
+    g = submitAction(g, { type: 'compose', cardIds: ['8s', '8d'], jokers: 1 });
+    expect(g.phase).toBe('victory');
+    expect(g.players[1].jokers.map((j) => j.index).sort()).toEqual([OATH, RESPECT].sort());
+  });
+
   it('is the same deal whatever the seed', () => {
     const deal = (seed: number) => newTutorial(seed).round!.seats.map((s) => s.hand.map((c) => c.id));
     expect(deal(2)).toEqual(deal(99));

@@ -41,6 +41,8 @@
     when?: 'won' | 'dumped' | 'kept' | 'lost' | 'wonAll' | 'lostAll';
     /** They show their hand (even after a fold): the cards turn face up, and the words follow. */
     show?: boolean;
+    /** Only while these snags (by number) are where it says: with `you`, or with `them`. Snags outlive the game. */
+    holding?: { snag: number; by: 'you' | 'them' }[];
     /**
      * Where the table puts it, if not by size: `low` over your side (lines
      * after a hand, so the cards they talk about stay in view), `mid` over

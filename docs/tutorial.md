@@ -173,12 +173,17 @@ next card. You can fold, or pay to stay in the game: that's a call."* →
 **Call?**
 
 **The knockout runs until one side is unbuttoned** (no standings between
-hands, no offer to stop: poker is the long game, Snag Poker doubly so).
+hands, no offer to stop: poker is the long game, Snag Poker doubly so). **The
+money ends the game; the snags outlive it:** whoever holds them at the end
+keeps them (even a captain who goes broke). Her last word reads both (drafts):
 
-- You have all the buttons: *"Cleaned out by a deckhand. Not a word of this to
-  Finlay."*
-- She has all the buttons: *"And that, child, is why you never play for
-  money."*
+| | You have all the buttons | She has all the buttons |
+|---|---|---|
+| **She holds your Respect** | *"Cleaned out by a deckhand, and left holding your Respect. / Not a word of this to Finlay."* | *"Out of buttons, child. / But you made me take your Respect, and I shall keep it."* |
+| **You still hold it** | *"Cleaned out by a deckhand. / You may keep your Respect. I shan't be needing it."* | *"And that, child, is why you never play for money."* |
+
+The Oath could add its own say (sworn off the game while cleaning her out:
+the irony ending); a line can be keyed on any snag's holder.
 
 For now every ending goes back to the title. Later the last caption offers
 **Menu** (black) and **Story** (white).

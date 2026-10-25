@@ -317,7 +317,8 @@ function finishMonth(state: GameState, rng: Rng) {
     if (p.money <= 0) {
       p.status = 'eliminated';
       eliminated.push(p.id);
-      if (p.id !== HUMAN_ID) {
+      // A busted rival's snags go back into the river's pool; in a story they outlive the game, so they keep them.
+      if (p.id !== HUMAN_ID && !state.story) {
         state.pool.push(...p.jokers);
         p.jokers = [];
       }
