@@ -29,6 +29,7 @@
   import DiscardChips from './DiscardChips.svelte';
   import HowTo from './HowTo.svelte';
   import WillieSays from './WillieSays.svelte';
+  import Speech, { type SpeechLine } from './Speech.svelte';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { handLabel, tiebreak } from './handNames';
 
@@ -57,6 +58,59 @@
   let tableEl = $state<HTMLElement>();
   let actionsEl = $state<HTMLElement>();
   let helpBottom = $state(0);
+
+  // Captains speaking at the table: a conversation is a list of lines, shown one at a time.
+  let talk = $state<{ lines: SpeechLine[]; i: number } | null>(null);
+  const line = $derived(talk ? talk.lines[talk.i] : null);
+  /** A line that stops play: it has the buttons until it is answered. */
+  const holding = $derived(!!line && line.size !== 'aside');
+  let oppCardsEl = $state<HTMLElement>();
+  let communityEl = $state<HTMLElement>();
+  let speechAt = $state({ top: 0, bottom: 0 });
+  /** Where a caption of each size sits, in px from the table's top and bottom edges. */
+  function placeSpeech() {
+    if (!line || !tableEl || !actionsEl || !oppCardsEl || !communityEl) return;
+    const table = tableEl.getBoundingClientRect();
+    const cards = oppCardsEl.getBoundingClientRect();
+    const from = line.size === 'full' ? table.top + parseFloat(getComputedStyle(tableEl).paddingTop) : cards.top;
+    const to = line.size === 'aside' ? cards.bottom : line.size === 'scene' ? communityEl.getBoundingClientRect().bottom : actionsEl.getBoundingClientRect().top - 10;
+    speechAt = { top: from - table.top, bottom: table.bottom - to };
+  }
+  $effect(() => {
+    if (!line) return;
+    untrack(placeSpeech);
+    window.addEventListener('resize', placeSpeech);
+    return () => window.removeEventListener('resize', placeSpeech);
+  });
+  function say(lines: SpeechLine[]) {
+    talk = lines.length ? { lines, i: 0 } : null;
+  }
+  function nextLine() {
+    if (!talk) return;
+    talk = talk.i + 1 < talk.lines.length ? { ...talk, i: talk.i + 1 } : null;
+  }
+  // An aside drifts off by itself after a while, so table talk never needs tending.
+  $effect(() => {
+    if (!line || line.size !== 'aside') return;
+    const id = setTimeout(nextLine, 3500 + line.text.length * 45);
+    return () => clearTimeout(id);
+  });
+  // For trying captions out in the browser console (dev builds only): say([...]) or sayDemo().
+  if (import.meta.env.DEV) {
+    const w = window as unknown as Record<string, unknown>;
+    w.say = say;
+    w.sayDemo = () =>
+      say([
+        { size: 'aside', who: name(opponentId), text: 'Drat! My no-good nephew!' },
+        { size: 'scene', who: name('morag'), text: 'Throw away that four, child. It is doing you no favours.' },
+        {
+          size: 'full',
+          who: name('morag'),
+          text: 'A test of the long caption. An introduction, a lesson or a parting word would sit here: several sentences, read at leisure, with the table hidden behind and only the two buttons left to answer it.',
+        },
+        { size: 'scene', who: name(opponentId), text: 'Sure, I’ll carry your message to St. Louis… if you can beat me at Snag Poker!', replies: ['Not today', 'Deal'] },
+      ]);
+  }
   function openHelp() {
     if (tableEl && actionsEl) helpBottom = tableEl.getBoundingClientRect().bottom - actionsEl.getBoundingClientRect().top + 6;
     showHelp = true;
@@ -474,6 +528,7 @@
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div class="table solo layout" onclick={finishDeal} bind:this={tableEl}>
   {#if showHelp}<div class="help-layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
+  {#if line}<Speech size={line.size} who={line.who} text={line.text} top={speechAt.top} bottom={speechAt.bottom} onnext={nextLine} />{/if}
   <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
     <!-- Name and title over their coins; a tall portrait beside both. -->
@@ -491,7 +546,7 @@
         <span class="oval portrait">{name(opponentId)[0]}</span>
       </button>
     </div>
-    <div class="opp-cards">
+    <div class="opp-cards" bind:this={oppCardsEl}>
       <div class="hand-cell">
       <!-- At the showdown their played cards flip in place, one per Next. -->
       {#each theirPlayed.filter((c) => !isJoker(c)) as card (card.id)}
@@ -541,7 +596,7 @@
     <div class="river-body" class:cleared={standing}>
       <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
       {#if round.potMode}<div class="pot-band" bind:this={potEl}><Pot bets={potBets} paid={!!payout} /></div>{/if}
-      <div class="community">
+      <div class="community" bind:this={communityEl}>
         {#each Array.from({ length: boardSize }) as _, i}
           {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
           <CardView {card} deal="left" markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} />
@@ -625,11 +680,15 @@
   </section>
 
   <!-- The two buttons, the same on every screen: black on the left half, white on the right. -->
-  <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp} bind:this={actionsEl}>
+  <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp && !holding} bind:this={actionsEl}>
     {#if showHelp}
       <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
       <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>
       <button onclick={() => (showHelp = false)}>{t('draw.close')}</button>
+    {:else if holding && line}
+      <!-- A captain has the floor: the buttons answer them (the cautious reply, the bold one), or simply move on. -->
+      <button class="ghost" onclick={line.replies ? nextLine : () => (talk = null)}>{line.replies?.[0] ?? t('show.skip')}</button>
+      <button onclick={nextLine}>{line.replies?.[1] ?? t('show.next')}</button>
     {:else if showCaptain}
       <!-- Their details are up: the white button takes you back, the black one waits. -->
       <button class="ghost" disabled>{standing ? t('end.pause') : revealing ? t('show.skip') : foldLabel}</button>
