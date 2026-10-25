@@ -19,6 +19,7 @@ export const en = {
   'title.start': 'Start game',
   'title.new': 'New',
   'title.next': 'Next',
+  'title.tutorial': 'Tutorial',
   'title.continue': 'Continue game',
   'title.newVoyage': 'New game',
   'title.abandon': 'Start a new game?',

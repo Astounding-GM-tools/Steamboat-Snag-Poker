@@ -1,6 +1,7 @@
 # The tutorial: Morag's lessons
 
-Status: **playable from start to finish** at `/?tutorial` (decks and lines in
+Status: **playable from start to finish**: **Tutorial** on the title screen
+(for new players, and on How to play for everyone), or `/?tutorial` (decks and lines in
 `src/story/tutorial.ts`; in development, `tutorialButtons()` in the console
 jumps to the knockout). Chapter one of the story, and canon: the
 deckhand meets Morag MacTavish, who is looking for her husband, and learns
@@ -77,8 +78,8 @@ deuces, which look like a disaster for half a second.
 **The showdown** (scene)
 
 14. *"There you go: the mighty aces brought low by a pair of ducks."* →
-    **Ducks?**
-15. *"Deuces, child. Ducks, on the river. Aces are bullets, and so on. Knowing
+    **Ducks??** (the second time: exasperated)
+15. *"Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on. Knowing
     how ducks beat bullets is the same as knowing when to fold and when to
     call."* → **Call?** / **Fold?**
 16. *"I forgot to show you. Here, look."* She deals round two.
@@ -111,7 +112,8 @@ the tell: that is the lesson.
 
 **After the fold** (scene)
 
-5. *"Wise. My queen of hearts made the best flush there is."* → **Best?**
+5. *"Wise. My queen of hearts made the best flush this board allows."* →
+   **Best?** (She shows her hand first: the cards, then the words.)
 6. *"Nothing on this table could beat it. And that's how you dodge snags: you
    win, or you fold wisely."* → **Snag?**
 7. *"Ah yes, snags. We'd need some stakes for that. Here, have some buttons, so
@@ -173,8 +175,8 @@ to be written properly)
    **Snag?**
 2. *"A snag is a burden. Win with it in your hand, and the loser takes it.
    Lose with it, and it costs you."* → **And yours?**
-3. *"My Solemn Oath, never to play Snag Poker again. You'll be taking it off
-   my hands."* → **We'll see**
+3. *"A Solemn Oath, never to play Snag Poker for money. You'll be holding that
+   soon enough."* → **We'll see**
 
 **The first call** (scene, on the Flop): *"Now it costs a button to see the
 next card. You can fold, or pay to stay in the game: that's a call."* →

@@ -7,8 +7,10 @@
     savedMonth: number | null;
     onstart: () => void;
     oncontinue: () => void;
+    /** Morag's lessons. */
+    ontutorial: () => void;
   }
-  let { savedMonth, onstart, oncontinue }: Props = $props();
+  let { savedMonth, onstart, oncontinue, ontutorial }: Props = $props();
   let showHowTo = $state(false);
   /** How many taglines the language file has (title.tagline.0 … n-1); one is picked per visit. */
   const TAGLINES = 12;
@@ -167,15 +169,16 @@
 
   <!-- The same two buttons, in the same places, as at the table: black left, white right. -->
   <div class="dock">
-    <div class="actions" class:single={!savedMonth}>
+    <!-- The tutorial takes the free black button: for new players, and on How to play for everyone. -->
+    <div class="actions">
       {#if showHowTo}
-        <span></span>
+        <button class="ghost" onclick={() => ((showHowTo = false), ontutorial())}>{t('title.tutorial')}</button>
         <button onclick={() => (showHowTo = false)}>{t('draw.close')}</button>
       {:else if savedMonth}
         <button class="ghost" onclick={newVoyage}>{t('title.new')}</button>
         <button onclick={oncontinue}>{t('title.next')}</button>
       {:else}
-        <span></span>
+        <button class="ghost" onclick={ontutorial}>{t('title.tutorial')}</button>
         <button onclick={onstart}>{t('title.new')}</button>
       {/if}
     </div>

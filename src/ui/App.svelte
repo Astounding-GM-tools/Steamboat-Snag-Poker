@@ -138,7 +138,7 @@
       <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} />
     {/if}
   {:else}
-    <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} />
+    <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} ontutorial={startTutorial} />
   {/if}
 </div>
 <CardZoom />

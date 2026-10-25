@@ -254,13 +254,13 @@ export const tutorialScript: Script = {
           size: 'scene',
           who: M,
           text: 'There you go: the mighty aces brought low by a pair of ducks.',
-          replies: [{ label: 'Ducks?' }],
+          replies: [{ label: 'Ducks??' }],
         },
         {
           size: 'scene',
           who: M,
           text: [
-            'Deuces, child. Ducks, on the river. Aces are bullets, and so on.',
+            'Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on.',
             'Knowing how ducks beat bullets is the same as knowing when to fold and when to call.',
           ],
           replies: [{ label: 'Call?' }, { label: 'Fold?' }],
@@ -300,7 +300,7 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
-          text: 'Wise. My queen of hearts made the best flush there is.',
+          text: 'Wise. My queen of hearts made the best flush this board allows.',
           show: true,
           replies: [{ label: 'Best?' }],
         },
@@ -343,7 +343,7 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
-          text: 'My Solemn Oath, never to play Snag Poker again. You’ll be taking it off my hands.',
+          text: 'A Solemn Oath, never to play Snag Poker for money. You’ll be holding that soon enough.',
           replies: [{ label: 'We’ll see' }],
         },
       ],
