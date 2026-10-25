@@ -28,8 +28,8 @@
   import Purse from './Purse.svelte';
   import DiscardChips from './DiscardChips.svelte';
   import HowTo from './HowTo.svelte';
-  import WillieSays from './WillieSays.svelte';
-  import Speech, { type SpeechLine } from './Speech.svelte';
+  import Speech, { autoMs, type Reply, type SpeechLine } from './Speech.svelte';
+  import Countdown from './Countdown.svelte';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { handLabel, tiebreak } from './handNames';
 
@@ -48,8 +48,10 @@
     onrevealed?: () => void;
     /** From the standings: deal the next round. */
     onnext?: () => void;
+    /** An answer in a conversation set something going at the table (`snag:hides`, `pot:5`…). */
+    ontalk?: (effect: string) => void;
   }
-  let { game, onaction, settled = true, onmenu, stage = 'play', onverdict, onrevealed, onnext }: Props = $props();
+  let { game, onaction, settled = true, onmenu, stage = 'play', onverdict, onrevealed, onnext, ontalk = import.meta.env.DEV ? (e) => console.info('talk effect:', e) : undefined }: Props = $props();
 
   /** Tapped card ids: cards to discard on a street, cards to play when composing. */
   let tapped = $state<string[]>([]);
@@ -62,8 +64,20 @@
   // Captains speaking at the table: a conversation is a list of lines, shown one at a time.
   let talk = $state<{ lines: SpeechLine[]; i: number } | null>(null);
   const line = $derived(talk ? talk.lines[talk.i] : null);
-  /** A line that stops play: it has the buttons until it is answered. */
-  const holding = $derived(!!line && line.size !== 'aside');
+  /** The line has the buttons: an answer to give, or a scene or more to read (one that asks for a move leaves them to play). */
+  const holding = $derived(!!line && (!!line.replies || (line.size !== 'aside' && !line.require)));
+  /** The line is waiting for a move at the table: the white button only takes that one. */
+  const complies = $derived.by(() => {
+    const want = line?.require;
+    if (!want) return true;
+    if (tapped.length !== want.length || tappedJokers.length) return false;
+    // Whole cards first, then ranks, so `4c` and `4` both find their four.
+    const open = [...want].sort((a, b) => b.length - a.length);
+    return tappedCards.every((c) => {
+      const k = open.findIndex((w) => w === c.id || (!isJoker(c) && w === rankLabel(c.rank)));
+      return k >= 0 && open.splice(k, 1).length > 0;
+    });
+  });
   let oppCardsEl = $state<HTMLElement>();
   let communityEl = $state<HTMLElement>();
   let speechAt = $state({ top: 0, bottom: 0 });
@@ -82,34 +96,48 @@
     window.addEventListener('resize', placeSpeech);
     return () => window.removeEventListener('resize', placeSpeech);
   });
+  /** Starts a conversation, or queues it behind the one under way. */
   function say(lines: SpeechLine[]) {
-    talk = lines.length ? { lines, i: 0 } : null;
+    if (!lines.length) return;
+    talk = talk ? { ...talk, lines: [...talk.lines, ...lines] } : { lines, i: 0 };
   }
-  function nextLine() {
+  /** On to the line named `go`, or the next in order; past the last, the conversation is over. */
+  function nextLine(go?: string) {
     if (!talk) return;
-    talk = talk.i + 1 < talk.lines.length ? { ...talk, i: talk.i + 1 } : null;
+    const i = go ? talk.lines.findIndex((l) => l.id === go) : talk.i + 1;
+    talk = i >= 0 && i < talk.lines.length ? { ...talk, i } : null;
   }
-  // An aside drifts off by itself after a while, so table talk never needs tending.
+  function answer(reply: Reply) {
+    if (reply.effect) ontalk?.(reply.effect);
+    if (reply.end) talk = null;
+    else nextLine(reply.go);
+  }
+  const speakerName = (who: string) => (who === 'you' ? t('character.captain.you') : who === 'willie' ? t('willie.name') : name(who));
+  const lineMs = $derived(line ? autoMs(line) : null);
+  // A line that closes by itself: the countdown runs on the speaker's portrait, and the table keeps the time.
   $effect(() => {
-    if (!line || line.size !== 'aside') return;
-    const id = setTimeout(nextLine, 3500 + line.text.length * 45);
+    if (!lineMs) return;
+    const id = setTimeout(() => nextLine(), lineMs);
     return () => clearTimeout(id);
   });
   // For trying captions out in the browser console (dev builds only): say([...]) or sayDemo().
   if (import.meta.env.DEV) {
     const w = window as unknown as Record<string, unknown>;
     w.say = say;
-    w.sayDemo = () =>
+    w.sayDemo = () => {
+      const low = [...me.hand].filter((c) => !isJoker(c)).sort((a, b) => (a as { rank: number }).rank - (b as { rank: number }).rank)[0];
+      const rank = low && !isJoker(low) ? rankLabel(low.rank) : '2';
       say([
-        { size: 'aside', who: name(opponentId), text: 'Drat! My no-good nephew!' },
-        { size: 'scene', who: name('morag'), text: 'Throw away that four, child. It is doing you no favours.' },
-        {
-          size: 'full',
-          who: name('morag'),
-          text: 'A test of the long caption. An introduction, a lesson or a parting word would sit here: several sentences, read at leisure, with the table hidden behind and only the two buttons left to answer it.',
-        },
-        { size: 'scene', who: name(opponentId), text: 'Sure, I’ll carry your message to St. Louis… if you can beat me at Snag Poker!', replies: ['Not today', 'Deal'] },
+        { size: 'aside', who: opponentId, text: 'Drat! My no-good nephew!' },
+        { size: 'aside', who: 'willie', text: 'A test of Willie in passing.' },
+        ...(composing ? [] : [{ size: 'aside', who: 'morag', text: `Throw away that ${rank === 'T' ? '10' : rank}, child. It is doing you no favours.`, require: [rank] } satisfies SpeechLine]),
+        { size: 'full', who: 'morag', text: 'A test of the long caption with a single answer: an introduction or a lesson, read at leisure, the table hidden behind.', replies: [{ label: 'Yes, ma’am' }] },
+        { size: 'scene', who: opponentId, text: 'Take my hides downriver, Captain?', replies: [{ go: 'never' }, { effect: 'snag:hides', end: true }] },
+        { id: 'never', size: 'scene', who: 'you', text: 'Never! Your stinking hides would foul my ship.' },
+        { size: 'scene', who: opponentId, text: 'Captain’s code, then. Beat me at Snag and I keep them. I’ll put $5 in the pot.', replies: [{ go: 'refused' }, { effect: 'pot:5', end: true }] },
+        { id: 'refused', size: 'scene', who: opponentId, text: 'You refuse the code? Good day, then.', replies: [{ label: 'Good day', effect: 'snag:yellowBelly', end: true }] },
       ]);
+    };
   }
   function openHelp() {
     if (tableEl && actionsEl) helpBottom = tableEl.getBoundingClientRect().bottom - actionsEl.getBoundingClientRect().top + 6;
@@ -127,8 +155,7 @@
       }
     });
   });
-  /** Jokers you just fished out of the deck, for Willie to announce. */
-  let fishedNews = $state<string | null>(null);
+  // Jokers you just fished out of the deck: Willie announces them.
   let fishedSeen = 0;
   let fishedMonth = -1;
   $effect(() => {
@@ -142,7 +169,7 @@
       }
       const fresh = mine.slice(fishedSeen);
       fishedSeen = mine.length;
-      if (fresh.length) fishedNews = t('willie.fished', { jokers: jokerList(fresh.map((f) => f.joker)) });
+      if (fresh.length) say([{ size: 'scene', who: 'willie', text: t('willie.fished', { jokers: jokerList(fresh.map((f) => f.joker)) }), replies: [{ label: t('willie.ok') }] }]);
     });
   });
 
@@ -345,6 +372,8 @@
       ? { type: 'compose', cardIds: tappedCards.map((c) => c.id), jokers: tappedJokers.length }
       : { type: 'draw', cardIds: tappedCards.map((c) => c.id) };
     tapped = [];
+    // The move a line was waiting for: it closes as the move is made.
+    if (line?.require) nextLine();
     onaction(action);
   }
 
@@ -528,7 +557,16 @@
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div class="table solo layout" onclick={finishDeal} bind:this={tableEl}>
   {#if showHelp}<div class="help-layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
-  {#if line}<Speech size={line.size} who={line.who} text={line.text} top={speechAt.top} bottom={speechAt.bottom} onnext={nextLine} />{/if}
+  {#if line}
+    <Speech
+      {line}
+      name={speakerName(line.who)}
+      opponent={line.who === opponentId}
+      top={speechAt.top}
+      bottom={speechAt.bottom}
+      onnext={line.replies || line.require ? undefined : () => nextLine()}
+    />
+  {/if}
   <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
     <!-- Name and title over their coins; a tall portrait beside both. -->
@@ -543,7 +581,7 @@
         <div class="opp-purse" bind:this={theirPurseEl}><Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} /></div>
       </div>
       <button class="portrait-btn" onclick={() => (showCaptain = !showCaptain)} aria-label={name(opponentId)}>
-        <span class="oval portrait">{name(opponentId)[0]}</span>
+        <span class="oval portrait">{name(opponentId)[0]}{#if line && lineMs && line.who === opponentId && line.size !== 'full'}{#key line}<Countdown ms={lineMs} />{/key}{/if}</span>
       </button>
     </div>
     <div class="opp-cards" bind:this={oppCardsEl}>
@@ -685,10 +723,20 @@
       <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
       <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>
       <button onclick={() => (showHelp = false)}>{t('draw.close')}</button>
-    {:else if holding && line}
-      <!-- A captain has the floor: the buttons answer them (the cautious reply, the bold one), or simply move on. -->
-      <button class="ghost" onclick={line.replies ? nextLine : () => (talk = null)}>{line.replies?.[0] ?? t('show.skip')}</button>
-      <button onclick={nextLine}>{line.replies?.[1] ?? t('show.next')}</button>
+    {:else if line?.replies}
+      <!-- A line waiting for an answer: two replies (black, white), or one on the white button and nothing pretending on the black. -->
+      {@const [a, b] = line.replies}
+      {#if b}
+        <button class="ghost" onclick={() => answer(a)}>{a.label ?? t('talk.decline')}</button>
+        <button onclick={() => answer(b)}>{b.label ?? t('talk.agree')}</button>
+      {:else}
+        <button class="ghost" disabled style="visibility: hidden" aria-hidden="true"></button>
+        <button onclick={() => answer(a)}>{a.label ?? t('talk.agree')}</button>
+      {/if}
+    {:else if holding}
+      <!-- A scene to read: skip the conversation, or on to the next line. -->
+      <button class="ghost" onclick={() => (talk = null)}>{t('show.skip')}</button>
+      <button onclick={() => nextLine()}>{t('show.next')}</button>
     {:else if showCaptain}
       <!-- Their details are up: the white button takes you back, the black one waits. -->
       <button class="ghost" disabled>{standing ? t('end.pause') : revealing ? t('show.skip') : foldLabel}</button>
@@ -700,17 +748,13 @@
       <button class="ghost" onclick={revealSkip}>{t('show.skip')}</button>
       <button onclick={revealNext}>{verdictShown ? `${verdictLabel} ▸` : t('show.next')}</button>
     {:else}
-      <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0)}>{foldLabel}</button>
-      <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
+      <!-- A line asking for a move: only that move will do (no folding your way out of a lesson). -->
+      <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0) || !!line?.require}>{foldLabel}</button>
+      <button onclick={go} disabled={!playing || dealing || !complies}>{buttonLabel}</button>
     {/if}
   </div>
 </div>
 
-{#if fishedNews}
-  <WillieSays onclose={() => (fishedNews = null)}>
-    <p>{fishedNews}</p>
-  </WillieSays>
-{/if}
 
 
 <style>

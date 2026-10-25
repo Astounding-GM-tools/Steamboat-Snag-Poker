@@ -102,11 +102,11 @@ Story mode is a chain of encounters, and flags decide which lines play.
 underneath; a **scene** from their cards down to the board; the **full**
 table but the buttons, for introductions and lessons.
 
-**Speakers.** The opponent's lines have the notch pointing up at their
+**Speakers** (built). The opponent's lines have the notch pointing up at their
 portrait. Anyone else (Willie, Morag from the rail, the player) has their
 name above the quote and their portrait in the corner of the caption.
 
-**Closing,** in any combination:
+**Closing** (built), in any combination:
 
 - **Auto-close:** a countdown ring runs round the speaker's portrait; when it
   is full, the caption goes.

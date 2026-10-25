@@ -84,6 +84,8 @@ export const en = {
   'number.7': 'Seven', 'number.8': 'Eight', 'number.9': 'Nine', 'number.10': 'Ten',
   'draw.hint': 'Hint',
   'willie.name': 'Willie',
+  'talk.agree': 'Agree',
+  'talk.decline': 'Decline',
   'willie.ok': 'Aye!',
   'willie.fished': 'Blast! You fished {jokers} out of the deck. You draw again, so your hand is still full, but that snag is yours now.',
   'willie.helpTitle': 'How to play',
