@@ -715,18 +715,19 @@
   .portrait-btn {
     grid-column: 10 / 13;
     display: flex;
+    align-items: center;
     padding: 0;
     background: none;
     border: none;
     outline: none;
     box-shadow: none;
   }
-  /* From the top of the name to the bottom of their coins. */
+  /* A round portrait, as wide as its three columns, centred beside name and coins. */
   .portrait {
     width: 100%;
-    height: 100%;
-    min-height: 110px;
-    font-size: 2.8rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    font-size: 2.6rem;
   }
   .river {
     position: relative;
@@ -1073,9 +1074,6 @@
     gap: 0.4rem;
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
-  }
-  :global(.short) .portrait {
-    min-height: 100px;
   }
   :global(.short) .river-head,
   :global(.short) .callout.theirs {
