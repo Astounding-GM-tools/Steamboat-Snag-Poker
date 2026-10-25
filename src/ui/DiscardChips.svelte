@@ -5,10 +5,10 @@
   import { cardPrefs } from './cards.svelte';
 
   /**
-   * Thrown-away cards as card notation (7♣) at the end of a card row, in two
-   * little stacks of up to three: the Flop's along the edge, the Turn's beside it.
-   * Shorter than a card, so it sits on the table beside them. Tap it for a
-   * closer look.
+   * Thrown-away cards as card notation (7♣) at the end of a card row: one
+   * column, the Flop's first, then the Turn's. Up to four stack as they are;
+   * five or six fan out (overlapping, each showing its top strip), so the
+   * column never grows past a card's height. Tap it for a closer look, by street.
    */
   let {
     cards,
@@ -22,6 +22,7 @@
     /** As tall as a full-size card: the stacks line up with the top and bottom of your hand. */
     tall?: boolean;
   } = $props();
+  const all = $derived(cards.filter((c) => !isJoker(c)));
   const rows = $derived(
     [
       { label: t('street.flop'), cards: cards.slice(0, flop) },
@@ -34,6 +35,8 @@
   type="button"
   class="discards"
   class:tall
+  class:fanned={all.length > 4}
+  style="--n: {all.length}"
   aria-label={title}
   disabled={!cards.length}
   onclick={(e) => {
@@ -41,27 +44,25 @@
     cardPrefs.discards = { title, rows: rows.filter((r) => r.cards.length) };
   }}
 >
-  {#each rows as row}
-    <span class="stack">
-      {#each row.cards as card (card.id)}
-        {#if !isJoker(card)}<span class="chip">{card.rank === 10 ? '10' : rankLabel(card.rank)}<span class="suit"><SuitIcon suit={card.suit} /></span></span>{/if}
-      {/each}
-    </span>
+  {#each all as card (card.id)}
+    <span class="chip">{card.rank === 10 ? '10' : rankLabel(card.rank)}<span class="suit"><SuitIcon suit={card.suit} /></span></span>
   {/each}
 </button>
 
 <style>
   /* Always the same size, so the first discard doesn't push anything. */
   .discards {
+    --h: 61px;
+    --chip-h: calc((var(--h) - 6px) / 4);
     flex: none;
     align-self: flex-end;
     display: flex;
-    flex-direction: row-reverse;
-    gap: 3px;
-    width: min(100%, 72px);
-    height: 61px;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    height: var(--h);
     padding: 0;
-    margin: 0 0 0 auto;
+    margin: 0;
     background: none;
     border: none;
     outline: none;
@@ -70,36 +71,39 @@
   }
   /* As tall as a card, which is 1.4 times its width (the table sets --card-w). */
   .tall {
-    height: calc(var(--card-w, 76px) * 1.4);
-  }
-  .tall .chip {
-    height: calc((100% - 4px) / 3);
+    --h: calc(var(--card-w, 76px) * 1.4);
   }
   .discards:disabled {
     cursor: default;
     opacity: 1;
   }
-  .stack {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
-    flex: 1;
-    min-width: 0;
-  }
   .chip {
-    display: inline-flex;
+    flex: none;
+    position: relative;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 1px;
-    height: 19px;
+    height: var(--chip-h);
     border-radius: 3px;
     background: var(--paper);
     color: var(--ink);
     font-family: var(--title-font);
     font-size: 0.78rem;
+    line-height: 1;
     letter-spacing: 0;
-    opacity: 0.8;
+    box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+  }
+  /* Five or six: they overlap to fit, each showing its top strip with the rank. */
+  .fanned {
+    gap: 0;
+  }
+  .fanned .chip {
+    align-items: flex-start;
+    padding-top: 1px;
+  }
+  .fanned .chip + .chip {
+    margin-top: calc((var(--h) - var(--chip-h) * var(--n)) / (var(--n) - 1));
   }
   .suit {
     width: 0.65rem;

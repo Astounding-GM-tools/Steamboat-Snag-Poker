@@ -813,7 +813,7 @@
   }
   /*
    * Card rows (theirs and yours) on the grid: three cards in columns 1–6, the
-   * snag fan in 7–9, the discards in 10–12. A card is two columns wide.
+   * snag fan in 7–10, the discards in 11–12. A card is two columns wide.
    */
   .opp-cards,
   .hand-row {
@@ -829,19 +829,19 @@
     align-items: flex-end;
   }
   .fan-cell {
-    grid-column: 7 / 10;
+    grid-column: 7 / 11;
     display: flex;
     align-items: flex-end;
   }
   .discard-cell {
-    grid-column: 10 / 13;
+    grid-column: 11 / 13;
     display: flex;
     justify-content: flex-end;
     align-items: flex-end;
   }
-  /* However many snags, the fan keeps to its three columns. */
+  /* However many snags, the fan keeps to its four columns. */
   .snag-fan {
-    --fan: calc(3 * var(--col) + 2 * var(--gap));
+    --fan: calc(4 * var(--col) + 3 * var(--gap));
     position: relative;
     display: flex;
     max-width: var(--fan);

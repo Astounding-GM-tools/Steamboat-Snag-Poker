@@ -309,8 +309,8 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    come off it as money goes into the pot (no switching to a pile or moths
    mid-round), and winnings show when the next round lays it out afresh.
    **Discards** sit at the end of each side's card row as notation chips (7♣)
-   in two little stacks of up to three, the Flop's along the edge and the
-   Turn's beside it,
+   in one column, the Flop's first, then the Turn's; past four they fan out
+   (overlapping, each showing its rank strip),
    shorter than a card so the block sits on the table beside them; tap it for
    a close-up of them all, by street, crossed through and named.
    Whose discard it was stays visible on purpose: it is the read on what they
@@ -320,7 +320,7 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    capped at 480px wide, with named rows: top, center, bottom, actions. On the
    table: them, the river, you, the two buttons. A card is two columns wide,
    so card rows line up edge to edge: three cards in columns 1–6, the snag fan
-   in 7–9, the discards in 10–12; Fold spans 1–6 and the main button 7–12; the
+   in 7–10, the discards in 11–12; Fold spans 1–6 and the main button 7–12; the
    board sits centred in 2–11; the opponent's name and coins take 1–9 and the
    portrait 10–12. Captions will span named rows (center only, center and
    bottom, or everything above the buttons).
