@@ -19,6 +19,12 @@ Snag Poker from the one person on the river who disapproves of it. See
   portrait in the corner.
 - **"You must"** marks a line that waits for a move at the table: only that
   move lights the button, and making it closes the line.
+- **Where captions sit:** hers on her half, yours on yours. Before the deal
+  over the empty board (her snags stay in view); during play over her cards;
+  after a hand between her cards and the board (both stay in view). Yours
+  over your purse, or your side of the table. Nothing covers her cards while
+  they turn over. Multi-sentence lines can be written as beats: separate
+  paragraphs, each a moment after the last.
 
 ## Round one: Ducks full of Ladies (no pot)
 
@@ -53,7 +59,9 @@ deuces, which look like a disaster for half a second.
 
 6. *"A fourth card. This is the Turn."* → **Turn?**
 7. *"Last chance to swap. That ace and that king are no use to you now."* →
-   **Both?**
+   **Both?** (Tap the ace and the king while this is up and the button
+   becomes **Swap 2**: swapping then skips line 8, so "Find something better"
+   never reads as a comment on a choice already made.)
 8. *"Between the two of us, I hold two aces. Find something better."* → you
    must swap the ace and the king, and only those.
 9. **You:** *"Twos! You tricked me!"*
@@ -186,7 +194,8 @@ Then, if you are left holding her Oath: *"Now you know what Snag Poker is. / Do
 you swear never to play this game for money?"* → **I swear** / **Yes. I
 do.** (Whichever you press, you swear.)
 
-Every ending also offers a rematch, **Again?** (black; **Next** on the white): it's a
+Every ending also offers a rematch, **Again?** (black; **Thanks, ma'am** on
+the white closes the tutorial, or leads to the Oath if you hold it): it's a
 tutorial, and buttons aren't money, so her oath is safe: *"Buttons are not
 money, child. / My oath is quite safe. Deal."* (draft) A fresh knockout
 follows, 20 buttons each, Respect back with you and the Oath with her.

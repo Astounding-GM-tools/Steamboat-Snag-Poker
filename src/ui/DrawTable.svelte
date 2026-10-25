@@ -67,8 +67,6 @@
   // Captains speaking at the table: a conversation is a list of lines, shown one at a time.
   let talk = $state<{ lines: SpeechLine[]; i: number } | null>(null);
   const line = $derived(talk ? talk.lines[talk.i] : null);
-  /** The line has the buttons: an answer to give, or a scene or more to read (one that asks for a move leaves them to play). */
-  const holding = $derived(!!line && (!!line.replies || (line.size !== 'aside' && !line.require)));
   /** The line is waiting for a move at the table: the white button only takes that one. */
   const complies = $derived.by(() => {
     const want = line?.require;
@@ -83,9 +81,13 @@
       return k >= 0 && open.splice(k, 1).length > 0;
     });
   });
+  /** A line with replies that also takes a move: once the move is tapped, the play buttons replace the replies. */
+  const shortcut = $derived(!!line?.replies && !!line.require && complies);
+  /** The line has the buttons: an answer to give, or a scene or more to read (one that asks for a move leaves them to play). */
+  const holding = $derived(!!line && ((!!line.replies && !shortcut) || (line.size !== 'aside' && !line.require)));
   /** A move still to be taught in this conversation (and not yet asked for): the table holds its tongue until then. */
   const lessonAhead = $derived(!line?.require && !!talk?.lines.slice(talk.i).some((l) => l.require));
-  /** Your lines come from your side of the table, theirs from theirs (and lines after a hand sit low, over the finished table). */
+  /** Your lines come from your side of the table, theirs from theirs. */
   const lowLine = $derived(!!line && line.size !== 'full' && (line.who === 'you' || line.at === 'low'));
   let oppCardsEl = $state<HTMLElement>();
   let riverEl = $state<HTMLElement>();
@@ -106,6 +108,12 @@
         const named = myPurseEl.querySelector('.my-hand')?.getBoundingClientRect().bottom;
         speechAt = { top: (named ?? purse.top) + 8 - table.top, bottom: table.bottom - buttons };
       }
+      return;
+    }
+    if (line.at === 'band' && riverEl) {
+      // Their half, between their cards and the board: both stay in view.
+      const river = riverEl.getBoundingClientRect();
+      speechAt = { top: river.top - table.top, bottom: table.bottom - (communityEl.getBoundingClientRect().top - 20) }; // clear of the ▼ marks over the board
       return;
     }
     if (line.at === 'mid' && riverEl) {
@@ -435,10 +443,10 @@
     );
     if (!lines?.length || fired.has(key)) return false;
     fired.add(key);
-    // After the hand, the table speaks over your side: her cards and the board are what's being talked about.
-    // Before the deal, over the empty board, so their snags stay in view.
-    const at = trigger === 'verdict' ? 'low' : trigger === 'deal' ? 'mid' : undefined;
-    say(at ? lines.map((l) => (l.size === 'full' || l.at ? l : { ...l, at })) : lines);
+    // After the hand, their lines sit on their half between their cards and the board (anyone else's low, over your side);
+    // before the deal, over the empty board, so their snags stay in view.
+    const place = (l: SpeechLine) => (trigger === 'verdict' ? (l.who === opponentId ? 'band' : 'low') : trigger === 'deal' ? 'mid' : undefined);
+    say(lines.map((l) => (l.size === 'full' || l.at || !place(l) ? l : { ...l, at: place(l) })));
     return true;
   }
   // A street's lines once its cards are on the table.
@@ -487,9 +495,15 @@
     const action: Action = composing
       ? { type: 'compose', cardIds: tappedCards.map((c) => c.id), jokers: tappedJokers.length }
       : { type: 'draw', cardIds: tappedCards.map((c) => c.id) };
+    const skip = shortcut; // read before the taps are cleared
     tapped = [];
     // The move a line was waiting for closes it as it's made; so does any table talk still up: play comes first.
-    if (line?.require || (line && !line.replies && line.size === 'aside')) nextLine();
+    // Made while its replies still stood, it skips past the line that would have asked for it.
+    if (skip && talk) {
+      const asks = talk.lines.findIndex((l, k) => k > talk!.i && l.require);
+      talk = asks >= 0 ? { ...talk, i: asks } : talk;
+      nextLine();
+    } else if (line?.require || (line && !line.replies && line.size === 'aside')) nextLine();
     onaction(action);
   }
 
@@ -690,7 +704,7 @@
       opponent={line.who === opponentId && line.at !== 'low'}
       top={speechAt.top}
       bottom={speechAt.bottom}
-      grow={lowLine && line.size !== 'aside'}
+      grow={line.at === 'band' ? 'down' : lowLine && line.size !== 'aside' ? 'up' : undefined}
       onnext={line.replies || line.require ? undefined : () => nextLine()}
     />
   {/if}
@@ -857,7 +871,7 @@
       <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
       <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>
       <button onclick={() => (showHelp = false)}>{t('draw.close')}</button>
-    {:else if line?.replies}
+    {:else if line?.replies && !shortcut}
       <!-- A line waiting for an answer: two replies (black, white), or one on the white button and nothing pretending on the black. -->
       {@const [a, b] = line.replies}
       {#if b}
@@ -1258,9 +1272,10 @@
   .my-purse {
     position: relative;
   }
+  /* Your hand's name, low enough to clear the ▲ marks under the board cards it uses. */
   .my-hand {
     position: absolute;
-    top: -2px;
+    top: 0.8rem;
     left: 0;
     right: 0;
     margin: 0;

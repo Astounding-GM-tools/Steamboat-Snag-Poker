@@ -123,7 +123,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['Cleaned out by a deckhand.', 'And I do hold a grudging respect for you, it seems. Well done.'],
-    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Next' }],
+    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
   },
   {
     when: 'wonAll',
@@ -131,7 +131,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['Cleaned out by a deckhand.', 'Yet your snag remains with you.'],
-    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Next' }],
+    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
   },
   {
     when: 'lostAll',
@@ -139,7 +139,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['You are out of buttons.', 'But I do find myself holding a grudging respect for you.'],
-    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Next' }],
+    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
   },
   {
     // Not yet written: the plain loss, Respect still yours.
@@ -148,7 +148,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['You are out of buttons.', 'And your snag remains with you.'],
-    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Next' }],
+    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
   },
   {
     holding: [{ snag: OATH, by: 'you' }],
@@ -218,6 +218,8 @@ export const tutorialScript: Script = {
           who: M,
           text: 'Last chance to swap. That ace and that king are no use to you now.',
           replies: [{ label: 'Both?' }],
+          // Tap them straight away and you may swap at once: no need to ask.
+          require: ['A', 'K'],
         },
         {
           size: 'aside',

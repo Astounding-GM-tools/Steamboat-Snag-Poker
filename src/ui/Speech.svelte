@@ -27,7 +27,9 @@
     auto?: boolean | number;
     /**
      * The line waits for a move at the table: these cards tapped, and only
-     * these, then the white button. A rank (`4`, `T`, `A`) matches any suit;
+     * these, then the white button. With replies too, the replies stand until
+     * the move is tapped; making it then skips ahead past the next line that
+     * asks for a move (no need to ask what you already know). A rank (`4`, `T`, `A`) matches any suit;
      * a card (`4c`) only itself. An empty list is standing pat; `fold` is the
      * black button. The move closes it.
      */
@@ -46,11 +48,12 @@
     /** Only while these snags (by number) are where it says: with `you`, or with `them`. Snags outlive the game. */
     holding?: { snag: number; by: 'you' | 'them' }[];
     /**
-     * Where the table puts it, if not by size: `low` over your side (lines
-     * after a hand, so the cards they talk about stay in view), `mid` over
-     * the empty board (lines before the deal, so their snags stay in view).
+     * Where the table puts it, if not by size: `low` over your side, `band`
+     * between their cards and the board (their lines after a hand, so both
+     * stay in view), `mid` over the empty board (lines before the deal, so
+     * their snags stay in view).
      */
-    at?: 'low' | 'mid';
+    at?: 'low' | 'band' | 'mid';
   }
 
   /** How long a line stays up when it closes by itself. */
@@ -89,7 +92,7 @@
     opponent,
     top,
     bottom,
-    grow = false,
+    grow,
     onnext,
   }: {
     line: SpeechLine;
@@ -99,8 +102,8 @@
     opponent: boolean;
     top: number;
     bottom: number;
-    /** Grows upward past `top` when the words need more room (`top` is then its least height's edge). */
-    grow?: boolean;
+    /** Grows past its edge when the words need more room: `up` past `top`, `down` past `bottom`. */
+    grow?: 'up' | 'down';
     /** Tapping the caption: absent while the line waits for an answer or a move. */
     onnext?: () => void;
   } = $props();
@@ -113,10 +116,15 @@
 <div
   class="speech {line.size}"
   class:low={line.at === 'low'}
+  class:band={line.at === 'band'}
   class:after-show={line.show}
   class:notch={opponent && line.size !== 'full'}
   class:waits={!onnext}
-  style={grow ? `bottom: ${bottom}px; min-height: calc(100% - ${top + bottom}px)` : `top: ${top}px; bottom: ${bottom}px`}
+  style={grow === 'up'
+    ? `bottom: ${bottom}px; min-height: calc(100% - ${top + bottom}px)`
+    : grow === 'down'
+      ? `top: ${top}px; min-height: calc(100% - ${top + bottom}px)`
+      : `top: ${top}px; bottom: ${bottom}px`}
   onclick={(e) => (e.stopPropagation(), onnext?.())}
   role="status"
   aria-live="polite"
@@ -230,8 +238,9 @@
   .scene p {
     font-size: 1.2rem;
   }
-  /* Over your side there's a little less room. */
-  .low p {
+  /* Over your side, or between their cards and the board, there's a little less room. */
+  .low p,
+  .band p {
     font-size: 1.05rem;
   }
   .low .who {
