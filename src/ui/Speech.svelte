@@ -41,8 +41,12 @@
     when?: 'won' | 'dumped' | 'kept' | 'lost' | 'wonAll' | 'lostAll';
     /** They show their hand (even after a fold): the cards turn face up, and the words follow. */
     show?: boolean;
-    /** Over your side of the table instead (the table puts lines after a hand there, so the cards they talk about stay in view). */
-    at?: 'low';
+    /**
+     * Where the table puts it, if not by size: `low` over your side (lines
+     * after a hand, so the cards they talk about stay in view), `mid` over
+     * the empty board (lines before the deal, so their snags stay in view).
+     */
+    at?: 'low' | 'mid';
   }
 
   /** How long a line stays up when it closes by itself. */

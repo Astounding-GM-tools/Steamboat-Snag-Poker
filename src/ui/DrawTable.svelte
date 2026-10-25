@@ -88,6 +88,7 @@
   /** Your lines come from your side of the table, theirs from theirs (and lines after a hand sit low, over the finished table). */
   const lowLine = $derived(!!line && line.size !== 'full' && (line.who === 'you' || line.at === 'low'));
   let oppCardsEl = $state<HTMLElement>();
+  let riverEl = $state<HTMLElement>();
   let communityEl = $state<HTMLElement>();
   let speechAt = $state({ top: 0, bottom: 0 });
   /** Where a caption of each size sits, in px from the table's top and bottom edges. */
@@ -105,6 +106,12 @@
         const named = myPurseEl.querySelector('.my-hand')?.getBoundingClientRect().bottom;
         speechAt = { top: (named ?? purse.top) + 8 - table.top, bottom: table.bottom - buttons };
       }
+      return;
+    }
+    if (line.at === 'mid' && riverEl) {
+      // Over the empty board, before the deal: their cards row (and their snags) stay in view.
+      const river = riverEl.getBoundingClientRect();
+      speechAt = { top: river.top - table.top, bottom: table.bottom - communityEl.getBoundingClientRect().bottom };
       return;
     }
     const from = line.size === 'full' ? table.top + parseFloat(getComputedStyle(tableEl).paddingTop) : cards.top;
@@ -418,7 +425,9 @@
     if (!lines?.length || fired.has(key)) return false;
     fired.add(key);
     // After the hand, the table speaks over your side: her cards and the board are what's being talked about.
-    say(trigger === 'verdict' ? lines.map((l) => (l.size === 'full' ? l : { ...l, at: 'low' })) : lines);
+    // Before the deal, over the empty board, so their snags stay in view.
+    const at = trigger === 'verdict' ? 'low' : trigger === 'deal' ? 'mid' : undefined;
+    say(at ? lines.map((l) => (l.size === 'full' || l.at ? l : { ...l, at })) : lines);
     return true;
   }
   // A street's lines once its cards are on the table.
@@ -710,7 +719,7 @@
   </section>
 
   <!-- The river: the border between them and you. -->
-  <section class="river">
+  <section class="river" bind:this={riverEl}>
     {#if revealing && theirCall}
       <!-- The showdown: their hand so far, called where the street name was. -->
       <div class="callout theirs" aria-live="polite">
