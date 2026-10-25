@@ -198,6 +198,18 @@ button.ghost {
   border: 1px solid #111;
   pointer-events: none;
 }
+/*
+ * Morag's lessons are played for buttons: bone sewing buttons, two holes each,
+ * in the same stacks and flights as the coins.
+ */
+.table.buttons .coin,
+.flying-coin.button {
+  background:
+    radial-gradient(ellipse 12% 30% at 36% 50%, #1b1a18 75%, transparent 100%),
+    radial-gradient(ellipse 12% 30% at 64% 50%, #1b1a18 75%, transparent 100%),
+    linear-gradient(#d9ccaa, #7d7058);
+}
+
 /* A pot coin whose flight hasn't landed yet. */
 .landing {
   visibility: hidden !important;

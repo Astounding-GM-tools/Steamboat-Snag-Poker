@@ -88,6 +88,8 @@ export interface GameState {
   story?: string;
   /** Hands dealt to order, one per round from the first; later rounds are shuffled as usual. */
   arranged?: ArrangedHand[];
+  /** What the money on the table is: dollars, or (in Morag's lessons) buttons. */
+  currency?: 'buttons';
 }
 
 const clone = <T>(x: T): T => structuredClone(x);

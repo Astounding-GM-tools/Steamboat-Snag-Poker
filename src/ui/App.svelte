@@ -7,8 +7,8 @@
   import Table from './Table.svelte';
   import Title from './Title.svelte';
   import { loadBest, loadGame, recordResult, saveGame } from './storage';
-  import { newTutorial, tutorialScript, TUTORIAL } from '../story/tutorial';
-  import type { Script } from '../story/script';
+  import { giveButtons, newTutorial, skipToButtons, tutorialScript, TUTORIAL } from '../story/tutorial';
+  import { roundScript, type Script } from '../story/script';
 
   /** Lessons and story encounters, by the id a game carries. */
   const scripts: Record<string, Script> = { [TUTORIAL]: tutorialScript };
@@ -44,13 +44,30 @@
   }
   // For now the lessons start from the address (…/?tutorial) or, in development, the console.
   if (new URLSearchParams(location.search).has('tutorial')) startTutorial();
-  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).startTutorial = startTutorial;
+  if (import.meta.env.DEV) {
+    const w = window as unknown as Record<string, unknown>;
+    w.startTutorial = startTutorial;
+    // Straight to the knockout for buttons.
+    w.tutorialButtons = () => ((stage = 'play'), setGame(skipToButtons(Date.now() >>> 0)));
+  }
 
   /** Something an answer in a conversation set going. */
   function talkEffect(effect: string) {
     if (effect === 'end') pause();
     else if (effect === 'next') next();
+    else if (effect === 'buttons' && game) {
+      // The lesson's last arranged round is over: out come the buttons, and on to a real game.
+      game = giveButtons(game);
+      next();
+    }
     else if (import.meta.env.DEV) console.info('talk effect:', effect);
+  }
+
+  /** The showdown is over. A story goes straight on to its next round (or, when the game is over, home); a tournament shows the standings. */
+  function revealed() {
+    if (!game?.story) stage = 'result';
+    else if (game.phase === 'monthEnd') next();
+    else pause();
   }
 
   function resume() {
@@ -101,7 +118,7 @@
 <div class="film">
   {#if game}
     {#if game.round?.playStyle === 'draw'}
-      <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={() => (stage = 'result')} onnext={next} script={game.story ? scripts[game.story]?.[game.month - 1] : undefined} ontalk={talkEffect} />
+      <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={revealed} onnext={next} script={game.story ? roundScript(scripts[game.story], game.month) : undefined} ontalk={talkEffect} />
     {:else}
       <Table {game} peek={false} onaction={act} onmenu={pause} />
     {/if}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { nextMonth, submitAction } from '../engine';
-import { newTutorial } from './tutorial';
+import { anteFor, nextMonth, streetFee, submitAction } from '../engine';
+import { OATH, RESPECT, newTutorial, skipToButtons } from './tutorial';
 
 describe('the tutorial', () => {
   it('round one plays as scripted: Ducks full of Ladies beat three aces', () => {
@@ -43,6 +43,16 @@ describe('the tutorial', () => {
     expect(r().result!.folded).toBe(0);
     expect(r().result!.hands[1].category).toBe('flush');
     expect(g.players.map((p) => p.money)).toEqual(purses);
+  });
+
+  it('the buttons: from round three a shuffled game for a pot, with a snag each', () => {
+    const g = skipToButtons(1);
+    expect(g.month).toBe(3);
+    expect(g.round!.potMode).toBe(true);
+    expect(g.players.map((p) => p.jokers.map((j) => j.index))).toEqual([[RESPECT], [OATH]]);
+    expect(anteFor(g.config, 3, 1)).toBe(4); // the ante, 3, and a button of upkeep
+    expect([streetFee(g.config, 3, 1), streetFee(g.config, 3, 2)]).toEqual([1, 1]);
+    expect(g.round!.bets).toEqual([4, 4]);
   });
 
   it('is the same deal whatever the seed', () => {

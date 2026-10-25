@@ -8,7 +8,9 @@ export const SUIT_GLYPH = { c: '♣', d: '♢', h: '♡', s: '♠' } as const;
 const JOKER_NAMES = 12;
 
 export function jokerName(index: number): string {
-  return t(`joker.${index % JOKER_NAMES}`);
+  // A snag with a name of its own (the lessons' Grudging Respect, say) keeps it.
+  const own = `joker.${index}`;
+  return index >= JOKER_NAMES && t(own) !== own ? t(own) : t(`joker.${index % JOKER_NAMES}`);
 }
 
 /** A snag's name as printed on the card, without the "the" that sentences need: "Mail Run". */

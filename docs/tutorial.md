@@ -1,7 +1,8 @@
 # The tutorial: Morag's lessons
 
-Status: **rounds one and two are playable** at `/?tutorial` (the decks and
-lines in `src/story/tutorial.ts`); the pickle is still to design. Chapter one of the story, and canon: the
+Status: **playable from start to finish** at `/?tutorial` (decks and lines in
+`src/story/tutorial.ts`; in development, `tutorialButtons()` in the console
+jumps to the knockout). Chapter one of the story, and canon: the
 deckhand meets Morag MacTavish, who is looking for her husband, and learns
 Snag Poker from the one person on the river who disapproves of it. See
 [story.md](story.md) for the caption system and the story around it.
@@ -110,28 +111,50 @@ the tell: that is the lesson.
    when one first comes up, in the pickle. An earlier line that may still
    find a place: *"You should NEVER play for money!"*)
 
-## Round three and on: the pickle (buttons)
+## Round three and on: the knockout (buttons)
 
-One hand, designed with care: winnable, and repeatable until one side has all
-the buttons. A smart player works out which cards to tap and when to call. The
-same ranks every time, the suits and the order of the cards changed, so it
-can be learned without looking copied.
+No more arranged decks: from the first hand for buttons it is a real game,
+shuffled, until one side has all the buttons. (Any further constructed lesson
+goes in before the pot and the snags arrive.)
 
-- The first time you call (a scene, before the decision): *"Now it costs a
-  button to see the next card. You can fold, or pay to stay in the game:
-  that's a call."*
-- Perhaps a snag rides along, with Morag explaining it the first time: the
-  last rule, learned by beating the pickle.
-- After any hand you win: *"And now you know why you must stay away from Snag
-  Poker. Now hand me my buttons back."* → **Not yet** (another round) /
-  **Sure, thanks** (the tutorial ends).
-- When either side is out of buttons, it is over for good. You win: *"Cleaned
-  out by a deckhand. Not a word of this to Finlay."* You lose: *"And that,
-  child, is why you never play for money."*
-- The last caption says where each button goes, so the labels stay short:
-  **Menu** (black) and **Story** (white).
+- **20 buttons each.** The ante is the round number (3, then 4…), a button to
+  see the Turn and one for the River, each snag a button of upkeep, and a snag
+  lost with costs 2.
+- **The snags:** you are handed **Grudging Respect**, and want Morag to
+  receive it; she carries **the Solemn Oath** (never to play Snag Poker again)
+  and wants you to take it. Ideally you dodge the Oath and she ends up with
+  your Respect; how it goes is anyone's guess, and it can be played again and
+  again.
+- The buttons are drawn as sewing buttons, and prices on the action buttons
+  are bare figures (*Call · 1*).
 
-Deck: to be designed.
+**When the snags arrive** (first hand only; drafts, the snag explanation still
+to be written properly)
+
+1. *"Here: Grudging Respect, for you. Pawn it off on me, if you can."* →
+   **Snag?**
+2. *"A snag is a burden. Win with it in your hand, and the loser takes it.
+   Lose with it, and it costs you."* → **And yours?**
+3. *"My Solemn Oath, never to play Snag Poker again. You'll be taking it off
+   my hands."* → **We'll see**
+
+**The first call** (scene, on the Flop): *"Now it costs a button to see the
+next card. You can fold, or pay to stay in the game: that's a call."* →
+**Call?**
+
+**After every hand** (no standings between hands)
+
+- You won: *"And now you know why you must stay away from Snag Poker. Now hand
+  me my buttons back."* → **Not yet** (the next hand) / **Sure, thanks** →
+  *"Good. And remember: never for money."* (the end)
+- You have all the buttons: *"Cleaned out by a deckhand. Not a word of this to
+  Finlay."*
+- She has all the buttons: *"And that, child, is why you never play for
+  money."*
+- After a lost hand the next one is dealt without a word.
+
+For now every ending goes back to the title. Later the last caption offers
+**Menu** (black) and **Story** (white).
 
 ## Needs from the build
 
@@ -146,6 +169,6 @@ Deck: to be designed.
 
 ## Open
 
-- The pickle's deck, and whether a snag rides in it.
+- The snag explanation, properly written.
 - The first-call line is long for an aside: shown as a scene before the
   decision, or trimmed.

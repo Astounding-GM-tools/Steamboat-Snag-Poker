@@ -31,6 +31,12 @@
      * black button. The move closes it.
      */
     require?: string[] | 'fold';
+    /**
+     * Only after this outcome (for lines after the verdict): you won the hand
+     * or lost it with the game going on, or the game is over, all the money
+     * yours or all of it theirs.
+     */
+    when?: 'won' | 'lost' | 'wonAll' | 'lostAll';
   }
 
   /** How long a line stays up when it closes by itself. */

@@ -333,6 +333,11 @@ export const en = {
   'joker.10': 'the Crate of Live Chickens',
   'joker.11': 'the Unpaid Coal Bill',
   'joker.generic': 'a snag',
+  // Morag's lessons only.
+  'money.button': '{n} button',
+  'money.buttons': '{n} buttons',
+  'joker.12': 'Grudging Respect',
+  'joker.13': 'the Solemn Oath',
 
   'preset.draw': 'Rules: Snag Poker',
   'preset.kansasDraw': 'Rules: Kansas Draw (no snags)',

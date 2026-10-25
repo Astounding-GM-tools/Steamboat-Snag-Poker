@@ -376,7 +376,8 @@
   let fired = new Set<string>();
   function fire(trigger: Trigger): boolean {
     const key = `${game.month}:${trigger}`;
-    const lines = script?.[trigger];
+    const outcome = result?.winner === 0 ? (game.phase === 'victory' ? 'wonAll' : 'won') : game.phase === 'gameOver' ? 'lostAll' : 'lost';
+    const lines = script?.[trigger]?.filter((l) => !l.when || l.when === outcome);
     if (!lines?.length || fired.has(key)) return false;
     fired.add(key);
     say(lines);
@@ -391,7 +392,11 @@
 
   // A round that ends in a fold has no showdown: its closing lines come as it ends.
   $effect(() => {
-    if (!playing && result?.folded != null) untrack(() => fire('verdict'));
+    if (!playing && result?.folded != null)
+      untrack(() => {
+        // In a story with nothing to say about it, the next round comes after a beat.
+        if (!fire('verdict') && script) setTimeout(() => onrevealed?.(), 1200);
+      });
   });
 
   let lastKey = '';
@@ -470,7 +475,7 @@
   /** One coin from one spot on screen to another; resolves when it lands. `stay` leaves it there. */
   function fly(from: DOMRect, to: DOMRect, delay: number, stay = false): Promise<void> {
     const coin = document.createElement('span');
-    coin.className = 'flying-coin';
+    coin.className = game.currency === 'buttons' ? 'flying-coin button' : 'flying-coin';
     Object.assign(coin.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` });
     document.body.append(coin);
     const dx = to.left + to.width / 2 - (from.left + from.width / 2);
@@ -579,7 +584,11 @@
       ? streetFee(config, round.month, round.street + 1) + discardCost(me.discarded.length, tappedCards.length)
       : 0,
   );
-  const priced = (label: string) => (cost ? `${label} · ${dollars(cost)}` : label);
+  /** A price on the table: dollars, or in the lessons, buttons. */
+  const money = (n: number) => (game.currency === 'buttons' ? t(n === 1 ? 'money.button' : 'money.buttons', { n }) : dollars(n));
+  /** On the action buttons there's only room for the figure: buttons go uncounted, dollars keep their sign. */
+  const price = (n: number) => (game.currency === 'buttons' ? String(n) : dollars(n));
+  const priced = (label: string) => (cost ? `${label} · ${price(cost)}` : label);
   const buttonLabel = $derived(
     composing
       ? t('draw.play')
@@ -591,7 +600,7 @@
   );
   const showFold = $derived(playing && !composing);
   // Folding gives up everything you have put into the pot so far.
-  const foldLabel = $derived(bets[0] ? `${t('draw.fold')} · ${dollars(bets[0])}` : t('draw.fold'));
+  const foldLabel = $derived(bets[0] ? `${t('draw.fold')} · ${price(bets[0])}` : t('draw.fold'));
 
   function fold() {
     if (!playing || dealing || !canFold(round, 0)) return;
@@ -604,7 +613,7 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="table solo layout" onclick={finishDeal} bind:this={tableEl}>
+<div class="table solo layout" class:buttons={game.currency === 'buttons'} onclick={finishDeal} bind:this={tableEl}>
   {#if showHelp}<div class="help-layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
   {#if line}
     <Speech
@@ -729,7 +738,7 @@
           <span class="call" class:long={callout.call.length > 30}>{callout.call}</span>
           <span class="lingo">{callout.lingo ?? ''}</span>
           <span class="note">
-            {#if tappedJokers.length === 1}{t('draw.ridingOne', { cost: dollars(config.jokerForfeit ?? 0) })}{:else if tappedJokers.length}{t('draw.riding', { n: t(`number.${tappedJokers.length}`), cost: dollars(tappedJokers.length * (config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
+            {#if tappedJokers.length === 1}{t('draw.ridingOne', { cost: money(config.jokerForfeit ?? 0) })}{:else if tappedJokers.length}{t('draw.riding', { n: t(`number.${tappedJokers.length}`), cost: money(tappedJokers.length * (config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
           </span>
         </div>
       {/if}

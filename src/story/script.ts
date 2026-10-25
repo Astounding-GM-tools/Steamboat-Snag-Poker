@@ -10,5 +10,13 @@ export type Trigger = 'deal' | 'flop' | 'turn' | 'river' | 'verdict';
 /** A round's conversation, by trigger. Each fires once. */
 export type RoundScript = Partial<Record<Trigger, SpeechLine[]>>;
 
-/** A story's rounds, the first first. */
-export type Script = RoundScript[];
+/** A story's rounds, the first first; `later` for every round after those. */
+export interface Script {
+  rounds: RoundScript[];
+  later?: RoundScript;
+}
+
+/** The lines for a round of a story. */
+export function roundScript(script: Script | undefined, month: number): RoundScript | undefined {
+  return script && (script.rounds[month - 1] ?? script.later);
+}
