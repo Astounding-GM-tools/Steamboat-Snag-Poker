@@ -513,7 +513,7 @@
         </div>
       {/if}
       </div>
-      <div class="discard-cell"><DiscardChips cards={them.discarded} flop={them.flopDiscards} title={t('draw.theirDiscards', { name: name(opponentId) })} /></div>
+      <div class="discard-cell"><DiscardChips tall cards={them.discarded} flop={them.flopDiscards} title={t('draw.theirDiscards', { name: name(opponentId) })} /></div>
     </div>
   </section>
 
@@ -704,8 +704,9 @@
     display: flex;
     flex-direction: column;
   }
+  /* Centred in the space beside the portrait. */
   .opp-left .name-btn {
-    align-self: flex-end;
+    align-self: center;
   }
   /* Lifted clear of their cards, into the room under the name. */
   .opp-purse {
