@@ -18,6 +18,8 @@
     /** Stamped with a cross: a thrown-away card in the close-up. */
     crossed?: boolean;
     selected?: boolean;
+    /** Lifted out of its row: a snag the opponent played, shown at the reveal. */
+    lifted?: boolean;
     ghost?: boolean;
     fresh?: boolean;
     /** Board card used by the opponent's hand (mark above) or yours (mark below). */
@@ -34,7 +36,7 @@
     ondragstart?: (e: DragEvent) => void;
   }
 
-  let { card = null, faceDown = false, deal = null, markAbove = false, markBelow = false, small = false, huge = false, width, crossed = false, selected = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
+  let { card = null, faceDown = false, deal = null, markAbove = false, markBelow = false, small = false, huge = false, width, crossed = false, selected = false, lifted = false, ghost = false, fresh = false, used = false, faded = false, toss = false, placeholder = '', onclick, ondragstart }: Props = $props();
 
   const rank = $derived(card && !isJoker(card) ? (card.rank === 10 ? '10' : rankLabel(card.rank)) : '');
   const playing = $derived(card && !isJoker(card) ? card : null);
@@ -84,6 +86,7 @@
     class:pair={cardPrefs.face === 'pair'}
     class:passive={!onclick && !ondragstart}
     class:selected
+    class:lifted
     class:ghost
     class:fresh
     class:deal-left={deal === 'left'}
@@ -160,6 +163,10 @@
   .selected {
     transform: translateY(-10px) rotate(-2deg) !important;
     box-shadow: 0 0 0 3px var(--paper), 0 0 18px 4px rgba(255, 255, 255, 0.45);
+  }
+  .lifted {
+    transform: translateY(-14px) !important;
+    transition: transform 0.25s ease-out;
   }
   .ghost {
     opacity: 0.55;

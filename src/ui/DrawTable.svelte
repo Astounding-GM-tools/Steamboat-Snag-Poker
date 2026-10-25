@@ -718,7 +718,8 @@
         <!-- However many snags they carry, the fan never grows past its width. Played snags flip like their cards. -->
         <div class="snag-fan" style="--n: {theirSnags.length}">
           {#each theirSnags as card (card.id)}
-            {#if !playedIds.has(card.id) || faceUp.has(card.id)}<CardView {card} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
+            <!-- A snag they played rises out of the fan as it's revealed: riding along in their hand. -->
+            {#if !playedIds.has(card.id) || faceUp.has(card.id)}<CardView {card} lifted={playedIds.has(card.id) && faceUp.has(card.id)} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
           {/each}
           {#if theirSnags.length > 2}<span class="snag-count">×{theirSnags.length}</span>{/if}
         </div>
@@ -826,7 +827,7 @@
         <!-- However many snags you carry, the fan never grows past its width. -->
         <div class="snag-fan mine" class:live={composing} style="--n: {mySnags.length}">
           {#each mySnags as card (card.id)}
-            <CardView {card} selected={tapped.includes(card.id)} used={shownDown && myPlayedSnagIds.has(card.id)} onclick={playing && composing ? () => tap(card) : undefined} />
+            <CardView {card} selected={tapped.includes(card.id)} used={shownDown && myPlayedSnagIds.has(card.id)} lifted={shownDown && myPlayedSnagIds.has(card.id)} onclick={playing && composing ? () => tap(card) : undefined} />
           {/each}
           {#if mySnags.length > 2}<span class="snag-count">×{mySnags.length}</span>{/if}
         </div>
