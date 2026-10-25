@@ -198,41 +198,55 @@
 </div>
 
 <style>
+  /*
+   * The same screen grid as the table (DrawTable): 12 columns, capped at a big
+   * phone's width, anchored to the bottom with the same padding, so the two
+   * buttons sit exactly where the table's do. The boat and the title card share
+   * the room above.
+   */
   .title {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: 1fr auto;
+    column-gap: 0.5rem;
+    row-gap: clamp(0.6rem, 2.5vh, 1.75rem);
+    width: 100%;
+    max-width: 480px;
     min-height: 100svh;
-    display: flex;
-    flex-direction: column;
+    margin: 0 auto;
+    padding: 1rem 1rem 0.75rem;
   }
-  /* The picture and the title card share the room evenly; the buttons keep to the bottom. */
+  :global(.short) .title {
+    row-gap: 0.4rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
   .stage {
+    grid-column: 1 / -1;
     position: relative;
-    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
     gap: 1rem;
-    padding: 1rem 1rem 0;
   }
-  /*
-   * Lined up with the table's buttons (DrawTable .actions): same insets, the
-   * black one as wide as three cards and their gaps, the white one the rest.
-   */
   .dock {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
     /* Above the title card's spotlight shadow, which dims everything around it. */
     position: relative;
     z-index: 1;
-    --cw: 76px;
-    --hgap: 0.75rem;
-    width: 100%;
-    max-width: 760px;
-    margin: 0 auto;
-    /* The table's own padding + its section padding + the section's 2px border. */
-    padding: 1rem calc(1rem + 1rem + 2px) calc(0.75rem + 0.75rem + 2px);
   }
   .actions {
+    grid-column: 1 / -1;
     display: grid;
-    grid-template-columns: calc(3 * var(--cw) + 2 * var(--hgap)) 1fr;
-    gap: var(--hgap);
+    grid-template-columns: subgrid;
+  }
+  .actions > :first-child {
+    grid-column: 1 / 7;
+  }
+  .actions > :last-child {
+    grid-column: 7 / 13;
   }
   .actions button {
     padding-top: 0.6em;
@@ -243,18 +257,10 @@
     outline-offset: -2px;
   }
   @media (max-width: 600px) {
-    .dock {
-      --cw: 54px;
-      --hgap: 0.5rem;
-      padding: 0.75rem calc(0.5rem + 0.5rem + 2px) calc(0.4rem + 0.5rem + 2px);
-    }
     .actions button {
       font-size: 1.15rem;
-    }
-  }
-  @media (max-width: 600px) {
-    :global(.short) .dock {
-      padding-bottom: calc(0.25rem + 0.35rem + 2px);
+      padding-left: 0.5em;
+      padding-right: 0.5em;
     }
   }
   .boat {

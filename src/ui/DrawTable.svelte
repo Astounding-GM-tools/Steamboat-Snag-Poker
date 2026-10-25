@@ -472,7 +472,7 @@
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="table solo" onclick={finishDeal} bind:this={tableEl}>
+<div class="table solo layout" onclick={finishDeal} bind:this={tableEl}>
   {#if showHelp}<div class="help-layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
   <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
@@ -492,6 +492,7 @@
       </button>
     </div>
     <div class="opp-cards">
+      <div class="hand-cell">
       <!-- At the showdown their played cards flip in place, one per Next. -->
       {#each theirPlayed.filter((c) => !isJoker(c)) as card (card.id)}
         {#if faceUp.has(card.id)}<CardView {card} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
@@ -500,6 +501,8 @@
       {#each them.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
         {#if decided}<CardView {card} faded fresh={stage === 'reveal'} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
       {/each}
+      </div>
+      <div class="fan-cell">
       {#if theirSnags.length}
         <!-- However many snags they carry, the fan never grows past its width. Played snags flip like their cards. -->
         <div class="snag-fan" style="--n: {theirSnags.length}">
@@ -509,7 +512,8 @@
           {#if theirSnags.length > 2}<span class="snag-count">×{theirSnags.length}</span>{/if}
         </div>
       {/if}
-      <DiscardChips cards={them.discarded} flop={them.flopDiscards} title={t('draw.theirDiscards', { name: name(opponentId) })} />
+      </div>
+      <div class="discard-cell"><DiscardChips cards={them.discarded} flop={them.flopDiscards} title={t('draw.theirDiscards', { name: name(opponentId) })} /></div>
     </div>
   </section>
 
@@ -587,6 +591,7 @@
       {/if}
     </div>
     <div class="hand-row">
+      <div class="hand-cell">
       <!-- At the showdown: the cards you played, then any you kept back, dimmed. -->
       {#each myPlayed as card (card.id)}<CardView {card} used />{/each}
       {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
@@ -600,6 +605,8 @@
           onclick={playing ? () => tap(card) : undefined}
         />
       {/each}
+      </div>
+      <div class="fan-cell">
       {#if mySnags.length}
         <!-- However many snags you carry, the fan never grows past its width. -->
         <div class="snag-fan mine" class:live={composing} style="--n: {mySnags.length}">
@@ -609,34 +616,36 @@
           {#if mySnags.length > 2}<span class="snag-count">×{mySnags.length}</span>{/if}
         </div>
       {/if}
-      <DiscardChips tall cards={me.discarded} flop={me.flopDiscards} title={t('draw.yourDiscards')} />
+      </div>
+      <div class="discard-cell"><DiscardChips tall cards={me.discarded} flop={me.flopDiscards} title={t('draw.yourDiscards')} /></div>
     </div>
 
 
-    <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp} bind:this={actionsEl}>
-      {#if showHelp}
-        <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
-        <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>
-        <button onclick={() => (showHelp = false)}>{t('draw.close')}</button>
-      {:else if showCaptain}
-        <!-- Their details are up: the white button takes you back, the black one waits. -->
-        <button class="ghost" disabled>{standing ? t('end.pause') : revealing ? t('show.skip') : foldLabel}</button>
-        <button onclick={() => (showCaptain = false)}>{t('draw.back')}</button>
-      {:else if standing}
-        <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
-        <button onclick={() => onnext?.()}>{t('end.next')}</button>
-      {:else if revealing}
-        <button class="ghost" onclick={revealSkip}>{t('show.skip')}</button>
-        <button onclick={revealNext}>{verdictShown ? `${verdictLabel} ▸` : t('show.next')}</button>
-      {:else}
-        <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0)}>{foldLabel}</button>
-        <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
-      {/if}
-    </div>
 
   </section>
-</div>
 
+  <!-- The two buttons, the same on every screen: black on the left half, white on the right. -->
+  <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp} bind:this={actionsEl}>
+    {#if showHelp}
+      <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
+      <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>
+      <button onclick={() => (showHelp = false)}>{t('draw.close')}</button>
+    {:else if showCaptain}
+      <!-- Their details are up: the white button takes you back, the black one waits. -->
+      <button class="ghost" disabled>{standing ? t('end.pause') : revealing ? t('show.skip') : foldLabel}</button>
+      <button onclick={() => (showCaptain = false)}>{t('draw.back')}</button>
+    {:else if standing}
+      <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
+      <button onclick={() => onnext?.()}>{t('end.next')}</button>
+    {:else if revealing}
+      <button class="ghost" onclick={revealSkip}>{t('show.skip')}</button>
+      <button onclick={revealNext}>{verdictShown ? `${verdictLabel} ▸` : t('show.next')}</button>
+    {:else}
+      <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0)}>{foldLabel}</button>
+      <button onclick={go} disabled={!playing || dealing}>{buttonLabel}</button>
+    {/if}
+  </div>
+</div>
 
 {#if fishedNews}
   <WillieSays onclose={() => (fishedNews = null)}>
@@ -681,17 +690,16 @@
     border-radius: 50%;
   }
   .opponent {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    row-gap: 0.5rem;
   }
+  /* Name and title over their coins in columns 1–9; the portrait in 10–12. */
   .opp-head {
-    display: flex;
-    align-items: stretch;
-    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
   }
   .opp-left {
-    flex: 1;
+    grid-column: 1 / 10;
     min-width: 0;
     display: flex;
     flex-direction: column;
@@ -704,7 +712,7 @@
     transform: translateY(-12px);
   }
   .portrait-btn {
-    flex: none;
+    grid-column: 10 / 13;
     display: flex;
     padding: 0;
     background: none;
@@ -714,7 +722,7 @@
   }
   /* From the top of the name to the bottom of their coins. */
   .portrait {
-    width: 92px;
+    width: 100%;
     height: 100%;
     min-height: 110px;
     font-size: 2.8rem;
@@ -722,9 +730,7 @@
   .river {
     position: relative;
   }
-  .table.solo {
-    position: relative;
-  }
+
   .help-layer {
     position: absolute;
     top: 0;
@@ -805,29 +811,43 @@
   .pot-band {
     margin: 0.2rem 0 0.5rem;
   }
-  .opp-cards {
-    --hgap: 0.75rem;
+  /*
+   * Card rows (theirs and yours) on the grid: three cards in columns 1–6, the
+   * snag fan in 7–9, the discards in 10–12. A card is two columns wide.
+   */
+  .opp-cards,
+  .hand-row {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    align-items: end;
+  }
+  .hand-cell {
+    grid-column: 1 / 7;
+    display: flex;
+    gap: var(--gap);
+    align-items: flex-end;
+  }
+  .fan-cell {
+    grid-column: 7 / 10;
     display: flex;
     align-items: flex-end;
-    gap: var(--hgap);
   }
-  .opp-cards .snag-fan {
-    margin-left: 0;
-  }
-  .snag-fan {
-    --fan: 120px;
+  .discard-cell {
+    grid-column: 10 / 13;
     display: flex;
-    margin-left: 0.6rem;
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  /* However many snags, the fan keeps to its three columns. */
+  .snag-fan {
+    --fan: calc(3 * var(--col) + 2 * var(--gap));
+    position: relative;
+    display: flex;
     max-width: var(--fan);
   }
   .snag-fan :global(.card + .card) {
-    margin-left: min(3px, calc((var(--fan) - var(--cw) * var(--n)) / (var(--n) - 1)));
-  }
-  .snag-fan {
-    --cw: 76px;
-  }
-  .snag-fan {
-    position: relative;
+    margin-left: min(3px, calc((var(--fan) - var(--card-w) * var(--n)) / (var(--n) - 1)));
   }
   /* How many snags, as a badge on the fan: more than two can't be counted by eye. */
   .snag-count {
@@ -884,47 +904,65 @@
     text-underline-offset: 4px;
   }
   /*
-   * The play screen fills the height (up to a big phone's): the opponent at the
-   * top, you at the bottom, the river in between. The gaps take up any slack,
-   * so neither end moves when something in the middle changes.
-   */
-  /*
-   * The table keeps to the bottom of the screen, so its two buttons sit exactly
-   * where the title screen's do; any spare height goes above the opponent.
+   * The screen grid: 12 columns, and rows top (them), center (the river),
+   * bottom (you) and actions (the two buttons), the same on every screen. The
+   * table keeps to the bottom, so the buttons sit where the title screen's do;
+   * any spare height goes above. Capped at a big phone's width: it's a
+   * portrait game. A card is two columns and a gap wide, so their cards, the
+   * board and yours line up edge to edge.
    */
   .table.solo {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: clamp(0.6rem, 2.5vh, 1.75rem);
+    --gap: 0.5rem;
+    container-type: inline-size;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gap);
+    row-gap: clamp(0.6rem, 2.5vh, 1.75rem);
+    align-content: end;
+    width: 100%;
+    max-width: 480px;
     min-height: 100svh;
-    padding-top: 1rem;
-    padding-bottom: 0.75rem;
+    margin: 0 auto;
+    padding: 1rem 1rem 0.75rem;
   }
-  @media (max-width: 600px) {
-    .table.solo {
-      padding-bottom: 0.4rem;
-    }
+  .table.solo > :not(.help-layer) {
+    --col: calc((100cqw - 11 * var(--gap)) / 12);
+    --card-w: calc(2 * var(--col) + var(--gap));
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    padding: 0;
+    border: none;
   }
-  /* Card width and the gap between cards: the buttons below line up with them. */
+  /* The rows by name: top (them), center (the river), bottom (you), actions. */
+  .table.solo > .opponent {
+    grid-row: 1;
+  }
+  .table.solo > .river {
+    grid-row: 2;
+  }
+  .table.solo > .captain {
+    grid-row: 3;
+  }
+  .table.solo > .actions {
+    grid-row: 4;
+  }
+  .table.solo > section > :global(*) {
+    grid-column: 1 / -1;
+  }
+  .table.solo :global(.card:not(.huge)) {
+    --w: var(--card-w) !important;
+  }
+  .table.solo .community {
+    gap: var(--gap);
+  }
   .captain {
-    --cw: 76px;
-    --hgap: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-  /* No frames for the players: the river between them is separation enough. */
-  .opponent,
-  .captain {
-    border-color: transparent;
+    row-gap: 0.4rem;
   }
   /* Tall enough for a lifted card, so selecting one doesn't push anything. */
   .hand-row {
-    display: flex;
-    align-items: flex-end;
-    gap: var(--hgap);
-    height: 122px;
+    height: calc(var(--card-w) * 1.4 + 14px);
   }
   .my-purse {
     position: relative;
@@ -1008,19 +1046,16 @@
   @keyframes callout-in {
     from { opacity: 0; }
   }
-  /* Two fixed halves: changing labels and prices never move them. */
-  /* Fold as wide as your three cards; the main button under your snags and discards. */
-  .actions {
-    display: grid;
-    grid-template-columns: calc(3 * var(--cw) + 2 * var(--hgap)) 1fr;
-    gap: var(--hgap);
+  /* Two fixed halves of the grid: changing labels and prices never move them. */
+  .actions > :first-child {
+    grid-column: 1 / 7;
+  }
+  .actions > :last-child {
+    grid-column: 7 / 13;
   }
   /* The main button's outline goes inside its edge, so both buttons stand the same size. */
   .actions button:not(.ghost) {
     outline-offset: -2px;
-  }
-  .actions {
-    margin-top: 0.5rem;
   }
   .actions button {
     padding-top: 0.6em;
@@ -1045,55 +1080,18 @@
   :global(.short) .callout.theirs {
     height: 3.3rem;
   }
-  :global(.short) .actions {
-    margin-top: 0.3rem;
-  }
-  :global(.short) .table.solo section {
-    padding-top: 0.35rem;
-    padding-bottom: 0.35rem;
-  }
   :global(.short) .captain {
-    gap: 0.2rem;
+    row-gap: 0.2rem;
   }
   :global(.short) .opponent {
-    gap: 0.25rem;
+    row-gap: 0.25rem;
   }
-  /* Phones: smaller cards (and the gaps the buttons line up with), bigger button type. */
+  /* Phones: bigger button type. */
   @media (max-width: 600px) {
-    .snag-fan {
-      --cw: 54px;
-      --fan: 80px;
-    }
-    /* Their cards may rise into the room under their coins, so the row takes less height. */
-    .opp-cards {
-      --hgap: 0.5rem;
-      height: 54px;
-    }
-    .captain {
-      --cw: 54px;
-      --hgap: 0.5rem;
-    }
-    .hand-row {
-      height: 92px;
-    }
     .actions button {
       font-size: 1.15rem;
       padding-left: 0.5em;
       padding-right: 0.5em;
-    }
-    :global(.short) .hand-row {
-      height: 84px;
-    }
-  }
-  .snag-fan.mine {
-    --cw: 76px;
-    --fan: 220px;
-    margin-left: 0;
-  }
-  @media (max-width: 600px) {
-    .snag-fan.mine {
-      --cw: 54px;
-      --fan: 80px;
     }
   }
   .snag-fan.live :global(.card:hover) {

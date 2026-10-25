@@ -58,7 +58,7 @@
     display: flex;
     flex-direction: row-reverse;
     gap: 3px;
-    width: 63px;
+    width: min(100%, 72px);
     height: 61px;
     padding: 0;
     margin: 0 0 0 auto;
@@ -68,17 +68,12 @@
     box-shadow: none;
     cursor: pointer;
   }
-  /* A full-size card is 1.4 times its width: 76px wide, or 54px on a phone. */
+  /* As tall as a card, which is 1.4 times its width (the table sets --card-w). */
   .tall {
-    height: calc(76px * 1.4);
+    height: calc(var(--card-w, 76px) * 1.4);
   }
   .tall .chip {
     height: calc((100% - 4px) / 3);
-  }
-  @media (max-width: 600px) {
-    .tall {
-      height: calc(54px * 1.4);
-    }
   }
   .discards:disabled {
     cursor: default;
@@ -89,7 +84,8 @@
     flex-direction: column;
     align-items: stretch;
     gap: 2px;
-    width: 30px;
+    flex: 1;
+    min-width: 0;
   }
   .chip {
     display: inline-flex;
