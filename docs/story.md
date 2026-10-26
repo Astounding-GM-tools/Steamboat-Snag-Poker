@@ -97,6 +97,11 @@ script:
 
 Story mode is a chain of encounters, and flags decide which lines play.
 
+**An encounter must be solved to go on.** Until it is, it is the only thing
+to do: no going back upriver, no going on to the next landing. What "solved"
+means is the encounter's own: usually winning, sometimes not (see the coal
+miners).
+
 ## The caption system
 
 **Sizes** (built): an **aside** over the speaker's cards, play going on
@@ -183,7 +188,7 @@ job.
 
 1. **Muscatine.** Father ashore; the carriage is aboard; Morag's lessons.
 2. **The harbour master** won't clear the boat unless you beat him.
-3. **Striking coal miners:** no coal for the boilers, unless…
+3. **Striking coal miners:** no coal for the boilers, unless… (below)
 4. **A nosy cargo inspector.**
 5. **The mail bag:** another captain bound downriver could take it…
 6. **The railroad bridge works:** a queue of boats; the eggs are going off;
@@ -194,6 +199,34 @@ job.
 10. –
 11. –
 12. **St. Louis.** The carriage delivered; the Fair; the tournament opens.
+
+### The striking coal miners: you win by losing
+
+The boat needs coal, but there's a strike at the depot and the river grinds
+to a halt. The solution, as ever, is a friendly game of Snag Poker, heads-up
+against the **foreman**. But this time the goal is not to win: the captain
+must **lose an appropriate amount**, after which the miners hand over a
+"consolation prize" of coal. Not a bribe. Not in any way, shape or form.
+
+- **Nobody says so.** The player has to work it out: from the foreman's
+  setup line, and from the miners' mood as the strike fund fills (a warmth
+  meter in asides). Sometimes you win by losing.
+- **It has to be a convincing loss.** Folding hand after hand is throwing the
+  game, and that would be a bribe: *"Folding again, Cap'n? You wouldn't be…
+  letting us win?"* You must lose at the showdown: read that you're beaten,
+  and call anyway, like an honest man.
+- **An appropriate amount is a window, not a number** (say $25–40 into the
+  strike fund). Too little: friendly, but no coal, and the river stays stuck.
+  About right: *"Hard luck, Captain. Take a few sacks for your boiler. No hard
+  feelings."* Too much: you've beggared yourself.
+- **The coal is story, not a mechanic:** no counter, no card. Securing it is
+  what solves the encounter; until then there's no going on to St. Louis.
+- Perhaps: the **Unpaid Coal Bill** (an existing snag) as a way to earn
+  goodwill, taking their debt off their hands.
+
+Engine needs: a solve condition per encounter (here: the amount lost at
+showdowns, within a window, without folding your way there), and lines keyed
+to it.
 
 ## Characters with secrets
 
