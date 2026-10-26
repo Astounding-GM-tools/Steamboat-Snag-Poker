@@ -28,7 +28,7 @@
   import Purse from './Purse.svelte';
   import DiscardChips from './DiscardChips.svelte';
   import HowTo from './HowTo.svelte';
-  import Speech, { autoMs, type Reply, type SpeechLine } from './Speech.svelte';
+  import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
   import Countdown from './Countdown.svelte';
   import type { RoundScript, Trigger } from '../story/script';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
@@ -379,12 +379,18 @@
   /** A round whose deal waits for the lines spoken before it. */
   let heldDeal = $state<typeof round | null>(null);
   $effect(() => {
-    // The deal goes out once the lines before it are said (or under one that is said over it).
-    if (heldDeal && (!talk || line?.dealing)) {
-      const r = heldDeal;
+    // The deal goes out once the lines before it are said; under a line said over the deal, once its last beat is out.
+    if (!heldDeal || (talk && !line?.dealing)) return;
+    const r = heldDeal;
+    const release = () => {
+      if (heldDeal !== r) return;
       heldDeal = null;
       untrack(() => scheduleDeal(r));
-    }
+    };
+    const wait = line?.dealing ? (beats(line).length - 1) * BEAT_MS + 500 : 0;
+    if (!wait) return release();
+    const id = setTimeout(release, wait);
+    return () => clearTimeout(id);
   });
 
   function scheduleDeal(r: typeof round) {
