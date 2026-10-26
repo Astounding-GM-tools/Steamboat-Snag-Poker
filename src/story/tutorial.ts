@@ -21,16 +21,17 @@ const config: RulesConfig = {
 const STAND_PAT: Action = { type: 'draw', cardIds: [] };
 
 /**
- * Round one, Ducks full of Ladies. You: Q♥ K♣ A♥ (high cards, but no flush or
- * straight to chase); Morag: A♣ A♦ 9♠; the Flop A♠ 7♣ 2♣. You keep, the Turn
- * brings Q♠; she shows her aces, so yours is dead and your two pair loses to
- * her three: keeping only the queen and drawing two is the better chance. The
- * deuces come, the River is 5♦. Your deuces full of queens beat her three
- * aces; the board never pairs, so she can't make a full house of her own.
+ * Round one, Ducks full of Ladies. You: J♣ Q♥ K♦; Morag: A♣ 9♠ 5♥; the Flop
+ * A♠ 2♣ Q♠ (you keep: a pair of queens and a straight draw). The Turn pairs
+ * the deuces (2♦): you hold queens and deuces, she holds aces and deuces, and
+ * she shows it. Swapping the jack and the king to fish for a deuce or a queen
+ * is the best chance (about 21%, against 14% keeping all three, 13% swapping
+ * the jack alone). You draw 2♥ 8♦; the River is 6♣. Your deuces full of
+ * queens beat her two pair; holding one ace, she can't make aces full.
  */
 const roundOne: ArrangedHand = {
-  deck: ['As', '7c', '2c', 'Qh', 'Ac', 'Kc', 'Ad', 'Ah', '9s', 'Qs', '2d', '2h', '5d'],
-  opponent: [STAND_PAT, STAND_PAT, { type: 'compose', cardIds: ['Ac', 'Ad'], jokers: 0 }],
+  deck: ['As', '2c', 'Qs', 'Jc', 'Ac', 'Qh', '9s', 'Kd', '5h', '2d', '2h', '8d', '6c'],
+  opponent: [STAND_PAT, STAND_PAT, { type: 'compose', cardIds: ['Ac', '9s'], jokers: 0 }],
 };
 
 /**
@@ -88,8 +89,8 @@ export function giveButtons(prev: GameState): GameState {
 export function skipToButtons(seed: number): GameState {
   let g = newTutorial(seed);
   g = submitAction(g, STAND_PAT);
-  g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kc'] });
-  g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2d', '2h'], jokers: 0 });
+  g = submitAction(g, { type: 'draw', cardIds: ['Jc', 'Kd'] });
+  g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2h'], jokers: 0 });
   g = nextMonth(g);
   g = submitAction(g, STAND_PAT);
   g = submitAction(g, { type: 'fold' });
@@ -247,27 +248,27 @@ export const tutorialScript: Script = {
           size: 'aside',
           who: M,
           at: 'band',
-          text: 'Not lost, not yet. See your king and ace? They have come as far as they should go. Tap them.',
+          text: 'Not lost, not yet. See your jack and king? They have come as far as they should go. Tap them.',
           replies: [{ label: 'Both?' }],
           // Tap them straight away and you may swap at once: no need to ask.
-          require: ['A', 'K'],
+          require: ['J', 'K'],
         },
         {
-          // A friendly teaching game: she turns her aces over, so the advice is plain to see.
+          // A friendly teaching game: she turns her hand over (aces and deuces), so the advice is plain to see.
           size: 'aside',
           who: M,
           at: 'band',
           show: true,
-          text: ['How do you have any chance of beating that?', 'Neither of those will win you this game. Keep only the queen.'],
-          require: ['A', 'K'],
+          text: ['How do you have any chance of beating that?', 'Neither of those will win you this game. Keep only the queen. Fish for another deuce, or queen.'],
+          require: ['J', 'K'],
         },
       ],
       river: [
-        { size: 'aside', who: 'you', text: 'Twos! You tricked me!' },
+        { size: 'aside', who: 'you', text: 'A two! You tricked me!' },
         {
           size: 'aside',
           who: M,
-          text: 'Look again. Your ducks have a friend.',
+          text: 'Look again. Your duck has friends.',
           replies: [{ label: 'Ducks?' }],
         },
         {
@@ -279,15 +280,15 @@ export const tutorialScript: Script = {
         {
           size: 'aside',
           who: M,
-          text: 'Five make a hand. Tap all three of yours.',
-          require: ['Q', '2', '2'],
+          text: 'Five make a hand. Tap your queen and your deuce.',
+          require: ['Q', '2'],
         },
       ],
       verdict: [
         {
           size: 'scene',
           who: M,
-          text: 'There you go: the mighty aces brought low by a pair of ducks.',
+          text: 'There you go: the mighty aces brought low by a flock of ducks.',
           replies: [{ label: 'Ducks??' }],
         },
         {

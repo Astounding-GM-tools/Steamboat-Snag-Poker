@@ -31,25 +31,26 @@ Snag Poker from the one person on the river who disapproves of it. See
 
 | | You | Morag | Board |
 |---|---|---|---|
-| Deal | Q♥ K♣ A♥ | A♣ A♦ 9♠ | |
-| Flop | | | A♠ 7♣ 2♣ |
-| Turn | swap A♥ K♣ → 2♦ 2♥ | stands pat, then shows her hand | Q♠ |
-| River | | | 5♦ |
-| Hands | **Ducks full of Ladies** (2♦ 2♥ 2♣ Q♥ Q♠) | three aces | |
+| Deal | J♣ Q♥ K♦ | A♣ 9♠ 5♥ | |
+| Flop | keep: a pair of queens, a straight draw | | A♠ 2♣ Q♠ |
+| Turn | swap J♣ K♦ → 2♥ 8♦ | stands pat, then shows her hand | 2♦ |
+| River | | | 6♣ |
+| Hands | **Ducks full of Ladies** (2♥ 2♣ 2♦ Q♥ Q♠) | two pair, aces and deuces | |
 
 High cards everywhere: it *looks* like poker, which is what the ducks then
-subvert. But no flush or straight to chase: your cards are hearts and clubs,
-too few clubs on the board, and a straight would need a jack and a ten. At
-The Turn she shows her hand: your ace is dead, your two pair loses to her
-three aces, so keeping only the queen and drawing two is the better chance
-(advice a poker player can follow without knowing the deck is stacked). The
-board never pairs, so she stays on three aces. You throw away the best cards
-you will hold all evening and draw two deuces, which look like a disaster for
-half a second. Once she has shown her hand, the showdown goes straight to the
-verdict.
+subvert. The Turn pairs the deuces: you hold queens and deuces, she holds
+aces and deuces, and she shows it. Her advice is the best play by the odds,
+without knowing the deck is stacked (simulated, 40,000 deals each):
 
-She holds **the Solemn Oath** from the very first frame: her burden, part of
-who she is, in her snag fan long before it comes into play.
+| At The Turn | Chance |
+|---|---|
+| Keep all three (a ten for the straight, or a queen) | 13.6% |
+| Swap the jack, or the king, alone | 16% |
+| **Swap the jack and king, keep the queen** (her advice) | **26.3%** |
+| Swap all three | 26.5% |
+
+Holding one ace, she can't make aces full. Once she has shown her hand, the
+showdown goes straight to the verdict.
 
 **Before the deal** (scenes, over the empty board)
 
@@ -76,26 +77,27 @@ who she is, in her snag fan long before it comes into play.
 7. *"A fourth card arrives. / This is The Turn."* → **Turn?**
 8. *"This is where the game is won and lost: the point of no return."* →
    **…lost?**
-9. *"Not lost, not yet. See your king and ace? They have come as far as they
-   should go. Tap them."* → **Both?** (Tap them while this is up and the
+9. *"Not lost, not yet. See your jack and king? They have come as far as
+   they should go. Tap them."* → **Both?** (Tap them while this is up and the
    button becomes **Swap 2**: swapping then skips line 10.)
-10. She turns her cards over (A♣ A♦ 9♠), and after them: *"How do you have
+10. She turns her cards over (A♣ 9♠ 5♥), and after them: *"How do you have
     any chance of beating that? / Neither of those will win you this game.
-    Keep only the queen."* → you must swap the king and the ace.
-11. **You:** *"Twos! You tricked me!"*
-12. *"Look again. Your ducks have a friend."* → **Ducks?**
+    Keep only the queen. Fish for another deuce, or queen."* → you must swap
+    the jack and the king. (Long at narrow widths: may want trimming.)
+11. **You:** *"A two! You tricked me!"*
+12. *"Look again. Your duck has friends."* → **Ducks?**
 
 **The River**
 
 13. *"Later, child. This is the River: pick cards to go with the ones in the
     middle."* (No explanation of the ducks yet: it comes at the showdown.) →
     **Five?**
-14. *"Five make a hand. Tap all three of yours."* → you must tap 2♦ 2♥ Q♥ and
+14. *"Five make a hand. Tap your queen and your deuce."* → you must tap Q♥ 2♥ and
     **Play hand**.
 
 **The showdown** (scene)
 
-15. *"There you go: the mighty aces brought low by a pair of ducks."* →
+15. *"There you go: the mighty aces brought low by a flock of ducks."* →
     **Ducks??** (the second time: exasperated)
 16. *"Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on. Knowing
     how ducks beat bullets is the same as knowing when to fold and when to

@@ -3,32 +3,32 @@ import { anteFor, nextMonth, streetFee, submitAction } from '../engine';
 import { OATH, RESPECT, newTutorial, rematch, skipToButtons } from './tutorial';
 
 describe('the tutorial', () => {
-  it('round one plays as scripted: Ducks full of Ladies beat three aces', () => {
+  it('round one plays as scripted: Ducks full of Ladies beat aces and deuces', () => {
     let g = newTutorial(1);
     const ids = () => g.round!.seats.map((s) => s.hand.map((c) => c.id).sort());
     expect(g.round!.potMode).toBe(false);
-    expect(g.round!.community.map((c) => c.id)).toEqual(['As', '7c', '2c']);
-    expect(ids()).toEqual([['Ah', 'Kc', 'Qh'], ['9s', 'Ac', 'Ad']]);
+    expect(g.round!.community.map((c) => c.id)).toEqual(['As', '2c', 'Qs']);
+    expect(ids()).toEqual([['Jc', 'Kd', 'Qh'], ['5h', '9s', 'Ac']]);
 
     g = submitAction(g, { type: 'draw', cardIds: [] }); // keep them
-    expect(g.round!.community.at(-1)!.id).toBe('Qs');
+    expect(g.round!.community.at(-1)!.id).toBe('2d'); // the deuces pair at The Turn
 
-    g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kc'] }); // the ace and the king
-    expect(ids()[0]).toEqual(['2d', '2h', 'Qh']);
-    expect(g.round!.community.at(-1)!.id).toBe('5d');
+    g = submitAction(g, { type: 'draw', cardIds: ['Jc', 'Kd'] }); // the jack and the king
+    expect(ids()[0]).toEqual(['2h', '8d', 'Qh']);
+    expect(g.round!.community.at(-1)!.id).toBe('6c');
 
-    g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2d', '2h'], jokers: 0 });
+    g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2h'], jokers: 0 });
     const res = g.round!.result!;
     expect(res.winner).toBe(0);
     expect(res.hands[0].category).toBe('fullHouse');
-    expect(res.hands[1].category).toBe('threeOfAKind');
+    expect(res.hands[1].category).toBe('twoPair');
   });
 
   it('round two: a pair of jacks folds to her flush, and nothing changes hands', () => {
     let g = newTutorial(1);
     g = submitAction(g, { type: 'draw', cardIds: [] });
-    g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kc'] });
-    g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2d', '2h'], jokers: 0 });
+    g = submitAction(g, { type: 'draw', cardIds: ['Jc', 'Kd'] });
+    g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2h'], jokers: 0 });
     const purses = g.players.map((p) => p.money);
     g = nextMonth(g);
     const r = () => g.round!;
