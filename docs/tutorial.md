@@ -102,10 +102,13 @@ No word of what might come: the ducks arrive as luck, not prophecy.
 
 17. *"There you go: the mighty aces brought low by a flock of ducks."* →
     **Ducks??** (the second time: exasperated)
-18. *"Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on. Knowing
-    how ducks beat bullets is the same as knowing when to fold and when to
-    call."* → **Call?** / **Fold?**
-19. *"I forgot to show you. Here, look."* She deals round two.
+18. *"Deuces, or Ducks, when they come in pairs. / Because they look a bit
+    like ducks, swimming on the river."* → **Aces, then?** (the deckhand
+    can't ask about Bullets, a word not yet learnt)
+19. *"A pair of aces are Bullets, and so on. / Knowing how ducks can beat
+    bullets is the same as knowing when to fold and when to call."* →
+    **Call?** / **Fold?**
+20. *"I forgot to show you. Here, look."* She deals round two.
 
 ## Round two: the wise fold (no pot)
 
@@ -128,7 +131,8 @@ the tell: that is the lesson.
 
 **The Turn** (asides)
 
-2. *"When there's no cost to stay in the game, that is a Check."*
+2. *"When there is no cost to stay in the game, that is a check. / You should
+   always check."*
 3. *"Four hearts in the middle, and I've not traded a card. Well?"* →
    **Fold?**
 4. *"Fold."* → you must **Fold**.
@@ -171,8 +175,7 @@ of a kind as the snag goes in.
 - **After the hand** (drafts): she took your Respect: *"Hmph. Grudging
   Respect, landed on me. / I suppose you've earned it."* You kept it: *"A full
   house: a fine hand, with no room for a snag. / The pot is yours. So is your
-  Respect, still."* You lost: *"And now you carry my Oath. / Mind your cards,
-  child."*
+  Respect, still."* You lost: *"And now you carry my Oath. / Mind your cards."*
 
 ## Round four and on: the knockout (buttons)
 
@@ -222,7 +225,7 @@ do.** (Whichever you press, you swear.)
 Every ending also offers a rematch, **Again?** (black; **Thanks, ma'am** on
 the white closes the tutorial, or leads to the Oath if you hold it): it's a
 tutorial, and buttons aren't money, so her oath is safe: *"Buttons are not
-money, child. / My oath is quite safe. Deal."* (draft) A fresh knockout
+money. / My oath is quite safe. Deal."* (draft) A fresh knockout
 follows, 20 buttons each, Respect back with you and the Oath with her.
 
 If the game ends on round three itself, these are her words there too (her

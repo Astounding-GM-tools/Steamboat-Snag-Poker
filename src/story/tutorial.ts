@@ -171,7 +171,7 @@ const AFTER: SpeechLine[] = [
     branch: true,
     size: 'scene',
     who: M,
-    text: ['Buttons are not money, child.', 'My oath is quite safe. Deal.'],
+    text: ['Buttons are not money.', 'My oath is quite safe. Deal.'],
     replies: [{ label: 'Deal', effect: 'rematch', end: true }],
   },
 ];
@@ -308,9 +308,15 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
+          text: ['Deuces, or Ducks, when they come in pairs.', 'Because they look a bit like ducks, swimming on the river.'],
+          replies: [{ label: 'Aces, then?' }],
+        },
+        {
+          size: 'scene',
+          who: M,
           text: [
-            'Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on.',
-            'Knowing how ducks beat bullets is the same as knowing when to fold and when to call.',
+            'A pair of aces are Bullets, and so on.',
+            'Knowing how ducks can beat bullets is the same as knowing when to fold and when to call.',
           ],
           replies: [{ label: 'Call?' }, { label: 'Fold?' }],
         },
@@ -335,7 +341,7 @@ export const tutorialScript: Script = {
         {
           size: 'aside',
           who: M,
-          text: 'When there’s no cost to stay in the game, that is a Check.',
+          text: ['When there is no cost to stay in the game, that is a check.', 'You should always check.'],
         },
         {
           size: 'aside',
@@ -426,7 +432,7 @@ export const tutorialScript: Script = {
           when: 'lost',
           size: 'scene',
           who: M,
-          text: ['And now you carry my Oath.', 'Mind your cards, child.'],
+          text: ['And now you carry my Oath.', 'Mind your cards.'],
           replies: [{ label: 'Next' }],
         },
         // Someone may go broke on this very hand.
