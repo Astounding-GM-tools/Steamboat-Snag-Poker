@@ -87,10 +87,11 @@ showdown goes straight to the verdict.
 
 No word of what might come: the ducks arrive as luck, not prophecy.
 
-13. **You:** *"A two! You tricked me!"*
-14. *"Look again. Your duck has friends."* → **Ducks?**
+13. **You:** *"Bah. It's just number cards."* (you drew a deuce and an 8)
+14. *"Numbers win battles, not kings and queens. / Look at the ducks."* →
+    **Ducks?**
 
-**The River**
+**The River** (in the pot area)
 
 15. *"Later, child. This is the River: pick cards to go with the ones in the
     middle."* (No explanation of the ducks yet: it comes at the showdown.) →

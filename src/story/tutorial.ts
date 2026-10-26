@@ -273,23 +273,27 @@ export const tutorialScript: Script = {
         },
         { size: 'aside', who: M, at: 'band', text: 'Both.', require: ['J', 'K'] },
       ],
+      // Her cards are face up now: her River lines sit in the pot area too.
       river: [
-        { size: 'aside', who: 'you', text: 'A two! You tricked me!' },
+        { size: 'aside', who: 'you', text: 'Bah. It’s just number cards.' },
         {
           size: 'aside',
           who: M,
-          text: 'Look again. Your duck has friends.',
+          at: 'band',
+          text: ['Numbers win battles, not kings and queens.', 'Look at the ducks.'],
           replies: [{ label: 'Ducks?' }],
         },
         {
           size: 'aside',
           who: M,
+          at: 'band',
           text: 'Later, child. This is the River: pick cards to go with the ones in the middle.',
           replies: [{ label: 'Five?' }],
         },
         {
           size: 'aside',
           who: M,
+          at: 'band',
           text: 'Five make a hand. Tap your queen and your deuce.',
           require: ['Q', '2'],
         },
