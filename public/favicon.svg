@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#1b1a18"/>
+  <!-- A spade, upside down -->
+  <path transform="rotate(180 32 32)" fill="#f2efe6" d="M32 6C26 16 8 24 8 38c0 9 7 14 14 14 4 0 7-2 8-4 0 4-2 8-6 10h16c-4-2-6-6-6-10 1 2 4 4 8 4 7 0 14-5 14-14C56 24 38 16 32 6Z"/>
+</svg>
