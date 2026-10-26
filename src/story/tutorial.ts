@@ -213,7 +213,7 @@ export const tutorialScript: Script = {
           size: 'aside',
           who: M,
           // The Flop: a name, said with reverence.
-          text: ['Three cards each, and three in the middle.', 'The Flop.'],
+          text: ['Three cards each, and three in the middle.', 'This is The Flop.'],
           at: 'band',
           replies: [{ label: 'Flop?' }],
         },

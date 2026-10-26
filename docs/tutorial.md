@@ -59,7 +59,7 @@ who she is, in her snag fan long before it comes into play.
 
 **The Flop** (in the pot area, so her cards and her Oath stay in view)
 
-5. *"Three cards each, and three in the middle. / The Flop."* (a name, said
+5. *"Three cards each, and three in the middle. / This is The Flop."* (a name, said
    with reverence) → **Flop?**
 6. *"Yes, the Flop. Swap what you don't want. Those are good: keep them."* →
    you must **Check**.
@@ -85,12 +85,12 @@ who she is, in her snag fan long before it comes into play.
 
 **The showdown** (scene)
 
-15. *"There you go: the mighty aces brought low by a pair of ducks."* →
+14. *"There you go: the mighty aces brought low by a pair of ducks."* →
     **Ducks??** (the second time: exasperated)
-16. *"Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on. Knowing
+15. *"Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on. Knowing
     how ducks beat bullets is the same as knowing when to fold and when to
     call."* → **Call?** / **Fold?**
-17. *"I forgot to show you. Here, look."* She deals round two.
+16. *"I forgot to show you. Here, look."* She deals round two.
 
 ## Round two: the wise fold (no pot)
 
