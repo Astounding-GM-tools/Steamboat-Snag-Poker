@@ -93,8 +93,7 @@ No word of what might come: the ducks arrive as luck, not prophecy.
 
 **The River** (in the pot area)
 
-15. *"Later, child. This is the River: pick cards to go with the ones in the
-    middle."* (No explanation of the ducks yet: it comes at the showdown.) →
+15. *"Hush. This is The River. / Pick cards to go with the ones in the middle."* (No explanation of the ducks yet: it comes at the showdown.) →
     **Five?**
 16. *"Five make a hand. Tap your queen and your deuce."* → you must tap Q♥ 2♥ and
     **Play hand**.

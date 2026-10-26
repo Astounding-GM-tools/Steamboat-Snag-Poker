@@ -287,7 +287,7 @@ export const tutorialScript: Script = {
           size: 'aside',
           who: M,
           at: 'band',
-          text: 'Later, child. This is the River: pick cards to go with the ones in the middle.',
+          text: ['Hush. This is The River.', 'Pick cards to go with the ones in the middle.'],
           replies: [{ label: 'Five?' }],
         },
         {
