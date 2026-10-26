@@ -71,8 +71,8 @@ showdown goes straight to the verdict.
    name, said with reverence) → **Flop?**
 6. Her cards turn over, and stay up all hand: *"Since you are learning, I'll
    show you my cards from the start. / See what I have?"* → **Aces!**
-7. *"Indeed. My pair of aces beats your ladies. / So how can you make your
-   hand stronger?"* → **Swap?**
+7. *"Indeed. Let me see your cards… ah. / My aces beat your ladies. So how
+   can you make your hand stronger?"* → **Swap?**
 8. *"Not yet. Keep what you have, and see what comes."* → you must **Check**.
 
 **The Turn** (in the pot area)

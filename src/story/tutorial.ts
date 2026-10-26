@@ -233,7 +233,8 @@ export const tutorialScript: Script = {
           size: 'aside',
           who: M,
           at: 'band',
-          text: ['Indeed. My pair of aces beats your ladies.', 'So how can you make your hand stronger?'],
+          // She leans over to look at your cards; the "… ah." is her reading them.
+          text: ['Indeed. Let me see your cards… ah.', 'My aces beat your ladies.\nSo how can you make your hand stronger?'],
           replies: [{ label: 'Swap?' }],
         },
         {
