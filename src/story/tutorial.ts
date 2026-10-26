@@ -183,7 +183,8 @@ export const tutorialScript: Script = {
           who: M,
           // Non-breaking hyphens: good‑for‑nothing stays in one piece.
           text: ['Finlay MacTavish by name, good‑for‑nothing by nature.', 'Always sneaking off to play Snag Poker.'],
-          replies: [{ label: 'Snag?' }],
+          // Read left to right, the deckhand spells out the name of the game.
+          replies: [{ label: 'Snag?' }, { label: 'Poker?' }],
         },
         {
           size: 'scene',
