@@ -221,10 +221,26 @@ export const tutorialScript: Script = {
           replies: [{ label: 'Flop?' }],
         },
         {
+          // A teaching game: her cards are face up from the start, so the pickle builds where you can see it.
           size: 'aside',
           who: M,
-          text: 'Yes, the Flop. Swap what you don’t want. Those are good: keep them.',
           at: 'band',
+          show: true,
+          text: ['Since you are learning, I’ll show you my cards from the start.', 'See what I have?'],
+          replies: [{ label: 'Aces!' }],
+        },
+        {
+          size: 'aside',
+          who: M,
+          at: 'band',
+          text: ['Indeed. My pair of aces beats your ladies.', 'So how can you make your hand stronger?'],
+          replies: [{ label: 'Swap?' }],
+        },
+        {
+          size: 'aside',
+          who: M,
+          at: 'band',
+          text: 'Not yet. Keep what you have, and see what comes.',
           require: [],
         },
       ],
@@ -245,23 +261,16 @@ export const tutorialScript: Script = {
           replies: [{ label: '…lost?' }],
         },
         {
+          // The boys (jack and king) go; no word of what might come, so the ducks arrive as luck, not prophecy.
           size: 'aside',
           who: M,
           at: 'band',
-          text: 'Not lost, not yet. See your jack and king? They have come as far as they should go. Tap them.',
+          text: ['Not lost, not yet. Now you swap.', 'Ditch the boys, keep the queen.'],
           replies: [{ label: 'Both?' }],
           // Tap them straight away and you may swap at once: no need to ask.
           require: ['J', 'K'],
         },
-        {
-          // A friendly teaching game: she turns her hand over (aces and deuces), so the advice is plain to see.
-          size: 'aside',
-          who: M,
-          at: 'band',
-          show: true,
-          text: ['How do you have any chance of beating that?', 'Neither of those will win you this game. Keep only the queen. Fish for another deuce, or queen.'],
-          require: ['J', 'K'],
-        },
+        { size: 'aside', who: M, at: 'band', text: 'Both.', require: ['J', 'K'] },
       ],
       river: [
         { size: 'aside', who: 'you', text: 'A two! You tricked me!' },

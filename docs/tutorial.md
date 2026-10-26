@@ -39,7 +39,7 @@ Snag Poker from the one person on the river who disapproves of it. See
 
 High cards everywhere: it *looks* like poker, which is what the ducks then
 subvert. The Turn pairs the deuces: you hold queens and deuces, she holds
-aces and deuces, and she shows it. Her advice is the best play by the odds,
+aces and deuces, and you've seen her cards all along. Her advice is the best play by the odds,
 without knowing the deck is stacked (simulated, 40,000 deals each):
 
 | At The Turn | Chance |
@@ -67,42 +67,45 @@ showdown goes straight to the verdict.
 
 **The Flop** (in the pot area, so her cards and her Oath stay in view)
 
-5. *"Three cards each, and three in the middle. / This is The Flop."* (a name, said
-   with reverence) → **Flop?**
-6. *"Yes, the Flop. Swap what you don't want. Those are good: keep them."* →
-   you must **Check**.
+5. *"Three cards each, and three in the middle. / This is The Flop."* (a
+   name, said with reverence) → **Flop?**
+6. Her cards turn over, and stay up all hand: *"Since you are learning, I'll
+   show you my cards from the start. / See what I have?"* → **Aces!**
+7. *"Indeed. My pair of aces beats your ladies. / So how can you make your
+   hand stronger?"* → **Swap?**
+8. *"Not yet. Keep what you have, and see what comes."* → you must **Check**.
 
 **The Turn** (in the pot area)
 
-7. *"A fourth card arrives. / This is The Turn."* → **Turn?**
-8. *"This is where the game is won and lost: the point of no return."* →
-   **…lost?**
-9. *"Not lost, not yet. See your jack and king? They have come as far as
-   they should go. Tap them."* → **Both?** (Tap them while this is up and the
-   button becomes **Swap 2**: swapping then skips line 10.)
-10. She turns her cards over (A♣ 9♠ 5♥), and after them: *"How do you have
-    any chance of beating that? / Neither of those will win you this game.
-    Keep only the queen. Fish for another deuce, or queen."* → you must swap
-    the jack and the king. (Long at narrow widths: may want trimming.)
-11. **You:** *"A two! You tricked me!"*
-12. *"Look again. Your duck has friends."* → **Ducks?**
+9. *"A fourth card arrives. / This is The Turn."* → **Turn?**
+10. *"This is where the game is won and lost: the point of no return."* →
+    **…lost?**
+11. *"Not lost, not yet. Now you swap. / Ditch the boys, keep the queen."* →
+    **Both?** (Tap the jack and king while this is up and the button becomes
+    **Swap 2**: swapping skips the next line.)
+12. *"Both."* → you must swap the jack and the king.
+
+No word of what might come: the ducks arrive as luck, not prophecy.
+
+13. **You:** *"A two! You tricked me!"*
+14. *"Look again. Your duck has friends."* → **Ducks?**
 
 **The River**
 
-13. *"Later, child. This is the River: pick cards to go with the ones in the
+15. *"Later, child. This is the River: pick cards to go with the ones in the
     middle."* (No explanation of the ducks yet: it comes at the showdown.) →
     **Five?**
-14. *"Five make a hand. Tap your queen and your deuce."* → you must tap Q♥ 2♥ and
+16. *"Five make a hand. Tap your queen and your deuce."* → you must tap Q♥ 2♥ and
     **Play hand**.
 
 **The showdown** (scene)
 
-15. *"There you go: the mighty aces brought low by a flock of ducks."* →
+17. *"There you go: the mighty aces brought low by a flock of ducks."* →
     **Ducks??** (the second time: exasperated)
-16. *"Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on. Knowing
+18. *"Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on. Knowing
     how ducks beat bullets is the same as knowing when to fold and when to
     call."* → **Call?** / **Fold?**
-17. *"I forgot to show you. Here, look."* She deals round two.
+19. *"I forgot to show you. Here, look."* She deals round two.
 
 ## Round two: the wise fold (no pot)
 
