@@ -189,7 +189,8 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
-          text: 'A vile game, fit for drunkards and liars. You don’t know it?',
+          // Broken off mid-tirade, by concern for a child deprived of the game she detests.
+          text: ['A vile game!\nFit for drunkards, and\u00a0liars…', '… do you not know it?'],
           replies: [{ label: 'No, ma’am' }],
         },
       ],

@@ -19,7 +19,7 @@
     size: SpeechSize;
     /** A captain's id, `you` or `willie`. */
     who: string;
-    /** The words; a list is said in beats, each part on a line of its own, a moment after the last. */
+    /** The words; a list is said in beats, each part a paragraph of its own, a moment after the last. A `\n` breaks a line within one. */
     text: string | string[];
     /** One reply (on the white button) or two (black, white). The line waits for an answer. */
     replies?: [Reply] | [Reply, Reply];
@@ -221,6 +221,7 @@
   /* Each beat on a line of its own, broken evenly: captions read best balanced. */
   .beat {
     display: block;
+    white-space: pre-line;
     text-wrap: balance;
     animation: appear 0.3s ease-out backwards;
   }
