@@ -66,31 +66,31 @@ who she is, in her snag fan long before it comes into play.
 
 **The Turn**
 
-6. *"A fourth card. This is the Turn."* → **Turn?**
-7. *"Last chance to swap. That ace and that king are no use to you now."* →
+7. *"A fourth card. This is the Turn."* → **Turn?**
+8. *"Last chance to swap. That ace and that king are no use to you now."* →
    **Both?** (Tap the ace and the king while this is up and the button
-   becomes **Swap 2**: swapping then skips line 8, so "Find something better"
+   becomes **Swap 2**: swapping then skips line 9, so "Find something better"
    never reads as a comment on a choice already made.)
-8. *"Between the two of us, I hold two aces. Find something better."* → you
+9. *"Between the two of us, I hold two aces. Find something better."* → you
    must swap the ace and the king, and only those.
-9. **You:** *"Twos! You tricked me!"*
-10. *"Look again. Your ducks have a friend."* → **Ducks?**
+10. **You:** *"Twos! You tricked me!"*
+11. *"Look again. Your ducks have a friend."* → **Ducks?**
 **The River**
 
-11. *"Later, child. This is the River: pick cards to go with the ones in the
+12. *"Later, child. This is the River: pick cards to go with the ones in the
     middle."* (No explanation of the ducks yet: it comes at the showdown.) →
     **Five?**
-12. *"Five make a hand. Tap all three of yours."* → you must tap 2♦ 2♥ Q♥ and
+13. *"Five make a hand. Tap all three of yours."* → you must tap 2♦ 2♥ Q♥ and
     **Play hand**.
 
 **The showdown** (scene)
 
-14. *"There you go: the mighty aces brought low by a pair of ducks."* →
+15. *"There you go: the mighty aces brought low by a pair of ducks."* →
     **Ducks??** (the second time: exasperated)
-15. *"Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on. Knowing
+16. *"Deuces, child. Ducks, because they look like ducks, see? Aces are bullets, and so on. Knowing
     how ducks beat bullets is the same as knowing when to fold and when to
     call."* → **Call?** / **Fold?**
-16. *"I forgot to show you. Here, look."* She deals round two.
+17. *"I forgot to show you. Here, look."* She deals round two.
 
 ## Round two: the wise fold (no pot)
 
