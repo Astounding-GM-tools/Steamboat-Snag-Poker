@@ -229,12 +229,15 @@ export const tutorialScript: Script = {
         {
           size: 'aside',
           who: M,
-          text: 'A fourth card. This is the Turn.',
+          at: 'band',
+          // The Turn arrives: it has come for something.
+          text: ['A fourth card arrives.', 'This is The Turn.'],
           replies: [{ label: 'Turn?' }],
         },
         {
           size: 'aside',
           who: M,
+          at: 'band',
           text: 'Last chance to swap. That ace and that king are no use to you now.',
           replies: [{ label: 'Both?' }],
           // Tap them straight away and you may swap at once: no need to ask.
@@ -243,6 +246,7 @@ export const tutorialScript: Script = {
         {
           size: 'aside',
           who: M,
+          at: 'band',
           text: 'Between the two of us, I hold two aces. Find something better.',
           require: ['A', 'K'],
         },

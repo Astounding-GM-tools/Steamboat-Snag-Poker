@@ -64,9 +64,9 @@ who she is, in her snag fan long before it comes into play.
 6. *"Yes, the Flop. Swap what you don't want. Those are good: keep them."* →
    you must **Check**.
 
-**The Turn**
+**The Turn** (in the pot area)
 
-7. *"A fourth card. This is the Turn."* → **Turn?**
+7. *"A fourth card arrives. / This is The Turn."* → **Turn?**
 8. *"Last chance to swap. That ace and that king are no use to you now."* →
    **Both?** (Tap the ace and the king while this is up and the button
    becomes **Swap 2**: swapping then skips line 9, so "Find something better"
