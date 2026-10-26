@@ -375,6 +375,10 @@
     if (line?.show) showedMonth = game.month;
   });
   const theyShowed = $derived(showedMonth === game.month);
+  // Cards already shown have nothing left to reveal: the showdown goes straight to the verdict.
+  $effect(() => {
+    if (revealing && theyShowed && revealIndex < lastStep) untrack(() => (revealPos = { month: game.month, i: lastStep }));
+  });
 
   /** A round whose deal waits for the lines spoken before it. */
   let heldDeal = $state<typeof round | null>(null);
@@ -739,7 +743,7 @@
       <div class="hand-cell">
       <!-- At the showdown their played cards flip in place, one per Next. -->
       {#each theirPlayed.filter((c) => !isJoker(c)) as card (card.id)}
-        {#if faceUp.has(card.id)}<CardView {card} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
+        {#if faceUp.has(card.id) || theyShowed}<CardView {card} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
       {/each}
       <!-- Held back, but turned over too (dimmed), one per Next after the played ones: you get to see how they play. -->
       {#each them.hand.filter((c) => dealt.has(c.id)) as card, k (card.id)}

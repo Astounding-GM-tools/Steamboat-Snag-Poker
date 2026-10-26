@@ -7,13 +7,13 @@ describe('the tutorial', () => {
     let g = newTutorial(1);
     const ids = () => g.round!.seats.map((s) => s.hand.map((c) => c.id).sort());
     expect(g.round!.potMode).toBe(false);
-    expect(g.round!.community.map((c) => c.id)).toEqual(['As', '7h', '2c']);
-    expect(ids()).toEqual([['Ah', 'Kh', 'Qh'], ['9s', 'Ac', 'Ad']]);
+    expect(g.round!.community.map((c) => c.id)).toEqual(['As', '7c', '2c']);
+    expect(ids()).toEqual([['Ah', 'Kc', 'Qh'], ['9s', 'Ac', 'Ad']]);
 
     g = submitAction(g, { type: 'draw', cardIds: [] }); // keep them
     expect(g.round!.community.at(-1)!.id).toBe('Qs');
 
-    g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kh'] }); // the ace and the king
+    g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kc'] }); // the ace and the king
     expect(ids()[0]).toEqual(['2d', '2h', 'Qh']);
     expect(g.round!.community.at(-1)!.id).toBe('5d');
 
@@ -27,7 +27,7 @@ describe('the tutorial', () => {
   it('round two: a pair of jacks folds to her flush, and nothing changes hands', () => {
     let g = newTutorial(1);
     g = submitAction(g, { type: 'draw', cardIds: [] });
-    g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kh'] });
+    g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kc'] });
     g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2d', '2h'], jokers: 0 });
     const purses = g.players.map((p) => p.money);
     g = nextMonth(g);

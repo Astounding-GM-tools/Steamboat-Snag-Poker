@@ -21,13 +21,15 @@ const config: RulesConfig = {
 const STAND_PAT: Action = { type: 'draw', cardIds: [] };
 
 /**
- * Round one, Ducks full of Ladies. You: Q♥ K♥ A♥; Morag: A♣ A♦ 9♠; the Flop
- * A♠ 7♥ 2♣. You keep, the Turn brings Q♠, you swap the ace and the king for
- * two deuces, the River is 5♦. Your deuces full of queens beat her three aces;
- * the board never pairs, so she can't make a full house of her own.
+ * Round one, Ducks full of Ladies. You: Q♥ K♣ A♥ (high cards, but no flush or
+ * straight to chase); Morag: A♣ A♦ 9♠; the Flop A♠ 7♣ 2♣. You keep, the Turn
+ * brings Q♠; she shows her aces, so yours is dead and your two pair loses to
+ * her three: keeping only the queen and drawing two is the better chance. The
+ * deuces come, the River is 5♦. Your deuces full of queens beat her three
+ * aces; the board never pairs, so she can't make a full house of her own.
  */
 const roundOne: ArrangedHand = {
-  deck: ['As', '7h', '2c', 'Qh', 'Ac', 'Kh', 'Ad', 'Ah', '9s', 'Qs', '2d', '2h', '5d'],
+  deck: ['As', '7c', '2c', 'Qh', 'Ac', 'Kc', 'Ad', 'Ah', '9s', 'Qs', '2d', '2h', '5d'],
   opponent: [STAND_PAT, STAND_PAT, { type: 'compose', cardIds: ['Ac', 'Ad'], jokers: 0 }],
 };
 
@@ -86,7 +88,7 @@ export function giveButtons(prev: GameState): GameState {
 export function skipToButtons(seed: number): GameState {
   let g = newTutorial(seed);
   g = submitAction(g, STAND_PAT);
-  g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kh'] });
+  g = submitAction(g, { type: 'draw', cardIds: ['Ah', 'Kc'] });
   g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2d', '2h'], jokers: 0 });
   g = nextMonth(g);
   g = submitAction(g, STAND_PAT);
@@ -238,16 +240,25 @@ export const tutorialScript: Script = {
           size: 'aside',
           who: M,
           at: 'band',
-          text: 'Last chance to swap. That ace and that king are no use to you now.',
-          replies: [{ label: 'Both?' }],
-          // Tap them straight away and you may swap at once: no need to ask.
-          require: ['A', 'K'],
+          text: 'This is where the game is won and lost: the point of no return.',
+          replies: [{ label: '…lost?' }],
         },
         {
           size: 'aside',
           who: M,
           at: 'band',
-          text: 'Between the two of us, I hold two aces. Find something better.',
+          text: 'Not lost, not yet. See your king and ace? They have come as far as they should go. Tap them.',
+          replies: [{ label: 'Both?' }],
+          // Tap them straight away and you may swap at once: no need to ask.
+          require: ['A', 'K'],
+        },
+        {
+          // A friendly teaching game: she turns her aces over, so the advice is plain to see.
+          size: 'aside',
+          who: M,
+          at: 'band',
+          show: true,
+          text: ['How do you have any chance of beating that?', 'Neither of those will win you this game. Keep only the queen.'],
           require: ['A', 'K'],
         },
       ],
