@@ -129,19 +129,24 @@ the tell: that is the lesson.
 1. *"Want to trade in any card, or check up on what comes next?"* → you must
    **Check**.
 
-**The Turn** (asides)
+**The Turn** (in the pot area)
 
 2. *"When there is no cost to stay in the game, that is a check. / You should
    always check."*
-3. *"Four hearts in the middle, and I've not traded a card. Well?"* →
-   **Fold?**
-4. *"Fold."* → you must **Fold**.
+3. She looks at your cards first: *"Let me see your cards… / Two jacks.
+   Against four hearts on the board and a player that just checked. That's a
+   folding hand."* → **Fold?**
+4. *"A big part of the game is knowing when to quit."* → you must **Fold**.
+
+Everything she says is true from what she can see: your jacks can't beat her
+flush without a miracle (a heart would only make a smaller flush), and a
+captain who stands pat on four hearts is the tell.
 
 **After the fold** (scene)
 
 5. *"Wise. My queen of hearts made the best flush this board allows."* →
    **Best?** (She shows her hand first: the cards, then the words.)
-6. *"Nothing on this table could beat it. And that's how you dodge snags: you
+6. *"Your jacks never stood a chance. / And that's how you dodge snags: you
    win, or you fold wisely."* → **Snag?**
 7. *"Ah yes, snags. We'd need some stakes for that. Here, have some buttons, so
    we have something for the pot."* The buttons appear. (Snags are explained

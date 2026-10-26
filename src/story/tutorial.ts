@@ -334,6 +334,7 @@ export const tutorialScript: Script = {
           size: 'aside',
           who: M,
           text: 'Want to trade in any card, or check up on what comes next?',
+          at: 'band',
           require: [],
         },
       ],
@@ -341,15 +342,18 @@ export const tutorialScript: Script = {
         {
           size: 'aside',
           who: M,
+          at: 'band',
           text: ['When there is no cost to stay in the game, that is a check.', 'You should always check.'],
         },
         {
+          // She looks at your cards first: everything she says is true from what she can see.
           size: 'aside',
           who: M,
-          text: 'Four hearts in the middle, and I’ve not traded a card. Well?',
+          at: 'band',
+          text: ['Let me see your cards…', 'Two jacks. Against four hearts on the board and a player that just checked. That’s a folding hand.'],
           replies: [{ label: 'Fold?' }],
         },
-        { size: 'aside', who: M, text: 'Fold.', require: 'fold' },
+        { size: 'aside', who: M, at: 'band', text: 'A big part of the game is knowing when to quit.', require: 'fold' },
       ],
       verdict: [
         {
@@ -362,7 +366,7 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
-          text: 'Nothing on this table could beat it. And that’s how you dodge snags: you win, or you fold wisely.',
+          text: ['Your jacks never stood a chance.', 'And that’s how you dodge snags: you win, or you fold wisely.'],
           replies: [{ label: 'Snag?' }],
         },
         {
