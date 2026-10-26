@@ -41,19 +41,27 @@ The board never pairs, so she stays on three aces; your hand is made on the
 Turn. You throw away the best cards you will hold all evening and draw two
 deuces, which look like a disaster for half a second.
 
-**Before the deal** (scene)
+She holds **the Solemn Oath** from the very first frame: her burden, part of
+who she is, in her snag fan long before it comes into play.
 
-1. *"You, there! Have you seen my lout of a husband?"* → **Lout?** / **Who?**
-2. *"Finlay MacTavish by name, good-for-nothing by nature. Always sneaking off
-   to play Snag Poker."* → **Snag?**
-3. *"A vile game, fit for drunkards and liars. You don't know it?"* → **No,
-   ma'am**
+**Before the deal** (scenes, over the empty board)
 
-**The Flop** (asides)
+1. *"You, there! / Have you seen my lout of a husband?"* → **Lout?** /
+   **Who?**
+2. *"Finlay MacTavish by name, good‑for‑nothing by nature. / Always sneaking
+   off to play Snag Poker."* → **Snag?** / **Poker?** (read left to right,
+   the deckhand spells out the name of the game)
+3. *"A vile game! / Fit for drunkards, and liars… / … do you not know it?"*
+   (broken off mid-tirade, by concern for a child deprived of the game she
+   detests) → **No, ma'am**
+4. *"Well. We can't have that. / I'll show you."* Said as she deals, in the
+   pot area: the cards go out beneath it.
 
-4. *"Three cards each, and three in the middle. This is the Flop."* →
-   **Flop?**
-5. *"Yes, the Flop. Swap what you don't want. Those are good: keep them."* →
+**The Flop** (in the pot area, so her cards and her Oath stay in view)
+
+5. *"Three cards each, and three in the middle. / The Flop."* (a name, said
+   with reverence) → **Flop?**
+6. *"Yes, the Flop. Swap what you don't want. Those are good: keep them."* →
    you must **Check**.
 
 **The Turn**

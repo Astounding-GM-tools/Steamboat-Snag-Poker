@@ -43,6 +43,8 @@
     when?: 'won' | 'dumped' | 'kept' | 'lost' | 'wonAll' | 'lostAll';
     /** They show their hand (even after a fold): the cards turn face up, and the words follow. */
     show?: boolean;
+    /** Said as the cards go out: the deal goes ahead beneath it, and it stays until the next lines take its place. */
+    dealing?: boolean;
     /** Only reached by a reply that goes to it (by `id`): the conversation passes it by otherwise. */
     branch?: boolean;
     /** Only while these snags (by number) are where it says: with `you`, or with `them`. Snags outlive the game. */
@@ -229,7 +231,7 @@
   .beat + .beat {
     margin-top: 0.9em;
   }
-  .aside .beat + .beat {
+  .aside:not(.band) .beat + .beat {
     margin-top: 0.2em;
   }
   .aside p {

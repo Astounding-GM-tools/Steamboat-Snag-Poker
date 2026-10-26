@@ -9,12 +9,13 @@ import type { Script } from './script';
  */
 export const TUTORIAL = 'tutorial';
 
-/** Snag Poker without the pot or the snags: those come later in the lessons. */
+/** Snag Poker without the pot or the snags: those come later in the lessons. Her Oath lies dormant till then (no upkeep). */
 const config: RulesConfig = {
   ...PRESETS.kansasDraw,
   preset: TUTORIAL,
   pot: false,
   totalJokers: 0,
+  drainPerJoker: 0,
 };
 
 const STAND_PAT: Action = { type: 'draw', cardIds: [] };
@@ -103,10 +104,14 @@ export function rematch(prev: GameState): GameState {
 
 export function newTutorial(seed: number): GameState {
   const morag = ROSTER.find((c) => c.id === 'morag')!;
-  return newGame(seed, config, [{ def: morag, joins: 'start' }], {
+  const game = newGame(seed, config, [{ def: morag, joins: 'start' }], {
     story: TUTORIAL,
     arranged: [roundOne, roundTwo, roundThree],
   });
+  // Her Solemn Oath is hers from the first frame: her burden, part of who she is, long before it comes into play.
+  game.players[1].jokers = [jokerCard(OATH)];
+  game.round!.seats[1].jokers = [jokerCard(OATH)];
+  return game;
 }
 
 const M = 'morag';
@@ -193,18 +198,30 @@ export const tutorialScript: Script = {
           text: ['A vile game!\nFit for drunkards, and\u00a0liars…', '… do you not know it?'],
           replies: [{ label: 'No, ma’am' }],
         },
+        {
+          // Her decision, said as she deals: in the pot area, so the deal (and her Oath) stay in view.
+          size: 'aside',
+          who: M,
+          text: ['Well. We can’t have that.', 'I’ll show you.'],
+          at: 'band',
+          dealing: true,
+          auto: false,
+        },
       ],
       flop: [
         {
           size: 'aside',
           who: M,
-          text: 'Three cards each, and three in the middle. This is the Flop.',
+          // The Flop: a name, said with reverence.
+          text: ['Three cards each, and three in the middle.', 'The Flop.'],
+          at: 'band',
           replies: [{ label: 'Flop?' }],
         },
         {
           size: 'aside',
           who: M,
           text: 'Yes, the Flop. Swap what you don’t want. Those are good: keep them.',
+          at: 'band',
           require: [],
         },
       ],

@@ -135,7 +135,9 @@
   /** Starts a conversation, or queues it behind the one under way. */
   function say(lines: SpeechLine[]) {
     if (!lines.length) return;
-    talk = talk ? { ...talk, lines: [...talk.lines, ...lines] } : { lines, i: 0 };
+    // A line said over the deal gives way to whatever comes next.
+    if (talk && line?.dealing) talk = { lines, i: 0 };
+    else talk = talk ? { ...talk, lines: [...talk.lines, ...lines] } : { lines, i: 0 };
   }
   /** On to the line named `go`, or the next in order; past the last, the conversation is over. */
   function nextLine(go?: string) {
@@ -377,7 +379,8 @@
   /** A round whose deal waits for the lines spoken before it. */
   let heldDeal = $state<typeof round | null>(null);
   $effect(() => {
-    if (heldDeal && !talk) {
+    // The deal goes out once the lines before it are said (or under one that is said over it).
+    if (heldDeal && (!talk || line?.dealing)) {
       const r = heldDeal;
       heldDeal = null;
       untrack(() => scheduleDeal(r));
