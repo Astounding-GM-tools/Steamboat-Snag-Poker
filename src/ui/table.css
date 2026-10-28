@@ -123,6 +123,9 @@ h3 {
 .stakes {
   color: var(--grey);
   margin: 0.5rem 0 0;
+  /* One line, always reserved (DrawTable keeps the row even when it's empty). */
+  min-height: 1.3em;
+  line-height: 1.3;
 }
 .target {
   padding: 4px;

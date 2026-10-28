@@ -293,11 +293,9 @@
     if (verdictShown && !fire('verdict')) onrevealed?.();
     else revealPos = { month: game.month, i: revealIndex + 1 };
   }
+  /** Skip to the result: every card turned and the verdict in; the next press goes on from there. */
   function revealSkip() {
-    onverdict?.();
-    // Skipping to the verdict still hears the round's closing lines, over the finished showdown.
     revealPos = { month: game.month, i: lastStep };
-    if (!fire('verdict')) onrevealed?.();
   }
   /** Board cards each hand uses: theirs marked above, yours below. */
   const theirBoard = $derived(
@@ -695,7 +693,8 @@
   );
   const showFold = $derived(playing && !composing);
   // Folding gives up everything you have put into the pot so far.
-  const foldLabel = $derived(bets[0] ? `${t('draw.fold')} · ${price(bets[0])}` : t('draw.fold'));
+  /** What you'd walk away from (already in the pot, not a price), and only while you may fold at all. */
+  const foldLabel = $derived(bets[0] && canFold(round, 0) ? t('draw.foldIn', { amount: price(bets[0]) }) : t('draw.fold'));
 
   function fold() {
     if (!playing || dealing || !canFold(round, 0)) return;
@@ -756,8 +755,8 @@
         <!-- However many snags they carry, the fan never grows past its width. Played snags flip like their cards. -->
         <div class="snag-fan" style="--n: {theirSnags.length}">
           {#each theirSnags as card (card.id)}
-            <!-- A snag they played rises out of the fan as it's revealed: riding along in their hand. -->
-            {#if !playedIds.has(card.id) || faceUp.has(card.id)}<CardView {card} lifted={playedIds.has(card.id) && faceUp.has(card.id)} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
+            <!-- Snags are public: always face up. One they played rises out of the fan as it's revealed: riding along in their hand. -->
+            <CardView {card} lifted={playedIds.has(card.id) && (faceUp.has(card.id) || theyShowed)} fresh={revealStep?.card.id === card.id} />
           {/each}
           {#if theirSnags.length > 2}<span class="snag-count">×{theirSnags.length}</span>{/if}
         </div>
@@ -803,7 +802,8 @@
       </div>
       {#if standing}<div class="standings-over"><Standings {game} /></div>{/if}
     </div>
-    {#if stakes.length}<p class="stakes">{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}</p>{/if}
+    <!-- Always there, so a snag coming up never moves the table; empty when nothing is at stake (after a fold the snag goes back into the deck). -->
+    <p class="stakes">{#if stakes.length && !standing && result?.folded == null}{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}{/if}</p>
     {#if showCaptain}
       <!-- Their details take the river's place (tap to go back to the board): who they are and, mid-round, Willie's reckoning. -->
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
@@ -906,7 +906,8 @@
       <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
       <button onclick={() => onnext?.()}>{t('end.next')}</button>
     {:else if revealing}
-      <button class="ghost" onclick={revealSkip}>{t('show.skip')}</button>
+      <!-- Once the verdict is in there's nothing left to skip: the black button stays empty. -->
+      <button class="ghost" onclick={revealSkip} disabled={verdictShown} style:visibility={verdictShown ? 'hidden' : null}>{t('show.skip')}</button>
       <button onclick={revealNext}>{t('show.next')}</button>
     {:else}
       <!-- A line asking for a move: only that move will do (no folding your way out of a lesson). -->
