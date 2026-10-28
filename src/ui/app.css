@@ -55,6 +55,73 @@ button.ghost {
   outline: none;
 }
 
+/*
+ * Heavy buttons (see heavy.ts): held to commit. The button soaks up ink from
+ * where the finger presses, an inversion spreading out like ink in thin paper;
+ * let go early and it drains away. Fingerprints stay where the finger was,
+ * fading slowly.
+ */
+.heavy button {
+  position: relative;
+  overflow: hidden;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.heavy button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--paper);
+  mix-blend-mode: difference;
+  clip-path: circle(0 at var(--x, 50%) var(--y, 50%));
+  transition: clip-path 0.3s ease-in;
+  pointer-events: none;
+}
+.heavy button.holding::after {
+  clip-path: circle(var(--reach, 150%) at var(--x, 50%) var(--y, 50%));
+  /* Soaking in: quick at first, slowing as it reaches the edges, full exactly at the commit. */
+  transition: clip-path var(--hold, 400ms) cubic-bezier(0.2, 0.6, 0.4, 1);
+}
+/* Pressed into the paper. */
+.heavy button.holding {
+  transform: translateY(1px) scale(0.985) !important;
+}
+/* The commit: a firm settle, then the ink lifts. */
+.heavy button.committed {
+  transform: scale(0.97) !important;
+}
+.heavy button .print {
+  position: absolute;
+  width: 30px;
+  height: 36px;
+  translate: -50% -50%;
+  rotate: var(--turn, 0deg);
+  fill: none;
+  stroke: var(--paper);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  mix-blend-mode: difference;
+  opacity: 0;
+  pointer-events: none;
+  animation: print 5s ease-out forwards;
+}
+@keyframes print {
+  8% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heavy button::after,
+  .heavy button.holding::after {
+    transition: none;
+  }
+}
+
 /* ---- Film effects ---- */
 
 .film {

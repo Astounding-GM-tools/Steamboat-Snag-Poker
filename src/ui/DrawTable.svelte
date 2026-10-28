@@ -30,6 +30,7 @@
   import HowTo from './HowTo.svelte';
   import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
   import Countdown from './Countdown.svelte';
+  import { heavy } from './heavy';
   import type { RoundScript, Trigger } from '../story/script';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { handLabel, tiebreak } from './handNames';
@@ -879,7 +880,7 @@
   </section>
 
   <!-- The two buttons, the same on every screen: black on the left half, white on the right. -->
-  <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp && !holding} bind:this={actionsEl}>
+  <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp && !holding} bind:this={actionsEl} use:heavy>
     {#if showHelp}
       <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
       <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>

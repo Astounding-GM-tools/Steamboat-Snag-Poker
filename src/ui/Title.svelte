@@ -1,6 +1,7 @@
 <script lang="ts">
   import { t } from '../i18n';
   import HowTo from './HowTo.svelte';
+  import { heavy } from './heavy';
 
   interface Props {
     /** Month of the voyage in progress, if any. */
@@ -170,7 +171,7 @@
   <!-- The same two buttons, in the same places, as at the table: black left, white right. -->
   <div class="dock">
     <!-- The tutorial takes the free black button: for new players, and on How to play for everyone. -->
-    <div class="actions">
+    <div class="actions" use:heavy>
       {#if showHowTo}
         <button class="ghost" onclick={() => ((showHowTo = false), ontutorial())}>{t('title.tutorial')}</button>
         <button onclick={() => (showHowTo = false)}>{t('draw.close')}</button>
