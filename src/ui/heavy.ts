@@ -1,13 +1,14 @@
 /**
- * Heavy buttons: a choice has to be meant. On a row of action buttons, a press
- * must be held to commit (HOLD_MS): the button soaks up ink from where the
- * finger presses, like thin paper on an inkpad, and a stylised fingerprint is
- * left there, fading slowly, a patina on the controls. Let go early and the ink
- * drains away; nothing happens.
+ * Heavy buttons: carrying on has to be meant. In a row of action buttons the
+ * white one (the last, on the right) must be held to commit (HOLD_MS): it soaks
+ * up ink from where the finger presses, like thin paper on an inkpad, and a
+ * stylised fingerprint is left there, fading slowly, a patina on the controls.
+ * Let go early and the ink drains away; nothing happens. The black one is a
+ * plain tap: giving up takes no time at all.
  *
- * Keys: hold ← for the left (black) button, → or Space or Return for the right
- * (white) one. A click that isn't a pointer press (a screen reader, a script,
- * the keyboard on a focused button) goes through at once: not everyone can hold.
+ * Keys: ← for the black button (at once), hold → or Space or Return for the
+ * white. A click that isn't a pointer press (a screen reader, a script, the
+ * keyboard on a focused button) goes through at once: not everyone can hold.
  * In development, `?quick` in the address turns holding off.
  */
 
@@ -40,8 +41,9 @@ function fingerprint(x: number, y: number): SVGSVGElement {
 
 const STILL = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** Paper grain: smooth noise, stretched along the fibres (wider than tall), two octaves; 0..1. */
+/** Paper grain: smooth noise, stretched along the fibres (wider than tall), two octaves; 0..1. Every sheet is its own. */
 function grain(w: number, h: number): Float32Array {
+  const rand = (a: number, b: number) => a + Math.random() * (b - a);
   const out = new Float32Array(w * h);
   const octave = (cw: number, ch: number, weight: number) => {
     const gw = Math.ceil(w / cw) + 2;
@@ -62,8 +64,9 @@ function grain(w: number, h: number): Float32Array {
         out[j * w + i] += (top + (bottom - top) * fy) * weight;
       }
   };
-  octave(9, 3, 0.65);
-  octave(3, 2, 0.35);
+  const coarse = rand(0.5, 0.8);
+  octave(rand(6, 13), rand(2, 4), coarse);
+  octave(rand(2, 4), rand(1.5, 2.5), 1 - coarse);
   return out;
 }
 
@@ -88,14 +91,24 @@ function soak(button: HTMLButtonElement, x: number, y: number) {
   const px = x / SCALE;
   const py = y / SCALE;
   const far = Math.hypot(Math.max(px, w - px), Math.max(py, h - py)) || 1;
+  // This press's paper: how much the grain matters against the pull from the finger,
+  // and a pool or two somewhere along the button where the ink happens to wick faster.
+  const pull = 0.55 + Math.random() * 0.3;
+  const wild = 0.4 + Math.random() * 0.35;
+  const pools = Array.from({ length: 1 + Math.floor(Math.random() * 2) }, () => ({ x: Math.random() * w, y: Math.random() * h, r: (0.15 + Math.random() * 0.25) * w }));
   const score = new Float32Array(w * h);
   let top = 0;
   for (let j = 0; j < h; j++)
     for (let i = 0; i < w; i++) {
       const k = j * w + i;
-      score[k] = (Math.hypot(i - px, j - py) / far) * 0.7 + paper[k] * 0.5;
+      let s = (Math.hypot(i - px, j - py) / far) * pull + paper[k] * wild;
+      for (const p of pools) s -= Math.max(0, 1 - Math.hypot(i - p.x, (j - p.y) * 2) / p.r) * 0.25;
+      score[k] = s;
       top = Math.max(top, score[k]);
     }
+  const low = Math.min(...score);
+  for (let k = 0; k < score.length; k++) score[k] -= low;
+  top -= low;
   for (let k = 0; k < score.length; k++) score[k] /= top; // the last spot wets exactly at 1
   const wet = (t: number) => {
     const d = image.data;
@@ -121,6 +134,9 @@ export function heavy(row: HTMLElement) {
     began: number;
     frame: number;
   } | null = null;
+
+  /** The heavy one: the white button, last in the row. */
+  const white = () => [...row.children].filter((el): el is HTMLButtonElement => el instanceof HTMLButtonElement).at(-1);
 
   /** The row's buttons, left to right, that can be pressed now. */
   const buttons = () =>
@@ -187,14 +203,14 @@ export function heavy(row: HTMLElement) {
 
   function down(e: PointerEvent) {
     const button = (e.target as Element).closest('button');
-    if (!button || button.parentElement !== row || e.button !== 0) return;
+    if (!button || button !== white() || e.button !== 0) return;
     const r = button.getBoundingClientRect();
     start(button, e.clientX - r.left, e.clientY - r.top);
   }
 
   // A pointer's own click never acts: only a finished hold does (or a click that isn't a pointer's).
   function click(e: MouseEvent) {
-    if (e.detail > 0) {
+    if (e.detail > 0 && (e.target as Element).closest('button') === white()) {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -206,9 +222,16 @@ export function heavy(row: HTMLElement) {
     // Space and Return belong to whatever has focus, unless that's nothing or this row.
     const free = !focus || focus === document.body || row.contains(focus);
     const list = buttons();
-    const button =
-      e.key === 'ArrowLeft' ? (list.length > 1 ? list[0] : undefined) : e.key === 'ArrowRight' || ((e.key === ' ' || e.key === 'Enter') && free) ? list.at(-1) : undefined;
-    if (!button) return;
+    if (e.key === 'ArrowLeft') {
+      // Giving up takes no time at all.
+      if (list.length > 1) {
+        e.preventDefault();
+        list[0].click();
+      }
+      return;
+    }
+    const button = e.key === 'ArrowRight' || ((e.key === ' ' || e.key === 'Enter') && free) ? list.at(-1) : undefined;
+    if (!button || button !== white()) return;
     e.preventDefault();
     start(button, button.clientWidth / 2, button.clientHeight / 2, e.key);
   }
