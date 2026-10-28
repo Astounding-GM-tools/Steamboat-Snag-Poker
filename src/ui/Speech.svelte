@@ -21,8 +21,12 @@
     who: string;
     /** The words; a list is said in beats, each part a paragraph of its own, a moment after the last. A `\n` breaks a line within one. */
     text: string | string[];
-    /** One reply (on the white button) or two (black, white). The line waits for an answer. */
-    replies?: [Reply] | [Reply, Reply];
+    /**
+     * The answers, and the line waits for one: one (on the white button), two
+     * (black, white) or more. More than two, or any too long for half the row,
+     * stack up from the buttons, the last (white) nearest the thumb.
+     */
+    replies?: Reply[];
     /** Closes by itself: `true` for a time fitted to the line, or a number of ms. Asides do by default. */
     auto?: boolean | number;
     /**

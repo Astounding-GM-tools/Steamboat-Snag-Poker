@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, untrack } from 'svelte';
+  import { onDestroy, tick, untrack } from 'svelte';
   import {
     STREETS,
     CATEGORIES,
@@ -80,6 +80,18 @@
     return tappedCards.every((c) => {
       const k = open.findIndex((w) => w === c.id || (!isJoker(c) && w === rankLabel(c.rank)));
       return k >= 0 && open.splice(k, 1).length > 0;
+    });
+  });
+  // Replies side by side unless one would be cut off on this screen: then they stack (measured, not guessed).
+  let stackFor = $state<SpeechLine | null>(null);
+  const stackReplies = $derived(!!line && stackFor === line);
+  $effect(() => {
+    const l = line;
+    if (!l?.replies || l.replies.length > 2) return;
+    tick().then(() => {
+      if (line !== l || !actionsEl) return;
+      const cut = [...actionsEl.querySelectorAll<HTMLButtonElement>(':scope > button:not([disabled])')].some((b) => b.scrollWidth > b.clientWidth + 1);
+      if (cut) stackFor = l;
     });
   });
   /** A line with replies that also takes a move: once the move is tapped, the play buttons replace the replies. */
@@ -886,14 +898,24 @@
       <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>
       <button onclick={() => (showHelp = false)}>{t('draw.close')}</button>
     {:else if line?.replies && !shortcut}
-      <!-- A line waiting for an answer: two replies (black, white), or one on the white button and nothing pretending on the black. -->
-      {@const [a, b] = line.replies}
-      {#if b}
-        <button class="ghost" onclick={() => answer(a)}>{a.label ?? t('talk.decline')}</button>
-        <button onclick={() => answer(b)}>{b.label ?? t('talk.agree')}</button>
+      {@const replies = line.replies}
+      {@const label = (r: Reply, i: number) => r.label ?? (replies.length === 2 && i === 0 ? t('talk.decline') : t('talk.agree'))}
+      {#if replies.length <= 2 && !stackReplies}
+        <!-- A line waiting for an answer: two replies (black, white), or one on the white button and nothing pretending on the black. -->
+        {#if replies.length === 2}
+          <button class="ghost" onclick={() => answer(replies[0])}>{label(replies[0], 0)}</button>
+          <button onclick={() => answer(replies[1])}>{label(replies[1], 1)}</button>
+        {:else}
+          <button class="ghost" disabled style="visibility: hidden" aria-hidden="true"></button>
+          <button onclick={() => answer(replies[0])}>{label(replies[0], 0)}</button>
+        {/if}
       {:else}
-        <button class="ghost" disabled style="visibility: hidden" aria-hidden="true"></button>
-        <button onclick={() => answer(a)}>{a.label ?? t('talk.agree')}</button>
+        <!-- More replies, or longer ones than half the row holds: stacked, rising over the table, the last (white) nearest the thumb.
+             The row keeps its height (an invisible stand-in), so nothing above moves. -->
+        <button class="stand-in" disabled aria-hidden="true">&nbsp;</button>
+        <div class="stack">
+          {#each replies as r, i (i)}<button class:ghost={i < replies.length - 1} onclick={() => answer(r)}>{label(r, i)}</button>{/each}
+        </div>
       {/if}
     {:else if holding}
       <!-- A scene to read: skip the conversation, or on to the next line. -->
@@ -1374,6 +1396,32 @@
   }
   .actions > :last-child {
     grid-column: 7 / 13;
+  }
+  /* Stacked replies: an invisible stand-in keeps the row's height; the stack rises from it over the table. */
+  .actions > .stand-in {
+    grid-column: 1 / -1;
+    visibility: hidden;
+  }
+  .actions > .stack {
+    grid-column: 1 / -1;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    /* A dark backing, so the table doesn't peek between the buttons. */
+    padding-top: 0.6rem;
+    background: #0c0c0b;
+    box-shadow: 0 -0.6rem 0.8rem #0c0c0b;
+  }
+  .stack button {
+    width: 100%;
+  }
+  /* Over the table, the black buttons need a black of their own. */
+  .stack button.ghost {
+    background: #0c0c0b;
   }
   /* The main button's outline goes inside its edge, so both buttons stand the same size. */
   .actions button:not(.ghost) {

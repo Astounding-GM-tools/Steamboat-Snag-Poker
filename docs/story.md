@@ -140,13 +140,15 @@ screen, no new UI.
   Skip, Next, Back, replies) is a light tap: giving up, or moving on, takes no
   time at all (← on the keyboard for the left button). Hold → or Space or Return for the white; `?quick` in
   development turns holding off. Each press soaks its own paper. A choice should feel decisive, not a brush against
-  glass: hold to commit (1.2 s). The button soaks up ink like thin paper
+  glass: hold to commit (0.9 s). The button soaks up ink like thin paper
   pressed into an inkpad, from a stylised fingerprint where the finger
   presses; let go early and it drains back, but the fingerprint lingers,
   fading: a patina on the controls. A haptic tick at the commit where phones
   allow it; Enter or Space held the same; screen readers activate at once.
   Only the action buttons; tapping cards and captions stays light.
-- **Longer replies.** Some replies don't fit half a row (*"No, ma'am"* is
+- **Longer replies** (built: any number of replies; more than two, or any
+  too long for half the row on this screen, stack up from the buttons, the
+  last, white, nearest the thumb). Some replies don't fit half a row (*"No, ma'am"* is
   cut off on phones). A single reply may take the full width; and some
   conversations may want more than two replies, stacked. A compact game:
   desktop needn't look its best.
@@ -268,6 +270,19 @@ to it.
 2. Fill in the landings: who is there, what they want, the format.
 3. Story mode itself: encounters built on what the tutorial already uses
    (arranged hands, scripts by trigger, snags that outlive a game).
+
+## Backlog
+
+- **Portraits.** The letter in a circle is the biggest visual gap. First take
+  stock of the roster and decide what to draw. Each captain gets at least three
+  moods, **Neutral**, **Confident** and **Nervous**, shown as the hand goes, so
+  a glance at a portrait is a read (a tell, and a bluff for the good ones).
+  Except **Steamboat Bill**: the same doomed stare whatever his cards say.
+- **The League's final table.** In the tournament (perhaps called the League),
+  quick duels as now, knockouts, until four captains are left; then all four
+  sit at one table, the stakes go up and one winner takes the pot: a change of
+  tempo, ante and dynamics. The hard part is the layout: up to three opponents
+  at once, playable and clear on a phone.
 
 ## Open questions
 

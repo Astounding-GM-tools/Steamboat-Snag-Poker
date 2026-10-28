@@ -13,7 +13,7 @@
  * once: not everyone can hold. In development, `?quick` turns holding off.
  */
 
-const HOLD_MS = 1200;
+const HOLD_MS = 900;
 /** Fingerprints a button keeps before the oldest is wiped off. */
 const MAX_PRINTS = 5;
 const QUICK = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('quick');
