@@ -31,7 +31,7 @@ everyone, and it runs until **two are left standing**.
   the last two.)
 - **No banter** in this mode (perhaps later, in the story).
 
-## The table (to build)
+## The table (built: `src/ui/HighRollersTable.svelte`)
 
 - **The opponents across the top, a rotating trinity:** three compact views
   (portrait, nickname, a simple purse: stacks or a figure, the snag count,

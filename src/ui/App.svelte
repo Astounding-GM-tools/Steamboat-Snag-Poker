@@ -2,6 +2,7 @@
   import { DEFAULT_CONFIG, newGame, nextMonth, submitAction, type Action, type GameState } from '../engine';
   import CardZoom from './CardZoom.svelte';
   import DrawTable from './DrawTable.svelte';
+  import HighRollersTable from './HighRollersTable.svelte';
   import MonthEnd from './MonthEnd.svelte';
   import Showdown from './Showdown.svelte';
   import Table from './Table.svelte';
@@ -44,9 +45,12 @@
   }
   // For now the lessons start from the address (…/?tutorial) or, in development, the console.
   if (new URLSearchParams(location.search).has('tutorial')) startTutorial();
+  /** The final table (in development: …/?highrollers). */
+  let highRollers = $state(new URLSearchParams(location.search).has('highrollers'));
   if (import.meta.env.DEV) {
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;
+    w.highRollers = () => (highRollers = true);
     // Straight to the first hand for buttons; give purses (yours, hers) to try an ending.
     w.tutorialButtons = (mine?: number, hers?: number) => {
       const g = skipToButtons(Date.now() >>> 0);
@@ -126,7 +130,9 @@
 </script>
 
 <div class="film">
-  {#if game}
+  {#if highRollers}
+    <HighRollersTable onmenu={() => (highRollers = false)} />
+  {:else if game}
     {#if game.round?.playStyle === 'draw'}
       <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={revealed} onnext={next} script={game.story ? roundScript(scripts[game.story], game.month) : undefined} ontalk={talkEffect} />
     {:else}
