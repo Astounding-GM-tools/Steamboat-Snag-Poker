@@ -137,7 +137,7 @@ screen, no new UI.
 
 - **Heavy buttons** (built, `src/ui/heavy.ts`: hold ← for the black button,
   → or Space or Return for the white; `?quick` in development turns it off). A choice should feel decisive, not a brush against
-  glass: hold to commit (0.7 s). The button soaks up ink like thin paper
+  glass: hold to commit (1.2 s). The button soaks up ink like thin paper
   pressed into an inkpad, from a stylised fingerprint where the finger
   presses; let go early and it drains back, but the fingerprint lingers,
   fading: a patina on the controls. A haptic tick at the commit where phones

@@ -57,9 +57,8 @@ button.ghost {
 
 /*
  * Heavy buttons (see heavy.ts): held to commit. The button soaks up ink from
- * where the finger presses, an inversion spreading out like ink in thin paper;
- * let go early and it drains away. Fingerprints stay where the finger was,
- * fading slowly.
+ * where the finger presses, unevenly, along the paper's grain; let go early
+ * and it drains away. Fingerprints stay where the finger was, fading slowly.
  */
 .heavy button {
   position: relative;
@@ -69,28 +68,18 @@ button.ghost {
   user-select: none;
   touch-action: manipulation;
 }
-/* How far the ink has soaked, animatable (not --ink: that's the ink colour). */
-@property --soak {
-  syntax: '<length>';
-  inherits: false;
-  initial-value: 0px;
-}
-.heavy button::after {
-  content: '';
+/* The ink, painted on a canvas as it soaks in (heavy.ts): it inverts what it covers. */
+.heavy button .soak {
   position: absolute;
   inset: 0;
-  --soak: 0px;
-  /* A disc of ink with a hard edge, roughened by the filter so it bleeds like ink in paper fibres. */
-  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--paper) var(--soak), transparent calc(var(--soak) + 0.5px));
-  filter: url(#ink-bleed);
+  width: 100%;
+  height: 100%;
   mix-blend-mode: difference;
-  transition: --soak 0.35s ease-in;
   pointer-events: none;
+  transition: opacity 0.3s;
 }
-.heavy button.holding::after {
-  --soak: var(--reach, 200px);
-  /* Soaking in: quick at first, slowing as it reaches the edges, full exactly at the commit. */
-  transition: --soak var(--hold, 700ms) cubic-bezier(0.2, 0.6, 0.4, 1);
+.heavy button .soak.lift {
+  opacity: 0;
 }
 /* Pressed into the paper. */
 .heavy button.holding {
@@ -121,12 +110,6 @@ button.ghost {
   }
   100% {
     opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .heavy button::after,
-  .heavy button.holding::after {
-    transition: none;
   }
 }
 
