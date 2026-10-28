@@ -11,7 +11,7 @@
  * In development, `?quick` in the address turns holding off.
  */
 
-const HOLD_MS = 400;
+const HOLD_MS = 700;
 /** Fingerprints a button keeps before the oldest is wiped off. */
 const MAX_PRINTS = 5;
 const QUICK = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('quick');
@@ -56,7 +56,8 @@ export function heavy(row: HTMLElement) {
     // Far enough to reach the farthest corner from the press: the button is full exactly as the hold commits.
     const w = button.clientWidth;
     const h = button.clientHeight;
-    button.style.setProperty('--reach', `${Math.ceil(Math.hypot(Math.max(x, w - x), Math.max(y, h - y))) + 2}px`);
+    // (Plus a margin for the ink's ragged edge.)
+    button.style.setProperty('--reach', `${Math.ceil(Math.hypot(Math.max(x, w - x), Math.max(y, h - y))) + 10}px`);
     button.classList.add('holding');
     // The print stays, and fades, whatever happens next.
     const print = fingerprint(x, y);

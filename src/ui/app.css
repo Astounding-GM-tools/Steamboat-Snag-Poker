@@ -69,20 +69,28 @@ button.ghost {
   user-select: none;
   touch-action: manipulation;
 }
+/* How far the ink has soaked, animatable (not --ink: that's the ink colour). */
+@property --soak {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
 .heavy button::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--paper);
+  --soak: 0px;
+  /* A disc of ink with a hard edge, roughened by the filter so it bleeds like ink in paper fibres. */
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), var(--paper) var(--soak), transparent calc(var(--soak) + 0.5px));
+  filter: url(#ink-bleed);
   mix-blend-mode: difference;
-  clip-path: circle(0 at var(--x, 50%) var(--y, 50%));
-  transition: clip-path 0.3s ease-in;
+  transition: --soak 0.35s ease-in;
   pointer-events: none;
 }
 .heavy button.holding::after {
-  clip-path: circle(var(--reach, 150%) at var(--x, 50%) var(--y, 50%));
+  --soak: var(--reach, 200px);
   /* Soaking in: quick at first, slowing as it reaches the edges, full exactly at the commit. */
-  transition: clip-path var(--hold, 400ms) cubic-bezier(0.2, 0.6, 0.4, 1);
+  transition: --soak var(--hold, 700ms) cubic-bezier(0.2, 0.6, 0.4, 1);
 }
 /* Pressed into the paper. */
 .heavy button.holding {
