@@ -1,15 +1,16 @@
 /**
- * Heavy buttons: carrying on has to be meant. In a row of action buttons the
- * white one (the last, on the right) must be held to commit (HOLD_MS): it soaks
- * up ink from where the finger presses, like thin paper on an inkpad, and a
- * stylised fingerprint is left there, fading slowly, a patina on the controls.
- * Let go early and the ink drains away; nothing happens. The black one is a
- * plain tap: giving up takes no time at all.
+ * Heavy buttons: a move that commits you to the hand (Call, Swap, Play hand)
+ * has to be meant. A button marked `data-heavy` must be held to commit
+ * (HOLD_MS): it soaks up ink from where the finger presses, like thin paper on
+ * an inkpad, and a stylised fingerprint is left there, fading slowly, a patina
+ * on the controls. Let go early and the ink drains away; nothing happens.
+ * Everything else in the row (fold, skip, next, back, a reply) is a light tap:
+ * giving up, or moving on, takes no time at all.
  *
- * Keys: ← for the black button (at once), hold → or Space or Return for the
- * white. A click that isn't a pointer press (a screen reader, a script, the
- * keyboard on a focused button) goes through at once: not everyone can hold.
- * In development, `?quick` in the address turns holding off.
+ * Keys: ← for the left (black) button, → or Space or Return for the right
+ * (white); held, if that one is heavy. A click that isn't a pointer press (a
+ * screen reader, a script, the keyboard on a focused button) goes through at
+ * once: not everyone can hold. In development, `?quick` turns holding off.
  */
 
 const HOLD_MS = 1200;
@@ -135,8 +136,9 @@ export function heavy(row: HTMLElement) {
     frame: number;
   } | null = null;
 
-  /** The heavy one: the white button, last in the row. */
-  const white = () => [...row.children].filter((el): el is HTMLButtonElement => el instanceof HTMLButtonElement).at(-1);
+  /** A button that commits you to the hand: held, not tapped. */
+  const weighty = (el: Element | null | undefined): boolean =>
+    el instanceof HTMLButtonElement && el.parentElement === row && el.dataset.heavy === 'true';
 
   /** The row's buttons, left to right, that can be pressed now. */
   const buttons = () =>
@@ -203,14 +205,14 @@ export function heavy(row: HTMLElement) {
 
   function down(e: PointerEvent) {
     const button = (e.target as Element).closest('button');
-    if (!button || button !== white() || e.button !== 0) return;
+    if (!button || !weighty(button) || e.button !== 0) return;
     const r = button.getBoundingClientRect();
     start(button, e.clientX - r.left, e.clientY - r.top);
   }
 
   // A pointer's own click never acts: only a finished hold does (or a click that isn't a pointer's).
   function click(e: MouseEvent) {
-    if (e.detail > 0 && (e.target as Element).closest('button') === white()) {
+    if (e.detail > 0 && weighty((e.target as Element).closest('button'))) {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -231,9 +233,10 @@ export function heavy(row: HTMLElement) {
       return;
     }
     const button = e.key === 'ArrowRight' || ((e.key === ' ' || e.key === 'Enter') && free) ? list.at(-1) : undefined;
-    if (!button || button !== white()) return;
+    if (!button) return;
     e.preventDefault();
-    start(button, button.clientWidth / 2, button.clientHeight / 2, e.key);
+    if (weighty(button)) start(button, button.clientWidth / 2, button.clientHeight / 2, e.key);
+    else button.click();
   }
   function keyup(e: KeyboardEvent) {
     if (pressed?.key === e.key) release();

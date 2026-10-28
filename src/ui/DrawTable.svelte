@@ -913,7 +913,8 @@
     {:else}
       <!-- A line asking for a move: only that move will do (no folding your way out of a lesson). -->
       <button class="ghost" onclick={fold} disabled={!playing || dealing || !showFold || !canFold(round, 0) || (line?.require ? line.require !== 'fold' : !complies)}>{foldLabel}</button>
-      <button onclick={go} disabled={!playing || dealing || !complies}>{buttonLabel}</button>
+      <!-- Call, Swap and Play hand commit you to the hand: held, not tapped (heavy.ts). A free Check is a light tap. -->
+      <button onclick={go} disabled={!playing || dealing || !complies} data-heavy={composing || tapped.length > 0 || cost > 0 ? 'true' : undefined}>{buttonLabel}</button>
     {/if}
   </div>
 </div>

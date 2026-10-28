@@ -135,9 +135,10 @@ screen, no new UI.
 
 **To build, from the tutorial play-through:**
 
-- **Heavy buttons** (built, `src/ui/heavy.ts`). Only the white button: carrying
-  on takes commitment, giving up takes no time at all (the black is a plain tap,
-  ← on the keyboard). Hold → or Space or Return for the white; `?quick` in
+- **Heavy buttons** (built, `src/ui/heavy.ts`). Only the moves that commit you
+  to the hand (Call, Swap, Play hand) are held; everything else (Fold, Check,
+  Skip, Next, Back, replies) is a light tap: giving up, or moving on, takes no
+  time at all (← on the keyboard for the left button). Hold → or Space or Return for the white; `?quick` in
   development turns holding off. Each press soaks its own paper. A choice should feel decisive, not a brush against
   glass: hold to commit (1.2 s). The button soaks up ink like thin paper
   pressed into an inkpad, from a stylised fingerprint where the finger
