@@ -32,6 +32,7 @@
   import Countdown from './Countdown.svelte';
   import { heavy } from './heavy';
   import { flyCoin, reducedMotion, restingSpot, stackTops } from './coins';
+  import { flight } from './flight.svelte';
   import type { RoundScript, Trigger } from '../story/script';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { handLabel, tiebreak } from './handNames';
@@ -68,7 +69,26 @@
 
   // Captains speaking at the table: a conversation is a list of lines, shown one at a time.
   let talk = $state<{ lines: SpeechLine[]; i: number } | null>(null);
-  const line = $derived(talk ? talk.lines[talk.i] : null);
+  /** The line the conversation is at; it comes up once every coin in the air has landed. */
+  const nextUp = $derived(talk ? talk.lines[talk.i] : null);
+  let landedFor = $state<SpeechLine | null>(null);
+  $effect(() => {
+    const up = nextUp;
+    // (Cleared between conversations: a rematch says the very same lines again.)
+    if (!up) {
+      landedFor = null;
+      return;
+    }
+    if (up === landedFor || flight.coins > 0) return;
+    // A frame later: coins sent off in the same moment as the line (the antes at a deal) are in the air by then.
+    const id = requestAnimationFrame(() => {
+      if (flight.coins === 0) landedFor = up;
+    });
+    return () => cancelAnimationFrame(id);
+  });
+  const line = $derived(nextUp && nextUp === landedFor ? nextUp : null);
+  /** A line waiting for the coins: the buttons wait with it, so it can't be skipped unseen. */
+  const lineWaiting = $derived(!!nextUp && !line);
   /** The line is waiting for a move at the table: the white button only takes that one. */
   const complies = $derived.by(() => {
     const want = line?.require;
@@ -865,7 +885,7 @@
   </section>
 
   <!-- The two buttons, the same on every screen: black on the left half, white on the right. -->
-  <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp && !holding} bind:this={actionsEl} use:heavy>
+  <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp && !holding} inert={lineWaiting} bind:this={actionsEl} use:heavy>
     {#if showHelp}
       <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
       <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>

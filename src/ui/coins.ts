@@ -4,6 +4,7 @@
  * coin lands on it, so the stacks fill coin by coin.
  */
 import { clink } from './clink';
+import { flight } from './flight.svelte';
 
 export const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -19,6 +20,7 @@ export function flyCoin(from: DOMRect, to: DOMRect, delay: number, { className =
   coin.className = className;
   Object.assign(coin.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` });
   document.body.append(coin);
+  flight.coins++;
   const dx = to.left + to.width / 2 - (from.left + from.width / 2);
   const dy = to.top + to.height / 2 - (from.top + from.height / 2);
   const scale = to.width / from.width;
@@ -32,7 +34,8 @@ export function flyCoin(from: DOMRect, to: DOMRect, delay: number, { className =
     ],
     { duration: 520, delay, easing: 'ease-in-out', fill: 'backwards' },
   );
-  return anim.finished.then(
+  const landed = anim.finished.finally(() => flight.coins--);
+  return landed.then(
     () => {
       clink();
       if (!restIn || !home) {
