@@ -84,6 +84,8 @@
   .pile {
     position: relative;
     width: 100%;
+    /* The coins' drawing order stays inside the heap: captions and the like still go over it. */
+    isolation: isolate;
   }
   .coin {
     position: absolute;

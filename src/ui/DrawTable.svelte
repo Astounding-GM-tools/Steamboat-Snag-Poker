@@ -23,7 +23,7 @@
   } from '../engine';
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
-  import Pot from './Pot.svelte';
+  import Pile from './Pile.svelte';
   import Standings from './Standings.svelte';
   import Purse from './Purse.svelte';
   import DiscardChips from './DiscardChips.svelte';
@@ -563,6 +563,8 @@
   let potEl = $state<HTMLElement>();
   let flownMonth = -1;
   let flown: [number, number] = [0, 0];
+  /** Whose each coin in the pot is (0 you, 1 them), in the order they landed on the heap. */
+  let owners: (0 | 1)[] = [];
   let paidMonth = -1;
   const MAX_FLYERS = 40;
   const still = reducedMotion;
@@ -587,15 +589,15 @@
     });
   }
 
-  /** A captain paid dollars a..b into the pot: each coin leaves its purse spot and lands on its pot spot. */
+  /** A captain paid dollars a..b into the pot: each coin leaves its purse spot and lands on the heap's next spot. */
   function payIn(seat: 0 | 1, a: number, b: number) {
     const purse = seat === 0 ? myPurseEl : theirPurseEl;
-    if (!purse || !potEl || still()) return;
     const offset = Math.max(0, startMoney(seat) - 400); // purses show at most $400
-    for (let k = a; k < Math.min(b, a + MAX_FLYERS); k++) {
-      const src = purse.querySelector(`[data-d="${k - offset}"]`);
-      const dst = potEl.querySelector<HTMLElement>(`[data-seat="${seat}"][data-k="${k}"]`);
-      if (!src || !dst) continue;
+    for (let k = a; k < b; k++) {
+      const dst = potEl?.querySelector<HTMLElement>(`[data-k="${owners.length}"]`);
+      owners.push(seat);
+      const src = purse?.querySelector(`[data-d="${k - offset}"]`);
+      if (!src || !dst || still() || k >= a + MAX_FLYERS) continue;
       dst.classList.add('landing');
       fly(src.getBoundingClientRect(), dst.getBoundingClientRect(), (k - a) * 45).then(() => dst.classList.remove('landing'));
     }
@@ -609,12 +611,16 @@
    */
   function payOut(to: 'me' | 'them' | 'split') {
     if (!potEl || still()) return;
-    const coins = [...potEl.querySelectorAll<HTMLElement>('[data-seat]')].slice(-MAX_FLYERS * 2);
+    const all = [...potEl.querySelectorAll<HTMLElement>('[data-k]')];
+    const first = Math.max(0, all.length - MAX_FLYERS * 2);
     const tops: Record<number, DOMRect[]> = {};
     const piled: Record<number, number> = { 0: 0, 1: 0 };
-    coins.forEach((c, i) => {
-      const from = Number(c.dataset.seat) as 0 | 1;
-      const k = Number(c.dataset.k);
+    // Which of its owner's coins each one is (the k-th that captain paid in), so it can find its spot back home.
+    const counted = [0, 0];
+    const ks = all.map((c) => counted[owners[Number(c.dataset.k)] ?? 0]++);
+    all.slice(first).forEach((c, i) => {
+      const from = owners[Number(c.dataset.k)] ?? 0;
+      const k = ks[first + i];
       const seat = to === 'split' ? from : to === 'me' ? 0 : 1;
       const purse = seat === 0 ? myPurseEl : theirPurseEl;
       if (!purse) return;
@@ -639,6 +645,7 @@
         clearResting();
         flownMonth = month;
         flown = [0, 0];
+        owners = [];
       }
       ([0, 1] as const).forEach((seat) => {
         if (b[seat] > flown[seat]) payIn(seat, flown[seat], b[seat]);
@@ -770,7 +777,7 @@
       <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
       <!-- With no pot (the first lessons) it stays, empty, so the table keeps its shape. -->
       <div class="pot-band" bind:this={potEl}>
-        <Pot bets={potBets} paid={!!payout} />
+        <Pile count={potBets[0] + potBets[1]} paid={!!payout} />
         {#if outcomeShown}<p class="outcome" class:won={result?.winner === 0} aria-live="polite">{outcomeText}</p>{/if}
       </div>
       <div class="community" bind:this={communityEl}>
