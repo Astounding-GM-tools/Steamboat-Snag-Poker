@@ -373,8 +373,8 @@
     clearTimeout(dealTimer);
     clearResting();
   });
-  // Coins resting on a purse are placed on the screen, not the table: if the
-  // screen changes size (a phone turned), they go, and the purse shows the rest.
+  // Coins resting on a purse are placed where its stacks stood: if the screen
+  // changes size (a phone turned), they go, and the purse shows the rest.
   $effect(() => {
     const onResize = () => clearResting();
     window.addEventListener('resize', onResize);
@@ -581,10 +581,10 @@
     for (const c of resting) c.style.visibility = hide ? 'hidden' : '';
   });
 
-  /** One coin from one spot on screen to another; resolves when it lands. `stay` leaves it there, resting. */
-  function fly(from: DOMRect, to: DOMRect, delay: number, stay = false): Promise<void> {
+  /** One coin from one spot on screen to another; resolves when it lands. With `restIn` it stays there, resting on that purse. */
+  function fly(from: DOMRect, to: DOMRect, delay: number, restIn?: HTMLElement): Promise<void> {
     const className = game.currency === 'buttons' ? 'flying-coin button' : 'flying-coin';
-    return flyCoin(from, to, delay, { className, stay }).then((coin) => {
+    return flyCoin(from, to, delay, { className, restIn }).then((coin) => {
       if (coin) resting.push(coin);
     });
   }
@@ -632,7 +632,7 @@
       }
       tops[seat] ??= stackTops(purse);
       const spot = restingSpot(tops[seat], piled[seat]++);
-      if (spot) fly(c.getBoundingClientRect(), spot, i * 14, true);
+      if (spot) fly(c.getBoundingClientRect(), spot, i * 14, purse);
     });
   }
 

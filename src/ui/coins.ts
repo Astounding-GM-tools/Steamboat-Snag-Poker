@@ -9,10 +9,12 @@ export const reducedMotion = () => typeof matchMedia === 'function' && matchMedi
 
 /**
  * One coin from one spot on screen to another, in an arc; resolves when it
- * lands (with a clink). `stay` leaves it there, as a loose coin on the table,
- * and the caller removes it later.
+ * lands (with a clink). With `restIn` it stays, as a loose coin on that
+ * element (a purse): placed inside it, so it moves with the table if the page
+ * scrolls, and sits under whatever is drawn over the table. The caller
+ * removes it later.
  */
-export function flyCoin(from: DOMRect, to: DOMRect, delay: number, { className = 'flying-coin', stay = false } = {}): Promise<HTMLElement | null> {
+export function flyCoin(from: DOMRect, to: DOMRect, delay: number, { className = 'flying-coin', restIn }: { className?: string; restIn?: HTMLElement } = {}): Promise<HTMLElement | null> {
   const coin = document.createElement('span');
   coin.className = className;
   Object.assign(coin.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` });
@@ -20,6 +22,8 @@ export function flyCoin(from: DOMRect, to: DOMRect, delay: number, { className =
   const dx = to.left + to.width / 2 - (from.left + from.width / 2);
   const dy = to.top + to.height / 2 - (from.top + from.height / 2);
   const scale = to.width / from.width;
+  // Where it comes to rest, measured from its resting place now: the two move together.
+  const home = restIn?.getBoundingClientRect();
   const anim = coin.animate(
     [
       { transform: 'translate(0, 0)' },
@@ -31,12 +35,14 @@ export function flyCoin(from: DOMRect, to: DOMRect, delay: number, { className =
   return anim.finished.then(
     () => {
       clink();
-      if (!stay) {
+      if (!restIn || !home) {
         coin.remove();
         return null;
       }
-      Object.assign(coin.style, { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px`, transform: 'none' });
+      coin.classList.add('resting');
+      Object.assign(coin.style, { left: `${to.left - home.left}px`, top: `${to.top - home.top}px`, width: `${to.width}px`, height: `${to.height}px`, transform: 'none' });
       anim.cancel();
+      restIn.append(coin);
       return coin;
     },
     () => {

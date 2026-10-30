@@ -257,6 +257,11 @@ button.ghost {
   border: 1px solid #111;
   pointer-events: none;
 }
+/* Come to rest on a purse: placed inside it, so it moves with the table. */
+.flying-coin.resting {
+  position: absolute;
+  z-index: 2;
+}
 /*
  * Morag's lessons are played for buttons: bone sewing buttons, two holes each,
  * in the same stacks and flights as the coins.

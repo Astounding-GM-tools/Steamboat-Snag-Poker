@@ -266,7 +266,7 @@
       tops[to] ??= stackTops(purse);
       const spot = restingSpot(tops[to], (piled[to] = (piled[to] ?? 0) + 1) - 1);
       // One that lands after the table has moved on to the next hand just goes.
-      if (spot) flyCoin(c.getBoundingClientRect(), spot, delay, { stay: true }).then((coin) => coin && (handSerial === hand ? resting.push(coin) : coin.remove()));
+      if (spot) flyCoin(c.getBoundingClientRect(), spot, delay, { restIn: purse }).then((coin) => coin && (handSerial === hand ? resting.push(coin) : coin.remove()));
     });
   }
 
@@ -300,9 +300,11 @@
   const verdictText = $derived.by(() => {
     const res = round.result;
     if (!res) return '';
-    if (res.byFolds) return t('hr.byFolds', { name: who(res.winners[0]) });
-    const wins = res.winners.length > 1 ? t('hr.split', { names: res.winners.map(who).join(' & ') }) : t('hr.wins', { name: who(res.winners[0]) });
-    return res.weakest !== null && res.dumped.length ? `${wins} ${t('hr.snagsTo', { name: who(res.weakest) })}` : wins;
+    // You get your own line ("You take the pot!"), not your name in theirs.
+    const line = (key: string, s: number) => (s === me ? t(`${key}.you`) : t(key, { name: who(s) }));
+    if (res.byFolds) return line('hr.byFolds', res.winners[0]);
+    const wins = res.winners.length > 1 ? t('hr.split', { names: res.winners.map(who).join(' & ') }) : line('hr.wins', res.winners[0]);
+    return res.weakest !== null && res.dumped.length ? `${wins} ${line('hr.snagsTo', res.weakest)}` : wins;
   });
   const handName = (seat: number) => {
     const h = round.result?.hands[seat];
@@ -346,7 +348,7 @@
             </div>
           {/if}
         </div>
-        <div data-purse={seat}><Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} /></div>
+        <div class="rival-purse" data-purse={seat}><Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} /></div>
         <div class="rival-cards">
           <div class="rival-hand">
             {#if s.folded}
@@ -573,6 +575,10 @@
   }
   .rival-cards :global(.discards .suit) {
     display: none;
+  }
+  /* Winnings come to rest on it, placed from here. */
+  .rival-purse {
+    position: relative;
   }
   .line {
     margin: 0;
