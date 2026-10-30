@@ -31,6 +31,7 @@
   import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
   import Countdown from './Countdown.svelte';
   import { heavy } from './heavy';
+  import { flyCoin, reducedMotion, restingSpot, stackTops } from './coins';
   import type { RoundScript, Trigger } from '../story/script';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
   import { handLabel, tiebreak } from './handNames';
@@ -564,7 +565,7 @@
   let flown: [number, number] = [0, 0];
   let paidMonth = -1;
   const MAX_FLYERS = 40;
-  const still = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const still = reducedMotion;
 
   /** Winnings resting on the winner's stacks until the next round lays the purse out with them. */
   let resting: HTMLElement[] = [];
@@ -578,31 +579,12 @@
     for (const c of resting) c.style.visibility = hide ? 'hidden' : '';
   });
 
-  /** One coin from one spot on screen to another; resolves when it lands. `stay` leaves it there. */
+  /** One coin from one spot on screen to another; resolves when it lands. `stay` leaves it there, resting. */
   function fly(from: DOMRect, to: DOMRect, delay: number, stay = false): Promise<void> {
-    const coin = document.createElement('span');
-    coin.className = game.currency === 'buttons' ? 'flying-coin button' : 'flying-coin';
-    Object.assign(coin.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` });
-    document.body.append(coin);
-    const dx = to.left + to.width / 2 - (from.left + from.width / 2);
-    const dy = to.top + to.height / 2 - (from.top + from.height / 2);
-    const scale = to.width / from.width;
-    const anim = coin.animate(
-      [
-        { transform: 'translate(0, 0)' },
-        { transform: `translate(${dx / 2}px, ${dy / 2 - 24}px) scale(${(1 + scale) / 2 + 0.15})`, offset: 0.5 },
-        { transform: `translate(${dx}px, ${dy}px) scale(${scale})` },
-      ],
-      { duration: 520, delay, easing: 'ease-in-out', fill: 'backwards' },
-    );
-    if (stay) {
-      resting.push(coin);
-      return anim.finished.then(() => {
-        Object.assign(coin.style, { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px`, transform: 'none' });
-        anim.cancel();
-      });
-    }
-    return anim.finished.then(() => coin.remove(), () => coin.remove());
+    const className = game.currency === 'buttons' ? 'flying-coin button' : 'flying-coin';
+    return flyCoin(from, to, delay, { className, stay }).then((coin) => {
+      if (coin) resting.push(coin);
+    });
   }
 
   /** A captain paid dollars a..b into the pot: each coin leaves its purse spot and lands on its pot spot. */
@@ -617,17 +599,6 @@
       dst.classList.add('landing');
       fly(src.getBoundingClientRect(), dst.getBoundingClientRect(), (k - a) * 45).then(() => dst.classList.remove('landing'));
     }
-  }
-
-  /** The tops of a purse's stacks, left to right: where winnings come to rest. */
-  function stackTops(purse: HTMLElement): DOMRect[] {
-    const tops = new Map<number, DOMRect>();
-    for (const c of purse.querySelectorAll<HTMLElement>('[data-d]:not(.spent)')) {
-      const r = c.getBoundingClientRect();
-      const key = Math.round(r.left);
-      if (!tops.has(key) || r.top < tops.get(key)!.top) tops.set(key, r);
-    }
-    return [...tops.entries()].sort((a, b) => a[0] - b[0]).map(([, r]) => r);
   }
 
   /**
@@ -654,13 +625,8 @@
         return;
       }
       tops[seat] ??= stackTops(purse);
-      const list = tops[seat];
-      if (!list.length) return;
-      const n = piled[seat]++;
-      const top = list[n % list.length];
-      const step = top.height * 0.5; // each coin sits half a coin higher on the pile
-      const spot = new DOMRect(top.left, top.top - step * (1 + Math.floor(n / list.length)), top.width, top.height);
-      fly(c.getBoundingClientRect(), spot, i * 14, true);
+      const spot = restingSpot(tops[seat], piled[seat]++);
+      if (spot) fly(c.getBoundingClientRect(), spot, i * 14, true);
     });
   }
 

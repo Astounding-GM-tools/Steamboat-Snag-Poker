@@ -34,8 +34,13 @@ everyone, and it runs until **two are left standing**.
 ## The table (built: `src/ui/HighRollersTable.svelte`)
 
 - **Your side and the river are the duel's:** your purse, your cards, your
-  snag fan and your discards in the same places; the pot as coins (yours
-  below the middle, the rivals' above), no figures, no hand number.
+  snag fan and your discards in the same places; no figures, no hand number.
+- **The pot is one heap, nobody's in particular** (`Pile.svelte`): it starts
+  in the middle and spills outwards in uneven stacks. Every coin flies from
+  its purse to a spot laid out in advance and hidden until it lands, with a
+  clink (synthesised, `clink.ts`). At the verdict the heap flies to the
+  winner: their own coins back where they came from, the rest to rest on top
+  of their stacks until the next hand.
 - **The rivals across the top, a third of the width each,** in seat order
   (you sit at the bottom; the order runs left, across, right, and round to
   you): one name (the shortest of nickname, first name and surname), their

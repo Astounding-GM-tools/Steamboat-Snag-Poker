@@ -21,11 +21,13 @@
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import DiscardChips from './DiscardChips.svelte';
-  import Pot from './Pot.svelte';
+  import Pile from './Pile.svelte';
   import Purse from './Purse.svelte';
   import { dollars, tagName } from './format';
   import { handLabel } from './handNames';
   import { heavy } from './heavy';
+  import { flyCoin, flyInto, reducedMotion, restingSpot, stackTops } from './coins';
+  import { onDestroy, untrack } from 'svelte';
 
   /**
    * High Rollers: four captains at one table, until two are left (see
@@ -138,7 +140,11 @@
       if (revealed + 1 < revealOrder.length) revealed++;
       else view = 'verdict';
     } else if (view === 'verdict') {
-      if (game.phase === 'over') view = 'over';
+      if (game.phase === 'over') {
+        // The placings go over the table: no loose coins on top of them.
+        clearResting();
+        view = 'over';
+      }
       else nextHand();
     }
   }
@@ -173,6 +179,8 @@
   }
 
   function again() {
+    // A new table starts at the same hand number: its coins start afresh.
+    flownHand = paidHand = -1;
     game = newHighRollers(Date.now() >>> 0);
     startMoney = game.players.map((p) => p.money);
     tapped = [];
@@ -192,11 +200,99 @@
   /** Settled purses show only at the verdict; until then, what each had at the start of the hand, less what's in the pot. */
   const settled = $derived(view === 'verdict' || view === 'over');
   const purse = (seat: number) => (settled ? captain(seat).money : startMoney[game.seated[seat]] - seen(seat).bets[seat]);
-  /** The pot: your coins below the middle, the rivals' above. */
-  const potBets = $derived.by((): [number, number] => {
-    const bets = round.seats.map((_, s) => seen(s).bets[s]);
-    const yours = me >= 0 ? bets[me] : 0;
-    return [yours, bets.reduce((a, b) => a + b, 0) - yours];
+  /** What each seat has in the pot, as far as the table has seen. */
+  const shownBets = $derived(round.seats.map((_, s) => seen(s).bets[s]));
+  const potCount = $derived(shownBets.reduce((a, b) => a + b, 0));
+
+  // --- Coins in flight -------------------------------------------------------
+  // Each purse pours into the one pile: a seat's coins leave from where they
+  // stood in its purse and land on the pile's next spots. At the verdict the
+  // pile flies to the winner: their own coins back to the spots they left, the
+  // rest to rest on top of their stacks until the next hand.
+  let rootEl = $state<HTMLElement>();
+  let pileEl = $state<HTMLElement>();
+  /** Whose each coin in the pile is, in the order they landed. */
+  let owners: number[] = [];
+  let flown: number[] = [];
+  let flownHand = -1;
+  /** Counts hands (across tables), so a late coin knows its hand is gone. */
+  let handSerial = 0;
+  let paidHand = -1;
+  let resting: HTMLElement[] = [];
+  const MAX_FLYERS = 40;
+  const purseEl = (seat: number) => rootEl?.querySelector<HTMLElement>(`[data-purse="${seat}"]`) ?? null;
+  /** Purses show at most $400: a richer one's first coins aren't drawn. */
+  const offset = (seat: number) => Math.max(0, (startMoney[game.seated[seat]] ?? 0) - 400);
+  function clearResting() {
+    for (const c of resting) c.remove();
+    resting = [];
+  }
+  onDestroy(clearResting);
+
+  /** A seat paid dollars a..b into the pot. */
+  function payIn(seat: number, a: number, b: number) {
+    const purse = purseEl(seat);
+    for (let k = a; k < b; k++) {
+      const spot = pileEl?.querySelector<HTMLElement>(`[data-k="${owners.length}"]`);
+      owners.push(seat);
+      const src = purse?.querySelector(`[data-d="${k - offset(seat)}"]`);
+      if (spot && src && k < a + MAX_FLYERS && !reducedMotion()) flyInto(src, spot, (k - a) * 45);
+    }
+  }
+
+  function payOut(winners: number[]) {
+    if (!pileEl || reducedMotion()) return;
+    const hand = handSerial;
+    const tops: Record<number, DOMRect[]> = {};
+    const piled: Record<number, number> = {};
+    const seenOf = new Map<number, number>();
+    let shared = 0;
+    const coins = [...pileEl.querySelectorAll<HTMLElement>('[data-k]')];
+    coins.forEach((c, i) => {
+      const owner = owners[Number(c.dataset.k)];
+      // Which of the owner's own coins this is: the n-th it paid in.
+      const own = seenOf.get(owner) ?? 0;
+      seenOf.set(owner, own + 1);
+      if (i < coins.length - MAX_FLYERS * 2) return;
+      const to = winners.includes(owner) ? owner : winners[shared++ % winners.length];
+      const purse = purseEl(to);
+      if (!purse) return;
+      const delay = (i - Math.max(0, coins.length - MAX_FLYERS * 2)) * 14;
+      const home = to === owner ? purse.querySelector<HTMLElement>(`[data-d="${own - offset(owner)}"]`) : null;
+      if (home) {
+        flyInto(c, home, delay);
+        return;
+      }
+      tops[to] ??= stackTops(purse);
+      const spot = restingSpot(tops[to], (piled[to] = (piled[to] ?? 0) + 1) - 1);
+      // One that lands after the table has moved on to the next hand just goes.
+      if (spot) flyCoin(c.getBoundingClientRect(), spot, delay, { stay: true }).then((coin) => coin && (handSerial === hand ? resting.push(coin) : coin.remove()));
+    });
+  }
+
+  $effect(() => {
+    const bets = shownBets;
+    const hand = game.hand;
+    const winners = settled ? round.result?.winners : undefined;
+    untrack(() => {
+      if (hand !== flownHand) {
+        clearResting();
+        flownHand = hand;
+        handSerial++;
+        flown = bets.map(() => 0);
+        owners = [];
+      }
+      // In seat order from the first, so the pile fills the way the table played.
+      for (let j = 0; j < bets.length; j++) {
+        const s = (round.first + j) % bets.length;
+        if (bets[s] > flown[s]) payIn(s, flown[s], bets[s]);
+      }
+      flown = [...bets];
+      if (winners && paidHand !== hand) {
+        paidHand = hand;
+        payOut(winners);
+      }
+    });
   });
   /** The street the board shows (a new card waits for the replay to end). */
   const streetName = $derived(STREETS[Math.min(boardShown - 3, 2)]);
@@ -231,7 +327,7 @@
   const myCall = $derived(preview ? handLabel(preview) : mine && shownTo(me) ? handName(me) : null);
 </script>
 
-<div class="hr">
+<div class="hr" bind:this={rootEl}>
   <!-- The rivals across the top, a third of the width each, in seat order. -->
   <div class="rivals">
     {#each rivals as seat (captain(seat).id)}
@@ -250,7 +346,7 @@
             </div>
           {/if}
         </div>
-        <Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} />
+        <div data-purse={seat}><Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} /></div>
         <div class="rival-cards">
           <div class="rival-hand">
             {#if s.folded}
@@ -273,7 +369,7 @@
   <div class="felt">
     <p class="street">{t(`street.${streetName}`)}</p>
     <div class="pot-band">
-      <Pot bets={potBets} paid={settled} />
+      <div bind:this={pileEl}><Pile count={potCount} paid={settled} /></div>
       {#if settled}<p class="outcome" class:won={round.result?.winners.includes(me)} aria-live="polite">{verdictText}</p>{/if}
     </div>
     <div class="community">
@@ -285,7 +381,7 @@
 
   <!-- Your side, as in a duel: your money nearest the pot, then your cards, your snags and your discards. -->
   <div class="mine">
-    <div class="my-purse">
+    <div class="my-purse" data-purse={me}>
       {#if mine}
         <Purse amount={purse(me)} start={startMoney[game.seated[me]] ?? captain(me).money} showAmount={false} focus={18} label={t('character.captain.you')} />
         {#if round.first === me}<span class="button own" title={t('hr.first')}></span>{/if}
@@ -513,7 +609,9 @@
     font-size: 1.1rem;
     line-height: 1.2;
     color: var(--grey);
-    animation: outcome 0.4s ease-out backwards;
+    text-wrap: balance;
+    /* Once the coins are on their way. */
+    animation: outcome 0.4s ease-out 0.6s backwards;
   }
   .outcome.won {
     color: var(--paper);
