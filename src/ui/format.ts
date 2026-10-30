@@ -45,6 +45,19 @@ export function shortName(id: string): string {
   return nickname(id) ?? name(id);
 }
 
+/**
+ * One word for a captain where four share the screen: the shortest of the
+ * nickname, the first name and the surname ("Bill", "King", "Whiteknuckle"
+ * loses to "Konrad"). A name that's a title loses its article ("Walrus").
+ */
+export function tagName(id: string): string {
+  const full = name(id).replace(/,.*$/, '');
+  if (/^The /.test(full)) return full.slice(4);
+  const words = full.split(' ');
+  const options = [nickname(id), words[0], words.at(-1)].filter((w): w is string => !!w);
+  return options.reduce((a, b) => (b.length < a.length ? b : a));
+}
+
 /** "the Egg Crisis", "the Egg Crisis and the Sandbar", "A, B and C". */
 export function jokerList(jokers: JokerCard[]): string {
   const names = jokers.map((j) => jokerName(j.index));

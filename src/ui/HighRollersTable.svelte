@@ -21,18 +21,20 @@
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
   import DiscardChips from './DiscardChips.svelte';
+  import Pot from './Pot.svelte';
   import Purse from './Purse.svelte';
-  import { dollars, name, shortName } from './format';
+  import { dollars, tagName } from './format';
   import { handLabel } from './handNames';
   import { heavy } from './heavy';
 
   /**
    * High Rollers: four captains at one table, until two are left (see
-   * docs/high-rollers.md). Your three rivals sit across the top as a rotating
-   * trinity: compact, until it's one's turn to be shown, when that one expands.
-   * Everyone moves at once, in secret; after each street the rivals' moves are
-   * replayed one at a time, in seat order, and you press Next as you take each
-   * in. At the showdown your hand comes first, then theirs, the chip leader last.
+   * docs/high-rollers.md). Your side and the river are the duel's; your three
+   * rivals share the top, a third each: a name, a purse, three cards, snags
+   * and discards. Everyone moves at once, in secret; after the Flop and the
+   * Turn the rivals' moves are replayed one at a time, in seat order (left,
+   * across, right, and round to you), and you press Next as you take each in.
+   * At the showdown your hand comes first, then theirs, the chip leader last.
    */
   let { onmenu }: { onmenu: () => void } = $props();
 
@@ -46,7 +48,7 @@
   const composing = $derived(tableComposing(round));
   /** A seat's captain. */
   const captain = (seat: number) => game.players[game.seated[seat]];
-  /** The rivals, in their places across the top. */
+  /** The rivals in their places across the top: seat order, left to right (you sit at seat 0, at the bottom). */
   const rivals = $derived(round.seats.map((_, s) => s).filter((s) => s !== me));
 
   // --- What's being shown -------------------------------------------------
@@ -75,9 +77,7 @@
   });
 
   /** The rival in focus: the one whose move or hand is being shown. */
-  const focus = $derived(
-    view === 'replay' ? queue[at]?.seat : view === 'reveal' ? (revealOrder[revealed] !== me ? revealOrder[revealed] : undefined) : undefined,
-  );
+  const focus = $derived(view === 'replay' ? queue[at]?.seat : view === 'reveal' && revealOrder[revealed] !== me ? revealOrder[revealed] : undefined);
 
   // --- Your move ----------------------------------------------------------
   const tappedCards = $derived(mine ? mine.hand.filter((c) => tapped.includes(c.id)) : []);
@@ -100,19 +100,25 @@
 
   function tap(card: Card) {
     if (view !== 'choose' || !meIn) return;
-    if (isJoker(card) && !composing) return;
-    tapped = tapped.includes(card.id) ? tapped.filter((id) => id !== card.id) : [...tapped, card.id];
+    if (isJoker(card) && !composing) return; // Snags can't be thrown away
+    if (tapped.includes(card.id)) tapped = tapped.filter((id) => id !== card.id);
+    else if (!composing || tapped.length < 5) tapped = [...tapped, card.id]; // A hand is five cards at most
   }
 
-  /** Your move (or none, if you're out of the hand): the street resolves, and the replay begins. */
+  /**
+   * Your move (or none, if you're out of the hand): the street resolves, and
+   * the rivals' moves are replayed in seat order from the first. Not on the
+   * River: everyone just plays a hand, so it's straight to the showdown.
+   */
   function play(action: Action | null) {
     before = round;
+    const river = composing;
     game = playHighRollers(game, action);
     tapped = [];
     const r = game.round!;
     const moves = r.history.at(-1)!.actions;
     const order = Array.from({ length: r.seats.length }, (_, k) => (r.first + k) % r.seats.length);
-    queue = order.filter((s) => s !== me && moves[s]).map((s) => ({ seat: s, action: moves[s]! }));
+    queue = river ? [] : order.filter((s) => s !== me && moves[s]).map((s) => ({ seat: s, action: moves[s]! }));
     at = 0;
     boardShown = before.community.length;
     if (queue.length) view = 'replay';
@@ -121,11 +127,7 @@
 
   function go() {
     if (!mine) return;
-    play(
-      composing
-        ? { type: 'compose', cardIds: tappedCards.map((c) => c.id), jokers: tappedSnags.length }
-        : { type: 'draw', cardIds: tappedCards.map((c) => c.id) },
-    );
+    play(composing ? { type: 'compose', cardIds: tappedCards.map((c) => c.id), jokers: tappedSnags.length } : { type: 'draw', cardIds: tappedCards.map((c) => c.id) });
   }
 
   function next() {
@@ -179,104 +181,153 @@
   }
 
   // --- Showing it ---------------------------------------------------------
-  const shownTo = (seat: number) => view === 'verdict' || view === 'over' || (view === 'reveal' && revealOrder.indexOf(seat) <= revealed && revealOrder.includes(seat));
+  const shownTo = (seat: number) => view === 'verdict' || view === 'over' || (view === 'reveal' && revealOrder.includes(seat) && revealOrder.indexOf(seat) <= revealed);
   /** What a rival did, in a word or two. */
   function moveText(action: Action): string {
     if (action.type === 'fold') return t('hr.move.fold');
-    if (action.type === 'compose') return t('hr.move.play');
-    const fee = tableFee(game.config, round.month, (round.history.at(-1)?.street ?? 0) + 1);
     if (action.type === 'draw' && action.cardIds.length) return t('hr.move.swap', { n: action.cardIds.length });
+    const fee = tableFee(game.config, round.month, (round.history.at(-1)?.street ?? 0) + 1);
     return fee ? t('hr.move.call', { amount: dollars(fee) }) : t('hr.move.check');
   }
   /** Settled purses show only at the verdict; until then, what each had at the start of the hand, less what's in the pot. */
   const settled = $derived(view === 'verdict' || view === 'over');
   const purse = (seat: number) => (settled ? captain(seat).money : startMoney[game.seated[seat]] - seen(seat).bets[seat]);
-  const pot = $derived(round.seats.reduce((a, _, seat) => a + seen(seat).bets[seat], 0));
+  /** The pot: your coins below the middle, the rivals' above. */
+  const potBets = $derived.by((): [number, number] => {
+    const bets = round.seats.map((_, s) => seen(s).bets[s]);
+    const yours = me >= 0 ? bets[me] : 0;
+    return [yours, bets.reduce((a, b) => a + b, 0) - yours];
+  });
   /** The street the board shows (a new card waits for the replay to end). */
   const streetName = $derived(STREETS[Math.min(boardShown - 3, 2)]);
+  const who = (s: number) => (s === me ? t('character.captain.you') : tagName(captain(s).id));
   const verdictText = $derived.by(() => {
     const res = round.result;
     if (!res) return '';
-    const who = (s: number) => (s === me ? t('character.captain.you') : shortName(captain(s).id));
-    if (res.byFolds) return t('hr.byFolds', { name: who(res.winners[0]), amount: dollars(res.pot) });
-    const wins = res.winners.length > 1 ? t('hr.split', { names: res.winners.map(who).join(' & ') }) : t('hr.wins', { name: who(res.winners[0]), amount: dollars(res.pot) });
+    if (res.byFolds) return t('hr.byFolds', { name: who(res.winners[0]) });
+    const wins = res.winners.length > 1 ? t('hr.split', { names: res.winners.map(who).join(' & ') }) : t('hr.wins', { name: who(res.winners[0]) });
     return res.weakest !== null && res.dumped.length ? `${wins} ${t('hr.snagsTo', { name: who(res.weakest) })}` : wins;
   });
   const handName = (seat: number) => {
     const h = round.result?.hands[seat];
     return h ? handLabel(h) : null;
   };
+  /** A rival's line under their cards: the move being shown, their hand at the showdown, or that they're out of it. */
+  function rivalLine(seat: number): string {
+    if (view === 'replay' && focus === seat) return moveText(queue[at].action);
+    if (shownTo(seat) && handName(seat)) return handName(seat)!.call;
+    return seen(seat).seats[seat].folded ? t('hr.folded') : '';
+  }
+  const played = (cards: (Card | null)[]) => cards.filter((c): c is Card => c !== null);
+  const myPlayed = $derived(mine ? played(mine.slots).filter((c) => !isJoker(c)) : []);
+  const myPlayedSnags = $derived(new Set(mine ? played(mine.slots).filter(isJoker).map((c) => c.id) : []));
+  /**
+   * A seat's snags. At the showdown, as they stood before the River was
+   * played (those played lift out of the fan); at the verdict, those it owns
+   * now (a winner's played snags have gone to the weakest hand).
+   */
+  const snagsOf = (seat: number) => (view === 'reveal' && before ? before : seen(seat)).seats[seat].jokers;
+  const mySnags = $derived(mine ? snagsOf(me) : []);
+  const myCall = $derived(preview ? handLabel(preview) : mine && shownTo(me) ? handName(me) : null);
 </script>
 
 <div class="hr">
-  <!-- The rivals across the top: compact, the one in focus expanded. -->
-  <div class="rivals" style="--n: {rivals.length}">
+  <!-- The rivals across the top, a third of the width each, in seat order. -->
+  <div class="rivals">
     {#each rivals as seat (captain(seat).id)}
       {@const p = captain(seat)}
       {@const s = seen(seat).seats[seat]}
-      {@const played = s.slots.filter((c): c is Card => c !== null)}
-      <div class="rival" class:focus={focus === seat} class:folded={s.folded} class:first={round.first === seat}>
+      {@const cards = played(s.slots).filter((c) => !isJoker(c))}
+      {@const snags = snagsOf(seat)}
+      <div class="rival" class:focus={focus === seat} class:folded={s.folded}>
         <div class="who">
-          <span class="portrait">{name(p.id)[0]}</span>
-          <span class="nick">{shortName(p.id)}</span>
-          <span class="money">{dollars(purse(seat))}{#if s.jokers.length}<span class="snags"> · 🪵{s.jokers.length}</span>{/if}</span>
-        </div>
-        {#if focus === seat || shownTo(seat)}
-          <div class="detail">
-            <div class="cards">
-              {#if shownTo(seat) && played.length}
-                {#each played as card (card.id)}<CardView {card} />{/each}
-                {#each s.hand as card (card.id)}<CardView {card} faded />{/each}
-              {:else if !s.folded}
-                <!-- Face down: the cards they hold, or (on the River) the cards they've played. -->
-                {#each played.length ? played : s.hand, i (i)}<CardView faceDown />{/each}
-              {/if}
+          {#if round.first === seat}<span class="button" title={t('hr.first')}></span>{/if}
+          <span class="tag">{tagName(p.id)}</span>
+          {#if snags.length}
+            <div class="snag-fan tiny" style="--n: {snags.length}">
+              {#each snags as card (card.id)}<CardView {card} lifted={shownTo(seat) && s.slots.some((c) => c?.id === card.id)} />{/each}
+              {#if snags.length > 1}<span class="snag-count">×{snags.length}</span>{/if}
             </div>
+          {/if}
+        </div>
+        <Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} />
+        <div class="rival-cards">
+          <div class="rival-hand">
+            {#if s.folded}
+              {#each s.hand as _, i (i)}<CardView faceDown faded />{/each}
+            {:else if shownTo(seat) && cards.length}
+              {#each cards as card (card.id)}<CardView {card} />{/each}
+              {#each s.hand as card (card.id)}<CardView {card} faded />{/each}
+            {:else}
+              {#each Array.from({ length: cards.length + s.hand.length }) as _, i (i)}<CardView faceDown />{/each}
+            {/if}
           </div>
-          {#if view === 'replay' && focus === seat}<p class="move">{moveText(queue[at].action)}</p>{/if}
-          {#if shownTo(seat) && handName(seat)}<p class="move">{handName(seat)?.call}</p>{/if}
-        {/if}
-        {#if s.discarded.length}<DiscardChips cards={s.discarded} flop={s.flopDiscards} title={name(p.id)} />{/if}
-        {#if s.folded}<p class="state">{t('hr.folded')}</p>{/if}
+          <DiscardChips cards={s.discarded} flop={s.flopDiscards} title={tagName(p.id)} />
+        </div>
+        <p class="line">{rivalLine(seat)}</p>
       </div>
     {/each}
   </div>
 
-  <!-- The river: the hand, the street, the board and the pot. -->
+  <!-- The river: the street, the pot and the board. -->
   <div class="felt">
-    <div class="head">
-      <span class="hand-no">{t('hr.hand', { n: round.month })}</span>
-      <span class="street">{t(`street.${streetName}`)}</span>
-      <span class="pot">{pot ? t('hr.pot', { amount: dollars(pot) }) : ''}</span>
+    <p class="street">{t(`street.${streetName}`)}</p>
+    <div class="pot-band">
+      <Pot bets={potBets} paid={settled} />
+      {#if settled}<p class="outcome" class:won={round.result?.winners.includes(me)} aria-live="polite">{verdictText}</p>{/if}
     </div>
-    <div class="board">
+    <div class="community">
       {#each Array.from({ length: 5 }) as _, i}
         <CardView card={i < boardShown ? (round.community[i] ?? null) : null} />
       {/each}
     </div>
-    <p class="verdict">{view === 'verdict' ? verdictText : ''}</p>
   </div>
 
-  <!-- You: your money, your cards. -->
-  <div class="me">
-    {#if mine}
-      <div class="my-purse">
-        <Purse amount={purse(me)} start={captain(me).money} showAmount={false} focus={18} label={t('character.captain.you')} />
-        {#if preview}<p class="call">{handLabel(preview).call}</p>{:else if shownTo(me) && handName(me)}<p class="call">{handName(me)?.call}</p>{/if}
-      </div>
-      <div class="my-hand">
-        {#each mine.hand as card (card.id)}
-          <CardView {card} selected={tapped.includes(card.id)} faded={mine.folded} onclick={view === 'choose' && meIn ? () => tap(card) : undefined} />
-        {/each}
-        {#each mine.slots.filter((c): c is Card => c !== null) as card (card.id)}<CardView {card} used />{/each}
-        {#each mine.jokers as card (card.id)}
-          <CardView {card} selected={tapped.includes(card.id)} onclick={view === 'choose' && meIn && composing ? () => tap(card) : undefined} />
-        {/each}
-        {#if mine.discarded.length}<DiscardChips cards={mine.discarded} flop={mine.flopDiscards} title={t('character.captain.you')} />{/if}
-      </div>
-    {:else}
-      <p class="call">{t('hr.youAreOut')}</p>
-    {/if}
+  <!-- Your side, as in a duel: your money nearest the pot, then your cards, your snags and your discards. -->
+  <div class="mine">
+    <div class="my-purse">
+      {#if mine}
+        <Purse amount={purse(me)} start={startMoney[game.seated[me]] ?? captain(me).money} showAmount={false} focus={18} label={t('character.captain.you')} />
+        {#if round.first === me}<span class="button own" title={t('hr.first')}></span>{/if}
+        {#if myCall}<p class="my-hand">{myCall.lingo ?? myCall.call}</p>{/if}
+      {:else}
+        <p class="my-hand">{t('hr.youAreOut')}</p>
+      {/if}
+    </div>
+    <div class="hand-row">
+      {#if mine}
+        <div class="hand-cell">
+          {#each myPlayed as card (card.id)}<CardView {card} used />{/each}
+          {#each mine.hand as card (card.id)}
+            <CardView
+              {card}
+              selected={composing && tapped.includes(card.id)}
+              toss={!composing && tapped.includes(card.id)}
+              faded={mine.folded || (shownTo(me) && myPlayed.length > 0)}
+              onclick={view === 'choose' && meIn ? () => tap(card) : undefined}
+            />
+          {/each}
+        </div>
+        <div class="fan-cell">
+          {#if mySnags.length}
+            <!-- However many snags you carry, the fan never grows past its width. -->
+            <div class="snag-fan" style="--n: {mySnags.length}">
+              {#each mySnags as card (card.id)}
+                <CardView
+                  {card}
+                  selected={tapped.includes(card.id)}
+                  used={myPlayedSnags.has(card.id)}
+                  lifted={shownTo(me) && myPlayedSnags.has(card.id)}
+                  onclick={view === 'choose' && meIn && composing ? () => tap(card) : undefined}
+                />
+              {/each}
+              {#if mySnags.length > 2}<span class="snag-count">×{mySnags.length}</span>{/if}
+            </div>
+          {/if}
+        </div>
+        <div class="discard-cell"><DiscardChips tall cards={mine.discarded} flop={mine.flopDiscards} title={t('draw.yourDiscards')} /></div>
+      {/if}
+    </div>
   </div>
 
   <!-- The two buttons. Call, Swap and Play hand are held (heavy); the rest are light taps. -->
@@ -298,7 +349,7 @@
     <ol class="placings">
       {#each placings(game) as p, i (p.id)}
         <li class:me={p.id === HUMAN_ID}>
-          <span>{p.id === HUMAN_ID ? t('character.captain.you') : shortName(p.id)}</span>
+          <span>{p.id === HUMAN_ID ? t('character.captain.you') : tagName(p.id)}</span>
           <span>{i === 0 ? t('hr.winner') : i === 1 ? t('hr.runnerUp') : t('table.out')}</span>
           <span>{dollars(Math.max(0, p.money))}</span>
         </li>
@@ -308,175 +359,274 @@
 </div>
 
 <style>
+  /*
+   * The duel's screen grid: 12 columns (a card is two and a gap wide), the
+   * table kept to the bottom so the buttons sit where they always do.
+   */
   .hr {
     --gap: 0.5rem;
     container-type: inline-size;
     position: relative;
     display: grid;
-    grid-template-rows: auto auto auto auto;
-    align-content: end;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gap);
     row-gap: clamp(0.5rem, 2vh, 1.4rem);
+    align-content: end;
     width: 100%;
     max-width: 480px;
     min-height: 100svh;
     margin: 0 auto;
     padding: 1rem 1rem 0.75rem;
   }
+  .hr > :not(.placings) {
+    --col: calc((100cqw - 11 * var(--gap)) / 12);
+    --card-w: calc(2 * var(--col) + var(--gap));
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+  }
+  .felt > *,
+  .mine > * {
+    grid-column: 1 / -1;
+  }
   .hr :global(.card:not(.huge)) {
-    --w: calc((100cqw - 11 * var(--gap)) / 6 + var(--gap)) !important;
+    --w: var(--card-w) !important;
   }
-  /* The trinity: three columns; the one in focus takes half the width. */
-  .rivals {
-    display: grid;
-    grid-template-columns: repeat(var(--n), 1fr);
-    gap: var(--gap);
-    /* The row sits just above the board; the three line up along their tops. */
-    align-content: end;
-    align-items: start;
-    min-height: 13rem;
-    transition: grid-template-columns 0.3s;
-  }
-  .rivals:has(.focus) {
-    grid-template-columns: repeat(var(--n), 0.7fr);
-  }
+
+  /* The rivals: four columns each, every one the same fixed height, so nothing moves. */
   .rival {
+    grid-column: span 4;
+    container-type: inline-size;
     display: grid;
-    gap: 0.3rem;
-    justify-items: center;
-    text-align: center;
-    padding: 0.3rem;
+    grid-template-rows: 26px auto auto 1.9rem;
+    row-gap: 3px;
+    padding: 3px 4px 0;
+    margin: -4px -4px 0;
     border: 1px solid transparent;
+    border-radius: 4px;
     min-width: 0;
+    transition:
+      border-color 0.2s,
+      background 0.2s;
   }
   .rival.focus {
-    grid-column: span 1;
     border-color: var(--paper);
-    background: rgba(242, 239, 230, 0.05);
+    background: rgba(242, 239, 230, 0.06);
   }
-  .rivals:has(.focus) .rival.focus {
-    transform: scale(1.04);
-  }
-  .rival.folded .who {
-    opacity: 0.45;
+  .rival.folded .who,
+  .rival.folded :global(.purse) {
+    opacity: 0.5;
   }
   .who {
-    display: grid;
-    justify-items: center;
-    gap: 0.1rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
     min-width: 0;
   }
-  .portrait {
-    display: grid;
-    place-items: center;
-    width: 3.2rem;
-    height: 3.2rem;
-    border-radius: 50%;
-    border: 2px solid var(--paper);
-    font-family: var(--title-font);
-    font-size: 1.5rem;
-  }
-  .first .portrait {
-    box-shadow: 0 0 0 3px #0c0c0b, 0 0 0 4px var(--grey);
-  }
-  .nick {
+  .tag {
     font-family: var(--title-font);
     font-size: 0.85rem;
-    max-width: 100%;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .money {
-    font-size: 0.8rem;
-    color: var(--grey);
+  /* The dealer's button: who acts (and draws) first this hand. */
+  .button {
+    flex: none;
+    align-self: center;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow:
+      0 0 0 2px #0c0c0b,
+      0 0 0 3px var(--grey);
   }
-  .detail {
-    display: grid;
-    justify-items: center;
-    gap: 0.2rem;
+  .button.own {
+    position: absolute;
+    top: 4px;
+    right: 4px;
   }
-  .detail .cards {
+  /* Three small cards, and their discards in a column beside them. */
+  .rival-cards {
+    --small-w: calc((100cqw - 32px) / 3);
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+  }
+  .rival-hand {
     display: flex;
     gap: 2px;
+    flex: none;
+    width: calc(100cqw - 28px);
   }
-  .detail :global(.card:not(.huge)) {
-    --w: 1.9rem !important;
+  .rival .rival-hand :global(.card:not(.huge)) {
+    --w: var(--small-w) !important;
   }
-  .move,
-  .state {
+  .rival .snag-fan :global(.card:not(.huge)) {
+    --w: 18px !important;
+  }
+  .rival-cards :global(.discards) {
+    --h: calc(var(--small-w) * 1.4);
+    width: 20px;
+  }
+  .rival-cards :global(.discards .chip) {
+    font-size: 0.55rem;
+    border-radius: 2px;
+  }
+  .rival-cards :global(.discards .suit) {
+    display: none;
+  }
+  .line {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
+    line-height: 1.25;
+    text-align: center;
+    overflow: hidden;
   }
-  .state {
+  .rival.folded .line {
     color: var(--grey);
   }
+
+  /* The river: the street, the pot, the board. */
   .felt {
-    display: grid;
-    gap: 0.4rem;
-  }
-  .head {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: baseline;
-    gap: 0.5rem;
-  }
-  .hand-no {
-    font-size: 0.8rem;
-    color: var(--grey);
+    text-align: center;
+    background: repeating-linear-gradient(0deg, transparent 0 18px, rgba(255, 255, 255, 0.03) 18px 20px);
   }
   .street {
+    margin: 0;
     font-family: var(--title-font);
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
-  .pot {
-    text-align: right;
-    font-size: 0.85rem;
+  .pot-band {
+    position: relative;
+    margin: 0.2rem 0 0.5rem;
   }
-  .board {
+  .outcome {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    font-family: var(--title-font);
+    font-size: 1.1rem;
+    line-height: 1.2;
+    color: var(--grey);
+    animation: outcome 0.4s ease-out backwards;
+  }
+  .outcome.won {
+    color: var(--paper);
+  }
+  @keyframes outcome {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+  }
+  .community {
     display: flex;
     justify-content: center;
     gap: var(--gap);
   }
-  .board :global(.card:not(.huge)) {
-    --w: calc((100cqw - 6 * var(--gap)) / 5.6) !important;
-  }
-  .verdict {
-    min-height: 1.3em;
-    margin: 0;
-    text-align: center;
-    font-size: 0.95rem;
-  }
-  .me {
-    display: grid;
-    gap: 0.4rem;
+
+  /* Your side: the duel's rows (cards in columns 1–6, the snag fan 7–10, the discards 11–12). */
+  .mine {
+    row-gap: 0.4rem;
   }
   .my-purse {
     position: relative;
+    min-height: 72px;
+  }
+  :global(.short) .my-purse {
     min-height: 56px;
   }
-  .call {
+  .my-hand {
+    position: absolute;
+    top: 0.8rem;
+    left: 0;
+    right: 0;
     margin: 0;
     text-align: center;
     font-style: italic;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow:
+      0 0 3px #000,
+      0 0 6px #000;
+    pointer-events: none;
   }
-  .my-purse .call {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
+  .hand-row {
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: end;
+    height: calc(var(--card-w) * 1.4 + 14px);
   }
-  .my-hand {
+  .hand-cell {
+    grid-column: 1 / 7;
     display: flex;
     gap: var(--gap);
-    align-items: end;
-    min-height: calc((100cqw - 11 * var(--gap)) / 6 * 1.4 + 1rem);
+    align-items: flex-end;
   }
+  .fan-cell {
+    grid-column: 7 / 11;
+    display: flex;
+    align-items: flex-end;
+  }
+  .discard-cell {
+    grid-column: 11 / 13;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  /* However many snags, the fan keeps to its four columns. */
+  .snag-fan {
+    --fan: calc(4 * var(--col) + 3 * var(--gap));
+    position: relative;
+    display: flex;
+    max-width: var(--fan);
+  }
+  .snag-fan :global(.card + .card) {
+    margin-left: min(3px, calc((var(--fan) - var(--card-w) * var(--n)) / (var(--n) - 1)));
+  }
+  /* A rival's fan: little snags, overlapping, beside the purse. */
+  .snag-fan.tiny {
+    --fan: 32px;
+    flex: none;
+    margin-left: auto;
+  }
+  .snag-fan.tiny :global(.card + .card) {
+    margin-left: min(2px, calc((var(--fan) - 18px * var(--n)) / (var(--n) - 1)));
+  }
+  .snag-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    z-index: 4;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: var(--ink);
+    border: 1px solid var(--grey);
+    font-family: var(--title-font);
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+  .tiny .snag-count {
+    font-size: 0.6rem;
+    padding: 0 3px;
+  }
+
   .actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--gap);
     position: relative;
     z-index: 51;
+  }
+  .actions > button:first-child {
+    grid-column: 1 / 7;
+  }
+  .actions > button:last-child {
+    grid-column: 7 / 13;
   }
   .actions button {
     padding-top: 0.6em;
@@ -497,7 +647,7 @@
     border: 2px solid var(--paper);
     outline: 1px solid var(--paper);
     outline-offset: 4px;
-    z-index: 20;
+    z-index: 60;
   }
   .placings li {
     display: grid;

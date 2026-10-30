@@ -26,7 +26,7 @@
     amount: number;
     /** The purse at the start of the round, which sets the picture. */
     start?: number;
-    size?: 'big' | 'small';
+    size?: 'big' | 'small' | 'tiny';
     showAmount?: boolean;
     /** Where a small pile (and the moths) sits, in % across the purse; neat rows start at the left. */
     focus?: number;
@@ -45,7 +45,9 @@
   const spent = $derived(Math.max(0, n - Math.max(0, amount)));
 
   /** Coin size in px: width, how much each coin adds to a stack, the step between stacks, and how far back rows rise. */
-  const dims = $derived(size === 'big' ? { w: 20, step: 3.2, gap: 22, rise: 9 } : { w: 13, step: 2, gap: 14, rise: 5 });
+  const dims = $derived(
+    size === 'big' ? { w: 20, step: 3.2, gap: 22, rise: 9 } : size === 'small' ? { w: 13, step: 2, gap: 14, rise: 5 } : { w: 9, step: 1.8, gap: 9.6, rise: 5 },
+  );
 
   /** A fixed random number per coin and purpose, so a coin keeps its place. */
   function rand(k: number, salt: number): number {
@@ -179,6 +181,10 @@
   .small .coins {
     height: 40px;
   }
+  /* Four at a table: a rival's purse fits a third of the screen ($100 a row of ten stacks). */
+  .tiny .coins {
+    height: 32px;
+  }
   /* Short phones: a lower purse; tall stacks may rise into the gap above. */
   /* Short screens (decided once at load, so hiding browser bars never changes it). */
   :global(.short) .big .coins {
@@ -210,7 +216,8 @@
     height: 12px;
     animation: flutter 4.5s ease-in-out infinite;
   }
-  .small .moth {
+  .small .moth,
+  .tiny .moth {
     width: 12px;
     height: 8px;
   }

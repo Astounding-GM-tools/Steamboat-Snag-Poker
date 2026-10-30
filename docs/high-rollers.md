@@ -33,13 +33,20 @@ everyone, and it runs until **two are left standing**.
 
 ## The table (built: `src/ui/HighRollersTable.svelte`)
 
-- **The opponents across the top, a rotating trinity:** three compact views
-  (portrait, nickname, a simple purse: stacks or a figure, the snag count,
-  what they've thrown away; their three cards are always three). The one
-  whose move is being shown expands to take focus.
-- **Each street:** you choose; then each opponent's move is shown in turn, in
-  seat order, the focused one expanded (thrown away two, stood pat, folded),
-  and you press **Next** when you've seen it. Folded, you watch the same way.
+- **Your side and the river are the duel's:** your purse, your cards, your
+  snag fan and your discards in the same places; the pot as coins (yours
+  below the middle, the rivals' above), no figures, no hand number.
+- **The rivals across the top, a third of the width each,** in seat order
+  (you sit at the bottom; the order runs left, across, right, and round to
+  you): one name (the shortest of nickname, first name and surname), their
+  snags fanned beside it, a purse of little stacks, three small cards and
+  their discards. No portraits for now. A dot marks who acts first.
+- **The Flop and the Turn:** you choose; then each rival's move is shown in
+  turn, in seat order from the first, the one shown framed ("Swaps 2",
+  "Calls · $4", "Folds"), and you press **Next**. Purses, snags and discards
+  change only as each is shown; the new board card waits for the end.
+  Folded, you watch the same way. **The River** has no replay (everyone just
+  plays a hand): straight to the showdown.
 - **The showdown:** your hand first, then the others, **the chip leader
   last** (the order is fixed before a card is seen, so it gives nothing away).
 
