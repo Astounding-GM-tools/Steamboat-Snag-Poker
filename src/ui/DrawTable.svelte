@@ -31,7 +31,7 @@
   import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
   import Countdown from './Countdown.svelte';
   import { heavy } from './heavy';
-  import { flyCoin, reducedMotion, restingSpot, stackTops } from './coins';
+  import { flyInto, reducedMotion } from './coins';
   import { flight } from './flight.svelte';
   import type { RoundScript, Trigger } from '../story/script';
   import { cardLabel, dollars, jokerList, name, nickname } from './format';
@@ -79,10 +79,10 @@
       landedFor = null;
       return;
     }
-    if (up === landedFor || flight.coins > 0) return;
+    if (up === landedFor || flight.coins > 0 || flight.flows > 0) return;
     // A frame later: coins sent off in the same moment as the line (the antes at a deal) are in the air by then.
     const id = requestAnimationFrame(() => {
-      if (flight.coins === 0) landedFor = up;
+      if (flight.coins === 0 && flight.flows === 0) landedFor = up;
     });
     return () => cancelAnimationFrame(id);
   });
@@ -389,17 +389,7 @@
     const r = round;
     untrack(() => scheduleDeal(r));
   });
-  onDestroy(() => {
-    clearTimeout(dealTimer);
-    clearResting();
-  });
-  // Coins resting on a purse are placed where its stacks stood: if the screen
-  // changes size (a phone turned), they go, and the purse shows the rest.
-  $effect(() => {
-    const onResize = () => clearResting();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  });
+  onDestroy(() => clearTimeout(dealTimer));
 
   // A line where they show their hand: their cards stay face up for the rest of the round.
   let showedMonth = $state(-1);
@@ -451,7 +441,9 @@
     order.push(...r.community.map((c) => c.id).filter((id) => !base.has(id)));
     dealt = base;
     pending = order;
-    if (order.length) dealTimer = setTimeout(dealNext, 250);
+    // A board card on its own (the Turn, the River) comes after a breath.
+    const boardOnly = order.length > 0 && r.community.some((c) => c.id === order[0]);
+    if (order.length) dealTimer = setTimeout(dealNext, boardOnly && !fastDeal ? 500 : 250);
   }
 
   function dealNext() {
@@ -460,9 +452,11 @@
     dealt = new Set([...dealt, id]);
     pending = rest;
     if (!rest.length) return;
-    // A beat before the board: the hole cards are out, now the Flop.
-    const boardNext = round.community.some((c) => c.id === rest[0]) && !round.community.some((c) => c.id === id);
-    const delay = fastDeal ? 70 : boardNext ? 600 : 300;
+    // Yours face up are worth a look; theirs go quicker. Then a breath, and the Flop, each card a thunderclap: Boom. Boom. BOOM.
+    const board = round.community.findIndex((c) => c.id === id);
+    const boardNext = round.community.some((c) => c.id === rest[0]) && board < 0;
+    const mine = round.seats[0].hand.some((c) => c.id === id);
+    const delay = fastDeal ? 70 : boardNext ? 1100 : board === 0 ? 1000 : board === 1 ? 1300 : mine ? 650 : 220;
     dealTimer = setTimeout(dealNext, delay);
   }
 
@@ -576,8 +570,12 @@
       ? round.result.winner === 0 ? 'me' : round.result.winner === 1 ? 'them' : 'split'
       : null,
   );
-  // Coins fly: from the purse's active coin (where it stood) to its spot in the
-  // pot as a captain pays in, and from the pot to the winner at the verdict.
+  // Money moves one purse at a time, heavily: a captain's coins leave from
+  // where they stood in their purse and land on the heap's next spots, and only
+  // when the last has landed does the next purse pour. At the verdict the heap
+  // flies to the winner, onto the spots their purse has laid out for what they
+  // won (purses keep their stacks from round to round, so that's where the
+  // coins stay); on a tie, each captain's coins go home.
   let myPurseEl = $state<HTMLElement>();
   let theirPurseEl = $state<HTMLElement>();
   let potEl = $state<HTMLElement>();
@@ -587,73 +585,77 @@
   let owners: (0 | 1)[] = [];
   let paidMonth = -1;
   const MAX_FLYERS = 40;
+  /** A coin's flight, and the beat between one coin and the next. */
+  const FLIGHT_MS = 650;
+  const POUR_MS = 70;
   const still = reducedMotion;
+  const coinClass = () => (game.currency === 'buttons' ? 'flying-coin button' : 'flying-coin');
 
-  /** Winnings resting on the winner's stacks until the next round lays the purse out with them. */
-  let resting: HTMLElement[] = [];
-  function clearResting() {
-    for (const c of resting) c.remove();
-    resting = [];
+  /** Payments wait their turn: one flow at a time. */
+  let flows: Promise<void> = Promise.resolve();
+  function later(run: () => Promise<void>) {
+    flight.flows++;
+    flows = flows
+      .then(run)
+      .catch(() => {})
+      .finally(() => flight.flows--);
   }
-  // Resting coins are drawn over the whole table: a caption over your side would show them through it, so they wait under it.
-  $effect(() => {
-    const hide = lowLine;
-    for (const c of resting) c.style.visibility = hide ? 'hidden' : '';
-  });
-
-  /** One coin from one spot on screen to another; resolves when it lands. With `restIn` it stays there, resting on that purse. */
-  function fly(from: DOMRect, to: DOMRect, delay: number, restIn?: HTMLElement): Promise<void> {
-    const className = game.currency === 'buttons' ? 'flying-coin button' : 'flying-coin';
-    return flyCoin(from, to, delay, { className, restIn }).then((coin) => {
-      if (coin) resting.push(coin);
-    });
+  /** Coins moving from one place to another, one after another (or a handful at a time); resolves when the last has landed. */
+  function pour(moves: [Element, HTMLElement][], { handful = 1, gap = POUR_MS } = {}): Promise<void> {
+    for (const [src] of moves) src.classList.remove('waiting');
+    if (still()) {
+      for (const [, spot] of moves) spot.classList.remove('landing');
+      return Promise.resolve();
+    }
+    return Promise.all(moves.map(([src, spot], i) => flyInto(src, spot, Math.floor(i / handful) * gap, coinClass(), FLIGHT_MS))).then(() => {});
   }
 
-  /** A captain paid dollars a..b into the pot: each coin leaves its purse spot and lands on the heap's next spot. */
+  /** A captain paid dollars a..b into the pot: the coins wait in their purse for their turn, then pour onto the heap. */
   function payIn(seat: 0 | 1, a: number, b: number) {
     const purse = seat === 0 ? myPurseEl : theirPurseEl;
-    const offset = Math.max(0, startMoney(seat) - 400); // purses show at most $400
+    const moves: [Element, HTMLElement][] = [];
     for (let k = a; k < b; k++) {
       const dst = potEl?.querySelector<HTMLElement>(`[data-k="${owners.length}"]`);
       owners.push(seat);
-      const src = purse?.querySelector(`[data-d="${k - offset}"]`);
-      if (!src || !dst || still() || k >= a + MAX_FLYERS) continue;
+      const src = purse?.querySelector(`[data-d="${k}"]`);
+      if (!src || !dst || k >= a + MAX_FLYERS) continue;
       dst.classList.add('landing');
-      fly(src.getBoundingClientRect(), dst.getBoundingClientRect(), (k - a) * 45).then(() => dst.classList.remove('landing'));
+      src.classList.add('waiting');
+      moves.push([src, dst]);
     }
+    if (moves.length) later(() => pour(moves));
+  }
+
+  /** The verdict: the heap flies to the winner (on a tie, each captain's coins home), onto the spots laid out for what was won. */
+  function payOut(to: 'me' | 'them' | 'split') {
+    if (!potEl) return;
+    const all = [...potEl.querySelectorAll<HTMLElement>('[data-k]')];
+    const first = Math.max(0, all.length - MAX_FLYERS * 2);
+    const landed = [0, 0];
+    const moves: [Element, HTMLElement][] = [];
+    all.forEach((c, i) => {
+      const from = owners[Number(c.dataset.k)] ?? 0;
+      const seat = to === 'split' ? from : to === 'me' ? 0 : 1;
+      const spot = (seat === 0 ? myPurseEl : theirPurseEl)?.querySelector<HTMLElement>(`[data-g="${landed[seat]++}"]`);
+      // Only the last few dozen fly (the rest are there already when the pot is paid).
+      if (!spot || i < first) return;
+      spot.classList.add('landing');
+      c.classList.add('waiting');
+      moves.push([c, spot]);
+    });
+    // Heavy, but paid out in handfuls: no wait.
+    if (moves.length) later(() => pour(moves, { handful: 3, gap: 45 }).then(() => moves.forEach(([c]) => c.classList.remove('waiting'))));
   }
 
   /**
-   * The verdict: each coin in the pot flies to the winner (on a tie, each side's
-   * go home). A captain's own coins return to the very spots they left, which
-   * stay empty until they land, so the stacks refill; the loser's coins come to
-   * rest on top of the winner's stacks, one stack after another.
+   * What a purse has paid out this round and won: until the verdict, what's in the pot; after it, what the money
+   * says (the pot, a forfeit, upkeep: whatever came and went).
    */
-  function payOut(to: 'me' | 'them' | 'split') {
-    if (!potEl || still()) return;
-    const all = [...potEl.querySelectorAll<HTMLElement>('[data-k]')];
-    const first = Math.max(0, all.length - MAX_FLYERS * 2);
-    const tops: Record<number, DOMRect[]> = {};
-    const piled: Record<number, number> = { 0: 0, 1: 0 };
-    // Which of its owner's coins each one is (the k-th that captain paid in), so it can find its spot back home.
-    const counted = [0, 0];
-    const ks = all.map((c) => counted[owners[Number(c.dataset.k)] ?? 0]++);
-    all.slice(first).forEach((c, i) => {
-      const from = owners[Number(c.dataset.k)] ?? 0;
-      const k = ks[first + i];
-      const seat = to === 'split' ? from : to === 'me' ? 0 : 1;
-      const purse = seat === 0 ? myPurseEl : theirPurseEl;
-      if (!purse) return;
-      const home = from === seat ? purse.querySelector<HTMLElement>(`[data-d="${k - Math.max(0, startMoney(seat) - 400)}"]`) : null;
-      if (home) {
-        home.classList.add('landing');
-        fly(c.getBoundingClientRect(), home.getBoundingClientRect(), i * 14).then(() => home.classList.remove('landing'));
-        return;
-      }
-      tops[seat] ??= stackTops(purse);
-      const spot = restingSpot(tops[seat], piled[seat]++, purse.getBoundingClientRect());
-      if (spot) fly(c.getBoundingClientRect(), spot, i * 14, purse);
-    });
+  function paidWon(seat: 0 | 1): [number, number] {
+    if (!round.potMode) return [0, 0];
+    if (playing || !settled) return [bets[seat], 0];
+    const gain = (seat === 0 ? captain : opponent).money - (startMoney(seat) - bets[seat]);
+    return gain >= 0 ? [bets[seat], gain] : [bets[seat] - gain, 0];
   }
 
   $effect(() => {
@@ -662,7 +664,6 @@
     const pay = payout;
     untrack(() => {
       if (month !== flownMonth) {
-        clearResting();
         flownMonth = month;
         flown = [0, 0];
         owners = [];
@@ -738,7 +739,7 @@
           </span>
         </button>
         <!-- No pot, no money on the table (the first lessons). -->
-        <div class="opp-purse" bind:this={theirPurseEl}>{#if round.potMode}<Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} />{/if}</div>
+        <div class="opp-purse" bind:this={theirPurseEl}>{#if round.potMode}<Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} keep={game.month} paid={paidWon(1)[0]} won={paidWon(1)[1]} />{/if}</div>
       </div>
       <button class="portrait-btn" onclick={() => (showCaptain = !showCaptain)} aria-label={name(opponentId)}>
         <span class="oval portrait">{name(opponentId)[0]}{#if line && lineMs && line.who === opponentId && line.size !== 'full' && line.at !== 'low'}{#key line}<Countdown ms={lineMs} />{/key}{/if}</span>
@@ -803,7 +804,8 @@
       <div class="community" bind:this={communityEl}>
         {#each Array.from({ length: boardSize }) as _, i}
           {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
-          <CardView {card} deal="left" markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} />
+          <!-- Each lands with a thud; the Flop's last card and the River slam down. -->
+          <CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} />
         {/each}
       </div>
       {#if standing}<div class="standings-over"><Standings {game} /></div>{/if}
@@ -835,7 +837,7 @@
   <section class="captain">
     <!-- Your money nearest the pot, no figure: never count your money at the table. -->
     <div class="my-purse" bind:this={myPurseEl}>
-      {#if round.potMode}<Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} />{/if}
+      {#if round.potMode}<Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} keep={game.month} paid={paidWon(0)[0]} won={paidWon(0)[1]} />{/if}
       <!-- On the River your coins are idle, so the hand you're making is called over them, with the count of snags riding along and their forfeit. Fixed size: it never shifts as you tap. -->
       {#if shownDown && myCall}
         <!-- At the showdown your coins show again (the pot may fly to them); your hand is one line above. -->

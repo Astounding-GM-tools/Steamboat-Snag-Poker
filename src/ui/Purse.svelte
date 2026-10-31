@@ -230,7 +230,11 @@
     if (hand === undefined || !width) return;
     untrack(() => {
       if (!kept) kept = asStacks();
-      else if (hand !== keptFor) kept = settle(kept, lastPaid, lastWon);
+      else if (hand !== keptFor) {
+        kept = settle(kept, lastPaid, lastWon);
+        // Money that changed hands away from the table (a lesson's buttons handed out, say): lay the purse out afresh.
+        if (start <= ROW * MAX_ROWS && kept.reduce((a, s) => a + s.h, 0) !== Math.max(0, start)) kept = asStacks();
+      }
       keptFor = hand;
     });
   });
