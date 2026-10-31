@@ -89,8 +89,9 @@ What you walk away with is your score.
   (you sit at the bottom; the order runs left, across, right, and round to
   you), mirroring yours across the table: one name at their edge (the
   shortest of nickname, first name and surname) with their snags fanned
-  beside it, then three small cards held close and their discards, then a
-  purse of little stacks nearest the pot. No portraits for now. A dot marks
+  beside it, then three small cards held close and their discards, their
+  purse of little stacks right under them, and what they do (or hold) under
+  that, nearest the pot. No portraits for now. A dot marks
   the dealer; the captain on the dealer's left is dealt to, and acts, first.
 - **The Flop and the Turn:** you choose; then everyone's move plays out by
   itself, in seating order from the dealer's left, yours included: the seat

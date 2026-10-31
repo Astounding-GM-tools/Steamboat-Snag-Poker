@@ -683,8 +683,8 @@
         <div class="rival broke">
           <div class="who"><span class="tag">{tagName(game.players[chair].id)}</span></div>
           <div class="rival-cards"><div class="rival-hand"></div></div>
-          <p class="line">{t('hr.out')}</p>
           <div class="rival-purse"><Purse amount={0} start={0} size="tiny" showAmount={false} focus={30} label={tagName(game.players[chair].id)} /></div>
+          <p class="line">{t('hr.out')}</p>
         </div>
       {:else}
       {@const p = captain(seat)}
@@ -721,10 +721,10 @@
           </div>
           <DiscardChips cards={s.discarded} flop={s.flopDiscards} title={tagName(p.id)} />
         </div>
-        <p class="line">{rivalLine(seat)}</p>
         <div class="rival-purse" data-purse={seat}>
           <Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} keep={game.hand} paid={paidOut(seat)} won={wonIn(seat)} />
         </div>
+        <p class="line">{rivalLine(seat)}</p>
       </div>
       {/if}
     {/each}
@@ -894,8 +894,8 @@
     grid-column: span 4;
     container-type: inline-size;
     display: grid;
-    /* Mirroring yours across the table: name at their edge, cards held close, the purse nearest the pot. */
-    grid-template-rows: 26px auto 1.9rem auto;
+    /* Mirroring yours across the table: name at their edge, cards held close, their purse with them, and what they do (or hold) under it, nearest the pot. */
+    grid-template-rows: 26px auto auto 1.9rem;
     row-gap: 3px;
     padding: 3px 4px 0;
     margin: -4px -4px 0;
