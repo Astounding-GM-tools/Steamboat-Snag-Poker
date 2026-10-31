@@ -328,6 +328,16 @@
     if (verdictShown && !fire('verdict')) onrevealed?.();
     else revealPos = { month: game.month, i: revealIndex + 1 };
   }
+  // The showdown turns by itself, a card at a time, a breath apart (as at the final table): Next is for after the verdict.
+  const TURN_MS = 750;
+  $effect(() => {
+    if (!revealing || verdictShown || line || theyShowed) return;
+    const i = revealIndex;
+    const id = setTimeout(() => {
+      if (revealIndex === i) revealPos = { month: game.month, i: i + 1 };
+    }, still() ? 0 : TURN_MS);
+    return () => clearTimeout(id);
+  });
   /** Skip to the result: every card turned and the verdict in; the next press goes on from there. */
   function revealSkip() {
     revealPos = { month: game.month, i: lastStep };
