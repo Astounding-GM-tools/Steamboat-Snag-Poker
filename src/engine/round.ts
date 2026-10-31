@@ -78,12 +78,16 @@ export interface RoundState {
   potMode: boolean;
   /** Pot mode: what each seat has paid into the pot so far. */
   bets: [number, number];
+  /** Pot mode: what each seat had when the round began; nobody pays in (or forfeits) more, and short of a price you're all in. */
+  purses?: [number, number];
   result: RoundResult | null;
 }
 
 export interface RoundPlayer {
   id: string;
   jokers: JokerCard[];
+  /** What the captain has: in pot mode nobody pays in (or forfeits) more (default: no limit). */
+  money?: number;
 }
 
 /**
@@ -145,7 +149,8 @@ export function createRound(
     result: null,
   };
   if (round.potMode) {
-    round.bets = [anteFor(config, month, players[0].jokers.length), anteFor(config, month, players[1].jokers.length)];
+    round.purses = [Math.max(0, players[0].money ?? Infinity), Math.max(0, players[1].money ?? Infinity)];
+    round.bets = [Math.min(anteFor(config, month, players[0].jokers.length), round.purses[0]), Math.min(anteFor(config, month, players[1].jokers.length), round.purses[1])];
   }
 
   if (config.jokerMode === 'slot' && month > 1 && pool.length > 0 && rng.next() < config.communityJokerChance) {
@@ -230,6 +235,11 @@ export function subsets<T>(items: readonly T[]): T[][] {
 export function canFold(round: RoundState, seatIndex: number): boolean {
   void seatIndex;
   return round.playStyle === 'draw' && !round.result && round.street < 2;
+}
+
+/** Pot mode: what a seat has left to put in this round (all of it, and it's all in). */
+export function roundLeft(round: RoundState, seatIndex: number): number {
+  return Math.max(0, (round.purses?.[seatIndex] ?? Infinity) - round.bets[seatIndex]);
 }
 
 /** Pot mode: what an action costs the seat (street fee plus discard fees). */
@@ -333,7 +343,8 @@ export function resolveStreet(round: RoundState, actions: [Action, Action], conf
     // Both folding is a stand-off: the pot is split.
     return foldEnd(round, folds[0] && folds[1] ? null : folds[0] ? 0 : 1);
   }
-  actions.forEach((a, i) => (round.bets[i] += actionCost(round, i, a, config)));
+  // Nobody pays more than they have: short of the price, all in.
+  actions.forEach((a, i) => (round.bets[i] += Math.min(actionCost(round, i, a, config), roundLeft(round, i))));
   actions.forEach((a, i) => applyAction(round, round.seats[i], a));
   round.history.push({ street: round.street, actions });
   if (round.playStyle === 'draw' && round.street === 2) return showdown(round, config); // hands composed
@@ -382,7 +393,8 @@ function showdown(round: RoundState, config: RulesConfig) {
     gain: winner === null ? 0 : round.potMode ? pot : config.winGain[hands[winner].category],
     pot,
     folded: null,
-    forfeit: winner === null ? 0 : placed[1 - winner].length * (config.jokerForfeit ?? 0),
+    // The loser's forfeit, as far as their purse goes.
+    forfeit: winner === null ? 0 : Math.min(placed[1 - winner].length * (config.jokerForfeit ?? 0), round.potMode ? roundLeft(round, 1 - winner) : Infinity),
     dumped,
     communityTaken,
     returnedToPool,

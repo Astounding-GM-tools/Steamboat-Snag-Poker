@@ -5,6 +5,7 @@
     CATEGORIES,
     bestHand,
     canFold,
+    roundLeft,
     discardCost,
     isComposing,
     streetFee,
@@ -695,9 +696,13 @@
   /** On the action buttons there's only room for a sign and the figure: $3, or ⚇3 (a button, two holes). */
   const price = (n: number) => (game.currency === 'buttons' ? `⚇${n}` : dollars(n));
   const priced = (label: string) => (cost ? `${label} · ${price(cost)}` : label);
+  /** What you have left to put in this round: a price beyond it is everything, all in (and with nothing left, you just stay in). */
+  const left = $derived(round.potMode ? roundLeft(round, 0) : Infinity);
   const buttonLabel = $derived(
     composing
       ? t('draw.play')
+      : cost > left
+        ? left > 0 ? t('draw.allIn', { amount: price(left) }) : t('draw.check')
       : tapped.length
         ? priced(t('draw.discard', { n: tapped.length }))
         : cost

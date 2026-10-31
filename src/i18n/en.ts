@@ -73,6 +73,7 @@ export const en = {
   'draw.call': 'Call',
   'draw.fold': 'Fold',
   'draw.foldIn': 'Fold · {amount} in',
+  'draw.allIn': 'All in · {amount}',
   'draw.discard': 'Swap {n}',
   'draw.play': 'Play hand',
   'draw.promptDiscard': 'Tap cards to swap, or keep your hand. Snags can’t be swapped.',

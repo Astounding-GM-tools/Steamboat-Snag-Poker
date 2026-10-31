@@ -3,7 +3,8 @@ import { HUMAN_ID } from './characters';
 import { PRESETS } from './config';
 import { newGame, player, submitAction } from './game';
 import { anteFor, baseAnte, discardCost, streetFee } from './pot';
-import { actionCost, canFold } from './round';
+import { actionCost, canFold, createRound, resolveStreet, roundLeft, type Action } from './round';
+import { Rng } from './rng';
 
 const config = PRESETS.draw;
 
@@ -23,6 +24,22 @@ describe('pot mode', () => {
     expect(discardCost(0, 2)).toBe(3);
     expect(discardCost(2, 1)).toBe(3);
     expect(discardCost(0, 6)).toBe(21);
+  });
+
+  it('nobody pays more than they have: short of the price, a captain is all in and plays on', () => {
+    // Crossing 30: the ante is 10, the Turn 3 more, the River 5; one captain has 12.
+    const round = createRound(30, [{ id: 'a', jokers: [], money: 12 }, { id: 'b', jokers: [], money: 100 }], [], config, new Rng(3));
+    expect(round.bets).toEqual([10, 10]);
+    const stand: Action = { type: 'draw', cardIds: [] };
+    resolveStreet(round, [stand, stand], config);
+    resolveStreet(round, [stand, stand], config);
+    expect(round.bets[0]).toBe(12); // everything, and no more
+    expect(roundLeft(round, 0)).toBe(0);
+    expect(round.bets[1]).toBeGreaterThan(12);
+    resolveStreet(round, [{ type: 'compose', cardIds: [], jokers: 0 }, { type: 'compose', cardIds: [], jokers: 0 }], config);
+    const res = round.result!;
+    // The pot holds only real money.
+    expect(res.pot).toBe(round.bets[0] + round.bets[1]);
   });
 
   it('antes go into the pot at the deal', () => {
