@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DEFAULT_CONFIG, ROSTER, finaleSetup, finishFinale, newGame, nextMonth, submitAction, type Action, type GameState, type HighRollersResult } from '../engine';
+  import { DEFAULT_CONFIG, ROSTER, Rng, finaleSetup, finishFinale, newGame, nextMonth, submitAction, type Action, type GameState, type HighRollersResult } from '../engine';
   import CardZoom from './CardZoom.svelte';
   import DrawTable from './DrawTable.svelte';
   import HighRollersTable from './HighRollersTable.svelte';
@@ -43,6 +43,17 @@
     stage = 'play';
     setGame(newTutorial(Date.now() >>> 0));
   }
+  /**
+   * A League of four (you and three rivals, drawn): the first crossing ends at the final table. For trying the
+   * finale without a whole League (…/?finale, or finaleSoon() in development). It's a voyage like any other: it
+   * replaces the one in progress, as New does.
+   */
+  function finaleSoon() {
+    const drawn = new Rng(Date.now() >>> 0).shuffle(ROSTER.filter((c) => !c.follows && c.tier !== 'rascal')).slice(0, 3);
+    stage = 'play';
+    setGame(newGame(Date.now() >>> 0, DEFAULT_CONFIG, drawn.map((def) => ({ def, joins: 'start' as const }))));
+  }
+  if (new URLSearchParams(location.search).has('finale')) finaleSoon();
   // For now the lessons start from the address (…/?tutorial) or, in development, the console.
   if (new URLSearchParams(location.search).has('tutorial')) startTutorial();
   /** The final table (in development: …/?highrollers). */
@@ -53,12 +64,7 @@
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;
     w.highRollers = () => (highRollers = true);
-    // A League of four (you and three rivals): the first crossing ends at the final table. It's a voyage like any other (it saves).
-    w.finaleSoon = () => {
-      const rivals = ROSTER.filter((c) => !c.follows && c.tier !== 'rascal').slice(0, 3);
-      stage = 'play';
-      setGame(newGame(Date.now() >>> 0, DEFAULT_CONFIG, rivals.map((def) => ({ def, joins: 'start' as const }))));
-    };
+    w.finaleSoon = finaleSoon;
     // Straight to the first hand for buttons; give purses (yours, hers) to try an ending.
     w.tutorialButtons = (mine?: number, hers?: number) => {
       const g = skipToButtons(Date.now() >>> 0);
