@@ -126,8 +126,10 @@
   /** What you have left to put in this hand: a price beyond it is everything, all in. */
   const left = $derived(me >= 0 ? tableLeft(round, me) : 0);
   const goLabel = $derived(
-    cost > left
+    cost > left && left > 0
       ? t('hr.allIn', { amount: dollars(left) })
+      : cost > left
+      ? t('draw.check') // all in already: nothing more to put in, and you stay in
       : answering
       ? t('hr.match', { amount: dollars(cost) })
       : composing
@@ -649,7 +651,8 @@
   <div class="actions" use:heavy inert={busy}>
     {#if view === 'choose' && myTurn && composing && round.raise && laid}
       <!-- The River, your hand laid: raise on it, or let it stand. Either commits you. -->
-      <button class="ghost" onclick={() => go(true)} data-heavy="true">{round.raise > left ? t('hr.allIn', { amount: dollars(left) }) : t('hr.raise', { amount: dollars(round.raise) })}</button>
+      <!-- All in already: nothing left to raise with. -->
+      <button class="ghost" onclick={() => go(true)} data-heavy="true" disabled={left === 0}>{round.raise > left && left > 0 ? t('hr.allIn', { amount: dollars(left) }) : t('hr.raise', { amount: dollars(round.raise) })}</button>
       <button onclick={() => go()} data-heavy="true">{t('show.next')}</button>
     {:else if view === 'choose' && myTurn && composing && round.raise}
       <!-- The River, first: lay your hand (held: high stakes, heavy decisions; then Raise or Next commits it). -->
