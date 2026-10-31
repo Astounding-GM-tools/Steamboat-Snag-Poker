@@ -1,7 +1,7 @@
 # The tutorial: Morag's lessons
 
 Status: **playable from start to finish**: **Tutorial** on the title screen
-(for new players, and on How to play for everyone), or `/?tutorial` (decks and lines in
+(always there, and on How to play) (decks and lines in
 `src/story/tutorial.ts`; in development, `tutorialButtons()` in the console
 jumps to the knockout). Chapter one of the story, and canon: the
 deckhand meets Morag MacTavish, who is looking for her husband, and learns

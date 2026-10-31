@@ -44,26 +44,21 @@
     setGame(newTutorial(Date.now() >>> 0));
   }
   /**
-   * A League of four (you and three rivals, drawn): the first crossing ends at the final table. For trying the
-   * finale without a whole League (…/?finale, or finaleSoon() in development). It's a voyage like any other: it
-   * replaces the one in progress, as New does.
+   * In development: a League of four (you and three rivals, drawn), whose first crossing ends at the final
+   * table, for trying the finale without a whole League (finaleSoon() in the console). It's a voyage like any
+   * other: it replaces the one in progress.
    */
   function finaleSoon() {
     const drawn = new Rng(Date.now() >>> 0).shuffle(ROSTER.filter((c) => !c.follows && c.tier !== 'rascal')).slice(0, 3);
     stage = 'play';
     setGame(newGame(Date.now() >>> 0, DEFAULT_CONFIG, drawn.map((def) => ({ def, joins: 'start' as const }))));
   }
-  if (new URLSearchParams(location.search).has('finale')) finaleSoon();
-  // For now the lessons start from the address (…/?tutorial) or, in development, the console.
-  if (new URLSearchParams(location.search).has('tutorial')) startTutorial();
-  /** The final table (in development: …/?highrollers). */
-  let highRollers = $state(new URLSearchParams(location.search).has('highrollers'));
-  /** In development, …/?highrollers&purse=40 seats everyone with a smaller purse: quicker to an ending. */
-  const highRollersPurse = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('purse')) || undefined : undefined;
+  /** In development, the High Rollers table on its own (highRollers() in the console; highRollers(40) seats everyone with $40, quicker to an ending). */
+  let highRollers = $state<{ purse?: number } | null>(null);
   if (import.meta.env.DEV) {
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;
-    w.highRollers = () => (highRollers = true);
+    w.highRollers = (purse?: number) => (highRollers = { purse });
     w.finaleSoon = finaleSoon;
     // Straight to the first hand for buttons; give purses (yours, hers) to try an ending.
     w.tutorialButtons = (mine?: number, hers?: number) => {
@@ -154,7 +149,7 @@
 
 <div class="film">
   {#if highRollers}
-    <HighRollersTable onmenu={() => (highRollers = false)} setup={highRollersPurse ? { money: highRollersPurse } : undefined} />
+    <HighRollersTable onmenu={() => (highRollers = null)} setup={highRollers.purse ? { money: highRollers.purse } : undefined} />
   {:else if game?.phase === 'finale'}
     <!-- The League's last four at the final table (the same deal again if a voyage is picked up here). -->
     {#key game.rngState}<HighRollersTable onmenu={pause} setup={finaleSetup(game)} onfinish={finished} />{/key}

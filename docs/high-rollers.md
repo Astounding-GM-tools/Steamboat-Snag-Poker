@@ -1,7 +1,8 @@
 # High Rollers: the final table
 
-Status: **in the game**: the League's finale. On its own at `/?highrollers`;
-the finale quickly at `/?finale`.
+Status: **in the game**: the League's finale. In development, the table on
+its own is `highRollers()` in the console (`highRollers(40)` for small
+purses), and `finaleSoon()` starts a League of four.
 
 The tournament's finale, and in the story a table to sit in on at smaller
 tournaments along the river (the table takes its rivals, purses and stakes
@@ -129,9 +130,7 @@ League-like purses a table lasts a median of 6 hands, 5–8 about 60% of the
 time (without it: 4 hands, 33%). After the placings, Continue ends the
 voyage: gold counts as a tournament won, and what you walked away with is
 your score (best kept). A voyage paused at the final table picks up with the
-same deal. To try the finale without a whole League, `/?finale` starts a
-League of four (it replaces the voyage in progress, as New does); in
-development, `finaleSoon()` in the console does the same.
+same deal.
 
 ## Open
 

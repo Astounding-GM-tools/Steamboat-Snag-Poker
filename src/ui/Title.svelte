@@ -175,12 +175,18 @@
       {#if showHowTo}
         <button class="ghost" onclick={() => ((showHowTo = false), ontutorial())}>{t('title.tutorial')}</button>
         <button onclick={() => (showHowTo = false)}>{t('draw.close')}</button>
-      {:else if savedMonth}
-        <button class="ghost" onclick={newVoyage}>{t('title.new')}</button>
-        <button onclick={oncontinue}>{t('title.next')}</button>
       {:else}
-        <button class="ghost" onclick={ontutorial}>{t('title.tutorial')}</button>
-        <button onclick={onstart}>{t('title.new')}</button>
+        <!-- One button for each thing to do, stacked; the likeliest (white) nearest the thumb: Continue, if there's a
+             voyage to pick up, else League. (Story will come in above League.) -->
+        <div class="menu">
+          <button class="ghost" onclick={ontutorial}>{t('title.tutorial')}</button>
+          {#if savedMonth}
+            <button class="ghost" onclick={newVoyage}>{t('title.league')}</button>
+            <button onclick={oncontinue}>{t('title.continue')}</button>
+          {:else}
+            <button onclick={onstart}>{t('title.league')}</button>
+          {/if}
+        </div>
       {/if}
     </div>
   </div>
@@ -251,6 +257,12 @@
   }
   .actions > :last-child {
     grid-column: 7 / 13;
+  }
+  /* The menu: full-width buttons, one above another. */
+  .actions > .menu {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.6rem;
   }
   .actions button {
     padding-top: 0.6em;
