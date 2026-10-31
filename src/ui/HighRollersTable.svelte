@@ -12,6 +12,7 @@
     playHighRollers,
     highRollersResult,
     tableAnswering,
+    tableLeft,
     tableCanFold,
     tableComposing,
     tableFee,
@@ -103,8 +104,12 @@
   const preview = $derived(
     myTurn && composing ? bestHand([...tappedCards, ...tappedSnags], round.community, { min: tapped.length, max: tapped.length }) : null,
   );
+  /** What you have left to put in this hand: a price beyond it is everything, all in. */
+  const left = $derived(me >= 0 ? tableLeft(round, me) : 0);
   const goLabel = $derived(
-    answering
+    cost > left
+      ? t('hr.allIn', { amount: dollars(left) })
+      : answering
       ? t('hr.match', { amount: dollars(cost) })
       : composing
       ? t('draw.play')
@@ -179,7 +184,8 @@
   }
 
   function afterReplay() {
-    boardShown = round.community.length;
+    // A new card for the board waits its turn, after the money.
+    if (round.community.length > boardShown) later(dealBoard);
     const res = round.result;
     if (!res) {
       // On to the next street (or a raise to answer): your move, or, with nothing for you to do, on we go without you.
@@ -258,7 +264,9 @@
   /** A coin's flight, and the beat between one coin and the next. */
   const FLIGHT_MS = 650;
   const POUR_MS = 70;
-  const DEAL_MS = 170;
+  /** The deal: a card face up (the board, yours) changes the game, so it comes slowly; one face down to a rival, quicker. */
+  const FACE_UP_MS = 650;
+  const FACE_DOWN_MS = 220;
   const purseEl = (seat: number) => rootEl?.querySelector<HTMLElement>(`[data-purse="${seat}"]`) ?? null;
 
   /** Flows waiting or under way; while there are any, the table is busy and the buttons wait. */
@@ -290,6 +298,7 @@
     rushing = true;
     landAll();
     dealt = DEALT_ALL;
+    boardShown = Math.max(boardShown, round.community.length);
   }
 
   /** A seat paid dollars a..b into the pot: its coins wait in its purse for its turn, then pour into the pile. */
@@ -343,15 +352,35 @@
       dealt = DEALT_ALL;
       return Promise.resolve();
     }
-    const cards = 3 + 3 * round.seats.length;
+    const n = round.seats.length;
+    const cards = 3 + 3 * n;
+    /** Who gets the i-th card dealt (-1: the board). */
+    const to = (i: number) => (i < 3 ? -1 : (round.first + ((i - 3) % n)) % n);
     return new Promise((done) => {
       const tick = () => {
+        // Hurried along: the rest at once.
+        if (rushing) dealt = DEALT_ALL;
         if (dealt >= cards) return done();
+        const faceUp = to(dealt) === -1 || to(dealt) === me;
         dealt++;
-        setTimeout(tick, DEAL_MS);
+        setTimeout(tick, faceUp ? FACE_UP_MS : FACE_DOWN_MS);
       };
       tick();
     });
+  }
+
+  /** The next street's card onto the board, in a beat of its own. */
+  function dealBoard(): Promise<void> {
+    if (rushing || reducedMotion()) {
+      boardShown = round.community.length;
+      return Promise.resolve();
+    }
+    return new Promise((done) =>
+      setTimeout(() => {
+        boardShown = round.community.length;
+        setTimeout(done, FACE_UP_MS);
+      }, FACE_UP_MS / 2),
+    );
   }
 
   $effect(() => {
@@ -536,7 +565,7 @@
   <div class="actions" use:heavy inert={busy}>
     {#if view === 'choose' && myTurn && composing && round.raise && laid}
       <!-- The River, your hand laid: raise on it, or let it stand. Either commits you. -->
-      <button class="ghost" onclick={() => go(true)} data-heavy="true">{t('hr.raise', { amount: dollars(round.raise) })}</button>
+      <button class="ghost" onclick={() => go(true)} data-heavy="true">{round.raise > left ? t('hr.allIn', { amount: dollars(left) }) : t('hr.raise', { amount: dollars(round.raise) })}</button>
       <button onclick={() => go()} data-heavy="true">{t('show.next')}</button>
     {:else if view === 'choose' && myTurn && composing && round.raise}
       <!-- The River, first: lay your hand (held: high stakes, heavy decisions; then Raise or Next commits it). -->

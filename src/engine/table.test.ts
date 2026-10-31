@@ -134,6 +134,23 @@ describe('the River raise', () => {
     expect(round.result!.winners).toEqual([1]);
   });
 
+  it('nobody pays more than they have: short of the price, a captain is all in and stays in the hand', () => {
+    // Hand 30: the ante is 10, the Turn 5 more, the River 10, the raise 10; the queens have 12.
+    const purses = [100, 12, 100, 100];
+    const round = createTableRound(30, players(4), 1, [], config, new Rng(1), unpaired, { raising: true, purses });
+    resolveTableStreet(round, [stand, stand, stand, stand], config);
+    resolveTableStreet(round, [stand, stand, stand, stand], config);
+    resolveTableStreet(round, [trips(0, true), trips(1), trips(2), trips(3)], config);
+    resolveTableStreet(round, [null, { type: 'match' }, { type: 'match' }, { type: 'match' }], config);
+    expect(round.bets[1]).toBe(12); // everything, and no more
+    expect(round.seats[1].folded).toBe(false);
+    const res = round.result!;
+    expect(res.winners).toEqual([1]); // the queens, all in, take the pot
+    // The pot holds only real money: what everyone actually put in.
+    expect(res.pot).toBe(round.bets.reduce((a, b) => a + b, 0));
+    expect(res.share[1]).toBe(res.pot);
+  });
+
   it('the stakes multiply the ante, the fees and the raise, not the snags\' upkeep', () => {
     const plain = createTableRound(30, players(4, [1]), 0, [], config, new Rng(1), undefined, { raising: true });
     const doubled = createTableRound(30, players(4, [1]), 0, [], config, new Rng(1), undefined, { raising: true, stakes: 2 });

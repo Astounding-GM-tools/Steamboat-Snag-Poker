@@ -29,9 +29,11 @@ What you walk away with is your score.
   **Next** (white) commits it. The raise is the table ante (times the
   stakes). Raises made at the same moment don't stack: every raiser is in
   once. Then everyone else still in **matches or folds** (black: Fold, white:
-  Match), in secret, at once; one raise, no re-raising. If you can't afford
-  it, the house covers: lose, and you're out. If everyone folds to a raise,
+  Match), in secret, at once; one raise, no re-raising. If everyone folds to a raise,
   the raiser takes the pot unseen.
+- **All in:** nobody pays more than they have. Short of the price (the ante,
+  a fee, a raise), you put in everything and stay in the hand; the pot holds
+  only real money. Lose it, and with nothing left, you're out.
 - **The showdown:** the best hand takes the pot (a tie splits it). **The
   snags go to the weakest hand** still in: every snag the winner played, and
   any snag at stake on the board. A loser who played a snag keeps it and pays
@@ -62,7 +64,9 @@ What you walk away with is your score.
   (each purse's coins pour in, and only when the last has landed does the
   next begin); at a new hand the antes go in seat by seat from the dealer's
   dot, then the Flop is dealt card by card and the hole cards round the
-  table. The buttons wait until the table is still. A tap anywhere hurries
+  table: face up (the board, yours) slowly, since each changes the game;
+  face down to the rivals, quicker. The Turn and the River each arrive in a
+  beat of their own. The buttons wait until the table is still. A tap anywhere hurries
   it (the stacks just change, as they do with reduced motion); on the
   rivals' turns, **Skip** goes past the rest of them.
 - **Purses keep their shape** from hand to hand: coins paid in leave from

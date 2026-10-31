@@ -112,7 +112,7 @@ function deal(state: HighRollersState): HighRollersState {
     state.config,
     rng,
     undefined,
-    { stakes: state.lastHand ? state.lastHandStakes : 1, raising: state.raising },
+    { stakes: state.lastHand ? state.lastHandStakes : 1, raising: state.raising, purses: state.seated.map((i) => state.players[i].money) },
   );
   state.phase = 'hand';
   state.rngState = rng.state;
@@ -200,7 +200,7 @@ function settle(state: HighRollersState) {
   });
   state.pool.push(...res.returnedToPool);
   for (const p of state.players) {
-    // Out of money (a purse can go below nothing: the house covers what you couldn't, and you're out).
+    // Out of money (nobody pays more than they have, so a purse ends at nothing, not below).
     if (!p.out && p.money <= 0) {
       p.out = true;
       p.outOn = state.hand;

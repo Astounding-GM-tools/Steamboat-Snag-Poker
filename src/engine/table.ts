@@ -6,7 +6,9 @@
  * stay at the table, out of the hand. On the River a captain may raise (one
  * fixed size; raises made at the same moment don't stack), and then everyone
  * else still in matches or folds. The best hand takes the pot; the snags go to
- * the weakest hand still in.
+ * the weakest hand still in. Nobody pays more than they have: short of the
+ * price, a captain puts in everything (all in) and stays in the hand, and the
+ * pot holds only real money.
  *
  * Like round.ts, these functions mutate the hand they're given; the game
  * (highrollers.ts) clones state first.
@@ -65,6 +67,8 @@ export interface TableRound {
   fished: { seat: number; street: number; joker: JokerCard }[];
   /** What each seat has paid into the pot. */
   bets: number[];
+  /** What each seat had when the hand began: nobody pays in (or forfeits) more. */
+  purses: number[];
   result: TableResult | null;
 }
 
@@ -102,6 +106,11 @@ export function tableAnswering(round: TableRound, seat: number): boolean {
 /** Seats that move this street: everyone still in, except, when answering a raise, those who made one. */
 export function tableMovers(round: TableRound): number[] {
   return inHand(round).filter((i) => round.street !== 3 || tableAnswering(round, i));
+}
+
+/** What a seat has left to put in this hand (all of it, and it's all in). */
+export function tableLeft(round: TableRound, seat: number): number {
+  return Math.max(0, round.purses[seat] - round.bets[seat]);
 }
 
 export function tableCanFold(round: TableRound, seat: number): boolean {
@@ -152,6 +161,8 @@ export interface TableOptions {
   stakes?: number;
   /** Raising on the River is allowed (one raise: the table ante, times the stakes). */
   raising?: boolean;
+  /** Each seat's purse: what it can pay at most this hand (default: no limit). */
+  purses?: number[];
 }
 
 /**
@@ -168,7 +179,7 @@ export function createTableRound(
   config: RulesConfig,
   rng: Rng,
   order?: string[],
-  { stakes = 1, raising = false }: TableOptions = {},
+  { stakes = 1, raising = false, purses }: TableOptions = {},
 ): TableRound {
   const round: TableRound = {
     month,
@@ -183,7 +194,8 @@ export function createTableRound(
     discards: [],
     history: [],
     fished: [],
-    bets: players.map((p) => tableAnte(config, month, p.jokers.length, stakes)),
+    purses: players.map((_, i) => purses?.[i] ?? Infinity),
+    bets: players.map((p, i) => Math.min(tableAnte(config, month, p.jokers.length, stakes), purses?.[i] ?? Infinity)),
     result: null,
   };
   for (let i = 0; i < config.communitySchedule[0]; i++) round.community.push(draw(round));
@@ -231,7 +243,7 @@ export function resolveTableStreet(round: TableRound, actions: (Action | null)[]
       s.folded = true;
       continue;
     }
-    round.bets[i] += tableCost(round, i, a, config);
+    round.bets[i] += Math.min(tableCost(round, i, a, config), tableLeft(round, i));
     if (a.type === 'compose' && a.raise) round.raisers.push(i);
     if (a.type === 'draw') {
       if (round.street === 0) s.flopDiscards = a.cardIds.length;
@@ -291,7 +303,8 @@ function showdown(round: TableRound, config: RulesConfig) {
 
   const played = round.seats.map((s) => s.slots.filter(isJoker));
   const boardSnags = round.community.filter(isJoker);
-  const forfeit = round.seats.map((_, i) => (losers.includes(i) ? played[i].length * (config.jokerForfeit ?? 0) : 0));
+  // A loser's forfeits, as far as its purse goes.
+  const forfeit = round.seats.map((_, i) => (losers.includes(i) ? Math.min(played[i].length * (config.jokerForfeit ?? 0), tableLeft(round, i)) : 0));
   // A winner's played snags (and the board's) go to the weakest hand; a loser keeps its own.
   // If everyone still in tied, there's no weakest: each keeps its own, and the board's go back to the pool.
   const dumped = weakest === null ? [] : [...winners.flatMap((i) => played[i]), ...boardSnags];
