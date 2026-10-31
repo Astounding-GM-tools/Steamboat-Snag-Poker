@@ -449,9 +449,9 @@
       <button class="ghost" onclick={() => go(true)} data-heavy="true">{t('hr.raise', { amount: dollars(round.raise) })}</button>
       <button onclick={() => go()} data-heavy="true">{t('show.next')}</button>
     {:else if view === 'choose' && myTurn && composing && round.raise}
-      <!-- The River, first: lay your hand (a light tap; nothing is committed until Raise or Next). -->
+      <!-- The River, first: lay your hand (held: high stakes, heavy decisions; then Raise or Next commits it). -->
       <button class="ghost" disabled>{t('draw.fold')}</button>
-      <button onclick={() => (laid = true)}>{goLabel}</button>
+      <button onclick={() => (laid = true)} data-heavy="true">{goLabel}</button>
     {:else if view === 'choose' && myTurn}
       <button class="ghost" onclick={() => play({ type: 'fold' })} disabled={!tableCanFold(round, me)}>{t('draw.fold')}</button>
       <button onclick={() => go()} data-heavy={composing || answering || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>

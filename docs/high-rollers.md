@@ -24,7 +24,7 @@ What you walk away with is your score.
 - **Folding** (on the Flop or the Turn) takes you out of the hand: your money
   stays in the pot, you stay at the table watching, and you're out of reach of
   the snags. If everyone else folds, the last captain in takes the pot.
-- **The River raise:** first **Play hand** lays your hand (nothing is
+- **The River raise:** first **Play hand** (held) lays your hand (nothing is
   committed yet: tap a card to pick it back up); then **Raise** (black) or
   **Next** (white) commits it. The raise is the table ante (times the
   stakes). Raises made at the same moment don't stack: every raiser is in
