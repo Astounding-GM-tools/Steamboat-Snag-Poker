@@ -78,7 +78,26 @@
   let at = $state(0);
   /** The table as it stood before the street: a rival's seat is shown from it until its move comes up in the replay. */
   let before = $state.raw<TableRound | null>(null);
-  const shownYet = (seat: number) => view !== 'replay' || !before || seat === me || queue.findIndex((q) => q.seat === seat) <= at;
+  /** A seat's place in the replay (-1: it has nothing to show, and is shown as it is). */
+  const placeIn = (seat: number) => queue.findIndex((q) => q.seat === seat);
+  const shownYet = (seat: number) => view !== 'replay' || !before || placeIn(seat) <= at;
+  /** How far the money has followed the replay: a seat's coins go in once its cards have moved. */
+  let betsAt = $state(0);
+  /** What a seat has in the pot, as far as the table has seen. */
+  const betOf = (seat: number) => (view !== 'replay' || !before || placeIn(seat) <= betsAt ? round : before).bets[seat];
+  /** A swap being shown: the seat, and how many replacements have been dealt so far (0: the thrown cards have just gone). */
+  let swapping = $state<{ seat: number; drawn: number } | null>(null);
+  /** A seat's hand as it should be seen: mid-swap, without the thrown cards and with the replacements dealt so far. */
+  function handOf(seat: number): Card[] {
+    const sw = swapping;
+    const move = queue.find((q) => q.seat === seat)?.action;
+    if (sw?.seat === seat && before && move?.type === 'draw') {
+      const old = before.seats[seat].hand;
+      const fresh = round.seats[seat].hand.filter((c) => !old.some((o) => o.id === c.id));
+      return [...old.filter((c) => !move.cardIds.includes(c.id)), ...fresh.slice(0, sw.drawn)];
+    }
+    return seen(seat).seats[seat].hand;
+  }
   /** A seat as it should be seen just now. */
   const seen = (seat: number) => (shownYet(seat) ? round : before!);
   /** Board cards on show: a new street's card waits until the replay is done. */
@@ -146,12 +165,61 @@
     const r = game.round!;
     const moves = r.history.at(-1)!.actions;
     const order = Array.from({ length: r.seats.length }, (_, k) => (r.first + k) % r.seats.length);
-    const shown = (a: Action | null) => !!a && (!river || (a.type === 'compose' && !!a.raise));
-    queue = order.filter((s) => s !== me && shown(moves[s])).map((s) => ({ seat: s, action: moves[s]! }));
-    at = 0;
+    // The Flop and the Turn play out by themselves, every seat in turn (yours too); on the River only a raise is
+    // shown, then how the rest answered it, a Next at a time.
+    const auto = before.street < 2;
+    const shown = (s: number, a: Action | null) => !!a && (auto ? !(s === me && a.type === 'fold') : s !== me && (!river || (a.type === 'compose' && !!a.raise)));
+    queue = order.filter((s) => shown(s, moves[s])).map((s) => ({ seat: s, action: moves[s]! }));
+    at = auto ? -1 : 0;
+    betsAt = at;
     boardShown = before.community.length;
-    if (queue.length) view = 'replay';
-    else afterReplay();
+    if (!queue.length) afterReplay();
+    else {
+      view = 'replay';
+      if (auto) void playOut();
+    }
+  }
+
+  /** A thrown card: up out of the hand, turning, and gone (only in a swap, and not when hurried). */
+  function thrown(_node: Element) {
+    return { duration: !swapping || rushing || reducedMotion() ? 0 : THROW_MS, css: (t: number) => `transform: translate(${(1 - t) * 14}px, ${(1 - t) * -26}px) rotate(${(1 - t) * 12}deg); opacity: ${t}` };
+  }
+
+  /** A breath between beats (none when hurried). */
+  const pause = (ms: number) => (rushing || reducedMotion() ? Promise.resolve() : new Promise<void>((r) => setTimeout(r, ms)));
+  const STEP_MS = 700;
+  const THROW_MS = 450;
+
+  /**
+   * The Flop's or the Turn's moves, by themselves, in seating order: each
+   * seat's thrown cards go, its replacements are dealt (yours face up,
+   * slowly), then its money goes in, and a breath before the next.
+   */
+  async function playOut() {
+    pending++;
+    try {
+      for (let i = 0; i < queue.length; i++) {
+        at = i;
+        const { seat, action } = queue[i];
+        if (action.type === 'draw' && action.cardIds.length) {
+          swapping = { seat, drawn: 0 };
+          await pause(THROW_MS);
+          for (let k = 0; k < action.cardIds.length; k++) {
+            swapping = { seat, drawn: k + 1 };
+            await pause(seat === me ? FACE_UP_MS : FACE_DOWN_MS * 2);
+          }
+          swapping = null;
+        }
+        betsAt = i;
+        await tick();
+        await flows;
+        await pause(STEP_MS);
+      }
+    } finally {
+      swapping = null;
+      if (--pending === 0) rushing = false;
+    }
+    afterReplay();
   }
 
   function go(raise = false) {
@@ -163,7 +231,7 @@
 
   function next() {
     if (view === 'replay') {
-      if (at + 1 < queue.length) at++;
+      if (at + 1 < queue.length) betsAt = ++at;
       else afterReplay();
     } else if (view === 'reveal') {
       if (revealed + 1 < revealOrder.length) revealed++;
@@ -237,9 +305,9 @@
   }
   /** Settled purses show only at the verdict; until then, what each had at the start of the hand, less what's in the pot. */
   const settled = $derived(view === 'verdict' || view === 'over');
-  const purse = (seat: number) => (settled ? captain(seat).money : startMoney[game.seated[seat]] - seen(seat).bets[seat]);
+  const purse = (seat: number) => (settled ? captain(seat).money : startMoney[game.seated[seat]] - betOf(seat));
   /** What each seat has in the pot, as far as the table has seen. */
-  const shownBets = $derived(round.seats.map((_, s) => seen(s).bets[s]));
+  const shownBets = $derived(round.seats.map((_, s) => betOf(s)));
   const potCount = $derived(shownBets.reduce((a, b) => a + b, 0));
 
   // --- Coins in flight, and the deal ------------------------------------------
@@ -292,9 +360,9 @@
     }
     return Promise.all(moves.map(([src, spot], i) => flyInto(src, spot, i * POUR_MS, undefined, FLIGHT_MS))).then(() => {});
   }
-  /** A tap: everything in the air lands, and whatever is queued happens at once. */
-  function hurry() {
-    if (!pending) return;
+  /** A tap on the table (not on a button or a card: those are moves): everything in the air lands, and whatever is queued happens at once. */
+  function hurry(e?: MouseEvent) {
+    if (!pending || (e?.target instanceof Element && e.target.closest('button'))) return;
     rushing = true;
     landAll();
     dealt = DEALT_ALL;
@@ -424,7 +492,7 @@
   /** The table is moving: money in the air, cards being dealt. The buttons wait. */
   const busy = $derived(pending > 0);
   /** What a seat has paid out this hand (into the pot, and forfeits at the verdict) and won (at the verdict): its purse settles them. */
-  const paidOut = (seat: number) => (settled && round.result ? round.bets[seat] + round.result.forfeit[seat] : seen(seat).bets[seat]);
+  const paidOut = (seat: number) => (settled && round.result ? round.bets[seat] + round.result.forfeit[seat] : betOf(seat));
   const wonIn = (seat: number) => (settled && round.result ? round.result.share[seat] : 0);
   /** The street the board shows (a new card waits for the replay to end). */
   const streetName = $derived(STREETS[Math.min(boardShown - 3, 2)]);
@@ -494,7 +562,10 @@
               {#each cards as card (card.id)}<CardView {card} />{/each}
               {#each s.hand as card (card.id)}<CardView {card} faded />{/each}
             {:else}
-              {#each Array.from({ length: Math.min(cards.length + s.hand.length, holeDealt(seat)) }) as _, i (i)}<CardView faceDown deal="top" />{/each}
+              <!-- Thrown cards leave; replacements are dealt in, face down. -->
+              {#each Array.from({ length: Math.min(cards.length + handOf(seat).length, holeDealt(seat)) }) as _, i (i)}
+                <span class="held" out:thrown><CardView faceDown deal="top" /></span>
+              {/each}
             {/if}
           </div>
           <DiscardChips cards={s.discarded} flop={s.flopDiscards} title={tagName(p.id)} />
@@ -540,8 +611,8 @@
       {#if mine}
         <div class="hand-cell">
           {#each myPlayed as card (card.id)}<CardView {card} used />{/each}
-          {#each mine.hand.filter((_, k) => k >= 3 || dealIndex(me, k) < dealt) as card (card.id)}
-            <CardView
+          {#each handOf(me).filter((_, k) => k >= 3 || dealIndex(me, k) < dealt) as card (card.id)}
+            <span class="held" out:thrown><CardView
               {card}
               deal="left"
               selected={composing && !laid && tapped.includes(card.id)}
@@ -549,7 +620,7 @@
               toss={!composing && tapped.includes(card.id)}
               faded={mine.folded || (shownTo(me) && myPlayed.length > 0) || (laid && !tapped.includes(card.id))}
               onclick={view === 'choose' && meIn ? () => tap(card) : undefined}
-            />
+            /></span>
           {/each}
         </div>
         <div class="fan-cell">
@@ -729,6 +800,11 @@
   }
   .rival .snag-fan :global(.card:not(.huge)) {
     --w: 18px !important;
+  }
+  /* A card held in a hand: its own box, so it can leave on its own. */
+  .held {
+    display: block;
+    flex: none;
   }
   .rival-cards :global(.discards) {
     --h: calc(var(--small-w) * 1.4);

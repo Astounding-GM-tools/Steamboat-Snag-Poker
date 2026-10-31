@@ -87,12 +87,15 @@ What you walk away with is your score.
   beside it, then three small cards held close and their discards, then a
   purse of little stacks nearest the pot. No portraits for now. A dot marks
   the dealer; the captain on the dealer's left is dealt to, and acts, first.
-- **The Flop and the Turn:** you choose; then each rival's move is shown in
-  turn, in seat order from the first, the one shown framed ("Swaps 2",
-  "Calls · $4", "Folds"), and you press **Next**. Purses, snags and discards
-  change only as each is shown; the new board card waits for the end.
-  Folded, you watch the same way. **The River** has no replay (everyone just
-  plays a hand): straight to the showdown.
+- **The Flop and the Turn:** you choose; then everyone's move plays out by
+  itself, in seating order from the dealer's left, yours included: the seat
+  shown is framed ("Swaps 2", "Calls · $4", "Folds"), its thrown cards leave
+  its hand, its replacements are dealt in (yours face up, slowly), then its
+  money goes in, and a breath before the next. A tap hurries it. Purses,
+  snags and discards change only as each is shown; the new board card waits
+  for the end. Folded, you watch the same way. **The River:** only a raise is
+  shown, then how the rest answered it, a **Next** at a time; then the
+  showdown.
 - **The showdown:** your hand first, then the others in their seats, **left
   to right**.
 
