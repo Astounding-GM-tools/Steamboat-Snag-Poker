@@ -1,7 +1,8 @@
-ante at hand 24: $8; tables per row: 30
-raise  growth | hands: median  5-8   (p10-p90) | raised  raisers  matched | pot: before  final | leader wins  doubles/table | you: 1st  top2
- none        |          7   60%    (4-14) |     0%      0.0       0% |        $123   $123 |          63%           1.50 |       27%   57%
-  $8     0% |          5   30%    (3-10) |    88%      1.5      77% |        $120   $142 |          60%           0.83 |       20%   50%
-  $8    15% |          5   43%     (3-8) |    88%      1.5      74% |        $121   $152 |          63%           0.73 |       23%   47%
- $16     0% |          5   37%    (3-10) |    88%      1.6      68% |        $121   $161 |          60%           0.87 |       17%   53%
- $16    15% |          5   40%     (3-9) |    86%      1.6      66% |        $120   $177 |          63%           0.87 |       20%   47%
+ante at hand 24: $8; tables per row: 150
+setting                     hands  5-8  p10-p90 | raised matched  pot | left: 3    2    1 | kept gold reshuffled | you: gold silver bronze 4th
+two left (now), no raise        7   46%   (4-15) |     0%      0%  $124 |     -    -    - |         -          - |     -     -     -     -
+two left, raise = ante          6   35%   (3-10) |    81%     74%  $144 |     -    -    - |         -          - |     -     -     -     -
+Last Hand x2, no raise          5   75%    (4-6) |     0%      0%  $137 |   62%  36%   2% |       68%        48% |   32%   26%   23%   19%
+Last Hand x2, raise = ante      4   39%    (4-5) |    81%     73%  $160 |   45%  52%   3% |       60%        48% |   25%   28%   24%   22%
+  ...purses $160                5   85%    (5-8) |    81%     73%  $166 |   64%  35%   1% |       69%        45% |   23%   32%   25%   20%
+  ...purses $200                6   71%   (6-11) |    81%     72%  $171 |   73%  25%   3% |       75%        43% |   26%   30%   23%   21%

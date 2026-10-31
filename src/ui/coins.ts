@@ -72,10 +72,31 @@ export function stackTops(purse: HTMLElement): DOMRect[] {
   return [...tops.entries()].sort((a, b) => a[0] - b[0]).map(([, r]) => r);
 }
 
-/** Where the n-th loose coin comes to rest on a purse: on its stacks in turn, each round half a coin higher. */
-export function restingSpot(tops: DOMRect[], n: number): DOMRect | null {
+/** Layers of loose coins a purse's own stacks take before the rest start stacks of their own. */
+const LAYERS = 6;
+const NEW_STACK = 10;
+
+/**
+ * Where the n-th loose coin comes to rest on a purse (`purse`: its box on the
+ * screen): on its stacks in turn, each round half a coin higher; after a few
+ * rounds, in new stacks of ten beside them, and then in a row in front, so a
+ * big pot spreads out on the table instead of towering.
+ */
+export function restingSpot(tops: DOMRect[], n: number, purse?: DOMRect): DOMRect | null {
   if (!tops.length) return null;
-  const top = tops[n % tops.length];
-  const step = top.height * 0.5;
-  return new DOMRect(top.left, top.top - step * (1 + Math.floor(n / tops.length)), top.width, top.height);
+  const { width: w, height: h } = tops[0];
+  const step = h * 0.5;
+  if (n < tops.length * LAYERS || !purse) {
+    const top = tops[n % tops.length];
+    return new DOMRect(top.left, top.top - step * (1 + Math.floor(n / tops.length)), w, h);
+  }
+  const k = n - tops.length * LAYERS;
+  const stack = Math.floor(k / NEW_STACK);
+  const gap = w * 1.1;
+  const floor = purse.bottom - h;
+  // Beside the purse's own stacks while there's room; then a row in front, from the left.
+  const beside = Math.floor((purse.right - w - tops[tops.length - 1].left) / gap);
+  const left = stack < beside ? tops[tops.length - 1].left + (stack + 1) * gap : purse.left + ((stack - beside) % Math.max(1, Math.floor(purse.width / gap))) * gap;
+  const front = stack < beside ? 0 : h * 0.8;
+  return new DOMRect(left, floor + front - step * (k % NEW_STACK), w, h);
 }

@@ -16,9 +16,11 @@ export type Action =
   | { type: 'pass' }
   /** Draw style: discard these cards and draw replacements (none = stand pat). */
   | { type: 'draw'; cardIds: string[] }
-  /** Draw style, after the River: the hand cards and number of Jokers you play. */
-  | { type: 'compose'; cardIds: string[]; jokers: number }
-  /** Pot mode, Flop or Turn, before any swap this crossing: give up the pot. */
+  /** Draw style, after the River: the hand cards and number of Jokers you play; at a High Rollers table, perhaps with a raise. */
+  | { type: 'compose'; cardIds: string[]; jokers: number; raise?: boolean }
+  /** High Rollers, after a raise on the River: put in as much, and stay in. */
+  | { type: 'match' }
+  /** Pot mode, Flop or Turn, before any swap this crossing: give up the pot (at a High Rollers table, also when facing a raise). */
   | { type: 'fold' };
 
 export interface Seat {
@@ -262,13 +264,13 @@ export function isLegal(round: RoundState, seatIndex: number, action: Action): b
   const seat = round.seats[seatIndex];
   if (round.playStyle === 'draw') {
     if (action.type === 'fold') return canFold(round, seatIndex);
-    if (action.type !== (isComposing(round) ? 'compose' : 'draw')) return false;
+    if (action.type !== (isComposing(round) ? 'compose' : 'draw')) return false; // (a duel has no raise to match)
     const ids = action.cardIds;
     if (new Set(ids).size !== ids.length || !ids.every((id) => seat.hand.some((c) => c.id === id))) return false;
     if (action.type === 'draw') return ids.length <= round.deck.length;
     return Number.isInteger(action.jokers) && action.jokers >= 0 && action.jokers <= seat.jokers.length && ids.length + action.jokers <= 5;
   }
-  if (action.type === 'draw' || action.type === 'compose' || action.type === 'fold') return false;
+  if (action.type === 'draw' || action.type === 'compose' || action.type === 'fold' || action.type === 'match') return false;
   if (action.type === 'pass') return legalActions(round, seatIndex)[0].type === 'pass';
   if (action.type === 'place' && !(action.slot >= 0 && action.slot < seat.slots.length)) return false;
   if (action.type === 'discard') return round.deck.length > 0 && seat.hand.some((c) => c.id === action.cardId);
@@ -282,7 +284,7 @@ function discardCard(round: RoundState, seat: Seat, cardId: string) {
 }
 
 function applyAction(round: RoundState, seat: Seat, action: Action) {
-  if (action.type === 'pass' || action.type === 'fold') return;
+  if (action.type === 'pass' || action.type === 'fold' || action.type === 'match') return;
   if (action.type === 'discard') {
     discardCard(round, seat, action.cardId);
     drawToSeat(round, seat);

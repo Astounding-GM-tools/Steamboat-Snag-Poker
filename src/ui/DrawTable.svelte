@@ -651,7 +651,7 @@
         return;
       }
       tops[seat] ??= stackTops(purse);
-      const spot = restingSpot(tops[seat], piled[seat]++);
+      const spot = restingSpot(tops[seat], piled[seat]++, purse.getBoundingClientRect());
       if (spot) fly(c.getBoundingClientRect(), spot, i * 14, purse);
     });
   }

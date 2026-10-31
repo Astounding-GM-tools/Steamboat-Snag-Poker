@@ -88,6 +88,18 @@ interface Stats {
   doubleUps: number;
   youFirst: boolean;
   youTop2: boolean;
+  /** The Last Hand (when played): how many were left standing, whether the leader going into it kept gold, whether it changed the order, and your place (0 gold). */
+  last?: { standing: number; keptGold: boolean; reshuffled: boolean; yourPlace: number };
+}
+
+interface Options {
+  /** The raise at the first hand; -1: the raise is the ante itself (doubling with it in the Last Hand); 0: no raise. */
+  R0: number;
+  growth?: number;
+  /** The Last Hand: after the first knockout, one more hand at this multiple of the ante, and the table ends. */
+  lastHand?: number;
+  /** Starting purses. */
+  start?: number;
 }
 
 /** settle() from highrollers.ts, which isn't exported: pay out, move snags, mark who's out. */
@@ -109,16 +121,29 @@ function settle(state: HighRollersState) {
   state.phase = state.players.filter((p) => !p.out).length <= 2 ? 'over' : 'handEnd';
 }
 
-function playTable(seed: number, R0: number, growth: number): Stats {
-  let g = newHighRollers(seed);
+function playTable(seed: number, { R0, growth = 0, lastHand, start }: Options): Stats {
+  let g = newHighRollers(seed, start ? { money: start } : {});
   const rng = new Rng(seed * 7919 + 13);
   const total = g.players.reduce((a, p) => a + p.money, 0);
   const st: Stats = { hands: 0, rivers: 0, raisedRivers: 0, raisers: 0, facing: 0, matched: 0, folded: 0, potBeforeRaise: 0, potFinal: 0, showdowns: 0, leaderWon: false, doubleUps: 0, youFirst: false, youTop2: false };
   const history: number[][] = [];
   const startHand = g.hand;
 
-  for (let guard = 0; g.phase !== 'over' && guard < 300; guard++) {
+  /** The Last Hand: 'pending' once someone is out, 'playing' while it's dealt, 'done' after. */
+  let lastStage: 'none' | 'pending' | 'playing' | 'done' = 'none';
+  let intoLast: number[] = [];
+
+  for (let guard = 0; guard < 300; guard++) {
+    if (lastHand ? lastStage === 'done' : g.phase === 'over') break;
+    if (g.phase === 'over') break; // one captain left
     if (g.phase === 'handEnd') {
+      if (lastStage === 'pending') {
+        // Into the Last Hand: its hand number set so the ante (and the fees, and a raise of the ante) is this many times what it would be.
+        g = structuredClone(g);
+        g.hand = Math.round(lastHand! * (g.hand + 1)) - 1;
+        intoLast = g.players.map((p) => p.money);
+        lastStage = 'playing';
+      }
       g = nextHighRollersHand(g);
       continue;
     }
@@ -138,7 +163,7 @@ function playTable(seed: number, R0: number, growth: number): Stats {
     const seats = inHand(r);
     const styleOf = (s: number) => STYLE[g.players[g.seated[s]].ai ?? 'careful'] ?? STYLE.careful!;
     const actions: (Action | null)[] = r.seats.map((s, i) => (s.folded ? null : chooseAction(g.players[g.seated[i]].ai ?? 'careful', tableView(r, i), g.config, rng)));
-    const raise = R0 ? Math.round(R0 * Math.pow(1 + growth, g.hand - startHand)) : 0;
+    const raise = R0 < 0 ? baseAnte(config, r.month) : R0 ? Math.round(R0 * Math.pow(1 + growth, g.hand - startHand)) : 0;
     st.rivers++;
     const pot0 = r.bets.reduce((a, b) => a + b, 0);
     st.potBeforeRaise += pot0;
@@ -186,6 +211,13 @@ function playTable(seed: number, R0: number, growth: number): Stats {
 
   function endOfHand(before: number[]) {
     st.hands++;
+    if (lastHand) {
+      const standingNow = g.players.filter((p) => !p.out).length;
+      if (lastStage === 'playing') lastStage = 'done';
+      else if (lastStage === 'none' && standingNow < g.players.length) lastStage = standingNow > 1 ? 'pending' : 'done';
+      // Two left isn't the end now: the Last Hand is still to come.
+      if (lastStage === 'pending' && g.phase === 'over' && standingNow > 1) g.phase = 'handEnd';
+    }
     const after = g.players.map((p) => p.money);
     history.push(after);
     const live = before.filter((m, i) => m > 0 && !g.players[i].out || m > 0);
@@ -204,17 +236,34 @@ function playTable(seed: number, R0: number, growth: number): Stats {
   st.leaderWon = leader === winner;
   st.youFirst = g.players[winner]?.id === HUMAN_ID;
   st.youTop2 = standing.some((x) => x.p.id === HUMAN_ID);
+  if (lastHand && intoLast.length) {
+    // Placings: those standing by purse; then the broke, the latest out first (on the same hand, the smaller debt first).
+    const idx = g.players.map((_, i) => i);
+    const placing = [
+      ...standing.map((x) => x.i),
+      ...idx.filter((i) => g.players[i].out).sort((a, b) => (g.players[b].outOn ?? 0) - (g.players[a].outOn ?? 0) || g.players[b].money - g.players[a].money),
+    ];
+    const wentIn = idx.filter((i) => intoLast[i] > 0).sort((a, b) => intoLast[b] - intoLast[a]);
+    st.last = {
+      standing: standing.length,
+      keptGold: wentIn[0] === placing[0],
+      reshuffled: wentIn.some((i, k) => placing[k] !== i),
+      yourPlace: placing.findIndex((i) => g.players[i].id === HUMAN_ID),
+    };
+  }
   return st;
 }
 
 const TABLES = Number(process.env.SIM_TABLES ?? 20);
-const R0s = [0, 8, 16];
-const growths = [0, 0.15];
+const SETTINGS: [string, Options][] = [
+  ['two left (now), no raise', { R0: 0 }],
+  ['two left, raise = ante', { R0: -1 }],
+  ['Last Hand x2, no raise', { R0: 0, lastHand: 2 }],
+  ['Last Hand x2, raise = ante', { R0: -1, lastHand: 2 }],
+  ['  ...purses $160', { R0: -1, lastHand: 2, start: 160 }],
+  ['  ...purses $200', { R0: -1, lastHand: 2, start: 200 }],
+];
 const pct = (x: number) => `${Math.round(x * 100)}%`;
-const median = (xs: number[]) => {
-  const s = [...xs].sort((a, b) => a - b);
-  return s[Math.floor(s.length / 2)];
-};
 
 /** Each line of results: printed, and kept for the file. */
 const lines: string[] = [];
@@ -225,36 +274,32 @@ const say = (line: string) => {
 
 it('raise over the engine', () => {
   say(`ante at hand 24: $${baseAnte(config, 24)}; tables per row: ${TABLES}`);
-  say('raise  growth | hands: median  5-8   (p10-p90) | raised  raisers  matched | pot: before  final | leader wins  doubles/table | you: 1st  top2');
-  for (const R0 of R0s) {
-    for (const growth of R0 ? growths : [0]) {
-      const runs = Array.from({ length: TABLES }, (_, k) => playTable(1000 + k, R0, growth));
-      const hands = runs.map((r) => r.hands);
-      const sum = (f: (s: Stats) => number) => runs.reduce((a, r) => a + f(r), 0);
-      const sorted = [...hands].sort((a, b) => a - b);
-      const row = [
-        R0 ? `$${R0}`.padStart(4) : ' none',
-        R0 ? pct(growth).padStart(6) : '      ',
-        '|',
-        String(median(hands)).padStart(10),
+  say('setting                     hands  5-8  p10-p90 | raised matched  pot | left: 3    2    1 | kept gold reshuffled | you: gold silver bronze 4th');
+  for (const [label, options] of SETTINGS) {
+    const runs = Array.from({ length: TABLES }, (_, k) => playTable(1000 + k, options));
+    const hands = runs.map((r) => r.hands).sort((a, b) => a - b);
+    const sum = (f: (s: Stats) => number) => runs.reduce((a, r) => a + f(r), 0);
+    const last = runs.map((r) => r.last).filter((x): x is NonNullable<Stats['last']> => !!x);
+    const share = (f: (x: NonNullable<Stats['last']>) => boolean) => (last.length ? pct(last.filter(f).length / last.length) : '-');
+    say(
+      [
+        label.padEnd(27),
+        String(hands[Math.floor(TABLES / 2)]).padStart(5),
         pct(hands.filter((h) => h >= 5 && h <= 8).length / TABLES).padStart(5),
-        `(${sorted[Math.floor(TABLES * 0.1)]}-${sorted[Math.floor(TABLES * 0.9)]})`.padStart(9),
+        `(${hands[Math.floor(TABLES * 0.1)]}-${hands[Math.floor(TABLES * 0.9)]})`.padStart(8),
         '|',
         pct(sum((r) => r.raisedRivers) / Math.max(1, sum((r) => r.rivers))).padStart(6),
-        (sum((r) => r.raisers) / Math.max(1, sum((r) => r.raisedRivers))).toFixed(1).padStart(8),
-        pct(sum((r) => r.matched) / Math.max(1, sum((r) => r.facing))).padStart(8),
+        pct(sum((r) => r.matched) / Math.max(1, sum((r) => r.facing))).padStart(7),
+        `$${Math.round(sum((r) => r.potFinal) / Math.max(1, sum((r) => r.rivers)))}`.padStart(5),
         '|',
-        `$${Math.round(sum((r) => r.potBeforeRaise) / Math.max(1, sum((r) => r.rivers)))}`.padStart(11),
-        `$${Math.round(sum((r) => r.potFinal) / Math.max(1, sum((r) => r.rivers)))}`.padStart(6),
+        ...[3, 2, 1].map((n) => share((x) => x.standing === n).padStart(n === 3 ? 5 : 4)),
         '|',
-        pct(runs.filter((r) => r.leaderWon).length / TABLES).padStart(12),
-        (sum((r) => r.doubleUps) / TABLES).toFixed(2).padStart(14),
+        share((x) => x.keptGold).padStart(9),
+        share((x) => x.reshuffled).padStart(10),
         '|',
-        pct(runs.filter((r) => r.youFirst).length / TABLES).padStart(9),
-        pct(runs.filter((r) => r.youTop2).length / TABLES).padStart(5),
-      ];
-      say(row.join(' '));
-    }
+        ...[0, 1, 2, 3].map((k) => share((x) => x.yourPlace === k).padStart(5)),
+      ].join(' '),
+    );
   }
   writeFileSync('scripts/raise-engine-latest.txt', lines.join('\n') + '\n');
 });

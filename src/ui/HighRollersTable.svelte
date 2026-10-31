@@ -10,11 +10,15 @@
     nextHighRollersHand,
     placings,
     playHighRollers,
+    highRollersResult,
+    tableAnswering,
     tableCanFold,
     tableComposing,
     tableFee,
     type Action,
     type Card,
+    type HighRollersResult,
+    type HighRollersSetup,
     type HighRollersState,
     type TableRound,
   } from '../engine';
@@ -30,17 +34,22 @@
   import { onDestroy, untrack } from 'svelte';
 
   /**
-   * High Rollers: four captains at one table, until two are left (see
-   * docs/high-rollers.md). Your side and the river are the duel's; your three
-   * rivals share the top, a third each: a name, a purse, three cards, snags
-   * and discards. Everyone moves at once, in secret; after the Flop and the
-   * Turn the rivals' moves are replayed one at a time, in seat order (left,
+   * High Rollers: four captains at one table, until the first is broke and
+   * then The Last Hand (see docs/high-rollers.md). Your side and the river are
+   * the duel's; your three rivals share the top, a third each: a name, a
+   * purse, three cards, snags and discards. Everyone moves at once, in secret;
+   * then the rivals' moves are replayed one at a time, in seat order (left,
    * across, right, and round to you), and you press Next as you take each in.
-   * At the showdown your hand comes first, then theirs, the chip leader last.
+   * On the River only a raise is replayed, then how the rest answered it. At
+   * the showdown your hand comes first, then theirs, the chip leader last.
+   *
+   * Reusable: `setup` seats the table (rivals, purses, stakes); with
+   * `onfinish` the table ends with Continue and hands back how it went,
+   * without it (the mode on its own) with Again.
    */
-  let { onmenu }: { onmenu: () => void } = $props();
+  let { onmenu, setup, onfinish }: { onmenu: () => void; setup?: HighRollersSetup; onfinish?: (result: HighRollersResult) => void } = $props();
 
-  let game = $state.raw<HighRollersState>(newHighRollers(Date.now() >>> 0));
+  let game = $state.raw<HighRollersState>(newHighRollers(Date.now() >>> 0, untrack(() => setup)));
   let tapped = $state<string[]>([]);
 
   const round = $derived(game.round!);
@@ -48,6 +57,10 @@
   const mine = $derived(me >= 0 ? round.seats[me] : null);
   const meIn = $derived(!!mine && !mine.folded);
   const composing = $derived(tableComposing(round));
+  /** Facing a raise on the River: match it or fold. */
+  const answering = $derived(me >= 0 && tableAnswering(round, me));
+  /** You have a move to make this street. */
+  const myTurn = $derived(meIn && (round.street !== 3 || answering));
   /** A seat's captain. */
   const captain = (seat: number) => game.players[game.seated[seat]];
   /** The rivals in their places across the top: seat order, left to right (you sit at seat 0, at the bottom). */
@@ -85,13 +98,15 @@
   const tappedCards = $derived(mine ? mine.hand.filter((c) => tapped.includes(c.id)) : []);
   const tappedSnags = $derived(mine ? mine.jokers.filter((c) => tapped.includes(c.id)) : []);
   const cost = $derived(
-    meIn && !composing ? tableFee(game.config, round.month, round.street + 1) + discardCost(mine!.discarded.length, tappedCards.length) : 0,
+    answering ? round.raise : meIn && !composing ? tableFee(game.config, round.month, round.street + 1, round.stakes) + discardCost(mine!.discarded.length, tappedCards.length) : 0,
   );
   const preview = $derived(
     meIn && composing && tapped.length ? bestHand([...tappedCards, ...tappedSnags], round.community, { min: tapped.length, max: tapped.length }) : null,
   );
   const goLabel = $derived(
-    composing
+    answering
+      ? t('hr.match', { amount: dollars(cost) })
+      : composing
       ? t('draw.play')
       : tappedCards.length
         ? `${t('draw.discard', { n: tappedCards.length })} · ${dollars(cost)}`
@@ -109,8 +124,9 @@
 
   /**
    * Your move (or none, if you're out of the hand): the street resolves, and
-   * the rivals' moves are replayed in seat order from the first. Not on the
-   * River: everyone just plays a hand, so it's straight to the showdown.
+   * the rivals' moves are replayed in seat order from the first. On the River
+   * everyone just plays a hand, so only a raise is shown; then how the rest
+   * answered it.
    */
   function play(action: Action | null) {
     before = round;
@@ -120,16 +136,19 @@
     const r = game.round!;
     const moves = r.history.at(-1)!.actions;
     const order = Array.from({ length: r.seats.length }, (_, k) => (r.first + k) % r.seats.length);
-    queue = river ? [] : order.filter((s) => s !== me && moves[s]).map((s) => ({ seat: s, action: moves[s]! }));
+    const shown = (a: Action | null) => !!a && (!river || (a.type === 'compose' && !!a.raise));
+    queue = order.filter((s) => s !== me && shown(moves[s])).map((s) => ({ seat: s, action: moves[s]! }));
     at = 0;
     boardShown = before.community.length;
     if (queue.length) view = 'replay';
     else afterReplay();
   }
 
-  function go() {
+  function go(raise = false) {
     if (!mine) return;
-    play(composing ? { type: 'compose', cardIds: tappedCards.map((c) => c.id), jokers: tappedSnags.length } : { type: 'draw', cardIds: tappedCards.map((c) => c.id) });
+    if (answering) play({ type: 'match' });
+    else if (composing) play({ type: 'compose', cardIds: tappedCards.map((c) => c.id), jokers: tappedSnags.length, raise });
+    else play({ type: 'draw', cardIds: tappedCards.map((c) => c.id) });
   }
 
   function next() {
@@ -153,8 +172,8 @@
     boardShown = round.community.length;
     const res = round.result;
     if (!res) {
-      // On to the next street: your move, or (folded) on we go without you.
-      if (meIn) view = 'choose';
+      // On to the next street (or a raise to answer): your move, or, with nothing for you to do, on we go without you.
+      if (myTurn) view = 'choose';
       else play(null);
       return;
     }
@@ -175,13 +194,13 @@
     startMoney = game.players.map((p) => p.money);
     boardShown = 3;
     view = 'choose';
-    if (!meIn) play(null);
+    if (!myTurn) play(null);
   }
 
   function again() {
     // A new table starts at the same hand number: its coins start afresh.
     flownHand = paidHand = -1;
-    game = newHighRollers(Date.now() >>> 0);
+    game = newHighRollers(Date.now() >>> 0, setup);
     startMoney = game.players.map((p) => p.money);
     tapped = [];
     boardShown = 3;
@@ -193,8 +212,10 @@
   /** What a rival did, in a word or two. */
   function moveText(action: Action): string {
     if (action.type === 'fold') return t('hr.move.fold');
+    if (action.type === 'compose') return t('hr.move.raise', { amount: dollars(round.raise) });
+    if (action.type === 'match') return t('hr.move.match', { amount: dollars(round.raise) });
     if (action.type === 'draw' && action.cardIds.length) return t('hr.move.swap', { n: action.cardIds.length });
-    const fee = tableFee(game.config, round.month, (round.history.at(-1)?.street ?? 0) + 1);
+    const fee = tableFee(game.config, round.month, (round.history.at(-1)?.street ?? 0) + 1, round.stakes);
     return fee ? t('hr.move.call', { amount: dollars(fee) }) : t('hr.move.check');
   }
   /** Settled purses show only at the verdict; until then, what each had at the start of the hand, less what's in the pot. */
@@ -264,7 +285,7 @@
         return;
       }
       tops[to] ??= stackTops(purse);
-      const spot = restingSpot(tops[to], (piled[to] = (piled[to] ?? 0) + 1) - 1);
+      const spot = restingSpot(tops[to], (piled[to] = (piled[to] ?? 0) + 1) - 1, purse.getBoundingClientRect());
       // One that lands after the table has moved on to the next hand just goes.
       if (spot) flyCoin(c.getBoundingClientRect(), spot, delay, { restIn: purse }).then((coin) => coin && (handSerial === hand ? resting.push(coin) : coin.remove()));
     });
@@ -304,7 +325,9 @@
     const line = (key: string, s: number) => (s === me ? t(`${key}.you`) : t(key, { name: who(s) }));
     if (res.byFolds) return line('hr.byFolds', res.winners[0]);
     const wins = res.winners.length > 1 ? t('hr.split', { names: res.winners.map(who).join(' & ') }) : line('hr.wins', res.winners[0]);
-    return res.weakest !== null && res.dumped.length ? `${wins} ${line('hr.snagsTo', res.weakest)}` : wins;
+    const said = res.weakest !== null && res.dumped.length ? `${wins} ${line('hr.snagsTo', res.weakest)}` : wins;
+    // Someone went broke: the next hand is the last.
+    return game.phase === 'handEnd' && game.lastHand ? `${said} ${t('hr.lastHandNext')}` : said;
   });
   const handName = (seat: number) => {
     const h = round.result?.hands[seat];
@@ -369,6 +392,8 @@
 
   <!-- The river: the street, the pot and the board. -->
   <div class="felt">
+    <!-- The Last Hand says so over the street's name (it plays for double). -->
+    <p class="last-hand">{round.stakes > 1 ? t('hr.lastHand', { n: round.stakes }) : ''}</p>
     <p class="street">{t(`street.${streetName}`)}</p>
     <div class="pot-band">
       <div bind:this={pileEl}><Pile count={potCount} paid={settled} /></div>
@@ -430,12 +455,16 @@
 
   <!-- The two buttons. Call, Swap and Play hand are held (heavy); the rest are light taps. -->
   <div class="actions" use:heavy>
-    {#if view === 'choose' && meIn}
+    {#if view === 'choose' && myTurn && composing && round.raise}
+      <!-- The River: lay your hand, or lay it and raise. Both commit you. -->
+      <button class="ghost" onclick={() => go(true)} data-heavy="true">{t('hr.raise', { amount: dollars(round.raise) })}</button>
+      <button onclick={() => go()} data-heavy="true">{goLabel}</button>
+    {:else if view === 'choose' && myTurn}
       <button class="ghost" onclick={() => play({ type: 'fold' })} disabled={!tableCanFold(round, me)}>{t('draw.fold')}</button>
-      <button onclick={go} data-heavy={composing || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>
+      <button onclick={() => go()} data-heavy={composing || answering || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>
     {:else if view === 'over'}
       <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
-      <button onclick={again}>{t('hr.again')}</button>
+      {#if onfinish}<button onclick={() => onfinish(highRollersResult(game))}>{t('show.continue')}</button>{:else}<button onclick={again}>{t('hr.again')}</button>{/if}
     {:else}
       <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
       <button onclick={next}>{t('show.next')}</button>
@@ -443,16 +472,20 @@
   </div>
 
   {#if view === 'over'}
-    <!-- The placings: the two left standing both made it; the bigger purse wins. -->
-    <ol class="placings">
-      {#each placings(game) as p, i (p.id)}
-        <li class:me={p.id === HUMAN_ID}>
-          <span>{p.id === HUMAN_ID ? t('character.captain.you') : tagName(p.id)}</span>
-          <span>{i === 0 ? t('hr.winner') : i === 1 ? t('hr.runnerUp') : t('table.out')}</span>
-          <span>{dollars(Math.max(0, p.money))}</span>
-        </li>
-      {/each}
-    </ol>
+    <!-- The placings: those still standing take gold, silver and bronze by purse; what you walk away with is your score. -->
+    {@const result = highRollersResult(game)}
+    <div class="placings">
+      <ol>
+        {#each placings(game) as p, i (p.id)}
+          <li class:me={p.id === HUMAN_ID} class:out={p.out}>
+            <span>{p.id === HUMAN_ID ? t('character.captain.you') : tagName(p.id)}</span>
+            <span>{p.out ? t('table.out') : t(`hr.place.${i}`)}</span>
+            <span>{p.out ? '' : dollars(p.money)}</span>
+          </li>
+        {/each}
+      </ol>
+      <p class="score">{result.score ? t('hr.walkAway', { amount: dollars(result.score) }) : t('hr.broke')}</p>
+    </div>
   {/if}
 </div>
 
@@ -746,12 +779,34 @@
     top: 30%;
     margin: 0;
     padding: 1rem;
-    list-style: none;
     background: #0c0c0b;
     border: 2px solid var(--paper);
     outline: 1px solid var(--paper);
     outline-offset: 4px;
     z-index: 60;
+  }
+  .placings ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .placings li.out {
+    color: var(--grey);
+  }
+  .score {
+    margin: 0.75rem 0 0;
+    text-align: center;
+    font-family: var(--title-font);
+    font-size: 1.2rem;
+  }
+  .last-hand {
+    margin: 0;
+    min-height: 1.2em;
+    font-family: var(--title-font);
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--grey);
   }
   .placings li {
     display: grid;

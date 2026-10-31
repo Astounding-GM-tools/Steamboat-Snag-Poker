@@ -3,8 +3,10 @@
  * style for three to four seats. Everyone acts at once, in secret, but the
  * moves resolve in seat order from `first`, and that order is real: swaps
  * draw their replacements off the deck one seat after another. Folded seats
- * stay at the table, out of the hand. The best hand takes the pot; the snags
- * go to the weakest hand still in.
+ * stay at the table, out of the hand. On the River a captain may raise (one
+ * fixed size; raises made at the same moment don't stack), and then everyone
+ * else still in matches or folds. The best hand takes the pot; the snags go to
+ * the weakest hand still in.
  *
  * Like round.ts, these functions mutate the hand they're given; the game
  * (highrollers.ts) clones state first.
@@ -48,8 +50,14 @@ export interface TableRound {
   first: number;
   deck: Card[];
   community: Card[];
-  /** 0 the Flop, 1 the Turn, 2 the River (hands are made). */
+  /** 0 the Flop, 1 the Turn, 2 the River (hands are made), 3 answering a raise (match or fold). */
   street: number;
+  /** The table's stakes: the ante, the fees and the raise are this many times the usual (The Last Hand plays for double). */
+  stakes: number;
+  /** What a raise costs on the River (0: no raising at this table). */
+  raise: number;
+  /** Seats that raised on the River. */
+  raisers: number[];
   discards: StdCard[];
   /** Each street's moves, by seat (null for a seat already out). */
   history: { street: number; actions: (Action | null)[] }[];
@@ -60,10 +68,15 @@ export interface TableRound {
   result: TableResult | null;
 }
 
-/** High Rollers' street fees: half the ante to see the Turn, the full ante to see the River. */
-export function tableFee(config: RulesConfig, month: number, nextStreet: number): number {
-  const ante = baseAnte(config, month);
+/** High Rollers' street fees: half the ante to see the Turn, the full ante to see the River (times the stakes). */
+export function tableFee(config: RulesConfig, month: number, nextStreet: number, stakes = 1): number {
+  const ante = baseAnte(config, month) * stakes;
   return nextStreet === 1 ? Math.floor(ante / 2) : nextStreet === 2 ? ante : 0;
+}
+
+/** A captain's ante at the table: the table ante times the stakes, plus upkeep for every snag they carry (not raised by the stakes). */
+export function tableAnte(config: RulesConfig, month: number, jokers: number, stakes = 1): number {
+  return anteFor(config, month, jokers) + baseAnte(config, month) * (stakes - 1);
 }
 
 /** Seat indices in acting order, from `first` round the table. */
@@ -81,14 +94,25 @@ export function tableComposing(round: TableRound): boolean {
   return round.street === 2 && !round.result;
 }
 
-export function tableCanFold(round: TableRound, seat: number): boolean {
-  return !round.result && round.street < 2 && !round.seats[seat].folded;
+/** After a raise: a seat still in that didn't raise must match it or fold. */
+export function tableAnswering(round: TableRound, seat: number): boolean {
+  return round.street === 3 && !round.result && !round.seats[seat].folded && !round.raisers.includes(seat);
 }
 
-/** What a move costs a seat: the fee to see the next street, plus the swaps. */
+/** Seats that move this street: everyone still in, except, when answering a raise, those who made one. */
+export function tableMovers(round: TableRound): number[] {
+  return inHand(round).filter((i) => round.street !== 3 || tableAnswering(round, i));
+}
+
+export function tableCanFold(round: TableRound, seat: number): boolean {
+  return !round.result && !round.seats[seat].folded && (round.street < 2 || tableAnswering(round, seat));
+}
+
+/** What a move costs a seat: the fee to see the next street, plus the swaps; a raise, or matching one. */
 export function tableCost(round: TableRound, seat: number, action: Action, config: RulesConfig): number {
+  if (action.type === 'match' || (action.type === 'compose' && action.raise)) return round.raise;
   if (action.type !== 'draw') return 0;
-  return tableFee(config, round.month, round.street + 1) + discardCost(round.seats[seat].discarded.length, action.cardIds.length);
+  return tableFee(config, round.month, round.street + 1, round.stakes) + discardCost(round.seats[seat].discarded.length, action.cardIds.length);
 }
 
 function draw(round: TableRound): Card {
@@ -123,6 +147,13 @@ function stack(order: string[] | undefined, rng: Rng): Card[] {
   return [...rng.shuffle(deck), ...top.reverse()];
 }
 
+export interface TableOptions {
+  /** The ante, fees and raise are this many times the usual. */
+  stakes?: number;
+  /** Raising on the River is allowed (one raise: the table ante, times the stakes). */
+  raising?: boolean;
+}
+
 /**
  * Deals a hand: everyone antes, the Flop goes out, then three cards each,
  * one at a time round the table from `first`. Snags from `pool` may be
@@ -137,6 +168,7 @@ export function createTableRound(
   config: RulesConfig,
   rng: Rng,
   order?: string[],
+  { stakes = 1, raising = false }: TableOptions = {},
 ): TableRound {
   const round: TableRound = {
     month,
@@ -145,10 +177,13 @@ export function createTableRound(
     deck: stack(order, rng),
     community: [],
     street: 0,
+    stakes,
+    raise: raising ? baseAnte(config, month) * stakes : 0,
+    raisers: [],
     discards: [],
     history: [],
     fished: [],
-    bets: players.map((p) => anteFor(config, month, p.jokers.length)),
+    bets: players.map((p) => tableAnte(config, month, p.jokers.length, stakes)),
     result: null,
   };
   for (let i = 0; i < config.communitySchedule[0]; i++) round.community.push(draw(round));
@@ -166,6 +201,9 @@ export function tableLegal(round: TableRound, seat: number, action: Action): boo
   const s = round.seats[seat];
   if (s.folded || round.result) return false;
   if (action.type === 'fold') return tableCanFold(round, seat);
+  if (round.street === 3) return action.type === 'match' && tableAnswering(round, seat);
+  if (action.type === 'match') return false;
+  if (action.type === 'compose' && action.raise && !round.raise) return false;
   if (action.type !== (tableComposing(round) ? 'compose' : 'draw')) return false;
   const ids = action.cardIds;
   if (new Set(ids).size !== ids.length || !ids.every((id) => s.hand.some((c) => c.id === id))) return false;
@@ -174,13 +212,14 @@ export function tableLegal(round: TableRound, seat: number, action: Action): boo
 }
 
 /**
- * Everyone's secret moves for this street (null for a seat already out),
- * applied in seat order from `first`; then the next street is dealt, or, on the
- * River, the showdown. If only one seat is left in, it takes the pot.
+ * Everyone's secret moves for this street (null for a seat that doesn't
+ * move), applied in seat order from `first`; then the next street is dealt,
+ * or, on the River, the showdown (after a raise, once the rest have matched or
+ * folded). If only one seat is left in, it takes the pot.
  */
 export function resolveTableStreet(round: TableRound, actions: (Action | null)[], config: RulesConfig) {
   if (round.result) throw new Error('The hand is over');
-  for (const i of inHand(round)) {
+  for (const i of tableMovers(round)) {
     const a = actions[i];
     if (!a || !tableLegal(round, i, a)) throw new Error(`Illegal or missing move for seat ${i}: ${JSON.stringify(a)}`);
   }
@@ -193,6 +232,7 @@ export function resolveTableStreet(round: TableRound, actions: (Action | null)[]
       continue;
     }
     round.bets[i] += tableCost(round, i, a, config);
+    if (a.type === 'compose' && a.raise) round.raisers.push(i);
     if (a.type === 'draw') {
       if (round.street === 0) s.flopDiscards = a.cardIds.length;
       for (const id of a.cardIds) {
@@ -209,7 +249,12 @@ export function resolveTableStreet(round: TableRound, actions: (Action | null)[]
   round.history.push({ street: round.street, actions: actions.map((a, i) => (round.seats[i].folded && a?.type !== 'fold' ? null : a)) });
   const left = inHand(round);
   if (left.length === 1) return endByFolds(round, left[0]);
-  if (round.street === 2) return showdown(round, config);
+  // A raise on the River: the rest still in answer it before the showdown.
+  if (round.street === 2 && round.raisers.length && left.some((i) => !round.raisers.includes(i))) {
+    round.street = 3;
+    return;
+  }
+  if (round.street >= 2) return showdown(round, config);
   round.street++;
   for (let i = 0; i < config.communitySchedule[round.street]; i++) round.community.push(draw(round));
 }

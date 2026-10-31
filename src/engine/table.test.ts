@@ -3,8 +3,9 @@ import { jokerCard } from './cards';
 import { chooseAction } from './ai';
 import { DEFAULT_CONFIG } from './config';
 import { Rng } from './rng';
-import { createTableRound, resolveTableStreet, tableFee, type TableRound } from './table';
-import { mySeat, newHighRollers, nextHighRollersHand, placings, playHighRollers, tableView } from './highrollers';
+import { baseAnte } from './pot';
+import { createTableRound, resolveTableStreet, tableAnswering, tableFee, type TableRound } from './table';
+import { highRollersResult, mySeat, newHighRollers, nextHighRollersHand, placings, playHighRollers, tableView } from './highrollers';
 import type { Action } from './round';
 
 const config = DEFAULT_CONFIG;
@@ -79,25 +80,127 @@ describe('a hand at a table of four', () => {
   });
 });
 
+describe('the River raise', () => {
+  const unpaired = [...order.slice(0, 15), '7c', '6d'];
+  const trips = (seat: number, raise = false) => {
+    const ranks = ['9', 'Q', 'J', 'T'][seat];
+    return { type: 'compose' as const, cardIds: [`${ranks}h`, `${ranks}s`, `${ranks}c`], jokers: 0, raise };
+  };
+  /** To the River, everyone standing pat. */
+  const toRiver = (stakes = 1) => {
+    const round = createTableRound(1, players(4), 1, [], config, new Rng(1), unpaired, { raising: true, stakes });
+    resolveTableStreet(round, [stand, stand, stand, stand], config);
+    resolveTableStreet(round, [stand, stand, stand, stand], config);
+    return round;
+  };
+
+  it('a raise is answered before the showdown: the rest match it or fold', () => {
+    const round = toRiver();
+    const before = [...round.bets];
+    resolveTableStreet(round, [trips(0), trips(1, true), trips(2), trips(3)], config);
+    expect(round.result).toBeNull();
+    expect(round.street).toBe(3);
+    expect(round.bets[1]).toBe(before[1] + round.raise);
+    expect([0, 1, 2, 3].map((i) => tableAnswering(round, i))).toEqual([true, false, true, true]);
+    resolveTableStreet(round, [{ type: 'match' }, null, { type: 'fold' }, { type: 'match' }], config);
+    const res = round.result!;
+    expect(round.seats[2].folded).toBe(true);
+    expect(round.bets[0]).toBe(before[0] + round.raise);
+    expect(round.bets[2]).toBe(before[2]);
+    expect(res.winners).toEqual([1]); // the queens
+    expect(res.pot).toBe(before.reduce((a, b) => a + b, 0) + 3 * round.raise);
+  });
+
+  it('raises made at the same moment do not stack: each raiser is in once, and the rest owe one raise', () => {
+    const round = toRiver();
+    const before = [...round.bets];
+    resolveTableStreet(round, [trips(0, true), trips(1, true), trips(2), trips(3)], config);
+    expect([0, 1, 2, 3].map((i) => tableAnswering(round, i))).toEqual([false, false, true, true]);
+    resolveTableStreet(round, [null, null, { type: 'match' }, { type: 'match' }], config);
+    expect(round.bets.map((b, i) => b - before[i])).toEqual([round.raise, round.raise, round.raise, round.raise]);
+  });
+
+  it('when everyone else folds to a raise, the raiser takes the pot unseen', () => {
+    const round = toRiver();
+    resolveTableStreet(round, [trips(0, true), trips(1), trips(2), trips(3)], config);
+    resolveTableStreet(round, [null, { type: 'fold' }, { type: 'fold' }, { type: 'fold' }], config);
+    expect(round.result!.byFolds).toBe(true);
+    expect(round.result!.winners).toEqual([0]); // the nines, never shown
+  });
+
+  it('with no raise, the River goes straight to the showdown', () => {
+    const round = toRiver();
+    resolveTableStreet(round, [trips(0), trips(1), trips(2), trips(3)], config);
+    expect(round.result!.winners).toEqual([1]);
+  });
+
+  it('the stakes multiply the ante, the fees and the raise, not the snags\' upkeep', () => {
+    const plain = createTableRound(30, players(4, [1]), 0, [], config, new Rng(1), undefined, { raising: true });
+    const doubled = createTableRound(30, players(4, [1]), 0, [], config, new Rng(1), undefined, { raising: true, stakes: 2 });
+    const ante = baseAnte(config, 30);
+    expect(doubled.bets[1] - plain.bets[1]).toBe(ante); // no snags: twice the ante
+    expect(doubled.bets[0] - plain.bets[0]).toBe(ante); // a snag's upkeep isn't doubled
+    expect(doubled.raise).toBe(2 * plain.raise);
+    expect(tableFee(config, 30, 2, 2)).toBe(2 * tableFee(config, 30, 2));
+  });
+});
+
 describe('High Rollers', () => {
-  it('plays hands until two captains are left, and no money is made or lost along the way', () => {
-    for (const seed of [1, 2, 3, 4, 5]) {
-      let g = newHighRollers(seed);
-      const total = g.players.reduce((a, p) => a + p.money, 0);
-      const rng = new Rng(seed * 7);
-      for (let guard = 0; g.phase !== 'over' && guard < 400; guard++) {
-        if (g.phase === 'handEnd') {
-          g = nextHighRollersHand(g);
-          continue;
-        }
-        const seat = mySeat(g);
-        const mine = seat < 0 || g.round!.seats[seat].folded ? null : chooseAction('careful', tableView(g.round!, seat), g.config, rng);
-        g = playHighRollers(g, mine);
+  /** Plays a table through, you as a careful captain (who never raises, and matches a raise). */
+  const playThrough = (seed: number) => {
+    let g = newHighRollers(seed);
+    const rng = new Rng(seed * 7);
+    const total = g.players.reduce((a, p) => a + p.money, 0);
+    let firstOut = -1;
+    let hands = 0;
+    for (let guard = 0; g.phase !== 'over' && guard < 600; guard++) {
+      if (g.phase === 'handEnd') {
+        g = nextHighRollersHand(g);
+        continue;
       }
+      const round = g.round!;
+      const seat = mySeat(g);
+      const out = seat < 0 || round.seats[seat].folded || (round.street === 3 && !tableAnswering(round, seat));
+      const mine = out ? null : round.street === 3 ? ({ type: 'match' } as const) : chooseAction('careful', tableView(round, seat), g.config, rng);
+      g = playHighRollers(g, mine);
+      if (g.round!.result) {
+        hands++;
+        if (firstOut < 0 && g.players.some((p) => p.out)) firstOut = hands;
+      }
+    }
+    return { g, total, firstOut, hands };
+  };
+
+  it('plays until the first captain is broke, then The Last Hand, and no money is made or lost along the way', () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const { g, total, firstOut, hands } = playThrough(seed);
       expect(g.phase).toBe('over');
-      expect(g.players.filter((p) => !p.out).length).toBeLessThanOrEqual(2);
+      expect(g.lastHand).toBe(true);
+      // The Last Hand is the one after the first knockout (unless that left one captain alone).
+      if (g.players.filter((p) => !p.out).length > 0 && firstOut < hands) expect(hands).toBe(firstOut + 1);
       expect(g.players.reduce((a, p) => a + p.money, 0)).toBe(total);
       expect(placings(g)).toHaveLength(4);
     }
+  });
+
+  it('places those standing by purse, then the broke, latest out first; your score is what you walk away with', () => {
+    const { g } = playThrough(3);
+    const order = placings(g);
+    const standing = order.filter((p) => !p.out);
+    expect(standing.map((p) => p.money)).toEqual([...standing.map((p) => p.money)].sort((a, b) => b - a));
+    expect(order.slice(standing.length).every((p) => p.out)).toBe(true);
+    const res = highRollersResult(g);
+    const you = g.players.find((p) => p.ai === null)!;
+    expect(res.placings[res.place].id).toBe(you.id);
+    expect(res.score).toBe(you.out ? 0 : you.money);
+  });
+
+  it('The Last Hand plays for double stakes', () => {
+    let { g } = { g: newHighRollers(2) };
+    g.lastHand = true;
+    g.phase = 'handEnd';
+    g = nextHighRollersHand(g);
+    expect(g.round!.stakes).toBe(2);
+    expect(g.round!.raise).toBe(2 * baseAnte(g.config, g.hand));
   });
 });

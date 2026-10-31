@@ -3,9 +3,12 @@
 Status: **in development** on the `final-table` branch. Try it at
 `/?highrollers` (development builds).
 
-The League's last stage, and for now a mode of its own: when four captains
-are left, they sit at one table. The money gets serious, everyone plays
-everyone, and it runs until **two are left standing**.
+The tournament's finale, and in the story a table to sit in on at smaller
+tournaments along the river (the table takes its rivals, purses and stakes
+from whoever seats you, and hands back how it went). Four captains at one
+table: the money gets serious, everyone plays everyone, and it runs until
+the first captain is broke; then comes **The Last Hand**, and that's it.
+What you walk away with is your score.
 
 ## The rules
 
@@ -21,15 +24,34 @@ everyone, and it runs until **two are left standing**.
 - **Folding** (on the Flop or the Turn) takes you out of the hand: your money
   stays in the pot, you stay at the table watching, and you're out of reach of
   the snags. If everyone else folds, the last captain in takes the pot.
+- **The River raise:** with your hand laid face down you may also **raise**
+  (black: Raise, white: Play hand). The raise is the table ante (times the
+  stakes). Raises made at the same moment don't stack: every raiser is in
+  once. Then everyone else still in **matches or folds** (black: Fold, white:
+  Match), in secret, at once; one raise, no re-raising. If you can't afford
+  it, the house covers: lose, and you're out. If everyone folds to a raise,
+  the raiser takes the pot unseen.
 - **The showdown:** the best hand takes the pot (a tie splits it). **The
   snags go to the weakest hand** still in: every snag the winner played, and
   any snag at stake on the board. A loser who played a snag keeps it and pays
   the winner its forfeit.
-- **It ends when two captains are left.** Both made it: the bigger purse is
-  the flat-out winner, and the runner-up keeps their winnings too. Out among
-  the first two, and you're out of the money. (No anticlimactic duel between
-  the last two.)
+- **The Last Hand:** when the first captain goes broke, the next hand is the
+  last, at **double stakes** (the ante, the fees and the raise; not the
+  snags' upkeep). Folding early is the safe play, keeping what you have; but
+  your purse at the end is your score, so a big score means betting hard on
+  it. After it, those still standing take **gold, silver and bronze** by
+  purse; the broke follow, the latest out first.
+- **Purses:** $160 each on its own (in the story, whatever the captains
+  bring). With that, a table lasts **5–8 hands** about 85% of the time
+  (`scripts/raise-*.sim.ts`, with the latest results beside them).
 - **No banter** in this mode (perhaps later, in the story).
+- **How the rivals raise** (`src/engine/raise.ts`): each judges its laid hand
+  against those still in (they've been swapping, so as the best three of
+  five unseen cards) and raises or matches by temperament. Bill matches
+  everything; Lenny barely raises and folds readily; Finlay bluffs now and
+  then. On The Last Hand the leader guards the lead and the short stack
+  gambles. Over 120 tables they raise on about 38% of Rivers, and a raise
+  is matched about half the time.
 
 ## The table (built: `src/ui/HighRollersTable.svelte`)
 
@@ -68,3 +90,6 @@ thirds.
 - How the AI weighs three opponents instead of one (for now it plays each
   hand as if against one, with the rest of the table's discards and snags).
 - Where the League hands over to the High Rollers table, and with which purses.
+- Reading and bluffing: each rival could remember what your raises turned
+  out to be at showdowns (Gaylord calling more once he's caught you, folding
+  to you once he hasn't), and the portraits' moods could give (or fake) tells.
