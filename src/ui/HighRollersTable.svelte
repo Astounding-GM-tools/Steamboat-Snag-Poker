@@ -33,7 +33,7 @@
   import { heavy } from './heavy';
   import { clink } from './clink';
   import { flyInto, landAll, reducedMotion } from './coins';
-  import { tick, untrack } from 'svelte';
+  import { onMount, tick, untrack } from 'svelte';
 
   /**
    * High Rollers: four captains at one table, until the first is broke and
@@ -49,10 +49,30 @@
    * `onfinish` the table ends with Continue and hands back how it went,
    * without it (the mode on its own) with Again.
    */
-  let { onmenu, setup, onfinish }: { onmenu: () => void; setup?: HighRollersSetup; onfinish?: (result: HighRollersResult) => void } = $props();
+  let {
+    onmenu,
+    setup,
+    onfinish,
+    saved,
+    onsave,
+  }: {
+    onmenu: () => void;
+    setup?: HighRollersSetup;
+    onfinish?: (result: HighRollersResult) => void;
+    /** The table as it stood when the voyage was put down: it carries on from there. */
+    saved?: HighRollersState;
+    /** Every move, for saving with the voyage. */
+    onsave?: (table: HighRollersState) => void;
+  } = $props();
 
-  /** A table seated from a voyage brings its own seed (the same deal if it's picked up again); on its own, a fresh one. */
-  let game = $state.raw<HighRollersState>(newHighRollers(untrack(() => setup?.seed) ?? Date.now() >>> 0, untrack(() => setup)));
+  /** A table picked up again carries on where it was; a new one is seated (from a voyage, with its seed). */
+  const resumed = untrack(() => saved);
+  let game = $state.raw<HighRollersState>(resumed ?? newHighRollers(untrack(() => setup?.seed) ?? Date.now() >>> 0, untrack(() => setup)));
+  // Saved with every move.
+  $effect(() => {
+    const g = game;
+    untrack(() => onsave?.(g));
+  });
   let tapped = $state<string[]>([]);
 
   const round = $derived(game.round!);
@@ -668,6 +688,15 @@
   const snagsOf = (seat: number) => (view === 'reveal' && before ? before : seen(seat)).seats[seat].jokers;
   const mySnags = $derived(mine ? snagsOf(me) : []);
   const myCall = $derived(preview ? handLabel(preview) : mine && shownTo(me) ? handName(me) : null);
+
+  // Picked up again: the board as it was, and on from where the table stood (between hands, the next is dealt).
+  onMount(() => {
+    if (!resumed) return;
+    boardShown = round.community.length;
+    if (game.phase === 'handEnd') nextHand();
+    else if (game.phase === 'over') view = 'over';
+    else if (!myTurn) play(null);
+  });
 </script>
 
 <!-- A tap anywhere, while the table is moving, hurries it along. -->

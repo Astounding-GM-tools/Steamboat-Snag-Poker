@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { DEFAULT_CONFIG, ROSTER, Rng, finaleSetup, finishFinale, newGame, nextMonth, submitAction, type Action, type GameState, type HighRollersResult } from '../engine';
+  import { untrack } from 'svelte';
+  import { DEFAULT_CONFIG, ROSTER, Rng, finaleSetup, finishFinale, newGame, nextMonth, submitAction, type Action, type GameState, type HighRollersResult, type HighRollersState } from '../engine';
   import CardZoom from './CardZoom.svelte';
   import DrawTable from './DrawTable.svelte';
   import HighRollersTable from './HighRollersTable.svelte';
@@ -55,6 +56,8 @@
   }
   /** In development, the High Rollers table on its own (highRollers() in the console; highRollers(40) seats everyone with $40, quicker to an ending). */
   let highRollers = $state<{ purse?: number } | null>(null);
+  // A voyage in progress opens where it was left (a phone that slept, a page reloaded): the title is a Menu away.
+  if (untrack(() => saved)) resume();
   if (import.meta.env.DEV) {
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;
@@ -131,6 +134,11 @@
     setGame(nextMonth(game));
   }
 
+  /** The final table, saved with the voyage at every move. */
+  function saveTable(table: HighRollersState) {
+    if (game?.phase === 'finale') setGame({ ...game, finaleTable: table });
+  }
+
   /** The final table is over: the voyage is finished, recorded, and it's back to the title. */
   function finished(result: HighRollersResult) {
     if (!game) return;
@@ -152,7 +160,7 @@
     <HighRollersTable onmenu={() => (highRollers = null)} setup={highRollers.purse ? { money: highRollers.purse } : undefined} />
   {:else if game?.phase === 'finale'}
     <!-- The League's last four at the final table (the same deal again if a voyage is picked up here). -->
-    {#key game.rngState}<HighRollersTable onmenu={pause} setup={finaleSetup(game)} onfinish={finished} />{/key}
+    {#key game.rngState}<HighRollersTable onmenu={pause} setup={finaleSetup(game)} saved={game.finaleTable} onsave={saveTable} onfinish={finished} />{/key}
   {:else if game}
     {#if game.round?.playStyle === 'draw'}
       <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={revealed} onnext={next} script={game.story ? roundScript(scripts[game.story], game.month) : undefined} ontalk={talkEffect} />

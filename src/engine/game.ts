@@ -9,7 +9,7 @@ import { HUMAN_ID, LEGACY_AI, RETIRED_IDS, ROSTER, drawLineUp, type AiId, type C
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { createRound, isLegal, resolveStreet, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
 import { Rng } from './rng';
-import type { HighRollersResult, HighRollersSetup } from './highrollers';
+import type { HighRollersResult, HighRollersSetup, HighRollersState } from './highrollers';
 
 export interface Player {
   id: string;
@@ -106,6 +106,8 @@ export interface GameState {
   finaleNext?: boolean;
   /** How the final table went: your place (0 gold) and what you walked away with. */
   finale?: { place: number; score: number };
+  /** The final table as it stands, saved with every move (so a voyage picked up there carries on, not deals again). */
+  finaleTable?: HighRollersState;
 }
 
 const clone = <T>(x: T): T => structuredClone(x);
@@ -404,5 +406,6 @@ export function finishFinale(prev: GameState, result: HighRollersResult): GameSt
   const state = clone(prev);
   state.phase = 'finished';
   state.finale = { place: result.place, score: result.score };
+  delete state.finaleTable;
   return state;
 }

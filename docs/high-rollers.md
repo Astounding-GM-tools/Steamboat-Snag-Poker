@@ -129,8 +129,8 @@ still matters) but gives the poorest finalist a fighting chance: with
 League-like purses a table lasts a median of 6 hands, 5–8 about 60% of the
 time (without it: 4 hands, 33%). After the placings, Continue ends the
 voyage: gold counts as a tournament won, and what you walked away with is
-your score (best kept). A voyage paused at the final table picks up with the
-same deal.
+your score (best kept). The final table is saved with the voyage at every move: a phone that sleeps
+(or a page reloaded) opens straight back onto it, where it was.
 
 ## Open
 
