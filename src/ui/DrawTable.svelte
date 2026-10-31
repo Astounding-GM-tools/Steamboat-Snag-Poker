@@ -610,6 +610,12 @@
     return Promise.all(moves.map(([src, spot], i) => flyInto(src, spot, Math.floor(i / handful) * gap, coinClass(), FLIGHT_MS))).then(() => {});
   }
 
+  /** A card thrown away: up out of the hand, turning, and gone (only a card that went onto the discard pile, and not when hurried). */
+  function thrown(_node: Element, id: string) {
+    const gone = round.discards.some((c) => c.id === id);
+    return { duration: gone && !still() ? 450 : 0, css: (t: number) => `transform: translate(${(1 - t) * 14}px, ${(1 - t) * -26}px) rotate(${(1 - t) * 12}deg); opacity: ${t}` };
+  }
+
   /** A captain paid dollars a..b into the pot: the coins wait in their purse for their turn, then pour onto the heap. */
   function payIn(seat: 0 | 1, a: number, b: number) {
     const purse = seat === 0 ? myPurseEl : theirPurseEl;
@@ -749,12 +755,15 @@
       <div class="hand-cell">
       <!-- At the showdown their played cards flip in place, one per Next. -->
       {#each theirPlayed.filter((c) => !isJoker(c)) as card (card.id)}
-        {#if faceUp.has(card.id) || theyShowed}<CardView {card} fresh={revealStep?.card.id === card.id} />{:else}<CardView faceDown />{/if}
+        {#if faceUp.has(card.id) || theyShowed}<CardView {card} fresh={revealStep?.card.id === card.id} deal={revealing ? 'flip' : null} />{:else}<CardView faceDown />{/if}
       {/each}
       <!-- Held back, but turned over too (dimmed), one per Next after the played ones: you get to see how they play. -->
       {#each them.hand.filter((c) => dealt.has(c.id)) as card, k (card.id)}
         {@const turned = decided || theyShowed || (revealing && revealIndex >= steps.length + k)}
-        {#if turned}<CardView {card} faded={shownDown} fresh={(revealing && revealIndex === steps.length + k) || (theyShowed && !shownDown)} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
+        <!-- A card they throw away leaves their hand before its replacement is dealt. -->
+        <span class="held" out:thrown={card.id}>
+          {#if turned}<CardView {card} faded={shownDown} fresh={(revealing && revealIndex === steps.length + k) || (theyShowed && !shownDown)} deal={revealing ? 'flip' : null} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
+        </span>
       {/each}
       </div>
       <div class="fan-cell">
@@ -857,7 +866,7 @@
       <!-- At the showdown: the cards you played, then any you kept back, dimmed. -->
       {#each myPlayed as card (card.id)}<CardView {card} used />{/each}
       {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
-        <CardView
+        <span class="held" out:thrown={card.id}><CardView
           {card}
           selected={composing && tapped.includes(card.id)}
           toss={!composing && tapped.includes(card.id)}
@@ -865,7 +874,7 @@
           faded={shownDown}
           deal="left"
           onclick={playing ? () => tap(card) : undefined}
-        />
+        /></span>
       {/each}
       </div>
       <div class="fan-cell">
@@ -1156,6 +1165,11 @@
     grid-template-columns: subgrid;
     grid-column: 1 / -1;
     align-items: end;
+  }
+  /* A card held in a hand: its own box, so it can leave on its own. */
+  .held {
+    display: block;
+    flex: none;
   }
   .hand-cell {
     grid-column: 1 / 7;
