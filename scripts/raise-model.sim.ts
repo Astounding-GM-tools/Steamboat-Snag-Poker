@@ -40,10 +40,10 @@ function rng(seed: number) {
 }
 
 interface Params {
-  R0: number; // the raise at the first hand (0: no raise)
+  R0: number; // the raise at the first hand (0: no raise; -1: the raise is the ante itself, creeping with it)
   growth: number; // per hand, compounding
   scaleRaiseAt?: number; // shifts every style's raise threshold (tuning how often anyone raises)
-  doubleOnOut?: boolean; // once the first captain is out, the ante (so the fees, and the raise) doubles
+  onOut?: number; // once the first captain is out, the ante (so the fees, and the raise) is multiplied by this
 }
 
 const START = 120;
@@ -68,9 +68,9 @@ function table(seed: number, p: Params) {
   const history: number[][] = [];
 
   while (out.filter((o) => !o).length > 2 && hands < 200) {
-    const stakes = p.doubleOnOut && out.some((o) => o) ? 2 : 1;
-    const ante = Math.ceil(hand / 3) * stakes;
-    const raise = p.R0 ? Math.round(p.R0 * stakes * Math.pow(1 + p.growth, hand - START_HAND)) : 0;
+    const stakes = p.onOut && out.some((o) => o) ? p.onOut : 1;
+    const ante = Math.round(Math.ceil(hand / 3) * stakes);
+    const raise = p.R0 < 0 ? ante : p.R0 ? Math.round(p.R0 * stakes * Math.pow(1 + p.growth, hand - START_HAND)) : 0;
     const seats = names.map((_, i) => i).filter((i) => !out[i]);
     const before = [...money];
     const u = new Map(seats.map((i) => [i, r()]));
@@ -160,7 +160,9 @@ function row(label: string, p: Params) {
       pct(runs.filter((x) => x.youFirst).length / N).padStart(5),
       pct(runs.filter((x) => x.youTop2).length / N).padStart(5),
       '|',
-      `${[...runs.map((x) => x.afterOut)].sort((a, b) => a - b)[Math.floor(N / 2)]}`.padStart(9),
+      `${[...runs.map((x) => x.afterOut)].sort((a, b) => a - b)[Math.floor(N / 2)]}`.padStart(6),
+      pct(runs.filter((x) => x.afterOut >= 3 && x.afterOut <= 4).length / N).padStart(6),
+      pct(runs.filter((x) => x.afterOut <= 1).length / N).padStart(6),
     ].join(' '),
   );
 }
@@ -174,15 +176,16 @@ const say = (line: string) => {
 
 it('raise model', () => {
   say(`${N} tables a row. Raise = R0 x (1+growth)^(hands played). "raiseAt x" scales how readily anyone raises (lower: more raises).`);
-  say('setting                hands  5-8  p10-p90 | raised  each matched | pot@River final | leader doubles | you1st top2 | after 1st out');
+  say('setting                hands  5-8  p10-p90 | raised  each matched | pot@River final | leader doubles | you1st top2 | after 1st out: median  3-4  0-1');
   row('no raise', { R0: 0, growth: 0 });
   if (!process.env.SIM_CALIBRATE) {
     for (const R0 of [8, 12, 16, 24, 32]) for (const growth of [0, 0.1, 0.15, 0.2]) row(`$${R0} +${pct(growth)}/hand`, { R0, growth });
-    say('-- the stakes double when the first captain is out (ante, fees and raise):');
-    row('no raise, x2 on out', { R0: 0, growth: 0, doubleOnOut: true });
-    row('$8 flat, x2 on out', { R0: 8, growth: 0, doubleOnOut: true });
-    row('$8 +10%, x2 on out', { R0: 8, growth: 0.1, doubleOnOut: true });
-    row('$8 +15%, x2 on out', { R0: 8, growth: 0.15, doubleOnOut: true });
+    say('-- the stakes go up when the first captain is out (ante, fees and raise):');
+    for (const m of [1.25, 1.5, 2]) row(`no raise, x${m} on out`, { R0: 0, growth: 0, onOut: m });
+    for (const m of [1.25, 1.5, 2]) row(`$8 flat, x${m} on out`, { R0: 8, growth: 0, onOut: m });
+    row('$8 +15%, x2 on out', { R0: 8, growth: 0.15, onOut: 2 });
+    say('-- the raise is the ante itself (creeping a dollar every three hands), stepped up at the first knockout:');
+    for (const m of [1, 1.25, 1.5, 2]) row(`raise = ante, x${m} on out`, { R0: -1, growth: 0, onOut: m === 1 ? undefined : m });
     say('-- how readily the captains raise, at $8 +15%:');
     for (const scale of [0.8, 1, 1.2, 1.4]) row(`$8 +15%, raiseAt x${scale}`, { R0: 8, growth: 0.15, scaleRaiseAt: scale });
   }
