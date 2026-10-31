@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { DEFAULT_CONFIG, newGame, nextMonth, submitAction, type Action, type GameState } from '../engine';
+  import { DEFAULT_CONFIG, ROSTER, finaleSetup, finishFinale, newGame, nextMonth, submitAction, type Action, type GameState, type HighRollersResult } from '../engine';
   import CardZoom from './CardZoom.svelte';
   import DrawTable from './DrawTable.svelte';
   import HighRollersTable from './HighRollersTable.svelte';
@@ -53,6 +53,12 @@
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;
     w.highRollers = () => (highRollers = true);
+    // A League of four (you and three rivals): the first crossing ends at the final table. It's a voyage like any other (it saves).
+    w.finaleSoon = () => {
+      const rivals = ROSTER.filter((c) => !c.follows && c.tier !== 'rascal').slice(0, 3);
+      stage = 'play';
+      setGame(newGame(Date.now() >>> 0, DEFAULT_CONFIG, rivals.map((def) => ({ def, joins: 'start' as const }))));
+    };
     // Straight to the first hand for buttons; give purses (yours, hers) to try an ending.
     w.tutorialButtons = (mine?: number, hers?: number) => {
       const g = skipToButtons(Date.now() >>> 0);
@@ -124,6 +130,15 @@
     setGame(nextMonth(game));
   }
 
+  /** The final table is over: the voyage is finished, recorded, and it's back to the title. */
+  function finished(result: HighRollersResult) {
+    if (!game) return;
+    const g = finishFinale(game, result);
+    best = recordResult(g.month, result.place === 0, result.score);
+    setGame(g);
+    game = null;
+  }
+
   function pause() {
     clearTimeout(endTimer);
     stage = 'play';
@@ -134,6 +149,9 @@
 <div class="film">
   {#if highRollers}
     <HighRollersTable onmenu={() => (highRollers = false)} setup={highRollersPurse ? { money: highRollersPurse } : undefined} />
+  {:else if game?.phase === 'finale'}
+    <!-- The League's last four at the final table (the same deal again if a voyage is picked up here). -->
+    {#key game.rngState}<HighRollersTable onmenu={pause} setup={finaleSetup(game)} onfinish={finished} />{/key}
   {:else if game}
     {#if game.round?.playStyle === 'draw'}
       <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={revealed} onnext={next} script={game.story ? roundScript(scripts[game.story], game.month) : undefined} ontalk={talkEffect} />

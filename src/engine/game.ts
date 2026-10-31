@@ -9,6 +9,7 @@ import { HUMAN_ID, LEGACY_AI, RETIRED_IDS, ROSTER, drawLineUp, type AiId, type C
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { createRound, isLegal, resolveStreet, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
 import { Rng } from './rng';
+import type { HighRollersResult, HighRollersSetup } from './highrollers';
 
 export interface Player {
   id: string;
@@ -66,7 +67,18 @@ export interface ShowdownRecord {
 /** How many recent showdowns the hand log keeps. */
 export const LOG_SIZE = 10;
 
-export type Phase = 'duel' | 'monthEnd' | 'gameOver' | 'victory';
+/**
+ * 'duel' and 'monthEnd' through the League; 'finale' at the High Rollers
+ * table, once four captains are left; 'finished' after it (placed, with a
+ * score). 'gameOver' when you go broke on the way; 'victory' when you're the
+ * last afloat (a story, where there's no finale).
+ */
+export type Phase = 'duel' | 'monthEnd' | 'finale' | 'finished' | 'gameOver' | 'victory';
+
+/** The League goes to the High Rollers table when this many captains are left afloat (you among them). */
+export const FINALISTS = 4;
+/** The League's stake: what it adds to each finalist's purse at the final table. */
+export const FINALE_STAKE = 60;
 
 export interface GameState {
   config: RulesConfig;
@@ -90,6 +102,10 @@ export interface GameState {
   arranged?: ArrangedHand[];
   /** What the money on the table is: dollars, or (in Morag's lessons) buttons. */
   currency?: 'buttons';
+  /** Four are left: when the month's report is read, the League goes to the final table. */
+  finaleNext?: boolean;
+  /** How the final table went: your place (0 gold) and what you walked away with. */
+  finale?: { place: number; score: number };
 }
 
 const clone = <T>(x: T): T => structuredClone(x);
@@ -342,12 +358,51 @@ function finishMonth(state: GameState, rng: Rng) {
 
   if (player(state, HUMAN_ID).status === 'eliminated') state.phase = 'gameOver';
   else if (activeOpponents(state).length === 0) state.phase = 'victory';
-  else state.phase = 'monthEnd';
+  else {
+    state.phase = 'monthEnd';
+    // The League's last four go to the High Rollers table (not in a story: there the river decides).
+    if (!state.story && activeOpponents(state).length + 1 <= FINALISTS) state.finaleNext = true;
+  }
 }
 
 export function nextMonth(prev: GameState): GameState {
   if (prev.phase !== 'monthEnd') throw new Error('Month is not over');
   const state = clone(prev);
+  if (state.finaleNext) {
+    // To the final table: no more crossings.
+    state.finaleNext = false;
+    state.phase = 'finale';
+    state.round = null;
+    state.opponentId = null;
+    return state;
+  }
   state.month++;
   return startMonthMut(state);
+}
+
+/**
+ * The final table's seating: you and the rivals still afloat, with their
+ * purses (plus the League's stake) and their snags, at the next crossing's
+ * hand (it sets the ante).
+ */
+export function finaleSetup(state: GameState): HighRollersSetup & { seed: number } {
+  const rivals = activeOpponents(state);
+  const you = player(state, HUMAN_ID);
+  return {
+    seed: state.rngState,
+    rivals: rivals.map((p) => p.id),
+    money: [you, ...rivals].map((p) => Math.max(0, p.money) + FINALE_STAKE),
+    jokers: [you, ...rivals].map((p) => p.jokers.slice()),
+    pool: state.pool.slice(),
+    startHand: state.month + 1,
+  };
+}
+
+/** The final table is over: your place and what you walked away with end the voyage. */
+export function finishFinale(prev: GameState, result: HighRollersResult): GameState {
+  if (prev.phase !== 'finale') throw new Error('Not at the final table');
+  const state = clone(prev);
+  state.phase = 'finished';
+  state.finale = { place: result.place, score: result.score };
+  return state;
 }

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, PRESETS, type RulesConfig } from './config';
 import { HUMAN_ID, ROSTER, drawLineUp } from './characters';
-import { LOG_SIZE, activeOpponents, migrateGame, newGame, nextMonth, player, submitAction, type GameState } from './game';
+import { FINALE_STAKE, LOG_SIZE, activeOpponents, finaleSetup, finishFinale, migrateGame, newGame, nextMonth, player, submitAction, type GameState } from './game';
+import { chooseAction, viewFor } from './ai';
+import { newHighRollers } from './highrollers';
 import { legalActions } from './round';
 import { Rng } from './rng';
 
@@ -162,5 +164,52 @@ describe('game', () => {
     expect(fixed.players.some((p) => p.id === 'pete' || p.id === 'jiggs')).toBe(false);
     const konrad = fixed.players.find((p) => p.id === 'konrad');
     if (konrad) expect(konrad.ai).toBe('bully');
+  });
+});
+
+describe('the League finale', () => {
+  /** A League down to its last four: you and three rivals, played through the first crossing. */
+  const toMonthEnd = () => {
+    let s = newGame(11, PRESETS.draw, ['gaylord', 'eliza', 'finlay'].map((id) => ({ def: ROSTER.find((c) => c.id === id)!, joins: 'start' as const })));
+    const rng = new Rng(2);
+    while (s.phase === 'duel') s = submitAction(s, chooseAction('careful', viewFor(s.round!, 0), s.config, rng));
+    return s;
+  };
+
+  it('with four captains left, the month ends and then the League goes to the final table', () => {
+    const s = toMonthEnd();
+    expect(s.phase).toBe('monthEnd'); // (seeded: you survive the first crossing)
+    expect(s.finaleNext).toBe(true);
+    const f = nextMonth(s);
+    expect(f.phase).toBe('finale');
+    expect(f.round).toBeNull();
+  });
+
+  it('the final table seats the four with their purses plus the stake, their very snags, and the hand to come', () => {
+    const s = toMonthEnd();
+    const f = nextMonth(s);
+    const setup = finaleSetup(f);
+    const you = player(f, HUMAN_ID);
+    expect(setup.rivals).toHaveLength(3);
+    expect((setup.money as number[])[0]).toBe(you.money + FINALE_STAKE);
+    expect(setup.jokers![0].map((j) => j.id)).toEqual(you.jokers.map((j) => j.id));
+    expect(setup.startHand).toBe(f.month + 1);
+    const table = newHighRollers(setup.seed, setup);
+    expect(table.players.map((p) => p.id)).toEqual([HUMAN_ID, ...setup.rivals!]);
+    expect(table.players[0].jokers.map((j) => j.id)).toEqual(you.jokers.map((j) => j.id));
+  });
+
+  it('after the final table the voyage is finished, with your place and score', () => {
+    const s = toMonthEnd();
+    const done = finishFinale(nextMonth(s), { placings: [], place: 1, score: 212 });
+    expect(done.phase).toBe('finished');
+    expect(done.finale).toEqual({ place: 1, score: 212 });
+  });
+
+  it('a story never goes to a final table', () => {
+    let s = newGame(11, PRESETS.draw, ['gaylord', 'eliza', 'finlay'].map((id) => ({ def: ROSTER.find((c) => c.id === id)!, joins: 'start' as const })), { story: 'test' });
+    const rng = new Rng(2);
+    while (s.phase === 'duel') s = submitAction(s, chooseAction('careful', viewFor(s.round!, 0), s.config, rng));
+    expect(s.finaleNext).toBeFalsy();
   });
 });

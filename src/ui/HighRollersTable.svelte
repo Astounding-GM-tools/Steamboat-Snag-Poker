@@ -51,7 +51,8 @@
    */
   let { onmenu, setup, onfinish }: { onmenu: () => void; setup?: HighRollersSetup; onfinish?: (result: HighRollersResult) => void } = $props();
 
-  let game = $state.raw<HighRollersState>(newHighRollers(Date.now() >>> 0, untrack(() => setup)));
+  /** A table seated from a voyage brings its own seed (the same deal if it's picked up again); on its own, a fresh one. */
+  let game = $state.raw<HighRollersState>(newHighRollers(untrack(() => setup?.seed) ?? Date.now() >>> 0, untrack(() => setup)));
   let tapped = $state<string[]>([]);
 
   const round = $derived(game.round!);

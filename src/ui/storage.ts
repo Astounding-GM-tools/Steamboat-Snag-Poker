@@ -5,6 +5,8 @@ export interface Best {
   wins: number;
   /** Most crossings survived in one voyage. */
   longest: number;
+  /** The most you've walked away with from a final table. */
+  highScore: number;
 }
 
 function read<T>(key: string, fallback: T): T {
@@ -30,12 +32,14 @@ export function loadBest(): Best {
   return {
     wins: raw.wins ?? (raw.victory ? 1 : 0),
     longest: raw.longest ?? raw.months ?? 0,
+    highScore: raw.highScore ?? 0,
   };
 }
 
-export function recordResult(months: number, victory: boolean): Best {
+/** A voyage's end: won (gold at the final table, or last afloat), how long it lasted, and what you walked away with. */
+export function recordResult(months: number, victory: boolean, score = 0): Best {
   const prev = loadBest();
-  const best = { wins: prev.wins + (victory ? 1 : 0), longest: Math.max(prev.longest, months) };
+  const best = { wins: prev.wins + (victory ? 1 : 0), longest: Math.max(prev.longest, months), highScore: Math.max(prev.highScore, score) };
   write('wwr.best', best);
   return best;
 }
@@ -47,7 +51,7 @@ export function loadGame(): GameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     const game = raw ? (JSON.parse(raw) as GameState) : null;
-    return game && game.phase !== 'gameOver' && game.phase !== 'victory' ? migrateGame(game) : null;
+    return game && game.phase !== 'gameOver' && game.phase !== 'victory' && game.phase !== 'finished' ? migrateGame(game) : null;
   } catch {
     return null;
   }
@@ -55,7 +59,7 @@ export function loadGame(): GameState | null {
 
 export function saveGame(game: GameState | null) {
   try {
-    if (game && game.phase !== 'gameOver' && game.phase !== 'victory') localStorage.setItem(SAVE_KEY, JSON.stringify(game));
+    if (game && game.phase !== 'gameOver' && game.phase !== 'victory' && game.phase !== 'finished') localStorage.setItem(SAVE_KEY, JSON.stringify(game));
     else localStorage.removeItem(SAVE_KEY);
   } catch {
     /* storage unavailable */

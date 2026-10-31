@@ -28,8 +28,14 @@ vignette, intertitle cards for all text.
   matters is not running out.
 - **Busted:** your purse hits $0 at the end of a crossing — your boat is sold at
   auction. Game over.
-- **King of the River:** be the last captain afloat. There is no month limit.
-- Persisted locally: tournaments won and the longest run (in crossings).
+- **The final table:** when four captains are left afloat (you among them),
+  the League goes to the **High Rollers** table (docs/high-rollers.md): each
+  finalist brings their purse, and the League stakes each of them $60 more.
+  Gold, silver or bronze there, and what you walk away with is your score.
+  (In a story, where there's no final table, it's still the last captain
+  afloat.)
+- Persisted locally: tournaments won (gold at the final table), the longest
+  run (in crossings), and the best score.
 
 ## Cards
 

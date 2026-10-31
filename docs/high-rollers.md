@@ -117,11 +117,25 @@ hand 24 (an ante of 8), a table lasts about **7 hands** (4 to 14); a careful
 player finishes first about a third of the time, in the money about two
 thirds.
 
+## In the League
+
+When a month ends with four captains afloat (you among them), the standings
+say so ("Four captains left. The High Rollers are waiting.") and Next becomes
+**To the final table**. The four sit down with their League purses plus the
+League's **$60 stake** each, their very snags, at the next crossing's hand
+(about the 23rd, an $8 ante). The stake keeps the League's order (a rich run
+still matters) but gives the poorest finalist a fighting chance: with
+League-like purses a table lasts a median of 6 hands, 5–8 about 60% of the
+time (without it: 4 hands, 33%). After the placings, Continue ends the
+voyage: gold counts as a tournament won, and what you walked away with is
+your score (best kept). A voyage paused at the final table picks up with the
+same deal. In development, `finaleSoon()` in the console starts a League of
+four.
+
 ## Open
 
 - How the AI weighs three opponents instead of one (for now it plays each
   hand as if against one, with the rest of the table's discards and snags).
-- Where the League hands over to the High Rollers table, and with which purses.
 - Reading and bluffing: each rival could remember what your raises turned
   out to be at showdowns (Gaylord calling more once he's caught you, folding
   to you once he hasn't), and the portraits' moods could give (or fake) tells.

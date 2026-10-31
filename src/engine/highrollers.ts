@@ -60,6 +60,11 @@ export interface HighRollersSetup {
   startHand?: number;
   /** Snags dealt out at the start, as if brought from the League: [yours, each rival's]. */
   snags?: [number, number];
+  /** Or the very snags each brings (yours first, then each rival's), and the pool left over: from the League. */
+  jokers?: JokerCard[][];
+  pool?: JokerCard[];
+  /** Where the deal comes from, when the table is seated from a voyage (so it can be picked up again). */
+  seed?: number;
   /** The Last Hand's stakes (default double). */
   lastHandStakes?: number;
   /** Raising on the River (default on). */
@@ -75,12 +80,13 @@ export function newHighRollers(seed: number, setup: HighRollersSetup = {}, confi
   const candidates = ROSTER.filter((c) => !c.follows && c.tier !== 'rascal');
   const rivals = setup.rivals ?? rng.shuffle(candidates).slice(0, 3).map((c) => c.id);
   const purse = (k: number) => (Array.isArray(setup.money) ? setup.money[k] : setup.money) ?? HIGH_ROLLERS_PURSE;
-  const pool = Array.from({ length: config.totalJokers }, (_, i) => jokerCard(i));
+  const pool = setup.pool?.slice() ?? Array.from({ length: config.totalJokers }, (_, i) => jokerCard(i));
   const give = (n: number) => pool.splice(0, Math.min(n, pool.length));
   const [mine, theirs] = setup.snags ?? [1, 1];
+  const snagsOf = (k: number) => setup.jokers?.[k]?.slice() ?? give(k ? theirs : mine);
   const players: HighRoller[] = [
-    { id: HUMAN_ID, ai: null, money: purse(0), jokers: give(mine), out: false },
-    ...rivals.map((id, k) => ({ id, ai: ROSTER.find((c) => c.id === id)!.ai, money: purse(k + 1), jokers: give(theirs), out: false })),
+    { id: HUMAN_ID, ai: null, money: purse(0), jokers: snagsOf(0), out: false },
+    ...rivals.map((id, k) => ({ id, ai: ROSTER.find((c) => c.id === id)!.ai, money: purse(k + 1), jokers: snagsOf(k + 1), out: false })),
   ];
   const state: HighRollersState = {
     config: clone(config),

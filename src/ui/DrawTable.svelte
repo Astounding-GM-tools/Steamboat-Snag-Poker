@@ -822,7 +822,7 @@
           <CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} />
         {/each}
       </div>
-      {#if standing}<div class="standings-over"><Standings {game} /></div>{/if}
+      {#if standing}<div class="standings-over"><Standings {game} />{#if game.finaleNext}<p class="finale-next">{t('finale.next')}</p>{/if}</div>{/if}
     </div>
     <!-- Always there, so a snag coming up never moves the table; empty when nothing is at stake (after a fold the snag goes back into the deck). -->
     <p class="stakes">{#if stakes.length && !standing && result?.folded == null}{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}{/if}</p>
@@ -936,7 +936,8 @@
       <button onclick={() => (showCaptain = false)}>{t('draw.back')}</button>
     {:else if standing}
       <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
-      <button onclick={() => onnext?.()}>{t('end.next')}</button>
+      <!-- Four left: on to the final table. -->
+      <button onclick={() => onnext?.()}>{game.finaleNext ? t('finale.go') : t('end.next')}</button>
     {:else if revealing}
       <!-- Once the verdict is in there's nothing left to skip: the black button stays empty. -->
       <button class="ghost" onclick={revealSkip} disabled={verdictShown} style:visibility={verdictShown ? 'hidden' : null}>{t('show.skip')}</button>
@@ -1121,6 +1122,13 @@
     display: flex;
     align-items: center;
     animation: callout-in 0.3s ease-out;
+  }
+  /* Four left: the League's last word before the final table. */
+  .finale-next {
+    margin: 0.5rem 0 0;
+    text-align: center;
+    font-family: var(--title-font);
+    letter-spacing: 0.06em;
   }
   .standings-over :global(.standings) {
     width: 100%;

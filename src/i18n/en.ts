@@ -291,6 +291,8 @@ export const en = {
   'hr.snagsTo.you': 'The snags go to you.',
   'hr.youAreOut': 'You’re out. Watch the rest play it out.',
   'hr.again': 'Again',
+  'finale.next': 'Four captains left. The High Rollers are waiting.',
+  'finale.go': 'To the final table',
   'hr.raise': 'Raise · {amount}',
   'hr.match': 'Match · {amount}',
   'hr.allIn': 'All in · {amount}',
