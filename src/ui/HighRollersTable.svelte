@@ -340,30 +340,42 @@
     if (moves.length) later(() => pour(moves).then(() => moves.forEach(([c]) => c.classList.remove('waiting'))));
   }
 
-  // The deal: the Flop, one card at a time, then three rounds of hole cards from the first seat.
+  // The deal, as at a real table: one card at a time round the table, from the
+  // dealer's left, until everyone has three; then, after a breath, the Flop,
+  // each card a thunderclap.
   const DEALT_ALL = 99;
-  /** Cards dealt so far this hand, in dealing order. */
+  /** Cards dealt so far this hand, in dealing order (hole cards, then the Flop). */
   let dealt = $state(DEALT_ALL);
-  /** A seat's k-th hole card in dealing order: after the Flop, round by round from the first seat. */
-  const dealIndex = (seat: number, k: number) => 3 + k * round.seats.length + ((seat - round.first + round.seats.length) % round.seats.length);
+  /** The dealer sits just before the first to act (who is on the dealer's left). */
+  const dealer = $derived((round.first + round.seats.length - 1) % round.seats.length);
+  /** A seat's k-th hole card in dealing order: round by round, from the dealer's left. */
+  const dealIndex = (seat: number, k: number) => k * round.seats.length + ((seat - round.first + round.seats.length) % round.seats.length);
   const holeDealt = (seat: number) => [0, 1, 2].filter((k) => dealIndex(seat, k) < dealt).length;
+  /** The Flop's i-th card in dealing order: after every hole card. */
+  const flopIndex = (i: number) => 3 * round.seats.length + i;
+  /** The pause before the Flop, and between its cards: Boom. Boom. BOOM. */
+  const FLOP_MS = [1100, 1000, 1300];
   function deal(): Promise<void> {
     if (rushing || reducedMotion()) {
       dealt = DEALT_ALL;
       return Promise.resolve();
     }
     const n = round.seats.length;
-    const cards = 3 + 3 * n;
-    /** Who gets the i-th card dealt (-1: the board). */
-    const to = (i: number) => (i < 3 ? -1 : (round.first + ((i - 3) % n)) % n);
+    const holes = 3 * n;
+    const cards = holes + 3;
+    /** How long after card i is dealt before the next: a card of yours (face up) is worth a look; theirs go quicker. */
+    const after = (i: number) => {
+      if (i === holes - 1) return FLOP_MS[0];
+      if (i >= holes) return FLOP_MS[i - holes + 1] ?? FACE_UP_MS;
+      return (round.first + (i % n)) % n === me ? FACE_UP_MS : FACE_DOWN_MS;
+    };
     return new Promise((done) => {
       const tick = () => {
         // Hurried along: the rest at once.
         if (rushing) dealt = DEALT_ALL;
         if (dealt >= cards) return done();
-        const faceUp = to(dealt) === -1 || to(dealt) === me;
-        dealt++;
-        setTimeout(tick, faceUp ? FACE_UP_MS : FACE_DOWN_MS);
+        const i = dealt++;
+        setTimeout(tick, after(i));
       };
       tick();
     });
@@ -465,7 +477,7 @@
       {@const snags = snagsOf(seat)}
       <div class="rival" class:focus={focus === seat} class:folded={s.folded}>
         <div class="who">
-          {#if round.first === seat}<span class="button" title={t('hr.first')}></span>{/if}
+          {#if dealer === seat}<span class="button" title={t('hr.dealer')}></span>{/if}
           <span class="tag">{tagName(p.id)}</span>
           {#if snags.length}
             <div class="snag-fan tiny" style="--n: {snags.length}">
@@ -506,8 +518,9 @@
     </div>
     <div class="community">
       {#each Array.from({ length: 5 }) as _, i}
-        {@const card = i < boardShown && (i >= 3 || i < dealt) ? (round.community[i] ?? null) : null}
-        {#key card?.id}<CardView {card} deal="left" />{/key}
+        {@const card = i < boardShown && (i >= 3 || flopIndex(i) < dealt) ? (round.community[i] ?? null) : null}
+        <!-- Each lands with a thud; the Flop's last card and the River slam down. -->
+        {#key card?.id}<CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} />{/key}
       {/each}
     </div>
   </div>
@@ -517,7 +530,7 @@
     <div class="my-purse" data-purse={me}>
       {#if mine}
         <Purse amount={purse(me)} start={startMoney[game.seated[me]] ?? captain(me).money} showAmount={false} focus={18} label={t('character.captain.you')} keep={game.hand} paid={paidOut(me)} won={wonIn(me)} />
-        {#if round.first === me}<span class="button own" title={t('hr.first')}></span>{/if}
+        {#if dealer === me}<span class="button own" title={t('hr.dealer')}></span>{/if}
         {#if preview && !tapped.length && !laid}<p class="my-hand">{t('draw.boardOnly')}</p>{:else if myCall}<p class="my-hand">{myCall.lingo ?? myCall.call}</p>{/if}
       {:else}
         <p class="my-hand">{t('hr.youAreOut')}</p>
@@ -681,7 +694,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  /* The dealer's button: who acts (and draws) first this hand. */
+  /* The dealer's button: the dealer this hand (the one on their left acts, and draws, first). */
   .button {
     flex: none;
     align-self: center;

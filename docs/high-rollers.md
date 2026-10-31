@@ -63,9 +63,10 @@ What you walk away with is your score.
 - **The table takes its time:** money moves one purse at a time, heavily
   (each purse's coins pour in, and only when the last has landed does the
   next begin); at a new hand the antes go in seat by seat from the dealer's
-  dot, then the Flop is dealt card by card and the hole cards round the
-  table: face up (the board, yours) slowly, since each changes the game;
-  face down to the rivals, quicker. The Turn and the River each arrive in a
+  left; then the deal, as at a real table: one card at a time round the table
+  from the dealer's left until everyone has three (yours slowly, face up,
+  theirs face down, quicker); then, after a breath, the Flop, each card a
+  thunderclap: Boom. Boom. BOOM. The Turn and the River each arrive in a
   beat of their own. The buttons wait until the table is still. A tap anywhere hurries
   it (the stacks just change, as they do with reduced motion); on the
   rivals' turns, **Skip** goes past the rest of them.
@@ -85,7 +86,7 @@ What you walk away with is your score.
   shortest of nickname, first name and surname) with their snags fanned
   beside it, then three small cards held close and their discards, then a
   purse of little stacks nearest the pot. No portraits for now. A dot marks
-  who acts first.
+  the dealer; the captain on the dealer's left is dealt to, and acts, first.
 - **The Flop and the Turn:** you choose; then each rival's move is shown in
   turn, in seat order from the first, the one shown framed ("Swaps 2",
   "Calls · $4", "Folds"), and you press **Next**. Purses, snags and discards

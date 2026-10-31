@@ -8,8 +8,8 @@
   interface Props {
     card?: Card | null;
     faceDown?: boolean;
-    /** Slide in as if dealt: from the dealer at the left, or from above for the opponent. */
-    deal?: 'left' | 'top' | null;
+    /** Slide in as if dealt: from the dealer at the left, or from above for the opponent; or, onto the board, dropped (a thud) or slammed down. */
+    deal?: 'left' | 'top' | 'drop' | 'slam' | null;
     small?: boolean;
     /** The big close-up view (long-press any card). */
     huge?: boolean;
@@ -91,6 +91,8 @@
     class:fresh
     class:deal-left={deal === 'left'}
     class:deal-top={deal === 'top'}
+    class:deal-drop={deal === 'drop'}
+    class:deal-slam={deal === 'slam'}
     class:used
     class:toss
     class:faded
@@ -225,9 +227,35 @@
     60% { opacity: 1; }
     to { transform: none; }
   }
+  /* Onto the board: it falls from above, a touch big, and lands with a thud (a little give, then still). */
+  .deal-drop {
+    animation: deal-drop 0.5s cubic-bezier(0.5, 0, 0.75, 0.4) both;
+  }
+  @keyframes deal-drop {
+    from { transform: translateY(-36px) scale(1.18); opacity: 0; box-shadow: 10px 16px 0 rgba(0, 0, 0, 0.25); }
+    55% { opacity: 1; }
+    70% { transform: translateY(0) scale(0.97); box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6); }
+    85% { transform: scale(1.01); }
+    to { transform: none; }
+  }
+  /* The big one: higher, bigger, harder, and the table shudders. */
+  .deal-slam {
+    animation: deal-slam 0.65s cubic-bezier(0.55, 0, 0.8, 0.3) both;
+  }
+  @keyframes deal-slam {
+    from { transform: translateY(-70px) scale(1.4) rotate(-3deg); opacity: 0; box-shadow: 18px 26px 0 rgba(0, 0, 0, 0.2); }
+    50% { opacity: 1; }
+    62% { transform: translateY(0) scale(0.94) rotate(0); box-shadow: 0 0 0 rgba(0, 0, 0, 0.7); }
+    70% { transform: translate(-2px, 1px) scale(1.02); }
+    78% { transform: translate(2px, -1px); }
+    86% { transform: translate(-1px, 0); }
+    to { transform: none; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .deal-left,
-    .deal-top {
+    .deal-top,
+    .deal-drop,
+    .deal-slam {
       animation: none;
     }
   }

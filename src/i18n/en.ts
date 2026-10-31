@@ -280,7 +280,7 @@ export const en = {
   'hr.move.call': 'Calls · {amount}',
   'hr.move.check': 'Checks',
   'hr.folded': 'Folded',
-  'hr.first': 'Acts first this hand',
+  'hr.dealer': 'Dealer',
   'hr.byFolds': 'The rest folded: {name} takes the pot.',
   'hr.split': 'Pot split: {names}.',
   'hr.wins': '{name} takes the pot!',
