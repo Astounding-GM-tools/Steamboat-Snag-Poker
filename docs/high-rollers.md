@@ -58,6 +58,13 @@ What you walk away with is your score.
 
 - **Your side and the river are the duel's:** your purse, your cards, your
   snag fan and your discards in the same places; no figures, no hand number.
+- **The table takes its time:** money moves one purse at a time, heavily
+  (each purse's coins pour in, and only when the last has landed does the
+  next begin); at a new hand the antes go in seat by seat from the dealer's
+  dot, then the Flop is dealt card by card and the hole cards round the
+  table. The buttons wait until the table is still. A tap anywhere hurries
+  it (the stacks just change, as they do with reduced motion); on the
+  rivals' turns, **Skip** goes past the rest of them.
 - **Purses keep their shape** from hand to hand: coins paid in leave from
   the front; winnings land on the stacks' tops for a few rounds, then in new
   stacks beside them, and stay where they fell (tidying up is a quality-of-life

@@ -278,3 +278,7 @@ button.ghost {
 .landing {
   visibility: hidden !important;
 }
+/* A coin already counted as paid (or won) but still waiting its turn to fly: it stays where it is until then. */
+.waiting {
+  visibility: visible !important;
+}

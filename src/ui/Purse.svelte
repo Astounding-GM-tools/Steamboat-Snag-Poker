@@ -206,10 +206,13 @@
     return out;
   }
 
+  /** Coins won that end up on the table: any debt (paid more than there was: the house covered it) comes out of them first. */
+  const keptWon = (stacks: Stack[], paid: number, won: number) => Math.max(0, won - Math.max(0, paid - stacks.reduce((a, s) => a + s.h, 0)));
+
   /** The stacks after a hand: what was paid gone, what was won added where it landed. */
   function settle(stacks: Stack[], paid: number, won: number): Stack[] {
     const left = without(stacks, paid);
-    const spots = landing(left, won);
+    const spots = landing(left, keptWon(stacks, paid, won));
     const merged = left.map((s) => ({ ...s }));
     for (const spot of spots) {
       const s = merged.find((m) => Math.abs(m.x - spot.x) < 0.5 && m.lift === spot.lift);
@@ -247,10 +250,10 @@
     for (const s of inOrder(kept))
       for (let c = s.h - 1; c >= 0; c--) out.push({ d: d++, x: s.x, y: s.lift + c * dims.step, fromLeft: true, flat: s.tilt !== undefined && s.h === 1, tilt: s.tilt, z: -s.lift });
     for (const c of out) c.spent = c.d < paid;
-    landing(without(kept, paid), won).forEach((spot, g) => out.push({ d: d + g, g, x: spot.x, y: spot.y, fromLeft: true, z: -spot.lift }));
+    landing(without(kept, paid), keptWon(kept, paid, won)).forEach((spot, g) => out.push({ d: d + g, g, x: spot.x, y: spot.y, fromLeft: true, z: -spot.lift }));
     return out;
   });
-  const keptTotal = $derived(kept ? kept.reduce((a, s) => a + s.h, 0) - paid + won : 0);
+  const keptTotal = $derived(kept ? Math.max(0, kept.reduce((a, s) => a + s.h, 0) - paid) + keptWon(kept, paid, won) : 0);
 
   /** Back rows first, then each stack from the bottom up. */
   const drawn = $derived([...(keptCoins ?? coins)].sort((a, b) => (a.z ?? 0) - (b.z ?? 0) || a.y - b.y));

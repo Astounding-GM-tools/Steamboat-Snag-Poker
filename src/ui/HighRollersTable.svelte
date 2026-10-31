@@ -30,8 +30,8 @@
   import { dollars, tagName } from './format';
   import { handLabel } from './handNames';
   import { heavy } from './heavy';
-  import { flyInto, reducedMotion } from './coins';
-  import { untrack } from 'svelte';
+  import { flyInto, landAll, reducedMotion } from './coins';
+  import { tick, untrack } from 'svelte';
 
   /**
    * High Rollers: four captains at one table, until the first is broke and
@@ -169,6 +169,15 @@
     }
   }
 
+  /** Past the rest of the rivals' moves at once: their money goes in without the flights. */
+  async function skipReplay() {
+    rushing = true;
+    afterReplay();
+    // Their payments are queued once the table updates; the hurry ends when they're done.
+    await tick();
+    later(async () => {});
+  }
+
   function afterReplay() {
     boardShown = round.community.length;
     const res = round.result;
@@ -227,12 +236,15 @@
   const shownBets = $derived(round.seats.map((_, s) => seen(s).bets[s]));
   const potCount = $derived(shownBets.reduce((a, b) => a + b, 0));
 
-  // --- Coins in flight -------------------------------------------------------
-  // Each purse pours into the one pile: a seat's coins leave from where they
-  // stood in its purse and land on the pile's next spots. At the verdict the
-  // pile flies to the winners, onto the spots their purses have laid out for
-  // what they won (purses keep their stacks from hand to hand, so that's where
-  // the coins stay).
+  // --- Coins in flight, and the deal ------------------------------------------
+  // Money moves one purse at a time, and heavily: a seat's coins leave from
+  // where they stood in its purse and land on the pile's next spots, and only
+  // when the last has landed does the next purse pour. At the verdict the pile
+  // flies to the winners, onto the spots their purses have laid out for what
+  // they won (purses keep their stacks from hand to hand, so that's where the
+  // coins stay). The cards are dealt the same way, after the antes. Everything
+  // waits its turn in one queue; a tap anywhere hurries it all along (the
+  // stacks just change, as they do for those who'd rather have no motion).
   let rootEl = $state<HTMLElement>();
   let pileEl = $state<HTMLElement>();
   /** Whose each coin in the pile is, in the order they landed. */
@@ -243,26 +255,67 @@
   /** Which table this is (Again deals a new one). */
   let tableNo = $state(0);
   const MAX_FLYERS = 40;
+  /** A coin's flight, and the beat between one coin and the next. */
+  const FLIGHT_MS = 650;
+  const POUR_MS = 70;
+  const DEAL_MS = 170;
   const purseEl = (seat: number) => rootEl?.querySelector<HTMLElement>(`[data-purse="${seat}"]`) ?? null;
 
-  /** A seat paid dollars a..b into the pot. */
+  /** Flows waiting or under way; while there are any, the table is busy and the buttons wait. */
+  let pending = $state(0);
+  let flows: Promise<void> = Promise.resolve();
+  /** Hurrying: what's queued happens at once, without movement. */
+  let rushing = false;
+  function later(run: () => Promise<void>) {
+    pending++;
+    flows = flows
+      .then(run)
+      .catch(() => {})
+      .finally(() => {
+        if (--pending === 0) rushing = false;
+      });
+  }
+  /** Coins moving from one place to another, one after another; resolves when the last has landed. */
+  function pour(moves: [Element, HTMLElement][]): Promise<void> {
+    for (const [src] of moves) src.classList.remove('waiting');
+    if (rushing || reducedMotion()) {
+      for (const [, spot] of moves) spot.classList.remove('landing');
+      return Promise.resolve();
+    }
+    return Promise.all(moves.map(([src, spot], i) => flyInto(src, spot, i * POUR_MS, undefined, FLIGHT_MS))).then(() => {});
+  }
+  /** A tap: everything in the air lands, and whatever is queued happens at once. */
+  function hurry() {
+    if (!pending) return;
+    rushing = true;
+    landAll();
+    dealt = DEALT_ALL;
+  }
+
+  /** A seat paid dollars a..b into the pot: its coins wait in its purse for its turn, then pour into the pile. */
   function payIn(seat: number, a: number, b: number) {
     const purse = purseEl(seat);
+    const moves: [Element, HTMLElement][] = [];
     for (let k = a; k < b; k++) {
       const spot = pileEl?.querySelector<HTMLElement>(`[data-k="${owners.length}"]`);
       owners.push(seat);
       const src = purse?.querySelector(`[data-d="${k}"]`);
-      if (spot && src && k < a + MAX_FLYERS && !reducedMotion()) flyInto(src, spot, (k - a) * 45);
+      if (!spot || !src || k >= a + MAX_FLYERS) continue;
+      spot.classList.add('landing');
+      src.classList.add('waiting');
+      moves.push([src, spot]);
     }
+    if (moves.length) later(() => pour(moves));
   }
 
   /** The verdict: the pile flies to the winners (a winner's own coins to it, the rest shared out among them in turn). */
   function payOut(winners: number[]) {
-    if (!pileEl || reducedMotion()) return;
+    if (!pileEl) return;
     const landed = new Map<number, number>();
     let shared = 0;
     const coins = [...pileEl.querySelectorAll<HTMLElement>('[data-k]')];
     const first = Math.max(0, coins.length - MAX_FLYERS * 2);
+    const moves: [Element, HTMLElement][] = [];
     coins.forEach((c, i) => {
       const owner = owners[Number(c.dataset.k)];
       const to = winners.includes(owner) ? owner : winners[shared++ % winners.length];
@@ -270,7 +323,34 @@
       landed.set(to, g + 1);
       const spot = purseEl(to)?.querySelector<HTMLElement>(`[data-g="${g}"]`);
       // Only the last few dozen fly (the rest are there already when the pot is paid).
-      if (spot && i >= first) flyInto(c, spot, (i - first) * 14);
+      if (!spot || i < first) return;
+      spot.classList.add('landing');
+      c.classList.add('waiting');
+      moves.push([c, spot]);
+    });
+    if (moves.length) later(() => pour(moves).then(() => moves.forEach(([c]) => c.classList.remove('waiting'))));
+  }
+
+  // The deal: the Flop, one card at a time, then three rounds of hole cards from the first seat.
+  const DEALT_ALL = 99;
+  /** Cards dealt so far this hand, in dealing order. */
+  let dealt = $state(DEALT_ALL);
+  /** A seat's k-th hole card in dealing order: after the Flop, round by round from the first seat. */
+  const dealIndex = (seat: number, k: number) => 3 + k * round.seats.length + ((seat - round.first + round.seats.length) % round.seats.length);
+  const holeDealt = (seat: number) => [0, 1, 2].filter((k) => dealIndex(seat, k) < dealt).length;
+  function deal(): Promise<void> {
+    if (rushing || reducedMotion()) {
+      dealt = DEALT_ALL;
+      return Promise.resolve();
+    }
+    const cards = 3 + 3 * round.seats.length;
+    return new Promise((done) => {
+      const tick = () => {
+        if (dealt >= cards) return done();
+        dealt++;
+        setTimeout(tick, DEAL_MS);
+      };
+      tick();
     });
   }
 
@@ -279,23 +359,29 @@
     const hand = game.hand;
     const winners = settled ? round.result?.winners : undefined;
     untrack(() => {
-      if (hand !== flownHand) {
+      const fresh = hand !== flownHand;
+      if (fresh) {
         flownHand = hand;
         flown = bets.map(() => 0);
         owners = [];
+        dealt = 0;
       }
-      // In seat order from the first, so the pile fills the way the table played.
+      // In seat order from the first, so the pile fills the way the table played: a purse at a time.
       for (let j = 0; j < bets.length; j++) {
         const s = (round.first + j) % bets.length;
         if (bets[s] > flown[s]) payIn(s, flown[s], bets[s]);
       }
       flown = [...bets];
+      // A new hand: the antes in, then the deal.
+      if (fresh) later(deal);
       if (winners && paidHand !== hand) {
         paidHand = hand;
         payOut(winners);
       }
     });
   });
+  /** The table is moving: money in the air, cards being dealt. The buttons wait. */
+  const busy = $derived(pending > 0);
   /** What a seat has paid out this hand (into the pot, and forfeits at the verdict) and won (at the verdict): its purse settles them. */
   const paidOut = (seat: number) => (settled && round.result ? round.bets[seat] + round.result.forfeit[seat] : seen(seat).bets[seat]);
   const wonIn = (seat: number) => (settled && round.result ? round.result.share[seat] : 0);
@@ -336,7 +422,9 @@
   const myCall = $derived(preview ? handLabel(preview) : mine && shownTo(me) ? handName(me) : null);
 </script>
 
-<div class="hr" bind:this={rootEl}>
+<!-- A tap anywhere, while the table is moving, hurries it along. -->
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<div class="hr" bind:this={rootEl} onclick={hurry}>
   <!-- A new table (Again) starts afresh: purses laid out new. -->
   {#key tableNo}
   <!-- The rivals across the top, a third of the width each, in seat order. -->
@@ -365,7 +453,7 @@
               {#each cards as card (card.id)}<CardView {card} />{/each}
               {#each s.hand as card (card.id)}<CardView {card} faded />{/each}
             {:else}
-              {#each Array.from({ length: cards.length + s.hand.length }) as _, i (i)}<CardView faceDown />{/each}
+              {#each Array.from({ length: Math.min(cards.length + s.hand.length, holeDealt(seat)) }) as _, i (i)}<CardView faceDown deal="top" />{/each}
             {/if}
           </div>
           <DiscardChips cards={s.discarded} flop={s.flopDiscards} title={tagName(p.id)} />
@@ -389,7 +477,8 @@
     </div>
     <div class="community">
       {#each Array.from({ length: 5 }) as _, i}
-        <CardView card={i < boardShown ? (round.community[i] ?? null) : null} />
+        {@const card = i < boardShown && (i >= 3 || i < dealt) ? (round.community[i] ?? null) : null}
+        {#key card?.id}<CardView {card} deal="left" />{/key}
       {/each}
     </div>
   </div>
@@ -409,9 +498,10 @@
       {#if mine}
         <div class="hand-cell">
           {#each myPlayed as card (card.id)}<CardView {card} used />{/each}
-          {#each mine.hand as card (card.id)}
+          {#each mine.hand.filter((_, k) => k >= 3 || dealIndex(me, k) < dealt) as card (card.id)}
             <CardView
               {card}
+              deal="left"
               selected={composing && !laid && tapped.includes(card.id)}
               used={laid && tapped.includes(card.id)}
               toss={!composing && tapped.includes(card.id)}
@@ -443,7 +533,7 @@
   </div>
 
   <!-- The two buttons. Call, Swap and Play hand are held (heavy); the rest are light taps. -->
-  <div class="actions" use:heavy>
+  <div class="actions" use:heavy inert={busy}>
     {#if view === 'choose' && myTurn && composing && round.raise && laid}
       <!-- The River, your hand laid: raise on it, or let it stand. Either commits you. -->
       <button class="ghost" onclick={() => go(true)} data-heavy="true">{t('hr.raise', { amount: dollars(round.raise) })}</button>
@@ -458,6 +548,10 @@
     {:else if view === 'over'}
       <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
       {#if onfinish}<button onclick={() => onfinish(highRollersResult(game))}>{t('show.continue')}</button>{:else}<button onclick={again}>{t('hr.again')}</button>{/if}
+    {:else if view === 'replay'}
+      <!-- The rivals' turns: Next through them, one by one, or Skip to the end. -->
+      <button class="ghost" onclick={skipReplay}>{t('show.skip')}</button>
+      <button onclick={next}>{t('show.next')}</button>
     {:else}
       <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
       <button onclick={next}>{t('show.next')}</button>

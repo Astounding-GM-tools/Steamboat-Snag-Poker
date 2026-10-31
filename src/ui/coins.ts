@@ -15,7 +15,12 @@ export const reducedMotion = () => typeof matchMedia === 'function' && matchMedi
  * scrolls, and sits under whatever is drawn over the table. The caller
  * removes it later.
  */
-export function flyCoin(from: DOMRect, to: DOMRect, delay: number, { className = 'flying-coin', restIn }: { className?: string; restIn?: HTMLElement } = {}): Promise<HTMLElement | null> {
+export function flyCoin(
+  from: DOMRect,
+  to: DOMRect,
+  delay: number,
+  { className = 'flying-coin', restIn, duration = 520 }: { className?: string; restIn?: HTMLElement; duration?: number } = {},
+): Promise<HTMLElement | null> {
   const coin = document.createElement('span');
   coin.className = className;
   Object.assign(coin.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px` });
@@ -32,7 +37,7 @@ export function flyCoin(from: DOMRect, to: DOMRect, delay: number, { className =
       { transform: `translate(${dx / 2}px, ${dy / 2 - 24}px) scale(${(1 + scale) / 2 + 0.15})`, offset: 0.5 },
       { transform: `translate(${dx}px, ${dy}px) scale(${scale})` },
     ],
-    { duration: 520, delay, easing: 'ease-in-out', fill: 'backwards' },
+    { duration, delay, easing: 'ease-in-out', fill: 'backwards' },
   );
   const landed = anim.finished.finally(() => flight.coins--);
   return landed.then(
@@ -56,9 +61,17 @@ export function flyCoin(from: DOMRect, to: DOMRect, delay: number, { className =
 }
 
 /** A coin flies to a spot that is laid out but hidden until it lands. */
-export function flyInto(from: Element, spot: HTMLElement, delay: number, className?: string) {
+export function flyInto(from: Element, spot: HTMLElement, delay: number, className?: string, duration?: number) {
   spot.classList.add('landing');
-  return flyCoin(from.getBoundingClientRect(), spot.getBoundingClientRect(), delay, { className }).then(() => spot.classList.remove('landing'));
+  return flyCoin(from.getBoundingClientRect(), spot.getBoundingClientRect(), delay, { className, duration }).then(() => spot.classList.remove('landing'));
+}
+
+/** Every coin in the air lands at once (a tap to hurry the table along). */
+export function landAll() {
+  for (const a of document.getAnimations()) {
+    const target = (a.effect as KeyframeEffect | null)?.target;
+    if (target instanceof HTMLElement && target.classList.contains('flying-coin')) a.finish();
+  }
 }
 
 /** The tops of a purse's stacks, left to right: where winnings come to rest. */
