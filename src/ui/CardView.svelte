@@ -9,7 +9,7 @@
     card?: Card | null;
     faceDown?: boolean;
     /** Slide in as if dealt: from the dealer at the left, or from above for the opponent; or, onto the board, dropped (a thud) or slammed down. */
-    deal?: 'left' | 'top' | 'drop' | 'slam' | null;
+    deal?: 'left' | 'top' | 'drop' | 'slam' | 'flip' | null;
     small?: boolean;
     /** The big close-up view (long-press any card). */
     huge?: boolean;
@@ -93,6 +93,7 @@
     class:deal-top={deal === 'top'}
     class:deal-drop={deal === 'drop'}
     class:deal-slam={deal === 'slam'}
+    class:deal-flip={deal === 'flip'}
     class:used
     class:toss
     class:faded
@@ -251,11 +252,21 @@
     86% { transform: translate(-1px, 0); }
     to { transform: none; }
   }
+  /* Turned over where it lies: up off the table, over, and down. */
+  .deal-flip {
+    animation: deal-flip 0.45s ease-out both;
+  }
+  @keyframes deal-flip {
+    from { transform: translateY(-6px) rotateY(90deg) scale(1.08); }
+    60% { transform: translateY(-4px) rotateY(0) scale(1.06); }
+    to { transform: none; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .deal-left,
     .deal-top,
     .deal-drop,
-    .deal-slam {
+    .deal-slam,
+    .deal-flip {
       animation: none;
     }
   }

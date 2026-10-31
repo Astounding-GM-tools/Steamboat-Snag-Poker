@@ -93,11 +93,15 @@ What you walk away with is your score.
   its hand, its replacements are dealt in (yours face up, slowly), then its
   money goes in, and a breath before the next. A tap hurries it. Purses,
   snags and discards change only as each is shown; the new board card waits
-  for the end. Folded, you watch the same way. **The River:** only a raise is
-  shown, then how the rest answered it, a **Next** at a time; then the
-  showdown.
-- **The showdown:** your hand first, then the others in their seats, **left
-  to right**.
+  for the end. Folded, you watch the same way. **The River:** only the raises
+  are shown, then how the rest answered them, each in its seat (yours too), a
+  **Next** at a time; then the showdown.
+- **The showdown:** your hand first (you know it already: just its name),
+  then the others in their seats, **left to right**, a Next each: each
+  rival's played cards turn over one by one, then what they kept back,
+  dimmed, then the hand's name. At the verdict the pot is paid out in
+  handfuls (heavy, but no wait), and snags that change hands slide from the
+  winner's fan (or the board) to the weakest hand's.
 
 ## The engine (built)
 

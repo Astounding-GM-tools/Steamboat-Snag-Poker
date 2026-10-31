@@ -96,7 +96,8 @@
       const fresh = round.seats[seat].hand.filter((c) => !old.some((o) => o.id === c.id));
       return [...old.filter((c) => !move.cardIds.includes(c.id)), ...fresh.slice(0, sw.drawn)];
     }
-    return seen(seat).seats[seat].hand;
+    // Your hand on the River is as you laid it (the cards you play shown apart): only a swap waits its turn.
+    return (seat === me && before && before.street >= 2 ? round : seen(seat)).seats[seat].hand;
   }
   /** A seat as it should be seen just now. */
   const seen = (seat: number) => (shownYet(seat) ? round : before!);
@@ -159,6 +160,8 @@
    * answered it.
    */
   function play(action: Action | null) {
+    // A move that arrives after the hand is over (a double tap, say) has nothing to act on.
+    if (game.phase !== 'hand' || game.round?.result) return;
     before = round;
     const river = composing;
     game = playHighRollers(game, action);
@@ -170,7 +173,8 @@
     // The Flop and the Turn play out by themselves, every seat in turn (yours too); on the River only a raise is
     // shown, then how the rest answered it, a Next at a time.
     const auto = before.street < 2;
-    const shown = (s: number, a: Action | null) => !!a && (auto ? !(s === me && a.type === 'fold') : s !== me && (!river || (a.type === 'compose' && !!a.raise)));
+    // Every move with something to show, in its seat: yours too (but your own fold shows nothing new).
+    const shown = (s: number, a: Action | null) => !!a && !(s === me && a.type === 'fold') && (auto || !river || (a.type === 'compose' && !!a.raise));
     queue = order.filter((s) => shown(s, moves[s])).map((s) => ({ seat: s, action: moves[s]! }));
     at = auto ? -1 : 0;
     betsAt = at;
@@ -236,8 +240,11 @@
       if (at + 1 < queue.length) betsAt = ++at;
       else afterReplay();
     } else if (view === 'reveal') {
-      if (revealed + 1 < revealOrder.length) revealed++;
-      else view = 'verdict';
+      if (revealed + 1 < revealOrder.length) void turnOver(revealOrder[++revealed]);
+      else {
+        noteSnags();
+        view = 'verdict';
+      }
     } else if (view === 'verdict') {
       if (game.phase === 'over') view = 'over';
       else nextHand();
@@ -246,6 +253,7 @@
 
   /** Past the rest of the rivals' moves at once: their money goes in without the flights. */
   async function skipReplay() {
+    if (view !== 'replay') return;
     rushing = true;
     afterReplay();
     // Their payments are queued once the table updates; the hurry ends when they're done.
@@ -273,6 +281,7 @@
     revealOrder = [...(inHand.includes(me) ? [me] : []), ...others];
     revealed = 0;
     view = 'reveal';
+    void turnOver(revealOrder[0]);
   }
 
   function nextHand() {
@@ -296,6 +305,31 @@
 
   // --- Showing it ---------------------------------------------------------
   const shownTo = (seat: number) => view === 'verdict' || view === 'over' || (view === 'reveal' && revealOrder.includes(seat) && revealOrder.indexOf(seat) <= revealed);
+  /** At the showdown, how many of the current rival's played cards are turned over so far (all, once they're done). */
+  const TURNED_ALL = 99;
+  let turned = $state(TURNED_ALL);
+  const FLIP_MS = 750;
+  /** This rival's cards are being turned over right now. */
+  const turning = (seat: number) => view === 'reveal' && revealOrder[revealed] === seat && turned < TURNED_ALL;
+  /** A hand all turned up: its name said, its kept-back cards shown, its played snags lifted. */
+  const turnedUp = (seat: number) => shownTo(seat) && !turning(seat);
+  /** A rival's showdown: each card it played turned over in turn, a breath apart, then the rest. Yours you know already. */
+  async function turnOver(seat: number) {
+    const n = played(round.seats[seat].slots).filter((c) => !isJoker(c)).length;
+    if (seat === me || !n || rushing || reducedMotion()) return;
+    pending++;
+    turned = 0;
+    try {
+      for (let k = 0; k < n; k++) {
+        await pause(k ? FLIP_MS : FLIP_MS / 2);
+        turned = k + 1;
+      }
+      await pause(FLIP_MS);
+    } finally {
+      turned = TURNED_ALL;
+      if (--pending === 0) rushing = false;
+    }
+  }
   /** What a rival did, in a word or two. */
   function moveText(action: Action): string {
     if (action.type === 'fold') return t('hr.move.fold');
@@ -354,13 +388,13 @@
       });
   }
   /** Coins moving from one place to another, one after another; resolves when the last has landed. */
-  function pour(moves: [Element, HTMLElement][]): Promise<void> {
+  function pour(moves: [Element, HTMLElement][], { handful = 1, gap = POUR_MS } = {}): Promise<void> {
     for (const [src] of moves) src.classList.remove('waiting');
     if (rushing || reducedMotion()) {
       for (const [, spot] of moves) spot.classList.remove('landing');
       return Promise.resolve();
     }
-    return Promise.all(moves.map(([src, spot], i) => flyInto(src, spot, i * POUR_MS, undefined, FLIGHT_MS))).then(() => {});
+    return Promise.all(moves.map(([src, spot], i) => flyInto(src, spot, Math.floor(i / handful) * gap, undefined, FLIGHT_MS))).then(() => {});
   }
   /** A tap on the table (not on a button or a card: those are moves): everything in the air lands, and whatever is queued happens at once. */
   function hurry(e?: MouseEvent) {
@@ -407,7 +441,8 @@
       c.classList.add('waiting');
       moves.push([c, spot]);
     });
-    if (moves.length) later(() => pour(moves).then(() => moves.forEach(([c]) => c.classList.remove('waiting'))));
+    // A pot is heavy too, but paid out in handfuls: big pots still look big, without the wait.
+    if (moves.length) later(() => pour(moves, { handful: 3, gap: 45 }).then(() => moves.forEach(([c]) => c.classList.remove('waiting'))));
   }
 
   // The deal, as at a real table: one card at a time round the table, from the
@@ -465,6 +500,41 @@
     );
   }
 
+  // Snags changing hands at the verdict slide from where they were (a winner's fan, the board) to the weakest hand's.
+  /** Where each snag stood just before the verdict. */
+  let snagsWere = new Map<string, DOMRect>();
+  function noteSnags() {
+    snagsWere = new Map([...(rootEl?.querySelectorAll<HTMLElement>('[data-snag]') ?? [])].map((el) => [el.dataset.snag!, el.getBoundingClientRect()]));
+  }
+  const SLIDE_MS = 700;
+  function slideSnags(ids: string[]): Promise<void> {
+    const moves = ids
+      .map((id) => ({ from: snagsWere.get(id), el: rootEl?.querySelector<HTMLElement>(`.rival [data-snag="${id}"], .mine [data-snag="${id}"]`) }))
+      .filter((m): m is { from: DOMRect; el: HTMLElement } => !!m.from && !!m.el);
+    // Waiting their turn, they're not in their new fan yet.
+    for (const m of moves) m.el.classList.add('landing');
+    return new Promise((done) =>
+      later(async () => {
+        await Promise.all(
+          moves.map(({ from, el }, i) => {
+            el.classList.remove('landing');
+            if (rushing || reducedMotion()) return;
+            const to = el.getBoundingClientRect();
+            return el
+              .animate([{ transform: `translate(${from.left - to.left}px, ${from.top - to.top}px)`, zIndex: 30 }, { transform: 'none', zIndex: 30 }], {
+                duration: SLIDE_MS,
+                delay: i * 150,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                fill: 'backwards',
+              })
+              .finished.then(() => {});
+          }),
+        );
+        done();
+      }),
+    );
+  }
+
   $effect(() => {
     const bets = shownBets;
     const hand = game.hand;
@@ -488,6 +558,8 @@
       if (winners && paidHand !== hand) {
         paidHand = hand;
         payOut(winners);
+        const dumped = round.result?.dumped ?? [];
+        if (dumped.length) void slideSnags(dumped.map((j) => j.id));
       }
     });
   });
@@ -517,7 +589,7 @@
   /** A rival's line under their cards: the move being shown, their hand at the showdown, or that they're out of it. */
   function rivalLine(seat: number): string {
     if (view === 'replay' && focus === seat) return moveText(queue[at].action);
-    if (shownTo(seat) && handName(seat)) return handName(seat)!.call;
+    if (turnedUp(seat) && handName(seat)) return handName(seat)!.call;
     return seen(seat).seats[seat].folded ? t('hr.folded') : '';
   }
   const played = (cards: (Card | null)[]) => cards.filter((c): c is Card => c !== null);
@@ -551,7 +623,7 @@
           <span class="tag">{tagName(p.id)}</span>
           {#if snags.length}
             <div class="snag-fan tiny" style="--n: {snags.length}">
-              {#each snags as card (card.id)}<CardView {card} lifted={shownTo(seat) && s.slots.some((c) => c?.id === card.id)} />{/each}
+              {#each snags as card (card.id)}<span class="snag" data-snag={card.id}><CardView {card} lifted={turnedUp(seat) && s.slots.some((c) => c?.id === card.id)} /></span>{/each}
               {#if snags.length > 1}<span class="snag-count">×{snags.length}</span>{/if}
             </div>
           {/if}
@@ -561,8 +633,11 @@
             {#if s.folded}
               {#each s.hand as _, i (i)}<CardView faceDown faded />{/each}
             {:else if shownTo(seat) && cards.length}
-              {#each cards as card (card.id)}<CardView {card} />{/each}
-              {#each s.hand as card (card.id)}<CardView {card} faded />{/each}
+              <!-- The showdown: their played cards turn over one by one, then what they kept back, dimmed. -->
+              {#each cards as card, k (card.id)}
+                {#if turning(seat) && k >= turned}<CardView faceDown />{:else}<CardView {card} deal={turning(seat) ? 'flip' : null} />{/if}
+              {/each}
+              {#each s.hand as card (card.id)}{#if turnedUp(seat)}<CardView {card} faded />{:else}<CardView faceDown faded />{/if}{/each}
             {:else}
               <!-- Thrown cards leave; replacements are dealt in, face down. -->
               {#each Array.from({ length: Math.min(cards.length + handOf(seat).length, holeDealt(seat)) }) as _, i (i)}
@@ -593,7 +668,7 @@
       {#each Array.from({ length: 5 }) as _, i}
         {@const card = i < boardShown && (i >= 3 || flopIndex(i) < dealt) ? (round.community[i] ?? null) : null}
         <!-- Each lands with a thud; the Flop's last card and the River slam down. -->
-        {#key card?.id}<CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} />{/key}
+        {#key card?.id}<span class="board-card" data-snag={card && isJoker(card) ? card.id : undefined}><CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} /></span>{/key}
       {/each}
     </div>
   </div>
@@ -630,13 +705,13 @@
             <!-- However many snags you carry, the fan never grows past its width. -->
             <div class="snag-fan" style="--n: {mySnags.length}">
               {#each mySnags as card (card.id)}
-                <CardView
+                <span class="snag" data-snag={card.id}><CardView
                   {card}
                   selected={!laid && tapped.includes(card.id)}
                   used={myPlayedSnags.has(card.id) || (laid && tapped.includes(card.id))}
                   lifted={shownTo(me) && myPlayedSnags.has(card.id)}
                   onclick={view === 'choose' && meIn && composing ? () => tap(card) : undefined}
-                />
+                /></span>
               {/each}
               {#if mySnags.length > 2}<span class="snag-count">×{mySnags.length}</span>{/if}
             </div>
@@ -872,6 +947,10 @@
       transform: scale(0.9);
     }
   }
+  .board-card {
+    display: block;
+    flex: none;
+  }
   .community {
     display: flex;
     justify-content: center;
@@ -936,7 +1015,11 @@
     display: flex;
     max-width: var(--fan);
   }
-  .snag-fan :global(.card + .card) {
+  .snag-fan .snag {
+    display: block;
+    flex: none;
+  }
+  .snag-fan .snag + .snag {
     margin-left: min(3px, calc((var(--fan) - var(--card-w) * var(--n)) / (var(--n) - 1)));
   }
   /* A rival's fan: little snags, overlapping, beside the purse. */
@@ -945,7 +1028,7 @@
     flex: none;
     margin-left: auto;
   }
-  .snag-fan.tiny :global(.card + .card) {
+  .snag-fan.tiny .snag + .snag {
     margin-left: min(2px, calc((var(--fan) - 18px * var(--n)) / (var(--n) - 1)));
   }
   .snag-count {
