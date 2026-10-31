@@ -44,9 +44,13 @@ interface Params {
   growth: number; // per hand, compounding
   scaleRaiseAt?: number; // shifts every style's raise threshold (tuning how often anyone raises)
   onOut?: number; // once the first captain is out, the ante (so the fees, and the raise) is multiplied by this
+  lastHand?: number; // The Last Hand: after the first knockout, one more hand at these stakes, and the table ends
+  start?: number; // starting purses (default START)
 }
 
 const START = 120;
+/** Starting purses to compare for The Last Hand (bigger purses: longer before anyone goes broke). */
+const PURSES = [120, 160, 200, 240];
 const START_HAND = 24;
 /** Calibration: who gives up early, and what swaps cost a seat that stays. */
 const FOLD_EARLY_BELOW = Number(process.env.SIM_FOLD ?? 0.12);
@@ -55,10 +59,11 @@ const SWAPS = Number(process.env.SIM_SWAPS ?? 10);
 const UPKEEP = Number(process.env.SIM_UPKEEP ?? 5);
 
 function table(seed: number, p: Params) {
+  const start = p.start ?? START;
   const r = rng(seed);
   const order = [...RIVALS].sort(() => r() - 0.5).slice(0, 3);
   const names = ['you', ...order];
-  const money = names.map(() => START);
+  const money = names.map(() => start);
   const out = names.map(() => false);
   let hand = START_HAND;
   let hands = 0;
@@ -66,9 +71,16 @@ function table(seed: number, p: Params) {
   let firstOut = -1;
   const st = { rivers: 0, raised: 0, raisers: 0, facing: 0, matched: 0, potBefore: 0, potFinal: 0, doubleUps: 0, bluffsWon: 0 };
   const history: number[][] = [];
+  /** When each captain went out (hands played), for the placings. */
+  const outAt = names.map(() => Infinity);
+  /** The Last Hand: purses and order going into it. */
+  let intoLast: number[] | null = null;
 
-  while (out.filter((o) => !o).length > 2 && hands < 200) {
-    const stakes = p.onOut && out.some((o) => o) ? p.onOut : 1;
+  while (p.lastHand ? out.filter((o) => !o).length > 1 && !(intoLast && hands > firstOut) : out.filter((o) => !o).length > 2) {
+    if (hands >= 200) break;
+    const last = !!p.lastHand && firstOut >= 0;
+    if (last) intoLast = [...money];
+    const stakes = last ? p.lastHand! : p.onOut && out.some((o) => o) ? p.onOut : 1;
     const ante = Math.round(Math.ceil(hand / 3) * stakes);
     const raise = p.R0 < 0 ? ante : p.R0 ? Math.round(p.R0 * stakes * Math.pow(1 + p.growth, hand - START_HAND)) : 0;
     const seats = names.map((_, i) => i).filter((i) => !out[i]);
@@ -119,8 +131,11 @@ function table(seed: number, p: Params) {
     for (const [i, b] of bet) money[i] -= b;
     money[winner] += pot;
     seats.forEach((i) => {
-      if (money[i] <= 0) out[i] = true;
-      if (before[i] > 0 && before[i] < START / 2 && money[i] >= 2 * before[i]) st.doubleUps++;
+      if (money[i] <= 0 && !out[i]) {
+        out[i] = true;
+        outAt[i] = hands + 1;
+      }
+      if (before[i] > 0 && before[i] < start / 2 && money[i] >= 2 * before[i]) st.doubleUps++;
     });
     history.push([...money]);
     hand++;
@@ -128,12 +143,50 @@ function table(seed: number, p: Params) {
     if (firstOut < 0 && out.some((o) => o)) firstOut = hands;
   }
   const standing = names.map((_, i) => i).filter((i) => !out[i]).sort((a, b) => money[b] - money[a]);
+  // Placings: those standing by purse; then the broke, the latest out first (on the same hand, the smaller debt first).
+  const placing = [...standing, ...names.map((_, i) => i).filter((i) => out[i]).sort((a, b) => outAt[b] - outAt[a] || money[b] - money[a])];
+  const lastHand = intoLast && {
+    standing: standing.length,
+    keptGold: intoLast.indexOf(Math.max(...intoLast.filter((_, i) => outAt[i] >= firstOut))) === placing[0],
+    // Did the Last Hand change the order of those who went into it?
+    reshuffled: names
+      .map((_, i) => i)
+      .filter((i) => outAt[i] >= firstOut)
+      .sort((a, b) => intoLast![b] - intoLast![a])
+      .some((i, k) => placing[k] !== i),
+    yourPlace: placing.indexOf(0),
+  };
   const half = history[Math.max(0, Math.ceil(history.length / 2) - 1)];
   const leader = half.indexOf(Math.max(...half));
-  return { hands, afterOut: hands - firstOut, ...st, leaderWon: leader === standing[0], youFirst: standing[0] === 0, youTop2: standing.includes(0) };
+  return { hands, afterOut: hands - firstOut, firstOut, lastHand, ...st, leaderWon: leader === standing[0], youFirst: standing[0] === 0, youTop2: standing.includes(0) };
 }
 
 const N = Number(process.env.SIM_TABLES ?? 20000);
+/** The Last Hand: how long tables run, how many are left standing, and how much the final hand decides. */
+function lastRow(label: string, p: Params) {
+  const runs = Array.from({ length: N }, (_, k) => table(1 + k, p));
+  const hands = runs.map((x) => x.hands).sort((a, b) => a - b);
+  const q = (f: number) => hands[Math.floor(N * f)];
+  const lh = runs.map((x) => x.lastHand).filter((x): x is NonNullable<typeof x> => !!x);
+  const share = (f: (x: (typeof lh)[number]) => boolean) => pct(lh.filter(f).length / lh.length);
+  say(
+    [
+      label.padEnd(26),
+      `${q(0.5)}`.padStart(5),
+      pct(hands.filter((h) => h >= 5 && h <= 8).length / N).padStart(5),
+      `(${q(0.1)}-${q(0.9)})`.padStart(8),
+      '|',
+      share((x) => x.standing === 3).padStart(5),
+      share((x) => x.standing === 2).padStart(5),
+      share((x) => x.standing === 1).padStart(5),
+      '|',
+      share((x) => x.keptGold).padStart(9),
+      share((x) => x.reshuffled).padStart(10),
+      '|',
+      ...[0, 1, 2, 3].map((k) => share((x) => x.yourPlace === k).padStart(5)),
+    ].join(' '),
+  );
+}
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 function row(label: string, p: Params) {
   const runs = Array.from({ length: N }, (_, k) => table(1 + k, p));
@@ -186,6 +239,13 @@ it('raise model', () => {
     row('$8 +15%, x2 on out', { R0: 8, growth: 0.15, onOut: 2 });
     say('-- the raise is the ante itself (creeping a dollar every three hands), stepped up at the first knockout:');
     for (const m of [1, 1.25, 1.5, 2]) row(`raise = ante, x${m} on out`, { R0: -1, growth: 0, onOut: m === 1 ? undefined : m });
+    say('');
+    say('== The Last Hand: after the first knockout, one more hand, and the table ends (raise = the ante) ==');
+    say('setting                    hands  5-8  p10-p90 | left: 3    2    1 | kept gold  reshuffled | you: gold silver bronze 4th');
+    for (const m of [1, 1.5, 2, 3]) lastRow(`Last Hand at x${m}`, { R0: -1, growth: 0, lastHand: m });
+    lastRow('Last Hand x2, no raise', { R0: 0, growth: 0, lastHand: 2 });
+    for (const start of PURSES.slice(1)) lastRow(`Last Hand x2, purses $${start}`, { R0: -1, growth: 0, lastHand: 2, start });
+    say('');
     say('-- how readily the captains raise, at $8 +15%:');
     for (const scale of [0.8, 1, 1.2, 1.4]) row(`$8 +15%, raiseAt x${scale}`, { R0: 8, growth: 0.15, scaleRaiseAt: scale });
   }

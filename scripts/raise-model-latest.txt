@@ -34,6 +34,18 @@ raise = ante, x1 on out      7   34%   (3-13) |    66%    1.4     76% |   $128  
 raise = ante, x1.25 on out      6   39%   (3-11) |    66%    1.4     76% |   $137   $156 |     60%     1.14 |   26%   50% |      2    24%    44%
 raise = ante, x1.5 on out      6   43%   (3-10) |    66%    1.4     75% |   $143   $164 |     58%     1.10 |   26%   50% |      2    25%    45%
 raise = ante, x2 on out      6   50%    (3-9) |    66%    1.4     75% |   $154   $177 |     53%     1.02 |   26%   50% |      2    21%    48%
+
+== The Last Hand: after the first knockout, one more hand, and the table ends (raise = the ante) ==
+setting                    hands  5-8  p10-p90 | left: 3    2    1 | kept gold  reshuffled | you: gold silver bronze 4th
+Last Hand at x1                4   44%    (4-6) |   59%   40%    2% |       78%        35% |   26%   25%   26%   23%
+Last Hand at x1.5              4   44%    (4-6) |   55%   43%    2% |       69%        45% |   26%   25%   26%   23%
+Last Hand at x2                4   44%    (4-6) |   52%   45%    2% |       63%        51% |   25%   26%   26%   23%
+Last Hand at x3                4   44%    (4-6) |   43%   53%    4% |       53%        58% |   25%   26%   26%   23%
+Last Hand x2, no raise         5   86%    (5-8) |   62%   37%    1% |       60%        52% |   26%   25%   25%   23%
+Last Hand x2, purses $160      6   85%    (5-9) |   69%   30%    1% |       65%        50% |   26%   26%   25%   23%
+Last Hand x2, purses $200      7   66%   (6-12) |   77%   22%    0% |       70%        47% |   26%   26%   26%   23%
+Last Hand x2, purses $240      9   48%   (7-15) |   83%   17%    0% |       72%        46% |   26%   25%   25%   23%
+
 -- how readily the captains raise, at $8 +15%:
 $8 +15%, raiseAt x0.8       6   35%   (3-11) |    76%    1.5     69% |   $127   $156 |     61%     1.11 |   26%   51% |      2    21%    44%
 $8 +15%, raiseAt x1         6   36%   (3-12) |    66%    1.4     72% |   $127   $153 |     61%     1.15 |   26%   51% |      2    22%    43%
