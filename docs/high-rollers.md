@@ -38,12 +38,17 @@ What you walk away with is your score.
   snags go to the weakest hand** still in: every snag the winner played, and
   any snag at stake on the board. A loser who played a snag keeps it and pays
   the winner its forfeit.
+- **The knockout** is named at the verdict ("King is broke. Next: The Last
+  Hand."), and the broke captain keeps their chair, greyed out, empty purse,
+  watching from the rail.
 - **The Last Hand:** when the first captain goes broke, the next hand is the
-  last, at **double stakes** (the ante, the fees and the raise; not the
+  last (announced over the table, **THE LAST HAND**, before the antes), at **double stakes** (the ante, the fees and the raise; not the
   snags' upkeep). Folding early is the safe play, keeping what you have; but
   your purse at the end is your score, so a big score means betting hard on
   it. After it, those still standing take **gold, silver and bronze** by
-  purse; the broke follow, the latest out first.
+  purse; the broke follow, the latest out first. The placings arrive one at
+  a time from the bottom up, with medals, and then what you walk away with
+  is counted out.
 - **Purses:** $160 each on its own (in the story, whatever the captains
   bring). With that, a table lasts **5–8 hands** about 85% of the time
   (`scripts/raise-*.sim.ts`, with the latest results beside them).

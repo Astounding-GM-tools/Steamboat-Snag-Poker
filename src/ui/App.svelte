@@ -47,6 +47,8 @@
   if (new URLSearchParams(location.search).has('tutorial')) startTutorial();
   /** The final table (in development: …/?highrollers). */
   let highRollers = $state(new URLSearchParams(location.search).has('highrollers'));
+  /** In development, …/?highrollers&purse=40 seats everyone with a smaller purse: quicker to an ending. */
+  const highRollersPurse = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('purse')) || undefined : undefined;
   if (import.meta.env.DEV) {
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;
@@ -131,7 +133,7 @@
 
 <div class="film">
   {#if highRollers}
-    <HighRollersTable onmenu={() => (highRollers = false)} />
+    <HighRollersTable onmenu={() => (highRollers = false)} setup={highRollersPurse ? { money: highRollersPurse } : undefined} />
   {:else if game}
     {#if game.round?.playStyle === 'draw'}
       <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={revealed} onnext={next} script={game.story ? roundScript(scripts[game.story], game.month) : undefined} ontalk={talkEffect} />

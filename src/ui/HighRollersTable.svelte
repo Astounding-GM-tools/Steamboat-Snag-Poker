@@ -31,6 +31,7 @@
   import { dollars, tagName } from './format';
   import { handLabel } from './handNames';
   import { heavy } from './heavy';
+  import { clink } from './clink';
   import { flyInto, landAll, reducedMotion } from './coins';
   import { tick, untrack } from 'svelte';
 
@@ -66,6 +67,8 @@
   const captain = (seat: number) => game.players[game.seated[seat]];
   /** The rivals in their places across the top: seat order, left to right (you sit at seat 0, at the bottom). */
   const rivals = $derived(round.seats.map((_, s) => s).filter((s) => s !== me));
+  /** The rivals' chairs, left to right, for the whole table: a captain who's gone broke keeps theirs, empty-handed. */
+  const chairs = $derived(game.players.map((_, i) => i).filter((i) => game.players[i].id !== HUMAN_ID));
 
   // --- What's being shown -------------------------------------------------
   /**
@@ -122,7 +125,7 @@
     answering ? round.raise : meIn && !composing ? tableFee(game.config, round.month, round.street + 1, round.stakes) + discardCost(mine!.discarded.length, tappedCards.length) : 0,
   );
   const preview = $derived(
-    myTurn && composing ? bestHand([...tappedCards, ...tappedSnags], round.community, { min: tapped.length, max: tapped.length }) : null,
+    view === 'choose' && myTurn && composing ? bestHand([...tappedCards, ...tappedSnags], round.community, { min: tapped.length, max: tapped.length }) : null,
   );
   /** What you have left to put in this hand: a price beyond it is everything, all in. */
   const left = $derived(me >= 0 ? tableLeft(round, me) : 0);
@@ -246,7 +249,10 @@
         view = 'verdict';
       }
     } else if (view === 'verdict') {
-      if (game.phase === 'over') view = 'over';
+      if (game.phase === 'over') {
+        view = 'over';
+        void ceremony();
+      }
       else nextHand();
     }
   }
@@ -500,6 +506,55 @@
     );
   }
 
+  // The Last Hand's moment: its name over the table, before the antes go in.
+  let announcing = $state(false);
+  const ANNOUNCE_MS = 2400;
+  function announce(): Promise<void> {
+    if (rushing || reducedMotion()) return Promise.resolve();
+    announcing = true;
+    return pause(ANNOUNCE_MS).then(() => {
+      announcing = false;
+    });
+  }
+
+  // The end: the placings one at a time from the bottom, then your takings counted out.
+  let placed = $state(99);
+  let counted = $state(0);
+  const PLACE_MS = 900;
+  const COUNT_MS = 1400;
+  async function ceremony() {
+    const order = placings(game);
+    const score = highRollersResult(game).score;
+    pending++;
+    try {
+      placed = 0;
+      counted = 0;
+      for (let i = 0; i < order.length; i++) {
+        await pause(PLACE_MS);
+        placed = i + 1;
+      }
+      await pause(PLACE_MS / 2);
+      if (rushing || reducedMotion() || !score) counted = score;
+      else {
+        const start = performance.now();
+        await new Promise<void>((done) => {
+          const step = (now: number) => {
+            const f = Math.min(1, (now - start) / COUNT_MS);
+            counted = rushing ? score : Math.round(score * (1 - Math.pow(1 - f, 3)));
+            if (counted >= score) return done();
+            requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+        clink();
+      }
+    } finally {
+      placed = 99;
+      counted = score;
+      if (--pending === 0) rushing = false;
+    }
+  }
+
   // Snags changing hands at the verdict slide from where they were (a winner's fan, the board) to the weakest hand's.
   /** Where each snag stood just before the verdict. */
   let snagsWere = new Map<string, DOMRect>();
@@ -546,6 +601,8 @@
         flown = bets.map(() => 0);
         owners = [];
         dealt = 0;
+        // The Last Hand is announced before anything moves.
+        if (round.stakes > 1) later(announce);
       }
       // In seat order from the first, so the pile fills the way the table played: a purse at a time.
       for (let j = 0; j < bets.length; j++) {
@@ -580,7 +637,14 @@
     const wins = res.winners.length > 1 ? t('hr.split', { names: res.winners.map(who).join(' & ') }) : line('hr.wins', res.winners[0]);
     const said = res.weakest !== null && res.dumped.length ? `${wins} ${line('hr.snagsTo', res.weakest)}` : wins;
     // Someone went broke: the next hand is the last.
-    return game.phase === 'handEnd' && game.lastHand ? `${said} ${t('hr.lastHandNext')}` : said;
+    // Whoever went broke this hand is named; and if that brings on the last hand, so is that.
+    const broke = game.players.filter((p) => p.out && p.outOn === game.hand);
+    const named = (p: (typeof broke)[number]) => (p.id === HUMAN_ID ? t('character.captain.you') : tagName(p.id));
+    // "You & King", "You, Walrus & King".
+    const names = broke.map(named);
+    const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} & ${names.at(-1)}` : names[0];
+    const out = !broke.length ? '' : broke.length > 1 ? t('hr.areOut', { names: list }) : broke[0].id === HUMAN_ID ? t('hr.isOut.you') : t('hr.isOut', { name: named(broke[0]) });
+    return [said, out, game.phase === 'handEnd' && game.lastHand ? t('hr.lastHandNext') : ''].filter(Boolean).join(' ');
   });
   const handName = (seat: number) => {
     const h = round.result?.hands[seat];
@@ -612,7 +676,17 @@
   {#key tableNo}
   <!-- The rivals across the top, a third of the width each, in seat order. -->
   <div class="rivals">
-    {#each rivals as seat (captain(seat).id)}
+    {#each chairs as chair (game.players[chair].id)}
+      {@const seat = game.seated.indexOf(chair)}
+      {#if seat < 0}
+        <!-- Broke: still at the table, watching from the rail. -->
+        <div class="rival broke">
+          <div class="who"><span class="tag">{tagName(game.players[chair].id)}</span></div>
+          <div class="rival-cards"><div class="rival-hand"></div></div>
+          <p class="line">{t('hr.out')}</p>
+          <div class="rival-purse"><Purse amount={0} start={0} size="tiny" showAmount={false} focus={30} label={tagName(game.players[chair].id)} /></div>
+        </div>
+      {:else}
       {@const p = captain(seat)}
       {@const s = seen(seat).seats[seat]}
       {@const cards = played(s.slots).filter((c) => !isJoker(c))}
@@ -652,6 +726,7 @@
           <Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} keep={game.hand} paid={paidOut(seat)} won={wonIn(seat)} />
         </div>
       </div>
+      {/if}
     {/each}
   </div>
 
@@ -660,6 +735,13 @@
     <!-- The Last Hand says so over the street's name (it plays for double). -->
     <p class="last-hand">{round.stakes > 1 ? t('hr.lastHand', { n: round.stakes }) : ''}</p>
     <p class="street">{t(`street.${streetName}`)}</p>
+    {#if announcing}
+      <!-- The Last Hand: its moment, before the antes. -->
+      <div class="title-card" aria-live="polite">
+        <p class="big">{t('hr.lastHandTitle')}</p>
+        <p class="small">{t('hr.lastHandStakes', { n: round.stakes })}</p>
+      </div>
+    {/if}
     <div class="pot-band">
       <div bind:this={pileEl}><Pile count={potCount} paid={settled} /></div>
       {#if settled}<p class="outcome" class:won={round.result?.winners.includes(me)} aria-live="polite">{verdictText}</p>{/if}
@@ -754,17 +836,20 @@
   {#if view === 'over'}
     <!-- The placings: those still standing take gold, silver and bronze by purse; what you walk away with is your score. -->
     {@const result = highRollersResult(game)}
+    {@const order = placings(game)}
     <div class="placings">
+      <!-- Placed one at a time, from the bottom up; then what you walk away with, counted out. -->
       <ol>
-        {#each placings(game) as p, i (p.id)}
-          <li class:me={p.id === HUMAN_ID} class:out={p.out}>
+        {#each order as p, i (p.id)}
+          <li class:me={p.id === HUMAN_ID} class:out={p.out} class:placed={i >= order.length - placed}>
+            <span class="medal {p.out ? '' : `m${i}`}">{p.out ? '' : i + 1}</span>
             <span>{p.id === HUMAN_ID ? t('character.captain.you') : tagName(p.id)}</span>
             <span>{p.out ? t('table.out') : t(`hr.place.${i}`)}</span>
             <span>{p.out ? '' : dollars(p.money)}</span>
           </li>
         {/each}
       </ol>
-      <p class="score">{result.score ? t('hr.walkAway', { amount: dollars(result.score) }) : t('hr.broke')}</p>
+      <p class="score" class:shown={placed >= order.length}>{result.score ? t('hr.walkAway', { amount: dollars(counted) }) : t('hr.broke')}</p>
     </div>
   {/if}
 </div>
@@ -1087,6 +1172,94 @@
   .placings li.out {
     color: var(--grey);
   }
+  /* Placed one at a time: each line arrives when its turn comes. */
+  .placings li {
+    visibility: hidden;
+  }
+  .placings li.placed {
+    visibility: visible;
+    animation: placed 0.4s ease-out;
+  }
+  @keyframes placed {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  .score {
+    visibility: hidden;
+  }
+  .score.shown {
+    visibility: visible;
+  }
+  /* Medals in black and white: bright, pale, dark. */
+  .medal {
+    display: inline-grid;
+    place-items: center;
+    width: 1.4em;
+    height: 1.4em;
+    border-radius: 50%;
+    font-family: var(--title-font);
+    font-size: 0.8em;
+  }
+  .medal.m0 {
+    background: var(--paper);
+    color: #0c0c0b;
+    box-shadow:
+      0 0 0 2px #0c0c0b,
+      0 0 0 3px var(--paper);
+  }
+  .medal.m1 {
+    background: #a9a69e;
+    color: #0c0c0b;
+  }
+  .medal.m2 {
+    background: #5d5a54;
+    color: var(--paper);
+  }
+  /* A broke captain: still in their chair, greyed. */
+  .rival.broke {
+    opacity: 0.45;
+  }
+  .rival-hand {
+    min-height: calc(var(--small-w) * 1.4);
+  }
+  /* The Last Hand's title, over the pot and the board for a moment. */
+  .felt {
+    position: relative;
+  }
+  .title-card {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    place-content: center;
+    gap: 0.4rem;
+    background: rgba(12, 12, 11, 0.85);
+    animation: title-in 0.6s ease-out;
+  }
+  .title-card p {
+    margin: 0;
+  }
+  .title-card .big {
+    font-family: var(--title-font);
+    font-size: 2.2rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .title-card .small {
+    font-family: var(--title-font);
+    font-size: 1rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--grey);
+  }
+  @keyframes title-in {
+    from {
+      opacity: 0;
+      transform: scale(1.06);
+    }
+  }
   .score {
     margin: 0.75rem 0 0;
     text-align: center;
@@ -1104,7 +1277,8 @@
   }
   .placings li {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
     gap: 0.75rem;
     padding: 0.3rem 0;
   }
