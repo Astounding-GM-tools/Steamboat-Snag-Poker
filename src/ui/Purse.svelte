@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import { dollars } from './format';
 
   /**
@@ -14,6 +15,13 @@
    * emptied stacks show what has gone in. Spent coins keep their place,
    * hidden, so the table can fly them to the pot from where they stood. A
    * winnings-swollen purse is laid out afresh when the next round begins.
+   *
+   * Or, with `keep` (a High Rollers purse), it keeps its shape: the stacks are
+   * remembered from hand to hand (`keep` changes with each). Coins paid in
+   * (`paid`) leave as above; coins won (`won`) land on the stacks' tops, a
+   * few rounds over, and then in new stacks of ten beside them, each on a
+   * spot laid out in advance (`data-g`) for a flight to land on. No tidying
+   * up: the next hand starts from exactly that.
    */
   let {
     amount,
@@ -22,6 +30,9 @@
     showAmount = true,
     focus = 50,
     label,
+    keep,
+    paid = 0,
+    won = 0,
   }: {
     amount: number;
     /** The purse at the start of the round, which sets the picture. */
@@ -31,6 +42,12 @@
     /** Where a small pile (and the moths) sits, in % across the purse; neat rows start at the left. */
     focus?: number;
     label?: string;
+    /** Keep the stacks as they are from hand to hand: a key that changes with each hand. */
+    keep?: unknown;
+    /** Kept stacks: coins paid out this hand. */
+    paid?: number;
+    /** Kept stacks: coins won this hand. */
+    won?: number;
   } = $props();
 
   const DEPLETED = 10;
@@ -46,7 +63,7 @@
 
   /** Coin size in px: width, how much each coin adds to a stack, the step between stacks, and how far back rows rise. */
   const dims = $derived(
-    size === 'big' ? { w: 20, step: 3.2, gap: 22, rise: 9 } : size === 'small' ? { w: 13, step: 2, gap: 14, rise: 5 } : { w: 9, step: 1.8, gap: 9.6, rise: 5 },
+    size === 'big' ? { w: 20, step: 3.2, gap: 22, rise: 9 } : size === 'small' ? { w: 13, step: 2, gap: 14, rise: 5 } : { w: 9, step: 1.4, gap: 9.6, rise: 5 },
   );
 
   /** A fixed random number per coin and purpose, so a coin keeps its place. */
@@ -122,22 +139,138 @@
     }
     return out;
   });
+  // --- Kept stacks -------------------------------------------------------
+  /** A stack on the table: x in px from the purse's left edge, its row's lift, its height in coins; a loose coin lies flat at a tilt. */
+  interface Stack {
+    x: number;
+    lift: number;
+    h: number;
+    tilt?: number;
+  }
+  /** Rounds of winnings a purse's own stacks take before the rest start new stacks; and how tall those grow. */
+  const LAYERS = 4;
+  const NEW_STACK = 10;
+  let width = $state(0);
+  let kept = $state.raw<Stack[] | null>(null);
+
+  /** Spending order: the front row first, left to right. */
+  const inOrder = (stacks: Stack[]) => [...stacks].sort((a, b) => a.lift - b.lift || a.x - b.x);
+
+  /** The neat picture, as stacks in px. */
+  function asStacks(): Stack[] {
+    const at = new Map<string, Stack>();
+    for (const c of coins) {
+      const x = c.fromLeft ? c.x : (width * focus) / 100 + c.x;
+      // A stack is its place and its row (rows two apart line up); its lift is its bottom coin's height.
+      const key = c.flat ? `loose ${c.d}` : `${Math.round(x)} ${c.z ?? 0}`;
+      const s = at.get(key);
+      if (s) {
+        s.h++;
+        s.lift = Math.min(s.lift, c.y);
+      } else at.set(key, { x, lift: c.y, h: 1, tilt: c.flat ? c.tilt : undefined });
+    }
+    return [...at.values()];
+  }
+
+  /** Takes `n` coins off, in spending order (each stack top down). */
+  function without(stacks: Stack[], n: number): Stack[] {
+    let left = n;
+    return inOrder(stacks)
+      .map((s) => {
+        const take = Math.min(s.h, left);
+        left -= take;
+        return { ...s, h: s.h - take };
+      })
+      .filter((s) => s.h > 0);
+  }
+
+  /** Where `n` won coins land on these stacks: their tops in turn for a few rounds, then new stacks beside them, then rows behind. */
+  function landing(stacks: Stack[], n: number): { x: number; y: number; lift: number }[] {
+    const { w, step, gap, rise } = dims;
+    const out: { x: number; y: number; lift: number }[] = [];
+    const tops = [...stacks].sort((a, b) => a.x - b.x);
+    for (let layer = 0; layer < LAYERS && out.length < n; layer++)
+      for (const s of tops) if (out.length < n) out.push({ x: s.x, y: s.lift + (s.h + layer) * step, lift: s.lift });
+    const room = Math.max(w, width) - w / 2;
+    let x = tops.length ? Math.max(...tops.map((s) => s.x)) + gap : w / 2 + 1;
+    let lift = 0;
+    while (out.length < n) {
+      if (x > room) {
+        // No more room beside: a row further back, a little higher.
+        lift += rise;
+        x = w / 2 + 1 + (lift / rise) % 2 * (gap / 2);
+      }
+      for (let c = 0; c < NEW_STACK && out.length < n; c++) out.push({ x, y: lift + c * step, lift });
+      x += gap;
+    }
+    return out;
+  }
+
+  /** The stacks after a hand: what was paid gone, what was won added where it landed. */
+  function settle(stacks: Stack[], paid: number, won: number): Stack[] {
+    const left = without(stacks, paid);
+    const spots = landing(left, won);
+    const merged = left.map((s) => ({ ...s }));
+    for (const spot of spots) {
+      const s = merged.find((m) => Math.abs(m.x - spot.x) < 0.5 && m.lift === spot.lift);
+      if (s) {
+        s.h++;
+        s.tilt = undefined;
+      } else merged.push({ x: spot.x, lift: spot.lift, h: 1 });
+    }
+    return merged;
+  }
+
+  // The stacks as they stood when the hand began; settled when the next one does (with what was paid and won in this one).
+  let keptFor: unknown = undefined;
+  let lastPaid = 0;
+  let lastWon = 0;
+  $effect.pre(() => {
+    const hand = keep;
+    if (hand === undefined || !width) return;
+    untrack(() => {
+      if (!kept) kept = asStacks();
+      else if (hand !== keptFor) kept = settle(kept, lastPaid, lastWon);
+      keptFor = hand;
+    });
+  });
+  $effect.pre(() => {
+    lastPaid = paid;
+    lastWon = won;
+  });
+
+  /** Kept stacks as coins: in spending order (`d`), the first `paid` spent; then the winnings' spots (`g`). */
+  const keptCoins = $derived.by(() => {
+    if (!kept) return null;
+    const out: (Coin & { g?: number; spent?: boolean })[] = [];
+    let d = 0;
+    for (const s of inOrder(kept))
+      for (let c = s.h - 1; c >= 0; c--) out.push({ d: d++, x: s.x, y: s.lift + c * dims.step, fromLeft: true, flat: s.tilt !== undefined && s.h === 1, tilt: s.tilt, z: -s.lift });
+    for (const c of out) c.spent = c.d < paid;
+    landing(without(kept, paid), won).forEach((spot, g) => out.push({ d: d + g, g, x: spot.x, y: spot.y, fromLeft: true, z: -spot.lift }));
+    return out;
+  });
+  const keptTotal = $derived(kept ? kept.reduce((a, s) => a + s.h, 0) - paid + won : 0);
+
   /** Back rows first, then each stack from the bottom up. */
-  const drawn = $derived([...coins].sort((a, b) => (a.z ?? 0) - (b.z ?? 0) || a.y - b.y));
+  const drawn = $derived([...(keptCoins ?? coins)].sort((a, b) => (a.z ?? 0) - (b.z ?? 0) || a.y - b.y));
+  const moths = $derived(keptCoins ? keptTotal < DEPLETED : mood === 'depleted');
 </script>
 
 <div class="purse {mood} {size}" aria-label={label ? `${label} ${dollars(amount)}` : dollars(amount)}>
-  <div class="coins" aria-hidden="true" style="--w: {dims.w}px; --focus: {focus}%">
+  <div class="coins" aria-hidden="true" style="--w: {dims.w}px; --focus: {focus}%" bind:clientWidth={width}>
     {#each drawn as c (c.d)}
+      {@const g = 'g' in c ? (c.g as number | undefined) : undefined}
       <span
         class="coin"
         class:flat={c.flat}
-        class:spent={c.d < spent}
-        data-d={c.d}
+        class:spent={keptCoins ? 'spent' in c && !!c.spent : c.d < spent}
+        data-d={g === undefined ? c.d : undefined}
+        data-g={g}
         style="left: {c.fromLeft ? `${c.x}px` : `calc(var(--focus) + ${c.x}px)`}; bottom: {c.y}px; --tilt: {c.tilt ?? 0}deg"
       ></span>
     {/each}
-    {#if mood === 'depleted'}
+    {#if moths}
       {#each [0, 1, 2] as m}
         <svg class="moth m{m}" viewBox="0 0 24 16">
           <g class="wings">
@@ -183,7 +316,7 @@
   }
   /* Four at a table: a rival's purse fits a third of the screen ($100 a row of ten stacks). */
   .tiny .coins {
-    height: 32px;
+    height: 40px;
   }
   /* Short phones: a lower purse; tall stacks may rise into the gap above. */
   /* Short screens (decided once at load, so hiding browser bars never changes it). */

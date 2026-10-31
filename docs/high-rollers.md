@@ -24,8 +24,9 @@ What you walk away with is your score.
 - **Folding** (on the Flop or the Turn) takes you out of the hand: your money
   stays in the pot, you stay at the table watching, and you're out of reach of
   the snags. If everyone else folds, the last captain in takes the pot.
-- **The River raise:** with your hand laid face down you may also **raise**
-  (black: Raise, white: Play hand). The raise is the table ante (times the
+- **The River raise:** first **Play hand** lays your hand (nothing is
+  committed yet: tap a card to pick it back up); then **Raise** (black) or
+  **Next** (white) commits it. The raise is the table ante (times the
   stakes). Raises made at the same moment don't stack: every raiser is in
   once. Then everyone else still in **matches or folds** (black: Fold, white:
   Match), in secret, at once; one raise, no re-raising. If you can't afford
@@ -57,6 +58,10 @@ What you walk away with is your score.
 
 - **Your side and the river are the duel's:** your purse, your cards, your
   snag fan and your discards in the same places; no figures, no hand number.
+- **Purses keep their shape** from hand to hand: coins paid in leave from
+  the front; winnings land on the stacks' tops for a few rounds, then in new
+  stacks beside them, and stay where they fell (tidying up is a quality-of-life
+  idea for later).
 - **The pot is one heap, nobody's in particular** (`Pile.svelte`): it starts
   in the middle and spills outwards in uneven stacks. Every coin flies from
   its purse to a spot laid out in advance and hidden until it lands, with a
@@ -65,17 +70,19 @@ What you walk away with is your score.
   of their stacks until the next hand.
 - **The rivals across the top, a third of the width each,** in seat order
   (you sit at the bottom; the order runs left, across, right, and round to
-  you): one name (the shortest of nickname, first name and surname), their
-  snags fanned beside it, a purse of little stacks, three small cards and
-  their discards. No portraits for now. A dot marks who acts first.
+  you), mirroring yours across the table: one name at their edge (the
+  shortest of nickname, first name and surname) with their snags fanned
+  beside it, then three small cards held close and their discards, then a
+  purse of little stacks nearest the pot. No portraits for now. A dot marks
+  who acts first.
 - **The Flop and the Turn:** you choose; then each rival's move is shown in
   turn, in seat order from the first, the one shown framed ("Swaps 2",
   "Calls · $4", "Folds"), and you press **Next**. Purses, snags and discards
   change only as each is shown; the new board card waits for the end.
   Folded, you watch the same way. **The River** has no replay (everyone just
   plays a hand): straight to the showdown.
-- **The showdown:** your hand first, then the others, **the chip leader
-  last** (the order is fixed before a card is seen, so it gives nothing away).
+- **The showdown:** your hand first, then the others in their seats, **left
+  to right**.
 
 ## The engine (built)
 

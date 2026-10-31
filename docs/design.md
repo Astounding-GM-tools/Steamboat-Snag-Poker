@@ -416,4 +416,12 @@ as a fallback. Dropping is final.
 - Richer matchmaking (temperature, declining challenges).
 - Distinct snag types with different effects.
 - Larger, rotating roster.
+
+## Quality of life (saved for later)
+
+- **Order your stacks:** tap your purse to tidy it into neat stacks of ten
+  (they're left as they fall: no time to fiddle at the table).
+- **Community cards, value or suit:** tap the board to switch what each card
+  shows big in its middle, the value or the suit.
+- **Order your hand:** by value or by suit.
 $$

@@ -30,8 +30,8 @@
   import { dollars, tagName } from './format';
   import { handLabel } from './handNames';
   import { heavy } from './heavy';
-  import { flyCoin, flyInto, reducedMotion, restingSpot, stackTops } from './coins';
-  import { onDestroy, untrack } from 'svelte';
+  import { flyInto, reducedMotion } from './coins';
+  import { untrack } from 'svelte';
 
   /**
    * High Rollers: four captains at one table, until the first is broke and
@@ -41,7 +41,7 @@
    * then the rivals' moves are replayed one at a time, in seat order (left,
    * across, right, and round to you), and you press Next as you take each in.
    * On the River only a raise is replayed, then how the rest answered it. At
-   * the showdown your hand comes first, then theirs, the chip leader last.
+   * the showdown your hand comes first, then theirs, left to right.
    *
    * Reusable: `setup` seats the table (rivals, purses, stakes); with
    * `onfinish` the table ends with Continue and hands back how it went,
@@ -82,10 +82,10 @@
   const seen = (seat: number) => (shownYet(seat) ? round : before!);
   /** Board cards on show: a new street's card waits until the replay is done. */
   let boardShown = $state(3);
-  /** The showdown's order (you first, the chip leader last), and how far it has got. */
+  /** The showdown's order (you first, then the rivals left to right), and how far it has got. */
   let revealOrder = $state<number[]>([]);
   let revealed = $state(0);
-  /** Purses at the start of the hand (the chip leader is judged on these). */
+  /** Purses at the start of the hand. */
   let startMoney = $state<number[]>([]);
   $effect.pre(() => {
     if (!startMoney.length) startMoney = game.players.map((p) => p.money);
@@ -101,7 +101,7 @@
     answering ? round.raise : meIn && !composing ? tableFee(game.config, round.month, round.street + 1, round.stakes) + discardCost(mine!.discarded.length, tappedCards.length) : 0,
   );
   const preview = $derived(
-    meIn && composing && tapped.length ? bestHand([...tappedCards, ...tappedSnags], round.community, { min: tapped.length, max: tapped.length }) : null,
+    myTurn && composing ? bestHand([...tappedCards, ...tappedSnags], round.community, { min: tapped.length, max: tapped.length }) : null,
   );
   const goLabel = $derived(
     answering
@@ -115,8 +115,12 @@
           : t('draw.check'),
   );
 
+  /** On the River, your hand is laid (Play hand): what's left is to raise, or not (Next). A tap picks it back up. */
+  let laid = $state(false);
+
   function tap(card: Card) {
     if (view !== 'choose' || !meIn) return;
+    laid = false;
     if (isJoker(card) && !composing) return; // Snags can't be thrown away
     if (tapped.includes(card.id)) tapped = tapped.filter((id) => id !== card.id);
     else if (!composing || tapped.length < 5) tapped = [...tapped, card.id]; // A hand is five cards at most
@@ -133,6 +137,7 @@
     const river = composing;
     game = playHighRollers(game, action);
     tapped = [];
+    laid = false;
     const r = game.round!;
     const moves = r.history.at(-1)!.actions;
     const order = Array.from({ length: r.seats.length }, (_, k) => (r.first + k) % r.seats.length);
@@ -159,11 +164,7 @@
       if (revealed + 1 < revealOrder.length) revealed++;
       else view = 'verdict';
     } else if (view === 'verdict') {
-      if (game.phase === 'over') {
-        // The placings go over the table: no loose coins on top of them.
-        clearResting();
-        view = 'over';
-      }
+      if (game.phase === 'over') view = 'over';
       else nextHand();
     }
   }
@@ -181,9 +182,9 @@
       view = 'verdict';
       return;
     }
-    // The showdown: you first (if you're in), then the rest, the chip leader last.
+    // The showdown: you first (if you're in), then the rest in their seats, left to right.
     const inHand = round.seats.map((_, s) => s).filter((s) => !round.seats[s].folded);
-    const others = inHand.filter((s) => s !== me).sort((a, b) => startMoney[game.seated[a]] - startMoney[game.seated[b]]);
+    const others = inHand.filter((s) => s !== me);
     revealOrder = [...(inHand.includes(me) ? [me] : []), ...others];
     revealed = 0;
     view = 'reveal';
@@ -200,6 +201,7 @@
   function again() {
     // A new table starts at the same hand number: its coins start afresh.
     flownHand = paidHand = -1;
+    tableNo++;
     game = newHighRollers(Date.now() >>> 0, setup);
     startMoney = game.players.map((p) => p.money);
     tapped = [];
@@ -228,27 +230,20 @@
   // --- Coins in flight -------------------------------------------------------
   // Each purse pours into the one pile: a seat's coins leave from where they
   // stood in its purse and land on the pile's next spots. At the verdict the
-  // pile flies to the winner: their own coins back to the spots they left, the
-  // rest to rest on top of their stacks until the next hand.
+  // pile flies to the winners, onto the spots their purses have laid out for
+  // what they won (purses keep their stacks from hand to hand, so that's where
+  // the coins stay).
   let rootEl = $state<HTMLElement>();
   let pileEl = $state<HTMLElement>();
   /** Whose each coin in the pile is, in the order they landed. */
   let owners: number[] = [];
   let flown: number[] = [];
   let flownHand = -1;
-  /** Counts hands (across tables), so a late coin knows its hand is gone. */
-  let handSerial = 0;
   let paidHand = -1;
-  let resting: HTMLElement[] = [];
+  /** Which table this is (Again deals a new one). */
+  let tableNo = $state(0);
   const MAX_FLYERS = 40;
   const purseEl = (seat: number) => rootEl?.querySelector<HTMLElement>(`[data-purse="${seat}"]`) ?? null;
-  /** Purses show at most $400: a richer one's first coins aren't drawn. */
-  const offset = (seat: number) => Math.max(0, (startMoney[game.seated[seat]] ?? 0) - 400);
-  function clearResting() {
-    for (const c of resting) c.remove();
-    resting = [];
-  }
-  onDestroy(clearResting);
 
   /** A seat paid dollars a..b into the pot. */
   function payIn(seat: number, a: number, b: number) {
@@ -256,38 +251,26 @@
     for (let k = a; k < b; k++) {
       const spot = pileEl?.querySelector<HTMLElement>(`[data-k="${owners.length}"]`);
       owners.push(seat);
-      const src = purse?.querySelector(`[data-d="${k - offset(seat)}"]`);
+      const src = purse?.querySelector(`[data-d="${k}"]`);
       if (spot && src && k < a + MAX_FLYERS && !reducedMotion()) flyInto(src, spot, (k - a) * 45);
     }
   }
 
+  /** The verdict: the pile flies to the winners (a winner's own coins to it, the rest shared out among them in turn). */
   function payOut(winners: number[]) {
     if (!pileEl || reducedMotion()) return;
-    const hand = handSerial;
-    const tops: Record<number, DOMRect[]> = {};
-    const piled: Record<number, number> = {};
-    const seenOf = new Map<number, number>();
+    const landed = new Map<number, number>();
     let shared = 0;
     const coins = [...pileEl.querySelectorAll<HTMLElement>('[data-k]')];
+    const first = Math.max(0, coins.length - MAX_FLYERS * 2);
     coins.forEach((c, i) => {
       const owner = owners[Number(c.dataset.k)];
-      // Which of the owner's own coins this is: the n-th it paid in.
-      const own = seenOf.get(owner) ?? 0;
-      seenOf.set(owner, own + 1);
-      if (i < coins.length - MAX_FLYERS * 2) return;
       const to = winners.includes(owner) ? owner : winners[shared++ % winners.length];
-      const purse = purseEl(to);
-      if (!purse) return;
-      const delay = (i - Math.max(0, coins.length - MAX_FLYERS * 2)) * 14;
-      const home = to === owner ? purse.querySelector<HTMLElement>(`[data-d="${own - offset(owner)}"]`) : null;
-      if (home) {
-        flyInto(c, home, delay);
-        return;
-      }
-      tops[to] ??= stackTops(purse);
-      const spot = restingSpot(tops[to], (piled[to] = (piled[to] ?? 0) + 1) - 1, purse.getBoundingClientRect());
-      // One that lands after the table has moved on to the next hand just goes.
-      if (spot) flyCoin(c.getBoundingClientRect(), spot, delay, { restIn: purse }).then((coin) => coin && (handSerial === hand ? resting.push(coin) : coin.remove()));
+      const g = landed.get(to) ?? 0;
+      landed.set(to, g + 1);
+      const spot = purseEl(to)?.querySelector<HTMLElement>(`[data-g="${g}"]`);
+      // Only the last few dozen fly (the rest are there already when the pot is paid).
+      if (spot && i >= first) flyInto(c, spot, (i - first) * 14);
     });
   }
 
@@ -297,9 +280,7 @@
     const winners = settled ? round.result?.winners : undefined;
     untrack(() => {
       if (hand !== flownHand) {
-        clearResting();
         flownHand = hand;
-        handSerial++;
         flown = bets.map(() => 0);
         owners = [];
       }
@@ -315,6 +296,9 @@
       }
     });
   });
+  /** What a seat has paid out this hand (into the pot, and forfeits at the verdict) and won (at the verdict): its purse settles them. */
+  const paidOut = (seat: number) => (settled && round.result ? round.bets[seat] + round.result.forfeit[seat] : seen(seat).bets[seat]);
+  const wonIn = (seat: number) => (settled && round.result ? round.result.share[seat] : 0);
   /** The street the board shows (a new card waits for the replay to end). */
   const streetName = $derived(STREETS[Math.min(boardShown - 3, 2)]);
   const who = (s: number) => (s === me ? t('character.captain.you') : tagName(captain(s).id));
@@ -353,6 +337,8 @@
 </script>
 
 <div class="hr" bind:this={rootEl}>
+  <!-- A new table (Again) starts afresh: purses laid out new. -->
+  {#key tableNo}
   <!-- The rivals across the top, a third of the width each, in seat order. -->
   <div class="rivals">
     {#each rivals as seat (captain(seat).id)}
@@ -371,7 +357,6 @@
             </div>
           {/if}
         </div>
-        <div class="rival-purse" data-purse={seat}><Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} /></div>
         <div class="rival-cards">
           <div class="rival-hand">
             {#if s.folded}
@@ -386,6 +371,9 @@
           <DiscardChips cards={s.discarded} flop={s.flopDiscards} title={tagName(p.id)} />
         </div>
         <p class="line">{rivalLine(seat)}</p>
+        <div class="rival-purse" data-purse={seat}>
+          <Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} keep={game.hand} paid={paidOut(seat)} won={wonIn(seat)} />
+        </div>
       </div>
     {/each}
   </div>
@@ -410,9 +398,9 @@
   <div class="mine">
     <div class="my-purse" data-purse={me}>
       {#if mine}
-        <Purse amount={purse(me)} start={startMoney[game.seated[me]] ?? captain(me).money} showAmount={false} focus={18} label={t('character.captain.you')} />
+        <Purse amount={purse(me)} start={startMoney[game.seated[me]] ?? captain(me).money} showAmount={false} focus={18} label={t('character.captain.you')} keep={game.hand} paid={paidOut(me)} won={wonIn(me)} />
         {#if round.first === me}<span class="button own" title={t('hr.first')}></span>{/if}
-        {#if myCall}<p class="my-hand">{myCall.lingo ?? myCall.call}</p>{/if}
+        {#if preview && !tapped.length && !laid}<p class="my-hand">{t('draw.boardOnly')}</p>{:else if myCall}<p class="my-hand">{myCall.lingo ?? myCall.call}</p>{/if}
       {:else}
         <p class="my-hand">{t('hr.youAreOut')}</p>
       {/if}
@@ -424,9 +412,10 @@
           {#each mine.hand as card (card.id)}
             <CardView
               {card}
-              selected={composing && tapped.includes(card.id)}
+              selected={composing && !laid && tapped.includes(card.id)}
+              used={laid && tapped.includes(card.id)}
               toss={!composing && tapped.includes(card.id)}
-              faded={mine.folded || (shownTo(me) && myPlayed.length > 0)}
+              faded={mine.folded || (shownTo(me) && myPlayed.length > 0) || (laid && !tapped.includes(card.id))}
               onclick={view === 'choose' && meIn ? () => tap(card) : undefined}
             />
           {/each}
@@ -438,8 +427,8 @@
               {#each mySnags as card (card.id)}
                 <CardView
                   {card}
-                  selected={tapped.includes(card.id)}
-                  used={myPlayedSnags.has(card.id)}
+                  selected={!laid && tapped.includes(card.id)}
+                  used={myPlayedSnags.has(card.id) || (laid && tapped.includes(card.id))}
                   lifted={shownTo(me) && myPlayedSnags.has(card.id)}
                   onclick={view === 'choose' && meIn && composing ? () => tap(card) : undefined}
                 />
@@ -455,10 +444,14 @@
 
   <!-- The two buttons. Call, Swap and Play hand are held (heavy); the rest are light taps. -->
   <div class="actions" use:heavy>
-    {#if view === 'choose' && myTurn && composing && round.raise}
-      <!-- The River: lay your hand, or lay it and raise. Both commit you. -->
+    {#if view === 'choose' && myTurn && composing && round.raise && laid}
+      <!-- The River, your hand laid: raise on it, or let it stand. Either commits you. -->
       <button class="ghost" onclick={() => go(true)} data-heavy="true">{t('hr.raise', { amount: dollars(round.raise) })}</button>
-      <button onclick={() => go()} data-heavy="true">{goLabel}</button>
+      <button onclick={() => go()} data-heavy="true">{t('show.next')}</button>
+    {:else if view === 'choose' && myTurn && composing && round.raise}
+      <!-- The River, first: lay your hand (a light tap; nothing is committed until Raise or Next). -->
+      <button class="ghost" disabled>{t('draw.fold')}</button>
+      <button onclick={() => (laid = true)}>{goLabel}</button>
     {:else if view === 'choose' && myTurn}
       <button class="ghost" onclick={() => play({ type: 'fold' })} disabled={!tableCanFold(round, me)}>{t('draw.fold')}</button>
       <button onclick={() => go()} data-heavy={composing || answering || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>
@@ -470,6 +463,8 @@
       <button onclick={next}>{t('show.next')}</button>
     {/if}
   </div>
+
+  {/key}
 
   {#if view === 'over'}
     <!-- The placings: those still standing take gold, silver and bronze by purse; what you walk away with is your score. -->
@@ -529,7 +524,8 @@
     grid-column: span 4;
     container-type: inline-size;
     display: grid;
-    grid-template-rows: 26px auto auto 1.9rem;
+    /* Mirroring yours across the table: name at their edge, cards held close, the purse nearest the pot. */
+    grid-template-rows: 26px auto 1.9rem auto;
     row-gap: 3px;
     padding: 3px 4px 0;
     margin: -4px -4px 0;
