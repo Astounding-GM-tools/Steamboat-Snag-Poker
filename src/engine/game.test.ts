@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, PRESETS, type RulesConfig } from './config';
 import { HUMAN_ID, ROSTER, drawLineUp } from './characters';
-import { FINALE_STAKE, LOG_SIZE, activeOpponents, finaleSetup, finishFinale, migrateGame, newGame, nextMonth, player, submitAction, type GameState } from './game';
+import { FINALE_STAKE, LOG_SIZE, activeOpponents, finaleSetup, finishFinale, newGame, nextMonth, player, submitAction, type GameState } from './game';
 import { chooseAction, viewFor } from './ai';
 import { newHighRollers } from './highrollers';
 import { legalActions } from './round';
@@ -51,50 +51,6 @@ describe('game', () => {
       }
     });
   }
-
-  it('migrates saves from before a rule setting existed', () => {
-    const old = newGame(3);
-    delete (old.config as Partial<RulesConfig>).jokerForfeit;
-    old.players[1].money = NaN;
-    const fixed = migrateGame(old);
-    expect(fixed.config.jokerForfeit).toBe(DEFAULT_CONFIG.jokerForfeit);
-    expect(Number.isFinite(fixed.players[1].money)).toBe(true);
-  });
-
-  it('migrates a voyage saved before duels and tables shared one engine', () => {
-    // A crossing just won, saved the old way: two seats, one winner, the board's snags apart.
-    let s = newGame(4);
-    const rng = new Rng(1);
-    while (s.phase === 'duel') s = submitAction(s, chooseAction('careful', viewFor(s.round!, 0, s.config), s.config, rng));
-    const now = s.round!.result!;
-    const old = structuredClone(s) as unknown as { round: Record<string, unknown> & { result: unknown; seats: { slots: unknown[] }[] }; report: { duel: { result: unknown } } };
-    for (const key of ['first', 'stakes', 'feeDivisors', 'raise', 'raisers']) delete old.round[key];
-    old.round.playStyle = 'draw';
-    old.round.communityJoker = null;
-    const winner = now.winners.length === 1 ? now.winners[0] : null;
-    const oldResult = {
-      winner,
-      hands: now.hands,
-      gain: now.pot,
-      pot: now.pot,
-      folded: null,
-      forfeit: now.forfeit[0] + now.forfeit[1],
-      dumped: now.dumped,
-      communityTaken: now.boardTaken,
-      returnedToPool: now.returnedToPool,
-    };
-    old.round.result = oldResult;
-    old.report.duel.result = oldResult;
-    const fixed = migrateGame(old as unknown as GameState);
-    expect(fixed.round!.first).toBe(0);
-    expect(fixed.round!.feeDivisors).toEqual(DEFAULT_CONFIG.streetFeeDivisors);
-    expect(fixed.round!.result!.winners).toEqual(now.winners);
-    expect(fixed.round!.result!.share.reduce((a, b) => a + b, 0)).toBe(now.pot + now.forfeit[0] + now.forfeit[1]);
-    expect(fixed.report!.duel.result.winners).toEqual(now.winners);
-    expect('playStyle' in fixed.round!).toBe(false);
-    // And it plays on.
-    if (fixed.phase === 'monthEnd') expect(nextMonth(fixed).phase).toBe('duel');
-  });
 
   it('keeps a log of the Captain\'s recent showdowns', () => {
     let s = newGame(11);
@@ -179,18 +135,6 @@ describe('game', () => {
     expect(s.sitterId).not.toBe(sitter);
   });
 
-  it('hands retired captains\' seats in old saves to their successors', () => {
-    const s = newGame(41);
-    const json = JSON.stringify(s)
-      .replaceAll('"konrad"', '"pete"')
-      .replaceAll('"finlay"', '"jiggs"');
-    const old = JSON.parse(json) as GameState;
-    for (const p of old.players) if (p.id === 'pete') p.ai = 'pete' as never;
-    const fixed = migrateGame(old);
-    expect(fixed.players.some((p) => p.id === 'pete' || p.id === 'jiggs')).toBe(false);
-    const konrad = fixed.players.find((p) => p.id === 'konrad');
-    if (konrad) expect(konrad.ai).toBe('bully');
-  });
 });
 
 describe('the League finale', () => {

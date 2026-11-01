@@ -1,4 +1,4 @@
-import { migrateGame, type GameState } from '../engine';
+import type { GameState } from '../engine';
 
 export interface Best {
   /** Tournaments won. */
@@ -44,14 +44,22 @@ export function recordResult(months: number, victory: boolean, score = 0): Best 
   return best;
 }
 
-const SAVE_KEY = 'wwr.save.v2';
+/**
+ * Where the voyage in progress is kept. Saves aren't converted when the
+ * game's state changes shape: the key moves on, and an older voyage is
+ * simply left behind (a fresh start costs nothing while it's a prototype).
+ */
+const SAVE_KEY = 'wwr.save.v3';
+/** Left behind: older voyages, and the settings of the retired rules lab. */
+const OLD_KEYS = ['wwr.save.v2', 'wwr.config.v2', 'wwr.config.v3'];
 
 /** The voyage in progress, saved after every move so it survives a reload. */
 export function loadGame(): GameState | null {
   try {
+    for (const key of OLD_KEYS) localStorage.removeItem(key);
     const raw = localStorage.getItem(SAVE_KEY);
     const game = raw ? (JSON.parse(raw) as GameState) : null;
-    return game && game.phase !== 'gameOver' && game.phase !== 'victory' && game.phase !== 'finished' ? migrateGame(game) : null;
+    return game && game.phase !== 'gameOver' && game.phase !== 'victory' && game.phase !== 'finished' ? game : null;
   } catch {
     return null;
   }

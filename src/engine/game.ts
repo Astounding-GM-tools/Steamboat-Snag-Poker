@@ -5,7 +5,7 @@
  */
 import { chooseAction, viewFor } from './ai';
 import { jokerCard, type Card, type JokerCard } from './cards';
-import { HUMAN_ID, LEGACY_AI, RETIRED_IDS, ROSTER, drawLineUp, type AiId, type CharacterDef, type LineUpEntry } from './characters';
+import { HUMAN_ID, ROSTER, drawLineUp, type AiId, type LineUpEntry } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { createRound, foldedSeat, handsOf, isLegal, resolveStreet, winnerOf, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
 import type { HandValue } from './evaluate';
@@ -112,93 +112,6 @@ export interface GameState {
 }
 
 const clone = <T>(x: T): T => structuredClone(x);
-
-/**
- * Brings a saved game up to date with the current rules format: rule settings
- * added since it was saved get their defaults, and any Money that is not
- * a number (from such a missing setting) is reset to that player's start.
- */
-export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): GameState {
-  // Retired captains hand their seats (ids anywhere in the save) to their successors.
-  let json = JSON.stringify(saved);
-  for (const [old, now] of Object.entries(RETIRED_IDS)) json = json.replaceAll(`"${old}"`, `"${now}"`);
-  const state = JSON.parse(json) as GameState;
-  state.config = { ...DEFAULT_CONFIG, ...state.config };
-  state.log ??= [];
-  if (state.round) state.round = migrateRound(state.round, state.config);
-  if (state.report) {
-    state.report.duel.result = migrateResult(state.report.duel.result);
-    for (const d of state.report.offscreen) d.result = migrateResult(d.result);
-  }
-  if (state.finaleTable?.round) state.finaleTable.round = migrateRound(state.finaleTable.round, state.config);
-  if (state.report && !state.report.money) {
-    state.report.money = (state.report as MonthReport & { popularity?: MonthReport['money'] }).popularity ?? {};
-  }
-  for (const p of state.players) {
-    // A captain in the current gallery plays by the gallery's playbook; older styles map over.
-    const def = roster.find((c) => c.id === p.id);
-    if (p.ai && def) p.ai = def.ai;
-    else if (p.ai && LEGACY_AI[p.ai]) p.ai = LEGACY_AI[p.ai];
-    // Before the river tournament, money was called popularity.
-    const legacy = (p as Player & { popularity?: number }).popularity;
-    if (p.money === undefined && legacy !== undefined) p.money = legacy;
-    if (!Number.isFinite(p.money)) {
-      p.money = roster.find((c) => c.id === p.id)?.startMoney ?? state.config.startMoney;
-    }
-  }
-  return state;
-}
-
-/** A round saved before duels and tables shared one engine (or before pot mode). */
-function migrateRound(saved: RoundState, config: RulesConfig): RoundState {
-  const round = saved as RoundState & { playStyle?: string; communityJoker?: unknown };
-  const table = 'raisers' in round;
-  round.first ??= 0;
-  round.fished ??= [];
-  round.potMode ??= table;
-  round.bets ??= round.seats.map(() => 0);
-  round.stakes ??= 1;
-  round.raise ??= 0;
-  round.raisers ??= [];
-  // A table saved before it was one engine had High Rollers' fees; a duel, the rules'.
-  round.feeDivisors ??= table ? [2, 1] : config.streetFeeDivisors;
-  delete round.playStyle;
-  delete round.communityJoker;
-  for (const s of round.seats) s.slots = s.slots.filter((c) => c !== null);
-  if (round.result) {
-    const old = round.result as unknown as { folded?: number | null };
-    if (old.folded != null) round.seats[old.folded].folded = true;
-    round.result = migrateResult(round.result, round.community);
-  }
-  return round;
-}
-
-/** A result saved before duels and tables shared one engine: a duel's (one winner) or a table's (the board's snags among the dumped). */
-function migrateResult(saved: RoundResult, community: Card[] = []): RoundResult {
-  const old = saved as RoundResult;
-  if ('boardTaken' in old) return old;
-  if ('winners' in (old as object)) {
-    // A table's: the snags the weakest took included the board's.
-    const board = new Set(community.map((c) => c.id));
-    const table = old as Omit<RoundResult, 'boardTaken'>;
-    return { ...table, dumped: table.dumped.filter((j) => !board.has(j.id)), boardTaken: table.dumped.filter((j) => board.has(j.id)) };
-  }
-  const duel = old as unknown as { winner: 0 | 1 | null; hands: [HandValue, HandValue]; pot: number; gain: number; folded: 0 | 1 | null; forfeit: number; dumped: RoundResult['dumped']; communityTaken: RoundResult['dumped']; returnedToPool: RoundResult['dumped'] };
-  const w = duel.winner;
-  const byFolds = duel.folded != null;
-  return {
-    winners: w === null ? [0, 1] : [w],
-    hands: byFolds ? [null, null] : duel.hands,
-    pot: duel.pot,
-    share: w === null ? [Math.ceil(duel.pot / 2), Math.floor(duel.pot / 2)] : w === 0 ? [duel.pot + duel.forfeit, 0] : [0, duel.pot + duel.forfeit],
-    weakest: w === null || byFolds ? null : 1 - w,
-    dumped: duel.dumped,
-    boardTaken: duel.communityTaken ?? [],
-    forfeit: w === null ? [0, 0] : w === 0 ? [0, duel.forfeit] : [duel.forfeit, 0],
-    byFolds,
-    returnedToPool: duel.returnedToPool,
-  };
-}
 
 /**
  * Starts a tournament. The line-up is drawn from the gallery (a mix of rascals,
