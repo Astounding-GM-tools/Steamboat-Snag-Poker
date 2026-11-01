@@ -97,7 +97,8 @@
    */
   let width = $state(0);
   const room = $derived(width || span * 28);
-  const mode = $derived(room >= 260 ? 'full' : room >= 150 ? 'medium' : 'compact');
+  // Across the whole table it's always all there, however narrow the table (a short screen narrows it to fit).
+  const mode = $derived(span === 12 || room >= 260 ? 'full' : room >= 150 ? 'medium' : 'compact');
   const title = $derived(nickname(id) ? `“${nickname(id)}”` : t(`character.${id}.boat`));
 </script>
 

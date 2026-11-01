@@ -74,6 +74,20 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  /* The outer bottom corners follow the screen's own rounded corners (on a phone, a little way out from them). */
+  .actions {
+    --corner: 18px;
+  }
+  .actions > :global(button:first-child) {
+    border-bottom-left-radius: var(--corner);
+  }
+  .actions > :global(button:last-child) {
+    border-bottom-right-radius: var(--corner);
+  }
+  .actions :global(.stack > button:last-child) {
+    border-bottom-left-radius: var(--corner);
+    border-bottom-right-radius: var(--corner);
+  }
   .actions.idle {
     visibility: hidden;
   }

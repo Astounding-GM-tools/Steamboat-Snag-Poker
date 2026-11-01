@@ -22,6 +22,7 @@
   import PotBand from './PotBand.svelte';
   import Purse from './Purse.svelte';
   import Countdown from './Countdown.svelte';
+  import DeckSnags from './DeckSnags.svelte';
   import HowTo from './HowTo.svelte';
   import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
   import { cardLabel, jokerList, name, tagName } from './format';
@@ -912,11 +913,51 @@
 
   /** Snags on the board: at stake, the weakest hand takes them. */
   const stakes = $derived(boardCards.filter((c): c is Card => !!c && isJoker(c)));
+
+  // --- Fitting the screen --------------------------------------------------
+  // The table is drawn to the screen's width, and its height follows (the cards are sized by the columns).
+  // On a short screen (a phone with its browser's bars showing) that can run past the bottom and take the
+  // buttons with it: then the table narrows, just enough for all of it to fit, its cards a little smaller.
+  let fitWidth = $state<number | null>(null);
+  async function fitScreen() {
+    if (!rootEl) return;
+    fitWidth = null;
+    await tick();
+    const room = window.innerHeight;
+    if (rootEl.scrollHeight <= room + 1) return;
+    // The widest table that fits, found by halving (a few layouts, no flicker: they all happen before the next frame).
+    let lo = 240;
+    let hi = rootEl.clientWidth;
+    while (hi - lo > 4) {
+      const mid = Math.floor((lo + hi) / 2);
+      fitWidth = mid;
+      await tick();
+      if (rootEl.scrollHeight <= room + 1) lo = mid;
+      else hi = mid;
+    }
+    fitWidth = lo;
+  }
+  $effect(() => {
+    void table.chairs.length;
+    untrack(() => void fitScreen());
+    let timer: ReturnType<typeof setTimeout>;
+    const again = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => void fitScreen(), 150);
+    };
+    window.addEventListener('resize', again);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', again);
+    };
+  });
+  /** Snags shuffled into the deck, still in it: every card drawn might be one. */
+  const deckSnags = $derived(round.deck.filter(isJoker).length);
 </script>
 
 <!-- A tap anywhere, while the table is moving, hurries it along. -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="table" class:buttons={table.currency === 'buttons'} bind:this={rootEl} onclick={hurry}>
+<div class="table" class:buttons={table.currency === 'buttons'} style:max-width={fitWidth ? `${fitWidth}px` : null} bind:this={rootEl} onclick={hurry}>
   {#if showHelp}<div class="help-layer layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
   <!-- How it works covers what's said: the line comes back when it closes. -->
   {#if line && !showHelp}
@@ -966,9 +1007,11 @@
   <!-- The river: the street, the pot and the board. -->
   <div class="felt" bind:this={feltEl}>
     <!-- The Last Hand says so over the street's name (it plays for double). -->
-    <p class="last-hand">{round.stakes > 1 ? t('hr.lastHand', { n: round.stakes }) : ''}</p>
+    <!-- Only when the stakes are up (a hand starts that way, so nothing moves mid-hand). -->
+    {#if round.stakes > 1}<p class="last-hand">{t('hr.lastHand', { n: round.stakes })}</p>{/if}
     <div class="river-head">
-      <span class="crossing">{table.label ?? ''}</span>
+      <!-- Which crossing, and the snags in the deck (face down: how many is public, which ones isn't). -->
+      <span class="crossing">{table.label ?? ''}<DeckSnags count={deckSnags} /></span>
       <span class="street">
         {table.heading ?? t(`street.${streetName}`)}
         <!-- Every street has a second line, so nothing moves. -->
@@ -1263,6 +1306,10 @@
     margin-bottom: 0.4rem;
   }
   .crossing {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
     font-family: var(--title-font);
     font-size: 0.85rem;
     color: var(--grey);
