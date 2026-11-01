@@ -41,7 +41,14 @@ the end of the world if you never reach St. Louis.
 **Touchstones:** *Three Men in a Boat* (1889), a comic river journey of
 episodes, digressions and eccentrics, without a villain or real stakes;
 *Around the World in 80 Days* for the delivery and the deadline (minus its
-detective). Huckleberry Finn has the river, but more danger than we want.
+detective); *Kiki's Delivery Service* for the young courier making their way
+among strangers, a job at a time, kindness and a dip in confidence instead of
+a villain; *Paddington* (the 2014 film) for the newcomer and a cast of
+eccentrics won over, but drier, not so twee; *Silver Linings Playbook* for
+messy, likeable people with troubles of their own, a family that bickers
+and means well, a wager riding on the outcome, and a contest at the end
+where the score that counts is a modest one, not first place.
+Huckleberry Finn has the river, but more danger than we want.
 A cozy road movie on water: the tension is small, practical and comic.
 Obligations pile up (snags as cargo, jobs taken on with a handshake), things
 go off (the eggs, the ice), there's a queue at the lock.
