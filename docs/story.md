@@ -1,9 +1,61 @@
 # Story Mode: design notes
 
+Working title: **Steamboat to St. Louis.**
+
 Status: **the tutorial is built and live** (Morag's lessons, see
 [tutorial.md](tutorial.md)), and with it the caption system: speakers,
-placement, beats, replies, moves asked for, outcomes and snags. The story
+placement, beats, replies, moves asked for, show-me taps, outcomes and
+snags. The table takes any number of captains, and a story can say who sits
+at yours, landing by landing, with their decks and moves scripted. The story
 itself is still a proposal; its lines are drafts to argue over, not copy.
+
+## The premise
+
+**Every encounter ends in a game of Snag Poker.** It is silly, and it is a
+proud tradition: in a fighting game every meeting ends in a fight, in an
+action game the story sets up the shooting, the sneaking or the race, a
+superhero film sets up its set pieces, and Might and Magic: Clash of Heroes
+has characters and story galore that always end in a match-three puzzle. On
+our river, Snag Poker is simply how things are settled: by harbour masters,
+miners, inspectors and rival captains alike. Camp, played straight.
+
+**A 1927 cartoon about the spring of 1904.** The look is the mid-1920s; the
+story is set in April 1904. That's no contradiction: it's a cartoon made in
+1927 looking back on the good old days of steamboats and straw boaters, the
+way the films of the 1920s looked back on the Gay Nineties. Its voice is fond,
+a little knowing, and free with the facts.
+
+**The deadline is the World's Fair.** The Louisiana Purchase Exposition in
+St. Louis opened on 30 April 1904 (to verify), and automobiles were on show
+there: the horseless carriage has to be there for opening day. Gentle
+pressure, never a threat.
+
+**No villain, no conflict to speak of.** This is not the Odyssey. It's about
+fulfilling obligations: getting the cargo to where the boss has been paid to
+deliver it, and every other job taken on along the way. Nobody is chasing the
+boat, nobody hires card sharps to stop it (Henry Ford is not sabotaging
+anything), and the captains you beat bear no grudge: everyone you meet would
+rather like to win the hand, and is a good sport when they don't. It isn't even
+the end of the world if you never reach St. Louis.
+
+**Touchstones:** *Three Men in a Boat* (1889), a comic river journey of
+episodes, digressions and eccentrics, without a villain or real stakes;
+*Around the World in 80 Days* for the delivery and the deadline (minus its
+detective). Huckleberry Finn has the river, but more danger than we want.
+A cozy road movie on water: the tension is small, practical and comic.
+Obligations pile up (snags as cargo, jobs taken on with a handshake), things
+go off (the eggs, the ice), there's a queue at the lock.
+
+**What follows for the game:**
+
+- **Losing is never punishing.** Lose an encounter and you pay something (a
+  sum, a detour, an extra snag, a day) and the voyage goes on. No game over on
+  the river; not reaching St. Louis is just a different, sillier ending.
+- **Opponents are acquaintances, not enemies.** They come back, remember you
+  fondly, want a rematch, owe you or you owe them.
+- **Each landing is a short reel:** a vignette with its own set-up, its own
+  little twist on the game, and a punchline as you leave. Written one at a
+  time, together, the way the hands lesson was.
 
 ## Principles
 
@@ -24,8 +76,8 @@ itself is still a proposal; its lines are drafts to argue over, not copy.
 | Mode | Shape | Banter |
 |---|---|---|
 | **Story** (the default) | Upriver to downriver: Muscatine to the World's Fair in St. Louis. A chain of encounters, beginning with Morag's lessons. No standings. | Full: introductions, table talk, parting words. |
-| **Tournament** | The league as it is now: long, a line-up drawn from the gallery, standings. Unlocked by finishing the story (the Fair hosts it). | Sparse: a word at a meeting or a parting, little more. |
-| **Multiplayer** | Later, and its own thing. | None from us. |
+| **League** | As it is now: crossing after crossing against a line-up drawn from the gallery, the standings after each, until four are left for the High Rollers table. Open from the title already; in the story's world, the Fair could host it. | Sparse: a word at a meeting or a parting, little more. |
+| **Multiplayer** | Later, and its own thing (the table session is ready; pass-and-play works on one device). | None from us. |
 
 The tutorial is the first chapter of the story, and canon. It is not forced:
 on a new device Morag asks *"Have we met, Captain?"*, and the buttons answer
@@ -58,12 +110,12 @@ passage, funds, a place in the queue, a job taken on or handed off.
 
 **The goal: honour your obligations.** Reach the Fair with the carriage, and
 every other job you took on along the way delivered or passed on fair and
-square. Then the Fair's great river tournament opens, and Tournament mode
+square. Then the Fair's great river tournament opens, and the League
 begins.
 
 ## Snags as cargo
 
-In the tournament a snag is a penalty to pass on. In the story it is cargo and
+In the League a snag is a penalty to pass on. In the story it is cargo and
 duty: the mail bag, the stinking hides, the eggs that must not go rotten, the
 horseless carriage itself. It works the same at the table, and reads
 differently:
@@ -211,14 +263,21 @@ job.
 3. **Striking coal miners:** no coal for the boilers, unless… (below)
 4. **A nosy cargo inspector.**
 5. **The mail bag:** another captain bound downriver could take it…
-6. **The railroad bridge works:** a queue of boats; the eggs are going off;
-   play the captains ahead for their place.
+6. **The queue at the lock** (or the railroad bridge works): a line of boats;
+   the eggs are going off; play the captains ahead for their place.
 7. **Podunk Junction:** Gaylord, flush or destitute.
 8. –
 9. –
 10. –
 11. –
-12. **St. Louis.** The carriage delivered; the Fair; the tournament opens.
+12. **St. Louis.** The carriage delivered; the Fair; the League opens.
+
+**The river itself can supply them.** Going downstream from Muscatine (from
+memory, all to verify): Burlington and Fort Madison; **Keokuk**, where a canal
+with locks took boats round the Des Moines Rapids (a natural home for the
+queue at the lock, better than invented bridge works); **Hannibal**, Mark
+Twain's boyhood town (an obvious nod, and the cartoon would make the most of
+it); Alton; and **St. Louis** under the Eads Bridge.
 
 ### The striking coal miners: you win by losing
 
@@ -278,16 +337,15 @@ to it.
   moods, **Neutral**, **Confident** and **Nervous**, shown as the hand goes, so
   a glance at a portrait is a read (a tell, and a bluff for the good ones).
   Except **Steamboat Bill**: the same doomed stare whatever his cards say.
-- **The League's final table.** In the tournament (perhaps called the League),
-  quick duels as now, knockouts, until four captains are left; then all four
-  sit at one table, the stakes go up and one winner takes the pot: a change of
-  tempo, ante and dynamics. The hard part is the layout: up to three opponents
-  at once, playable and clear on a phone.
 
 ## Open questions
 
 - Who calls Steamboat Bill ashore.
 - The name of the boat.
 - How Morag comes aboard, and whether she stays to the Fair.
-- What happens when you run out of money mid-river (a loan from Gaylord?).
-- Banter volume in Tournament mode.
+- What happens when you run out of money mid-river: not a game over (losing
+  is never punishing), but what then? A loan from Gaylord, an IOU, work
+  aboard someone else's boat?
+- Banter volume in the League.
+- Money across the river: one purse all the way to St. Louis, or each landing
+  standing on its own?
