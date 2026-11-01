@@ -11,17 +11,17 @@
     placings,
     playHighRollers,
     highRollersResult,
-    tableAnswering,
-    tableLeft,
-    tableCanFold,
-    tableComposing,
-    tableFee,
+    isAnswering,
+    roundLeft,
+    canFold,
+    isComposing,
+    feeFor,
     type Action,
     type Card,
     type HighRollersResult,
     type HighRollersSetup,
     type HighRollersState,
-    type TableRound,
+    type RoundState,
   } from '../engine';
   import { t } from '../i18n';
   import CardView from './CardView.svelte';
@@ -81,9 +81,9 @@
   const me = $derived(mySeat(game));
   const mine = $derived(me >= 0 ? round.seats[me] : null);
   const meIn = $derived(!!mine && !mine.folded);
-  const composing = $derived(tableComposing(round));
+  const composing = $derived(isComposing(round));
   /** Facing a raise on the River: match it or fold. */
-  const answering = $derived(me >= 0 && tableAnswering(round, me));
+  const answering = $derived(me >= 0 && isAnswering(round, me));
   /** You have a move to make this street. */
   const myTurn = $derived(meIn && (round.street !== 3 || answering));
   /** A seat's captain. */
@@ -103,7 +103,7 @@
   let queue = $state<{ seat: number; action: Action }[]>([]);
   let at = $state(0);
   /** The table as it stood before the street: a rival's seat is shown from it until its move comes up in the replay. */
-  let before = $state.raw<TableRound | null>(null);
+  let before = $state.raw<RoundState | null>(null);
   /** A seat's place in the replay (-1: it has nothing to show, and is shown as it is). */
   const placeIn = (seat: number) => queue.findIndex((q) => q.seat === seat);
   const shownYet = (seat: number) => view !== 'replay' || !before || placeIn(seat) <= at;
@@ -145,13 +145,13 @@
   const tappedCards = $derived(mine ? mine.hand.filter((c) => tapped.includes(c.id)) : []);
   const tappedSnags = $derived(mine ? mine.jokers.filter((c) => tapped.includes(c.id)) : []);
   const cost = $derived(
-    answering ? round.raise : meIn && !composing ? tableFee(game.config, round.month, round.street + 1, round.stakes) + discardCost(mine!.discarded.length, tappedCards.length) : 0,
+    answering ? round.raise : meIn && !composing ? feeFor(round, game.config, round.street + 1) + discardCost(mine!.discarded.length, tappedCards.length) : 0,
   );
   const preview = $derived(
     view === 'choose' && myTurn && composing ? bestHand([...tappedCards, ...tappedSnags], round.community, { min: tapped.length, max: tapped.length }) : null,
   );
   /** What you have left to put in this hand: a price beyond it is everything, all in. */
-  const left = $derived(me >= 0 ? tableLeft(round, me) : 0);
+  const left = $derived(me >= 0 ? roundLeft(round, me) : 0);
   const goLabel = $derived(
     cost > left && left > 0
       ? t('hr.allIn', { amount: dollars(left) })
@@ -382,7 +382,7 @@
     if (action.type === 'compose') return t('hr.move.raise', { amount: dollars(round.raise) });
     if (action.type === 'match') return t('hr.move.match', { amount: dollars(round.raise) });
     if (action.type === 'draw' && action.cardIds.length) return t('hr.move.swap', { n: action.cardIds.length });
-    const fee = tableFee(game.config, round.month, (round.history.at(-1)?.street ?? 0) + 1, round.stakes);
+    const fee = feeFor(round, game.config, (round.history.at(-1)?.street ?? 0) + 1);
     return fee ? t('hr.move.call', { amount: dollars(fee) }) : t('hr.move.check');
   }
   /** Settled purses show only at the verdict; until then, what each had at the start of the hand, less what's in the pot. */
@@ -655,7 +655,7 @@
       if (winners && paidHand !== hand) {
         paidHand = hand;
         payOut(winners);
-        const dumped = round.result?.dumped ?? [];
+        const dumped = round.result ? [...round.result.dumped, ...round.result.boardTaken] : [];
         if (dumped.length) void slideSnags(dumped.map((j) => j.id));
       }
     });
@@ -675,7 +675,7 @@
     const line = (key: string, s: number) => (s === me ? t(`${key}.you`) : t(key, { name: who(s) }));
     if (res.byFolds) return line('hr.byFolds', res.winners[0]);
     const wins = res.winners.length > 1 ? t('hr.split', { names: res.winners.map(who).join(' & ') }) : line('hr.wins', res.winners[0]);
-    const said = res.weakest !== null && res.dumped.length ? `${wins} ${line('hr.snagsTo', res.weakest)}` : wins;
+    const said = res.weakest !== null && res.dumped.length + res.boardTaken.length ? `${wins} ${line('hr.snagsTo', res.weakest)}` : wins;
     // Someone went broke: the next hand is the last.
     // Whoever went broke this hand is named; and if that brings on the last hand, so is that.
     const broke = game.players.filter((p) => p.out && p.outOn === game.hand);
@@ -872,7 +872,7 @@
       <button class="ghost" disabled>{t('draw.fold')}</button>
       <button onclick={() => (laid = true)} data-heavy="true">{goLabel}</button>
     {:else if view === 'choose' && myTurn}
-      <button class="ghost" onclick={() => play({ type: 'fold' })} disabled={!tableCanFold(round, me)}>{t('draw.fold')}</button>
+      <button class="ghost" onclick={() => play({ type: 'fold' })} disabled={!canFold(round, me)}>{t('draw.fold')}</button>
       <button onclick={() => go()} data-heavy={composing || answering || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>
     {:else if view === 'over'}
       <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>

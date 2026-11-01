@@ -7,7 +7,7 @@ import { fullDeck, type Card } from './cards';
 import type { AiId } from './characters';
 import { bestScore } from './evaluate';
 import type { Rng } from './rng';
-import { inHand, type TableRound } from './table';
+import { inHand, type RoundState } from './round';
 
 /**
  * How readily each style raises (from this chance of winning, plus a bluff
@@ -32,7 +32,7 @@ const style = (ai: AiId) => STYLE[ai] ?? STYLE.careful!;
  * chosen well, so it plays the best three of five. Against several, as if
  * each were independent.
  */
-export function raiseChance(round: TableRound, seat: number, laid: readonly (Card | null)[], rng: Rng, samples = 60): number {
+export function raiseChance(round: RoundState, seat: number, laid: readonly (Card | null)[], rng: Rng, samples = 60): number {
   const others = inHand(round).filter((i) => i !== seat).length;
   if (!others) return 1;
   const mine = bestScore(laid, round.community, { min: laid.length, max: laid.length });

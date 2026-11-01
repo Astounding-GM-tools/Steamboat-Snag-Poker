@@ -1,24 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { jokerCard } from './cards';
-import { chooseAction } from './ai';
+import { chooseAction, viewFor } from './ai';
 import { DEFAULT_CONFIG } from './config';
 import { Rng } from './rng';
 import { baseAnte } from './pot';
-import { createTableRound, resolveTableStreet, tableAnswering, tableFee, type TableRound } from './table';
-import { highRollersResult, mySeat, newHighRollers, nextHighRollersHand, placings, playHighRollers, tableView } from './highrollers';
-import type { Action } from './round';
+import { createRound, feeFor, isAnswering, resolveStreet, type Action, type RoundOptions, type RoundPlayer, type RoundState } from './round';
+import { HIGH_ROLLERS_FEES, highRollersResult, mySeat, newHighRollers, nextHighRollersHand, placings, playHighRollers } from './highrollers';
 
 const config = DEFAULT_CONFIG;
 const stand: Action = { type: 'draw', cardIds: [] };
 const players = (n: number, jokers: number[] = []) => Array.from({ length: n }, (_, i) => ({ id: `p${i}`, jokers: Array.from({ length: jokers[i] ?? 0 }, (_, k) => jokerCard(i * 3 + k)) }));
-const ids = (round: TableRound) => round.seats.map((s) => s.hand.map((c) => c.id).sort());
+const ids = (round: RoundState) => round.seats.map((s) => s.hand.map((c) => c.id).sort());
+
+/** A hand at a table with High Rollers' fees, the deck arranged (or shuffled). */
+const table = (month: number, seated: RoundPlayer[], first: number, arranged?: string[], options: RoundOptions = {}) =>
+  createRound(month, seated, [], config, new Rng(1), { first, arranged, feeDivisors: HIGH_ROLLERS_FEES, ...options });
 
 // The Flop, then three rounds of hole cards from the first seat (here seat 1), then the rest.
 const order = ['As', 'Kd', '2c', /* hole cards, seats 1 2 3 0 */ 'Qh', 'Jh', 'Th', '9h', 'Qs', 'Js', 'Ts', '9s', 'Qc', 'Jc', 'Tc', '9c', /* draws and streets */ '8h', '8s', '7c', '6d'];
 
 describe('a hand at a table of four', () => {
   it('deals the Flop, then three cards each round the table from the first seat; everyone antes', () => {
-    const round = createTableRound(1, players(4), 1, [], config, new Rng(1), order);
+    const round = table(1, players(4), 1, order);
     expect(round.community.map((c) => c.id)).toEqual(['As', 'Kd', '2c']);
     expect(ids(round)).toEqual([
       ['9c', '9h', '9s'],
@@ -30,36 +33,54 @@ describe('a hand at a table of four', () => {
   });
 
   it('swaps draw their replacements in seat order: who acts first gets the first cards', () => {
-    const round = createTableRound(1, players(4), 1, [], config, new Rng(1), order);
+    const round = table(1, players(4), 1, order);
     // Seats 0 and 2 each swap one card; seat 2 acts before seat 0 (order 1 2 3 0), so it gets the 8h.
-    resolveTableStreet(round, [{ type: 'draw', cardIds: ['9h'] }, stand, { type: 'draw', cardIds: ['Jh'] }, stand], config);
+    resolveStreet(round, [{ type: 'draw', cardIds: ['9h'] }, stand, { type: 'draw', cardIds: ['Jh'] }, stand], config);
     expect(round.seats[2].hand.map((c) => c.id)).toContain('8h');
     expect(round.seats[0].hand.map((c) => c.id)).toContain('8s');
     expect(round.community.at(-1)!.id).toBe('7c'); // then the Turn
     // The fee to see the Turn, plus a swap.
-    expect(round.bets[2]).toBe(1 + tableFee(config, 1, 1) + 1);
+    expect(round.bets[2]).toBe(1 + feeFor(round, config, 1) + 1);
   });
 
   it('folded seats stay out of the hand; the last one in takes the pot', () => {
-    const round = createTableRound(3, players(4), 0, [], config, new Rng(1), order);
-    resolveTableStreet(round, [{ type: 'fold' }, stand, { type: 'fold' }, stand], config);
+    const round = table(3, players(4), 0, order);
+    resolveStreet(round, [{ type: 'fold' }, stand, { type: 'fold' }, stand], config);
     expect(round.seats.map((s) => s.folded)).toEqual([true, false, true, false]);
     expect(round.result).toBeNull();
-    resolveTableStreet(round, [null, { type: 'fold' }, null, stand], config);
+    resolveStreet(round, [null, { type: 'fold' }, null, stand], config);
     const res = round.result!;
     expect(res.byFolds).toBe(true);
     expect(res.winners).toEqual([3]);
     expect(res.share[3]).toBe(res.pot);
   });
 
+  it('when the folds leave one seat in, the hand ends there: nobody else\'s swap is made or paid for', () => {
+    const round = table(3, players(4), 0, order);
+    const before = [...round.bets];
+    resolveStreet(round, [{ type: 'fold' }, { type: 'draw', cardIds: ['Jh'] }, { type: 'fold' }, { type: 'fold' }], config);
+    expect(round.result!.winners).toEqual([1]);
+    expect(round.bets).toEqual(before);
+    expect(round.seats[1].hand.map((c) => c.id)).toContain('Jh'); // (seat 1: the jacks)
+  });
+
+  it('everyone still in folding at once is a stand-off: the pot is split, the odd coin to the earliest seat', () => {
+    const round = table(4, players(3), 1, order);
+    resolveStreet(round, [{ type: 'fold' }, { type: 'fold' }, { type: 'fold' }], config);
+    const res = round.result!;
+    expect(res.byFolds).toBe(true);
+    expect(res.winners).toEqual([1, 2, 0]);
+    expect(res.share.reduce((a, b) => a + b, 0)).toBe(res.pot);
+  });
+
   it('at the showdown the best hand takes the pot, and the snags go to the weakest hand still in', () => {
     // Three of a kind in every hand (queens, jacks, tens, nines); a board that never pairs (7c, then 6d).
     const unpaired = [...order.slice(0, 15), '7c', '6d'];
-    const round = createTableRound(1, players(4, [0, 1, 0, 1]), 1, [], config, new Rng(1), unpaired);
-    resolveTableStreet(round, [stand, stand, stand, stand], config);
-    resolveTableStreet(round, [stand, stand, stand, stand], config);
+    const round = table(1, players(4, [0, 1, 0, 1]), 1, unpaired);
+    resolveStreet(round, [stand, stand, stand, stand], config);
+    resolveStreet(round, [stand, stand, stand, stand], config);
     // The River: the queens play a snag with their trips; the tens play theirs too; the nines are weakest.
-    resolveTableStreet(
+    resolveStreet(
       round,
       [
         { type: 'compose', cardIds: ['9h', '9s', '9c'], jokers: 0 },
@@ -88,21 +109,21 @@ describe('the River raise', () => {
   };
   /** To the River, everyone standing pat. */
   const toRiver = (stakes = 1) => {
-    const round = createTableRound(1, players(4), 1, [], config, new Rng(1), unpaired, { raising: true, stakes });
-    resolveTableStreet(round, [stand, stand, stand, stand], config);
-    resolveTableStreet(round, [stand, stand, stand, stand], config);
+    const round = table(1, players(4), 1, unpaired, { raising: true, stakes });
+    resolveStreet(round, [stand, stand, stand, stand], config);
+    resolveStreet(round, [stand, stand, stand, stand], config);
     return round;
   };
 
   it('a raise is answered before the showdown: the rest match it or fold', () => {
     const round = toRiver();
     const before = [...round.bets];
-    resolveTableStreet(round, [trips(0), trips(1, true), trips(2), trips(3)], config);
+    resolveStreet(round, [trips(0), trips(1, true), trips(2), trips(3)], config);
     expect(round.result).toBeNull();
     expect(round.street).toBe(3);
     expect(round.bets[1]).toBe(before[1] + round.raise);
-    expect([0, 1, 2, 3].map((i) => tableAnswering(round, i))).toEqual([true, false, true, true]);
-    resolveTableStreet(round, [{ type: 'match' }, null, { type: 'fold' }, { type: 'match' }], config);
+    expect([0, 1, 2, 3].map((i) => isAnswering(round, i))).toEqual([true, false, true, true]);
+    resolveStreet(round, [{ type: 'match' }, null, { type: 'fold' }, { type: 'match' }], config);
     const res = round.result!;
     expect(round.seats[2].folded).toBe(true);
     expect(round.bets[0]).toBe(before[0] + round.raise);
@@ -114,34 +135,34 @@ describe('the River raise', () => {
   it('raises made at the same moment do not stack: each raiser is in once, and the rest owe one raise', () => {
     const round = toRiver();
     const before = [...round.bets];
-    resolveTableStreet(round, [trips(0, true), trips(1, true), trips(2), trips(3)], config);
-    expect([0, 1, 2, 3].map((i) => tableAnswering(round, i))).toEqual([false, false, true, true]);
-    resolveTableStreet(round, [null, null, { type: 'match' }, { type: 'match' }], config);
+    resolveStreet(round, [trips(0, true), trips(1, true), trips(2), trips(3)], config);
+    expect([0, 1, 2, 3].map((i) => isAnswering(round, i))).toEqual([false, false, true, true]);
+    resolveStreet(round, [null, null, { type: 'match' }, { type: 'match' }], config);
     expect(round.bets.map((b, i) => b - before[i])).toEqual([round.raise, round.raise, round.raise, round.raise]);
   });
 
   it('when everyone else folds to a raise, the raiser takes the pot unseen', () => {
     const round = toRiver();
-    resolveTableStreet(round, [trips(0, true), trips(1), trips(2), trips(3)], config);
-    resolveTableStreet(round, [null, { type: 'fold' }, { type: 'fold' }, { type: 'fold' }], config);
+    resolveStreet(round, [trips(0, true), trips(1), trips(2), trips(3)], config);
+    resolveStreet(round, [null, { type: 'fold' }, { type: 'fold' }, { type: 'fold' }], config);
     expect(round.result!.byFolds).toBe(true);
     expect(round.result!.winners).toEqual([0]); // the nines, never shown
   });
 
   it('with no raise, the River goes straight to the showdown', () => {
     const round = toRiver();
-    resolveTableStreet(round, [trips(0), trips(1), trips(2), trips(3)], config);
+    resolveStreet(round, [trips(0), trips(1), trips(2), trips(3)], config);
     expect(round.result!.winners).toEqual([1]);
   });
 
   it('nobody pays more than they have: short of the price, a captain is all in and stays in the hand', () => {
     // Hand 30: the ante is 10, the Turn 5 more, the River 10, the raise 10; the queens have 12.
     const purses = [100, 12, 100, 100];
-    const round = createTableRound(30, players(4), 1, [], config, new Rng(1), unpaired, { raising: true, purses });
-    resolveTableStreet(round, [stand, stand, stand, stand], config);
-    resolveTableStreet(round, [stand, stand, stand, stand], config);
-    resolveTableStreet(round, [trips(0, true), trips(1), trips(2), trips(3)], config);
-    resolveTableStreet(round, [null, { type: 'match' }, { type: 'match' }, { type: 'match' }], config);
+    const round = table(30, players(4).map((p, i) => ({ ...p, money: purses[i] })), 1, unpaired, { raising: true });
+    resolveStreet(round, [stand, stand, stand, stand], config);
+    resolveStreet(round, [stand, stand, stand, stand], config);
+    resolveStreet(round, [trips(0, true), trips(1), trips(2), trips(3)], config);
+    resolveStreet(round, [null, { type: 'match' }, { type: 'match' }, { type: 'match' }], config);
     expect(round.bets[1]).toBe(12); // everything, and no more
     expect(round.seats[1].folded).toBe(false);
     const res = round.result!;
@@ -152,13 +173,13 @@ describe('the River raise', () => {
   });
 
   it('the stakes multiply the ante, the fees and the raise, not the snags\' upkeep', () => {
-    const plain = createTableRound(30, players(4, [1]), 0, [], config, new Rng(1), undefined, { raising: true });
-    const doubled = createTableRound(30, players(4, [1]), 0, [], config, new Rng(1), undefined, { raising: true, stakes: 2 });
+    const plain = table(30, players(4, [1]), 0, undefined, { raising: true });
+    const doubled = table(30, players(4, [1]), 0, undefined, { raising: true, stakes: 2 });
     const ante = baseAnte(config, 30);
     expect(doubled.bets[1] - plain.bets[1]).toBe(ante); // no snags: twice the ante
     expect(doubled.bets[0] - plain.bets[0]).toBe(ante); // a snag's upkeep isn't doubled
     expect(doubled.raise).toBe(2 * plain.raise);
-    expect(tableFee(config, 30, 2, 2)).toBe(2 * tableFee(config, 30, 2));
+    expect(feeFor(doubled, config, 2)).toBe(2 * feeFor(plain, config, 2));
   });
 });
 
@@ -177,8 +198,8 @@ describe('High Rollers', () => {
       }
       const round = g.round!;
       const seat = mySeat(g);
-      const out = seat < 0 || round.seats[seat].folded || (round.street === 3 && !tableAnswering(round, seat));
-      const mine = out ? null : round.street === 3 ? ({ type: 'match' } as const) : chooseAction('careful', tableView(round, seat), g.config, rng);
+      const out = seat < 0 || round.seats[seat].folded || (round.street === 3 && !isAnswering(round, seat));
+      const mine = out ? null : round.street === 3 ? ({ type: 'match' } as const) : chooseAction('careful', viewFor(round, seat, g.config), g.config, rng);
       g = playHighRollers(g, mine);
       if (g.round!.result) {
         hands++;

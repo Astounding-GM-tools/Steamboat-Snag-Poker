@@ -6,227 +6,71 @@ import { fullDeck, isJoker, isStd, type Card, type JokerCard, type StdCard } fro
 import type { AiId } from './characters';
 import type { RulesConfig } from './config';
 import { bestScore, CATEGORIES, categoryOf, type Category, type OwnCardRule } from './evaluate';
-import { canFold, isComposing, legalSeatActions, subsets, type Action, type RoundState } from './round';
-import { discardCost, streetFee } from './pot';
+import { canFold, feeFor, inHand, isComposing, subsets, type Action, type RoundState } from './round';
+import { discardCost } from './pot';
 import type { Rng } from './rng';
 
+/**
+ * What an AI sees: its own cards, the board, and the rest of the table still
+ * in folded into one "opponent" (all their discards, the most snags any of
+ * them holds), so the same AIs play a duel and a table of four.
+ */
 export interface SeatView {
-  playStyle: RoundState['playStyle'];
-  /** Draw style: hands are being composed. */
+  /** Hands are being made (the River). */
   composing: boolean;
   street: number;
   hand: StdCard[];
   jokers: JokerCard[];
-  slots: (Card | null)[];
+  slots: Card[];
   community: Card[];
-  communityJoker: JokerCard | null;
-  opponentSlots: (Card | null)[];
+  opponentSlots: Card[];
   opponentHandSize: number;
   opponentJokerCount: number;
   discards: StdCard[];
-  /** What the other player has discarded this round (face up). */
+  /** What the others have discarded this hand (face up). */
   opponentDiscarded: StdCard[];
   /** How many cards this seat has thrown away this crossing (discard fees rise with it). */
   discardedCount: number;
   month: number;
-  /** Pot mode: the pot so far, and whether this seat may still fold. */
+  /** Pot mode: the pot so far, the fees to see the Turn and the River, and whether this seat may still fold. */
   potMode: boolean;
   pot: number;
+  fees: [number, number];
   canFold: boolean;
   /** Snags shuffled into the deck this crossing (public knowledge). */
   deckSnags: number;
   deckSize: number;
 }
 
-export function viewFor(round: RoundState, seatIndex: number): SeatView {
-  const me = round.seats[seatIndex];
-  const them = round.seats[1 - seatIndex];
+export function viewFor(round: RoundState, seat: number, config: RulesConfig): SeatView {
+  const me = round.seats[seat];
+  const others = inHand(round).filter((i) => i !== seat).map((i) => round.seats[i]);
   return {
-    playStyle: round.playStyle,
     composing: isComposing(round),
     street: round.street,
     hand: me.hand,
     jokers: me.jokers,
     slots: me.slots,
     community: round.community,
-    communityJoker: round.communityJoker,
-    opponentSlots: them.slots,
-    opponentHandSize: them.hand.length,
-    opponentJokerCount: them.jokers.length + them.slots.filter(isJoker).length,
+    opponentSlots: others.flatMap((s) => s.slots),
+    opponentHandSize: Math.max(0, ...others.map((s) => s.hand.length)),
+    opponentJokerCount: Math.max(0, ...others.map((s) => s.jokers.length + s.slots.filter(isJoker).length)),
     discards: round.discards,
-    opponentDiscarded: them.discarded,
+    opponentDiscarded: others.flatMap((s) => s.discarded),
     discardedCount: me.discarded.length,
     month: round.month,
-    potMode: round.potMode ?? false,
-    pot: (round.bets ?? [0, 0])[0] + (round.bets ?? [0, 0])[1],
-    canFold: canFold(round, seatIndex),
+    potMode: round.potMode,
+    pot: round.bets.reduce((a, b) => a + b, 0),
+    fees: [feeFor(round, config, 1), feeFor(round, config, 2)],
+    canFold: canFold(round, seat),
     deckSnags: round.deck.filter(isJoker).length,
     deckSize: round.deck.length,
   };
 }
 
 export function chooseAction(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng): Action {
-  if (view.playStyle === 'draw') return view.composing ? composeAction(ai, view, config, rng) : drawAction(ai, view, config, rng);
-  // Slots-style presets: each style falls back to one of the original behaviours.
-  switch (ai) {
-    case 'bully':
-    case 'stubborn':
-      return bullyAction(view);
-    case 'clueless':
-      return randomAction(view, rng, 3);
-    case 'prankster':
-    case 'anarchist':
-      return randomAction(view, rng, 1);
-    case 'dreamer':
-    case 'loose':
-      return rng.next() < 0.65 ? randomAction(view, rng, 1) : smartAction(view, config, rng, { samples: 25, jokerBold: 1, noise: 1 });
-    case 'careful':
-      return smartAction(view, config, rng, { samples: 30, jokerBold: 0.3, noise: 2 });
-    case 'shark':
-      return smartAction(view, config, rng, { samples: 40, jokerBold: 1.6, noise: 0.5 });
-    case 'gambler':
-    case 'predator':
-      return smartAction(view, config, rng, { samples: 60, jokerBold: 1, noise: 0 });
-    case 'griefer':
-    case 'swashbuckler':
-      return randomAction(view, rng, 2);
-    case 'defeatist':
-      return smartAction(view, config, rng, { samples: 25, jokerBold: 0.2, noise: 1 });
-  }
+  return view.composing ? composeAction(ai, view, config, rng) : drawAction(ai, view, config, rng);
 }
-
-/** The bully: always wants the highest card on the table, never touches a snag. */
-function bullyAction(view: SeatView): Action {
-  const best = [...view.hand].sort((a, b) => b.rank - a.rank)[0];
-  const worst = [...view.hand].sort((a, b) => a.rank - b.rank)[0];
-  if (!best) return legalSeatActions(view, view.deckSize)[0];
-  const empty = view.slots.findIndex((s) => s === null);
-  if (empty >= 0) return { type: 'place', cardId: best.id, slot: empty };
-  const worth = (c: Card | null) => (isStd(c) ? c.rank : 0);
-  let weakest = 0;
-  view.slots.forEach((c, i) => {
-    if (worth(c) < worth(view.slots[weakest])) weakest = i;
-  });
-  if (best.rank > worth(view.slots[weakest])) return { type: 'place', cardId: best.id, slot: weakest };
-  // Nothing worth playing: throw away the smallest card.
-  return view.deckSize > 0 ? { type: 'discard', cardId: worst.id } : legalSeatActions(view, view.deckSize)[0];
-}
-
-/**
- * Random legal action; Joker placements weighted by `jokerWeight`. Even a
- * chaotic player usually fills an empty slot rather than wasting the street.
- */
-function randomAction(view: SeatView, rng: Rng, jokerWeight: number): Action {
-  let actions = legalSeatActions(view, view.deckSize);
-  const fills = actions.filter((a) => a.type === 'place' && view.slots[a.slot] === null);
-  if (fills.length && rng.next() < 0.75) actions = fills;
-  const weighted: Action[] = [];
-  for (const a of actions) {
-    const isJokerPlay = a.type === 'place' && view.jokers.some((j) => j.id === a.cardId);
-    for (let i = 0; i < (isJokerPlay ? jokerWeight : 1); i++) weighted.push(a);
-  }
-  return rng.pick(weighted);
-}
-
-interface SmartOptions {
-  samples: number;
-  /** How much the AI values shedding a Joker (1 = rationally). */
-  jokerBold: number;
-  /** Random noise added to each action's utility. */
-  noise: number;
-}
-
-/**
- * Monte Carlo: for each legal action, sample the unknown cards many times,
- * assume we greedily improve on later streets, and score the expected
- * Money outcome including Joker stakes.
- */
-function smartAction(view: SeatView, config: RulesConfig, rng: Rng, opts: SmartOptions): Action {
-  const actions = legalSeatActions(view, view.deckSize);
-  const known = new Set<string>(
-    [...view.hand, ...view.slots, ...view.community, ...view.opponentSlots, ...view.discards]
-      .filter(isStd)
-      .map((c) => c.id),
-  );
-  const unknown = fullDeck().filter((c) => !known.has(c.id));
-  // A Joker's drain lasts until it is shed, so it is worth several rounds of drain.
-  const jokerValue = config.drainPerJoker * 3;
-  const stakes =
-    (view.communityJoker ? 1 : 0) + view.community.filter(isJoker).length + view.opponentSlots.filter(isJoker).length;
-  const futureStreets = 2 - view.street;
-  const futureDeals = config.dealSchedule.slice(view.street + 1).reduce((a, b) => a + b, 0);
-  const boardSize = config.communitySchedule.reduce((a, b) => a + b, 0);
-  const rule = config.ownCards;
-
-  let bestAction = actions[0];
-  let topScore = -Infinity;
-  for (const action of actions) {
-    let total = 0;
-    for (let s = 0; s < opts.samples; s++) {
-      const pile = rng.shuffle(unknown);
-      let hand = view.hand.slice();
-      const slots = view.slots.slice() as (Card | null)[];
-      if (action.type === 'discard') {
-        hand = hand.filter((c) => c.id !== action.cardId);
-        hand.push(pile.pop()!);
-      } else if (action.type === 'place') {
-        const card = hand.find((c) => c.id === action.cardId) ?? view.jokers.find((c) => c.id === action.cardId)!;
-        hand = hand.filter((c) => c.id !== action.cardId);
-        const old = slots[action.slot];
-        if (isStd(old)) hand.push(old);
-        slots[action.slot] = card;
-      }
-      const community = view.community.slice();
-      while (community.length < boardSize) community.push(pile.pop()!);
-      for (let i = 0; i < futureDeals; i++) hand.push(pile.pop()!);
-      for (let i = 0; i < futureStreets; i++) greedyImprove(hand, slots, community, rule);
-
-      const oppSlots = view.opponentSlots.map((c) => c ?? pile.pop()!);
-      const mine = bestScore(slots, community, rule);
-      const cmp = mine - bestScore(oppSlots, community, rule);
-      const myJokers = slots.filter(isJoker).length;
-      if (cmp > 0) total += config.winGain[categoryOf(mine)] + myJokers * jokerValue * opts.jokerBold;
-      else if (cmp < 0) total -= stakes * jokerValue + myJokers * (config.jokerForfeit ?? 0);
-    }
-    const score = total / opts.samples + (opts.noise ? (rng.next() - 0.5) * opts.noise : 0);
-    if (score > topScore) {
-      topScore = score;
-      bestAction = action;
-    }
-  }
-  return bestAction;
-}
-
-/** Makes the single best standard-card placement, if it improves the hand. */
-function greedyImprove(hand: StdCard[], slots: (Card | null)[], community: Card[], rule: OwnCardRule) {
-  let best = bestScore(slots, community, rule);
-  // Fill empty slots first; only consider swaps once every slot is used.
-  const empties = slots.flatMap((c, i) => (c === null ? [i] : []));
-  const targets = empties.length ? empties : slots.map((_, i) => i);
-  let move: { i: number; slot: number } | null = null;
-  hand.forEach((card, i) => {
-    for (const slot of targets) {
-      if (isJoker(slots[slot])) continue; // keep a Joker we chose to play
-      const trial = slots.slice();
-      trial[slot] = card;
-      const v = bestScore(trial, community, rule);
-      if (v > best) {
-        best = v;
-        move = { i, slot };
-      }
-    }
-  });
-  if (move) {
-    const { i, slot } = move;
-    const old = slots[slot];
-    slots[slot] = hand.splice(i, 1)[0];
-    if (isStd(old)) hand.push(old);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Draw style
-// ---------------------------------------------------------------------------
 
 const ANY_OWN = (n: number): OwnCardRule => ({ min: 0, max: n });
 
@@ -242,9 +86,9 @@ function boardSize(config: RulesConfig) {
   return config.communitySchedule.reduce((a, b) => a + b, 0);
 }
 
-/** Expected Joker stakes against us if we lose: community Jokers plus a guess at what the opponent dares. */
+/** Expected snag stakes against us if we lose: snags on the board plus a guess at what the opponent dares. */
 function expectedStakes(view: SeatView) {
-  return (view.communityJoker ? 1 : 0) + view.community.filter(isJoker).length + 0.3 * Math.min(view.opponentJokerCount, 2);
+  return view.community.filter(isJoker).length + 0.3 * Math.min(view.opponentJokerCount, 2);
 }
 
 /** How readily each style folds in pot mode: fold when continuing is worth less than this share of the pot. */
@@ -314,13 +158,12 @@ function smartDraw(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng, opti
   const pool = unseen(view);
   const size = boardSize(config);
   const oppHandSize = view.opponentHandSize;
-  const fee = view.potMode ? streetFee(config, view.month, view.street + 1) : 0;
-  const laterFees = view.potMode && view.street === 0 ? streetFee(config, view.month, 2) : 0;
+  const fee = view.fees[view.street] ?? 0;
+  const laterFees = view.street === 0 ? view.fees[1] : 0;
   let best = options[0];
   let bestValue = -Infinity;
   for (const ids of options) {
     let wins = 0;
-    let winValue = 0;
     for (let s = 0; s < samples; s++) {
       const pile = rng.shuffle(pool);
       const hand: Card[] = view.hand.filter((c) => !ids.includes(c.id));
@@ -334,7 +177,6 @@ function smartDraw(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng, opti
         // Ambition: how much more a big hand is worth to this captain than a small one.
         const glory = 1 + (ambition * CATEGORIES.indexOf(categoryOf(mine))) / 8;
         wins += glory;
-        winValue += glory * (1 + config.winGain[categoryOf(mine)] / 20);
       }
     }
     let value: number;
@@ -343,7 +185,7 @@ function smartDraw(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng, opti
       const cost = fee + laterFees + discardCost(view.discardedCount, ids.length);
       const finalPot = view.pot + cost + fee + laterFees + 1;
       value = (wins / samples) * finalPot - cost;
-    } else value = winValue;
+    } else value = wins;
     if (value > bestValue) {
       bestValue = value;
       best = ids;
@@ -436,7 +278,8 @@ function smartCompose(view: SeatView, config: RulesConfig, rng: Rng, options: Co
   for (const o of options) {
     const pWin = theirs.filter((t) => o.score > t).length / samples;
     const forfeit = o.jokers * (config.jokerForfeit ?? 0);
-    const prize = view.potMode ? view.pot : config.winGain[categoryOf(o.score)];
+    // Without a pot (a lesson), winning is its own reward.
+    const prize = view.potMode ? view.pot : 10;
     const value = pWin * (prize + o.jokers * jokerValue * jokerBold) - (1 - pWin) * (stakes * jokerValue + forfeit);
     if (value > bestValue) {
       bestValue = value;

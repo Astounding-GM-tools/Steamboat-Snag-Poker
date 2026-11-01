@@ -28,8 +28,8 @@ import {
   newHighRollers,
   nextHighRollersHand,
   playHighRollers,
-  resolveTableStreet,
-  tableView,
+  resolveStreet,
+  viewFor,
   type Action,
   type AiId,
   type Card,
@@ -150,7 +150,7 @@ function playTable(seed: number, { R0, growth = 0, lastHand, start }: Options): 
     const round = g.round!;
     const me = mySeat(g);
     if (round.street < 2) {
-      const mine = me < 0 || round.seats[me].folded ? null : chooseAction('careful', tableView(round, me), g.config, rng);
+      const mine = me < 0 || round.seats[me].folded ? null : chooseAction('careful', viewFor(round, me, g.config), g.config, rng);
       const before = g.players.map((p) => p.money);
       g = playHighRollers(g, mine);
       if (g.round!.result) endOfHand(before);
@@ -162,7 +162,7 @@ function playTable(seed: number, { R0, growth = 0, lastHand, start }: Options): 
     const r = g.round!;
     const seats = inHand(r);
     const styleOf = (s: number) => STYLE[g.players[g.seated[s]].ai ?? 'careful'] ?? STYLE.careful!;
-    const actions: (Action | null)[] = r.seats.map((s, i) => (s.folded ? null : chooseAction(g.players[g.seated[i]].ai ?? 'careful', tableView(r, i), g.config, rng)));
+    const actions: (Action | null)[] = r.seats.map((s, i) => (s.folded ? null : chooseAction(g.players[g.seated[i]].ai ?? 'careful', viewFor(r, i, g.config), g.config, rng)));
     const raise = R0 < 0 ? baseAnte(config, r.month) : R0 ? Math.round(R0 * Math.pow(1 + growth, g.hand - startHand)) : 0;
     st.rivers++;
     const pot0 = r.bets.reduce((a, b) => a + b, 0);
@@ -202,7 +202,7 @@ function playTable(seed: number, { R0, growth = 0, lastHand, start }: Options): 
         }
       }
     }
-    resolveTableStreet(r, actions, g.config);
+    resolveStreet(r, actions, g.config);
     st.potFinal += r.result!.pot;
     if (!r.result!.byFolds) st.showdowns++;
     settle(g);

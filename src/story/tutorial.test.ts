@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { anteFor, nextMonth, streetFee, submitAction } from '../engine';
+import { anteFor, handsOf, nextMonth, streetFee, submitAction } from '../engine';
 import { OATH, RESPECT, giveButtons, newTutorial, rematch, skipToButtons, skipToHands } from './tutorial';
 
 describe('the tutorial', () => {
@@ -19,9 +19,8 @@ describe('the tutorial', () => {
 
     g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2h'], jokers: 0 });
     const res = g.round!.result!;
-    expect(res.winner).toBe(0);
-    expect(res.hands[0].category).toBe('fullHouse');
-    expect(res.hands[1].category).toBe('twoPair');
+    expect(res.winners).toEqual([0]);
+    expect(res.hands.map((h) => h!.category)).toEqual(['fullHouse', 'twoPair']);
   });
 
   it('round two: a pair of jacks folds to her flush, and nothing changes hands', () => {
@@ -40,8 +39,8 @@ describe('the tutorial', () => {
     expect(r().seats[1].discarded).toEqual([]); // she stood pat
 
     g = submitAction(g, { type: 'fold' });
-    expect(r().result!.folded).toBe(0);
-    expect(r().result!.hands[1].category).toBe('flush');
+    expect(r().seats[0].folded).toBe(true);
+    expect(handsOf(r())[1].category).toBe('flush'); // what she shows after your fold
     expect(g.players.map((p) => p.money)).toEqual(purses);
   });
 
@@ -61,8 +60,8 @@ describe('the tutorial', () => {
     expect(g.round!.community.at(-1)!.id).toBe('3h');
     g = submitAction(g, { type: 'compose', cardIds: ['3d', '3s'], jokers: 0 });
     const res = g.round!.result!;
-    expect(res.winner).toBe(0);
-    expect(res.hands.map((h) => h.category)).toEqual(['fourOfAKind', 'fullHouse']);
+    expect(res.winners).toEqual([0]);
+    expect(res.hands.map((h) => h!.category)).toEqual(['fourOfAKind', 'fullHouse']);
   });
 
   it('after the lesson on the hands, the same first hand for buttons', () => {
@@ -96,8 +95,8 @@ describe('the tutorial', () => {
     expect(g.round!.community.map((c) => c.id)).toEqual(['8h', 'Ad', '4c', '4s', 'Jh']);
     g = submitAction(g, { type: 'compose', cardIds: ['8s', '8d'], jokers: 1 });
     const res = g.round!.result!;
-    expect(res.winner).toBe(0);
-    expect(res.hands.map((h) => h.category)).toEqual(['threeOfAKind', 'twoPair']);
+    expect(res.winners).toEqual([0]);
+    expect(res.hands.map((h) => h!.category)).toEqual(['threeOfAKind', 'twoPair']);
     expect(g.players.map((p) => p.jokers.map((j) => j.index).sort())).toEqual([[], [OATH, RESPECT].sort()]);
   });
 
@@ -106,8 +105,8 @@ describe('the tutorial', () => {
     g = submitAction(g, { type: 'draw', cardIds: [] });
     g = submitAction(g, { type: 'draw', cardIds: [] });
     g = submitAction(g, { type: 'compose', cardIds: ['8s', '8d'], jokers: 0 });
-    expect(g.round!.result!.hands[0].category).toBe('fullHouse');
-    expect(g.round!.result!.winner).toBe(0);
+    expect(g.round!.result!.hands[0]!.category).toBe('fullHouse');
+    expect(g.round!.result!.winners).toEqual([0]);
     expect(g.players.map((p) => p.jokers.map((j) => j.index))).toEqual([[RESPECT], [OATH]]);
   });
 

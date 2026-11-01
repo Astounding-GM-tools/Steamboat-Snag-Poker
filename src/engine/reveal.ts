@@ -36,13 +36,13 @@ function standing(viewer: number, theirs: number): Standing {
 }
 
 /**
- * Plans the reveal of `revealSeat`'s played cards as seen by the other seat,
- * whose final hand score is `viewerScore`.
+ * Plans the reveal of `revealSeat`'s played cards as seen by `viewer` (in a
+ * duel, the other seat).
  */
-export function planReveal(round: RoundState, revealSeat: number, rng: Rng, samples = 150): RevealStep[] {
+export function planReveal(round: RoundState, revealSeat: number, rng: Rng, samples = 150, viewer = revealSeat === 0 ? 1 : 0): RevealStep[] {
   const board = round.community;
-  const played = round.seats[revealSeat].slots.filter((c): c is Card => c !== null);
-  const viewerSeat = round.seats[1 - revealSeat];
+  const played = round.seats[revealSeat].slots;
+  const viewerSeat = round.seats[viewer];
   const viewerScore = bestScore(viewerSeat.slots, board, exact(viewerSeat.slots.length));
   const real = played.filter(isStd);
   const jokers = played.filter(isJoker);

@@ -6,8 +6,6 @@
   import DrawTable from './DrawTable.svelte';
   import HighRollersTable from './HighRollersTable.svelte';
   import MonthEnd from './MonthEnd.svelte';
-  import Showdown from './Showdown.svelte';
-  import Table from './Table.svelte';
   import Title from './Title.svelte';
   import { loadBest, loadGame, recordResult, saveGame } from './storage';
   import { giveButtons, newTutorial, rematch, skipToButtons, skipToHands, tutorialScript, TUTORIAL } from '../story/tutorial';
@@ -21,7 +19,7 @@
   let saved = $state.raw<GameState | null>(loadGame());
   // Engine state is replaced wholesale on every move, so keep it out of deep reactivity.
   let game = $state.raw<GameState | null>(null);
-  /** After a duel: 'reveal' plays the showdown, then 'result' shows the month's card. */
+  /** After a duel: 'reveal' plays the showdown on the table, then 'result' shows the standings. */
   let stage = $state<'play' | 'reveal' | 'result'>('play');
   let endTimer: ReturnType<typeof setTimeout> | undefined;
   /** The showdown has shown its verdict: the pot may be paid out on the table. */
@@ -115,21 +113,14 @@
     setGame(g);
     if (g.phase !== 'duel') {
       // A fold has nothing to reveal: straight to the result card.
-      if (g.config.playStyle === 'draw') {
-        const folded = g.round?.result?.folded != null;
-        settled = folded;
-        if (!folded) stage = 'reveal';
-        // A lesson's fold ends in conversation (which says where to go), not in the standings.
-        else if (!g.story) {
-          // Nothing to reveal: let the pot fly to the winner, then show the result card.
-          clearTimeout(endTimer);
-          endTimer = setTimeout(() => (stage = 'result'), 1200);
-        }
-      }
-      else {
-        // Slots style: let the showdown sit on the table for a beat.
+      const folded = !!g.round?.result?.byFolds;
+      settled = folded;
+      if (!folded) stage = 'reveal';
+      // A lesson's fold ends in conversation (which says where to go), not in the standings.
+      else if (!g.story) {
+        // Nothing to reveal: let the pot fly to the winner, then show the result card.
         clearTimeout(endTimer);
-        endTimer = setTimeout(() => (stage = 'result'), 1400);
+        endTimer = setTimeout(() => (stage = 'result'), 1200);
       }
     }
   }
@@ -168,15 +159,9 @@
     <!-- The League's last four at the final table (the same deal again if a voyage is picked up here). -->
     {#key game.rngState}<HighRollersTable onmenu={pause} setup={finaleSetup(game)} saved={game.finaleTable} onsave={saveTable} onfinish={finished} />{/key}
   {:else if game}
-    {#if game.round?.playStyle === 'draw'}
-      <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={revealed} onnext={next} script={game.story ? roundScript(scripts[game.story], game.month) : undefined} ontalk={talkEffect} />
-    {:else}
-      <Table {game} peek={false} onaction={act} onmenu={pause} />
-    {/if}
-    {#if stage === 'reveal' && game.round?.result && game.round.playStyle !== 'draw'}
-      <Showdown {game} ondone={() => (stage = 'result')} onverdict={() => (settled = true)} />
-    {:else if stage === 'result' && game.report && (game.round?.playStyle !== 'draw' || game.phase !== 'monthEnd')}
-      <MonthEnd {game} onnext={next} onpause={pause} onagain={() => start()} />
+    <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={revealed} onnext={next} script={game.story ? roundScript(scripts[game.story], game.month) : undefined} ontalk={talkEffect} />
+    {#if stage === 'result' && game.report && game.phase !== 'monthEnd'}
+      <MonthEnd {game} onpause={pause} onagain={() => start()} />
     {/if}
   {:else}
     <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} ontutorial={startTutorial} />

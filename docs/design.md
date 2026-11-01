@@ -53,8 +53,9 @@ vignette, intertitle cards for all text.
 
 ## Play styles and presets
 
-All structural rules live in one config (`src/engine/config.ts`) with named
-presets, selectable in the balance simulation. The game itself always plays
+All structural rules live in one config (`src/engine/config.ts`) with two
+presets, Snag Poker (`draw`) and Kansas Draw (`kansasDraw`, no snags),
+selectable in the balance simulation. The game itself always plays
 `DEFAULT_CONFIG` (the in-game rules lab was retired once the rules settled).
 
 ### Snag Poker (the game; preset `draw`)
@@ -142,17 +143,6 @@ and every button shows its price ("Discard 2 · $4").
 
 
 
-| Preset | Board (Flop/Turn/River) | Deal per player | Slots | Own cards used |
-|---|---|---|---|---|
-| **Omaha slots** (preset `kansas`) | 3 / 1 / 1 | 3 / 1 / 1 | 3 | exactly 2 |
-| **Texas** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 0–3 |
-| **Middle** | 3 / 1 / 1 | 3 / 1 / 1 | 3 | 1–2 |
-| **3 + 3** | 1 / 1 / 1 | 3 / 1 / 1 | 3 | 2–3 |
-| **Classic** (v1) | 1 / 1 / 1 | 3 / 1 / 1 | 2 | exactly 2, snag in a 4th slot |
-
-In the slots style you place one card per street into a slot (or discard one).
-These were stepping stones on the way to Kansas Shuffle.
-
 ## Hand ranking
 
 Standard poker ranks. Your hand is the cards you play (any of your hand
@@ -173,7 +163,9 @@ nobody wins, no snags move, no money is gained.
 ## The slots style (retired)
 
 Kept for the record: the rules before Snag Poker settled on draw style. None
-of this is in the game. There, money is won from the pot (above), snag
+of this is in the game, or in the code any more (git history has it: the
+presets Omaha slots, Texas, Middle, 3 + 3 and Classic, which were stepping
+stones on the way to Kansas Shuffle). There, money is won from the pot (above), snag
 upkeep is paid in the ante, and nobody is paid by the hand. In the slots
 style your hand was the best 5 from your slot cards and the board, with the
 preset's number of own cards (Kansas: exactly 2 of your 3 slots + exactly 3
@@ -422,7 +414,10 @@ as a fallback. Dropping is final.
   serializable data; transitions are `(state, action) → state`; all randomness
   goes through a seeded RNG so games and simulations are reproducible. This keeps
   the door open for a Kotlin/WASM port and for multiplayer (authoritative server
-  running the same engine).
+  running the same engine). One hand of Snag Poker is `round.ts`, for any
+  number of seats: a duel is a table of two (the rules' fees, no raise), the
+  High Rollers table one of three or four (its own fees, the River raise, the
+  stakes). `game.ts` runs the League on it, `highrollers.ts` the final table.
 - **UI** (`src/ui`): Svelte components, i18n dictionary in `src/i18n`.
 - **Saving:** localStorage for now.
 - **Tests:** Vitest on the engine.

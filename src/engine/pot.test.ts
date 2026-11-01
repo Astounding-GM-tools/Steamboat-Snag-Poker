@@ -54,10 +54,11 @@ describe('pot mode', () => {
     const oppBefore = player(s, opp).money;
     s = submitAction(s, { type: 'fold' });
     const res = s.round!.result!;
-    expect(res.folded).not.toBeNull();
+    expect(res.byFolds).toBe(true);
     // Either we folded alone (they win), or both folded (split): we never gain.
     expect(player(s, HUMAN_ID).money).toBeLessThanOrEqual(config.startMoney);
-    if (res.folded === 0 && res.winner === 1) {
+    if (res.winners.length === 1) {
+      expect(res.winners).toEqual([1]);
       expect(player(s, HUMAN_ID).money).toBe(config.startMoney - 1);
       expect(player(s, opp).money).toBe(oppBefore + 1);
     }

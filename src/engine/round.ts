@@ -1,85 +1,105 @@
 /**
- * One month's duel between two seats. These functions mutate the round they are
- * given; the public game API (game.ts) clones state before calling them.
+ * One hand of Snag Poker at a table of two or more seats: the League's duels
+ * (two seats) and the High Rollers table (three or four) alike. Everyone acts
+ * at once, in secret, but the moves resolve in seat order from `first`, and
+ * that order is real: swaps draw their replacements off the deck one seat
+ * after another. Folded seats stay at the table, out of the hand. A table may
+ * allow a raise on the River (one fixed size; raises made at the same moment
+ * don't stack), and then everyone else still in matches or folds. The best
+ * hand takes the pot; the snags go to the weakest hand still in. Nobody pays
+ * more than they have: short of the price, a captain puts in everything (all
+ * in) and stays in the hand, and the pot holds only real money.
+ *
+ * These functions mutate the round they are given; the games (game.ts,
+ * highrollers.ts) clone state before calling them.
  */
 import { fullDeck, isJoker, type Card, type JokerCard, type StdCard } from './cards';
-import type { PlayStyle, RulesConfig } from './config';
-import { bestHand, compareHands, type HandValue } from './evaluate';
-import { anteFor, discardCost, streetFee } from './pot';
+import type { RulesConfig } from './config';
+import { bestHand, type HandValue } from './evaluate';
+import { anteFor, baseAnte, discardCost, streetFee } from './pot';
 import type { Rng } from './rng';
 
-export type SlotIndex = number;
-
 export type Action =
-  | { type: 'place'; cardId: string; slot: SlotIndex }
-  | { type: 'discard'; cardId: string }
-  | { type: 'pass' }
-  /** Draw style: discard these cards and draw replacements (none = stand pat). */
+  /** On the Flop and the Turn: discard these cards and draw replacements (none = stand pat). */
   | { type: 'draw'; cardIds: string[] }
-  /** Draw style, after the River: the hand cards and number of Jokers you play; at a High Rollers table, perhaps with a raise. */
+  /** On the River: the hand cards and number of snags you play; at a table that allows it, perhaps with a raise. */
   | { type: 'compose'; cardIds: string[]; jokers: number; raise?: boolean }
-  /** High Rollers, after a raise on the River: put in as much, and stay in. */
+  /** After a raise on the River: put in as much, and stay in. */
   | { type: 'match' }
-  /** Pot mode, Flop or Turn, before any swap this crossing: give up the pot (at a High Rollers table, also when facing a raise). */
+  /** On the Flop or the Turn (or facing a raise): give up the pot. */
   | { type: 'fold' };
 
 export interface Seat {
   playerId: string;
   hand: StdCard[];
-  /** Owned Jokers not currently in a slot. They never take hand space. */
+  /** Owned snags not played. They never take hand space. */
   jokers: JokerCard[];
-  /** Slots style: the play slots. Draw style: empty until composed, then the cards played. */
-  slots: (Card | null)[];
-  /** Cards this seat discarded this round (face up). */
+  /** The cards played: empty until the hand is made on the River. */
+  slots: Card[];
+  /** Cards this seat discarded this hand (face up). */
   discarded: StdCard[];
-  /** Draw style: how many of `discarded` were thrown on the Flop (the rest on the Turn). */
+  /** How many of `discarded` were thrown on the Flop (the rest on the Turn). */
   flopDiscards?: number;
+  /** Out of the hand (still at the table). */
+  folded?: boolean;
 }
 
 export const STREETS = ['flop', 'turn', 'river'] as const;
 export type StreetName = (typeof STREETS)[number];
 
 export interface RoundResult {
-  /** Seat index of the winner, or null for a true draw. */
-  winner: 0 | 1 | null;
-  hands: [HandValue, HandValue];
-  /** What the winner gains: the pot in pot mode, otherwise the hand's payout. */
-  gain: number;
-  /** Pot mode: everything both players paid in. */
+  /** Seats that won (more than one on a tie: the pot is split). */
+  winners: number[];
+  /** Each seat's hand at the showdown; null for a folded seat (or everyone, when the hand ended in folds). */
+  hands: (HandValue | null)[];
+  /** Everything paid in. */
   pot: number;
-  /** Seat that folded, if the round ended that way. */
-  folded: 0 | 1 | null;
-  /** Extra the loser pays the winner for the Jokers they risked and lost with. */
-  forfeit: number;
-  /** Jokers the winner dumped on the loser. */
+  /** What each seat takes from the pot (and the forfeits). */
+  share: number[];
+  /** The seat with the weakest hand still in, which takes the snags; null on a tie, or when the hand ended in folds. */
+  weakest: number | null;
+  /** Snags the winners played: the weakest hand takes them. */
   dumped: JokerCard[];
-  /** Community Jokers the loser had to take. */
-  communityTaken: JokerCard[];
-  /** Jokers that went back to the unowned pool. */
+  /** Snags at stake on the board: the weakest hand takes them too. */
+  boardTaken: JokerCard[];
+  /** Forfeits paid by each seat (losers who played snags), to the winners. */
+  forfeit: number[];
+  /** The hand ended because everyone else folded (or everyone folded at once: a stand-off, the pot split). */
+  byFolds: boolean;
+  /** Snags that went back to the pool (left in the deck, or on the board when nobody took them). */
   returnedToPool: JokerCard[];
 }
 
 export interface RoundState {
+  /** The crossing (or the hand at a High Rollers table): it sets the ante. */
   month: number;
-  playStyle: PlayStyle;
-  seats: [Seat, Seat];
+  seats: Seat[];
+  /** The seat that acts (and draws) first this hand; at a table it moves on each hand, like a dealer's button. */
+  first: number;
   deck: Card[];
-  /** Revealed community cards (in shuffled mode one may be a dead Joker). */
+  /** Revealed community cards (one may be a dead snag). */
   community: Card[];
-  /** Slot mode: the Joker in the fourth community slot, if any. */
-  communityJoker: JokerCard | null;
-  /** 0..2 on the streets (draw style composes on the River); 3 once a slots-style showdown is done. */
+  /** 0 the Flop, 1 the Turn, 2 the River (hands are made), 3 answering a raise (match or fold). */
   street: number;
-  discards: StdCard[];
-  history: { street: number; actions: [Action, Action] }[];
-  /** Jokers drawn from the deck by a player this round (shuffled Joker mode). */
-  fished: { seat: number; street: number; joker: JokerCard }[];
-  /** Pot mode is on for this round. */
+  /** Playing for a pot: antes, fees and forfeits (a lesson may play without one). */
   potMode: boolean;
-  /** Pot mode: what each seat has paid into the pot so far. */
-  bets: [number, number];
-  /** Pot mode: what each seat had when the round began; nobody pays in (or forfeits) more, and short of a price you're all in. */
-  purses?: [number, number];
+  /** The ante, the fees and the raise are this many times the usual (The Last Hand plays for double). */
+  stakes: number;
+  /** The Turn and River fees are the table ante over these. */
+  feeDivisors: [number, number];
+  /** What a raise costs on the River (0: no raising at this table). */
+  raise: number;
+  /** Seats that raised on the River. */
+  raisers: number[];
+  discards: StdCard[];
+  /** Each street's moves, by seat (null for a seat that didn't move). */
+  history: { street: number; actions: (Action | null)[] }[];
+  /** Snags fished out of the deck by a seat this hand. */
+  fished: { seat: number; street: number; joker: JokerCard }[];
+  /** What each seat has paid into the pot. */
+  bets: number[];
+  /** What each seat had when the hand began: nobody pays in (or forfeits) more (missing: no limit). */
+  purses?: number[];
   result: RoundResult | null;
 }
 
@@ -102,75 +122,74 @@ export interface ArrangedHand {
   opponent?: (Action | null)[];
 }
 
+export interface RoundOptions {
+  /** The seat that acts first (default the first). */
+  first?: number;
+  /** The ante, fees and raise are this many times the usual. */
+  stakes?: number;
+  /** Raising on the River is allowed (one raise: the table ante, times the stakes). */
+  raising?: boolean;
+  /** The Turn and River fees as the table ante over these (default: the rules'). */
+  feeDivisors?: [number, number];
+  /** The deck to this order (lessons, story encounters, tests): no snags shuffled in. */
+  arranged?: string[];
+}
+
 /** A shuffled deck with `order` on top, its first card the first drawn. */
-function stackDeck(order: string[], rng: Rng): Card[] {
+function stackDeck(order: string[] | undefined, rng: Rng): Card[] {
   const deck = fullDeck();
+  if (!order) return rng.shuffle(deck);
   const top = order.map((id) => {
-    const card = deck.find((c) => c.id === id);
-    if (!card) throw new Error(`Not a card, or used twice: ${id}`);
-    deck.splice(deck.indexOf(card), 1);
-    return card;
+    const k = deck.findIndex((c) => c.id === id);
+    if (k < 0) throw new Error(`Not a card, or used twice: ${id}`);
+    return deck.splice(k, 1)[0];
   });
   return [...rng.shuffle(deck), ...top.reverse()];
 }
 
 /**
- * Creates a round and deals the Flop. Takes any Jokers it needs from `pool`
- * (mutated). Returns the round, ready for the players' Flop actions.
+ * Deals a hand: everyone antes, the Flop goes out, then the hole cards, one
+ * at a time round the table from `first`. Snags from `pool` (mutated) may be
+ * shuffled into the deck; an arranged deck keeps its order.
  */
 export function createRound(
   month: number,
-  players: [RoundPlayer, RoundPlayer],
+  players: RoundPlayer[],
   pool: JokerCard[],
   config: RulesConfig,
   rng: Rng,
-  arranged?: ArrangedHand,
+  { first = 0, stakes = 1, raising = false, feeDivisors = config.streetFeeDivisors, arranged }: RoundOptions = {},
 ): RoundState {
-  const seat = (p: RoundPlayer): Seat => ({
-    playerId: p.id,
-    hand: [],
-    jokers: p.jokers.slice(),
-    slots: config.playStyle === 'slots' ? Array.from({ length: config.slotCount }, () => null) : [],
-    discarded: [],
-  });
+  const potMode = config.pot;
+  const purses = potMode ? players.map((p) => Math.max(0, p.money ?? Infinity)) : undefined;
   const round: RoundState = {
     month,
-    playStyle: config.playStyle,
-    seats: [seat(players[0]), seat(players[1])],
-    deck: arranged ? stackDeck(arranged.deck, rng) : rng.shuffle(fullDeck()),
+    seats: players.map((p) => ({ playerId: p.id, hand: [], jokers: p.jokers.slice(), slots: [], discarded: [], folded: false })),
+    first: first % players.length,
+    deck: stackDeck(arranged, rng),
     community: [],
-    communityJoker: null,
     street: 0,
+    potMode,
+    stakes,
+    feeDivisors,
+    raise: potMode && raising ? baseAnte(config, month) * stakes : 0,
+    raisers: [],
     discards: [],
     history: [],
     fished: [],
-    potMode: config.playStyle === 'draw' && config.pot,
-    bets: [0, 0],
+    bets: players.map((p, i) => (potMode ? Math.min(anteFor(config, month, p.jokers.length, stakes), purses![i]) : 0)),
+    ...(purses ? { purses } : {}),
     result: null,
   };
-  if (round.potMode) {
-    round.purses = [Math.max(0, players[0].money ?? Infinity), Math.max(0, players[1].money ?? Infinity)];
-    round.bets = [Math.min(anteFor(config, month, players[0].jokers.length), round.purses[0]), Math.min(anteFor(config, month, players[1].jokers.length), round.purses[1])];
-  }
-
-  if (config.jokerMode === 'slot' && month > 1 && pool.length > 0 && rng.next() < config.communityJokerChance) {
-    round.communityJoker = takeFromPool(pool, rng);
-  }
-
-  dealStreet(round, config);
-
-  // An arranged hand keeps its order: no snags shuffled in.
-  if (config.jokerMode === 'shuffled' && !arranged) {
+  for (let i = 0; i < config.communitySchedule[0]; i++) round.community.push(draw(round));
+  for (let k = 0; k < config.dealSchedule[0]; k++) for (const s of seatOrder(round)) drawToSeat(round, s);
+  if (!arranged) {
     const count = Math.min(pool.length, Math.floor((month - 1) / config.shuffledJokerEveryMonths));
-    const jokers: Card[] = [];
-    for (let i = 0; i < count; i++) jokers.push(takeFromPool(pool, rng));
-    round.deck = rng.shuffle([...round.deck, ...jokers]);
+    const snags: Card[] = [];
+    for (let i = 0; i < count; i++) snags.push(pool.splice(rng.int(pool.length), 1)[0]);
+    round.deck = rng.shuffle([...round.deck, ...snags]);
   }
   return round;
-}
-
-function takeFromPool(pool: JokerCard[], rng: Rng): JokerCard {
-  return pool.splice(rng.int(pool.length), 1)[0];
 }
 
 function draw(round: RoundState): Card {
@@ -179,45 +198,89 @@ function draw(round: RoundState): Card {
   return card;
 }
 
-/**
- * Draws one card for a seat. A Joker fished out of the deck becomes the seat's
- * Joker; in the draw style the seat then draws again, so the hand never
- * shrinks (catching the Joker is penalty enough).
- */
-function drawToSeat(round: RoundState, seat: Seat) {
+/** One card for a seat; a snag fished out of the deck becomes the seat's, and it draws again (catching it is penalty enough). */
+function drawToSeat(round: RoundState, seat: number) {
+  const s = round.seats[seat];
   while (round.deck.length) {
     const card = draw(round);
     if (!isJoker(card)) {
-      seat.hand.push(card);
+      s.hand.push(card);
       return;
     }
-    seat.jokers.push(card);
-    round.fished.push({ seat: round.seats.indexOf(seat), street: round.street, joker: card });
-    if (round.playStyle !== 'draw') return;
+    s.jokers.push(card);
+    round.fished.push({ seat, street: round.street, joker: card });
   }
 }
 
-function dealStreet(round: RoundState, config: RulesConfig) {
-  for (let i = 0; i < config.communitySchedule[round.street]; i++) round.community.push(draw(round));
-  const n = config.dealSchedule[round.street];
-  for (let i = 0; i < n; i++) for (const seat of round.seats) drawToSeat(round, seat);
+/** Seat indices in acting order, from `first` round the table. */
+export function seatOrder(round: RoundState): number[] {
+  const n = round.seats.length;
+  return Array.from({ length: n }, (_, k) => (round.first + k) % n);
 }
 
-export function legalActions(round: RoundState, seatIndex: number): Action[] {
-  const seat = round.seats[seatIndex];
-  if (round.playStyle === 'draw') {
-    const ids = seat.hand.map((c) => c.id);
-    if (isComposing(round)) {
-      return subsets(ids).flatMap((cardIds) =>
-        Array.from({ length: Math.min(seat.jokers.length, 5 - cardIds.length) + 1 }, (_, jokers): Action => ({ type: 'compose', cardIds, jokers })),
-      );
-    }
-    const draws = subsets(ids)
-      .filter((cardIds) => cardIds.length <= round.deck.length)
-      .map((cardIds): Action => ({ type: 'draw', cardIds }));
-    return canFold(round, seatIndex) ? [...draws, { type: 'fold' }] : draws;
+/** Seats still in the hand. */
+export function inHand(round: RoundState): number[] {
+  return seatOrder(round).filter((i) => !round.seats[i].folded);
+}
+
+/** True on the River, where hands are made (no discarding there). */
+export function isComposing(round: RoundState): boolean {
+  return round.street === 2 && !round.result;
+}
+
+/** After a raise: a seat still in that didn't raise must match it or fold. */
+export function isAnswering(round: RoundState, seat: number): boolean {
+  return round.street === 3 && !round.result && !round.seats[seat].folded && !round.raisers.includes(seat);
+}
+
+/** Seats that move this street: everyone still in, except, when answering a raise, those who made one. */
+export function movers(round: RoundState): number[] {
+  return inHand(round).filter((i) => round.street !== 3 || isAnswering(round, i));
+}
+
+/**
+ * You may fold on the Flop or the Turn, whatever you've swapped, or facing a
+ * raise. Never otherwise on the River: by then folding would only be a way to
+ * dodge snags, so you face the showdown and take what comes.
+ */
+export function canFold(round: RoundState, seat: number): boolean {
+  return !round.result && !round.seats[seat].folded && (round.street < 2 || isAnswering(round, seat));
+}
+
+/** What a seat has left to put in this hand (all of it, and it's all in). */
+export function roundLeft(round: RoundState, seat: number): number {
+  return Math.max(0, (round.purses?.[seat] ?? Infinity) - round.bets[seat]);
+}
+
+/** The fee to see the next street (1 the Turn, 2 the River), at this table's stakes. */
+export function feeFor(round: RoundState, config: RulesConfig, nextStreet: number): number {
+  return round.potMode ? streetFee(config, round.month, nextStreet, round.stakes, round.feeDivisors) : 0;
+}
+
+/** What a move costs a seat: the fee to see the next street, plus the swaps; a raise, or matching one. */
+export function actionCost(round: RoundState, seat: number, action: Action, config: RulesConfig): number {
+  if (!round.potMode) return 0;
+  if (action.type === 'match' || (action.type === 'compose' && action.raise)) return round.raise;
+  if (action.type !== 'draw') return 0;
+  return feeFor(round, config, round.street + 1) + discardCost(round.seats[seat].discarded.length, action.cardIds.length);
+}
+
+/** Every move a seat could make now (one raise flag aside: a laid hand with or without it is the same choice). */
+export function legalActions(round: RoundState, seat: number): Action[] {
+  const s = round.seats[seat];
+  if (round.result || s.folded) return [];
+  const fold: Action[] = canFold(round, seat) ? [{ type: 'fold' }] : [];
+  if (round.street === 3) return isAnswering(round, seat) ? [{ type: 'match' }, ...fold] : [];
+  const ids = s.hand.map((c) => c.id);
+  if (isComposing(round)) {
+    return subsets(ids).flatMap((cardIds) =>
+      Array.from({ length: Math.min(s.jokers.length, 5 - cardIds.length) + 1 }, (_, jokers): Action => ({ type: 'compose', cardIds, jokers })),
+    );
   }
-  return legalSeatActions(seat, round.deck.length);
+  const draws = subsets(ids)
+    .filter((cardIds) => cardIds.length <= round.deck.length)
+    .map((cardIds): Action => ({ type: 'draw', cardIds }));
+  return [...draws, ...fold];
 }
 
 /** All subsets of a small list, smallest first. */
@@ -227,199 +290,155 @@ export function subsets<T>(items: readonly T[]): T[][] {
   return out.sort((a, b) => a.length - b.length);
 }
 
+export function isLegal(round: RoundState, seat: number, action: Action): boolean {
+  const s = round.seats[seat];
+  if (s.folded || round.result) return false;
+  if (action.type === 'fold') return canFold(round, seat);
+  if (round.street === 3) return action.type === 'match' && isAnswering(round, seat);
+  if (action.type === 'match') return false;
+  if (action.type === 'compose' && action.raise && !round.raise) return false;
+  if (action.type !== (isComposing(round) ? 'compose' : 'draw')) return false;
+  const ids = action.cardIds;
+  if (new Set(ids).size !== ids.length || !ids.every((id) => s.hand.some((c) => c.id === id))) return false;
+  if (action.type === 'draw') return ids.length <= round.deck.length;
+  return Number.isInteger(action.jokers) && action.jokers >= 0 && action.jokers <= s.jokers.length && ids.length + action.jokers <= 5;
+}
+
 /**
- * Draw style: you may fold on the Flop or the Turn, whatever you've swapped
- * (with a pot, or in a lesson without one). Never on the River: by then folding
- * would only be a way to dodge snags, so you face the showdown and take what comes.
+ * Everyone's secret moves for this street (null for a seat that doesn't
+ * move). The folds come first: if they leave one seat in (or none, a
+ * stand-off), the hand is over and nobody else's move is made or paid for.
+ * The rest are applied in seat order from `first`; then the next street is
+ * dealt, or, on the River, the showdown (after a raise, once the rest have
+ * matched or folded).
  */
-export function canFold(round: RoundState, seatIndex: number): boolean {
-  void seatIndex;
-  return round.playStyle === 'draw' && !round.result && round.street < 2;
-}
-
-/** Pot mode: what a seat has left to put in this round (all of it, and it's all in). */
-export function roundLeft(round: RoundState, seatIndex: number): number {
-  return Math.max(0, (round.purses?.[seatIndex] ?? Infinity) - round.bets[seatIndex]);
-}
-
-/** Pot mode: what an action costs the seat (street fee plus discard fees). */
-export function actionCost(round: RoundState, seatIndex: number, action: Action, config: RulesConfig): number {
-  if (!round.potMode || action.type !== 'draw') return 0;
-  return streetFee(config, round.month, round.street + 1) + discardCost(round.seats[seatIndex].discarded.length, action.cardIds.length);
-}
-
-/** Draw style: true on the River, where hands are composed (no discarding there). */
-export function isComposing(round: RoundState): boolean {
-  return round.playStyle === 'draw' && round.street === 2 && !round.result;
-}
-
-/** Every action except passing; passing is only allowed when nothing else is. */
-export function legalSeatActions(seat: Pick<Seat, 'hand' | 'jokers' | 'slots'>, deckSize: number): Action[] {
-  const actions: Action[] = [];
-  const placeable: Card[] = [...seat.hand];
-  // All Jokers are interchangeable for play, so one representative is enough.
-  if (seat.jokers.length) placeable.push(seat.jokers[0]);
-  for (const card of placeable) {
-    for (let slot = 0; slot < seat.slots.length; slot++) {
-      // Swapping a Joker for a Joker changes nothing.
-      if (isJoker(card) && isJoker(seat.slots[slot])) continue;
-      actions.push({ type: 'place', cardId: card.id, slot });
+export function resolveStreet(round: RoundState, actions: (Action | null)[], config: RulesConfig) {
+  if (round.result) throw new Error('The hand is over');
+  const moving = movers(round);
+  for (const i of moving) {
+    const a = actions[i];
+    if (!a || !isLegal(round, i, a)) throw new Error(`Illegal or missing move for seat ${i}: ${JSON.stringify(a)}`);
+  }
+  const record = () => round.history.push({ street: round.street, actions: round.seats.map((_, i) => (moving.includes(i) ? actions[i] : null)) });
+  const folding = moving.filter((i) => actions[i]!.type === 'fold');
+  for (const i of folding) round.seats[i].folded = true;
+  const left = inHand(round);
+  if (left.length <= 1) {
+    record();
+    // Everyone still in folding at once is a stand-off: the pot is split between them.
+    return endByFolds(round, left.length ? left : folding);
+  }
+  for (const i of seatOrder(round)) {
+    const a = actions[i];
+    const s = round.seats[i];
+    if (!a || s.folded || !moving.includes(i)) continue;
+    round.bets[i] += Math.min(actionCost(round, i, a, config), roundLeft(round, i));
+    if (a.type === 'compose' && a.raise) round.raisers.push(i);
+    if (a.type === 'draw') {
+      if (round.street === 0) s.flopDiscards = a.cardIds.length;
+      for (const id of a.cardIds) {
+        const [card] = s.hand.splice(s.hand.findIndex((c) => c.id === id), 1);
+        round.discards.push(card);
+        s.discarded.push(card);
+      }
+      for (let k = 0; k < a.cardIds.length; k++) drawToSeat(round, i);
+    } else if (a.type === 'compose') {
+      s.slots = [...a.cardIds.map((id) => s.hand.find((c) => c.id === id)!), ...s.jokers.splice(0, a.jokers)];
+      s.hand = s.hand.filter((c) => !a.cardIds.includes(c.id));
     }
   }
-  if (deckSize > 0) for (const card of seat.hand) actions.push({ type: 'discard', cardId: card.id });
-  return actions.length ? actions : [{ type: 'pass' }];
-}
-
-export function isLegal(round: RoundState, seatIndex: number, action: Action): boolean {
-  const seat = round.seats[seatIndex];
-  if (round.playStyle === 'draw') {
-    if (action.type === 'fold') return canFold(round, seatIndex);
-    if (action.type !== (isComposing(round) ? 'compose' : 'draw')) return false; // (a duel has no raise to match)
-    const ids = action.cardIds;
-    if (new Set(ids).size !== ids.length || !ids.every((id) => seat.hand.some((c) => c.id === id))) return false;
-    if (action.type === 'draw') return ids.length <= round.deck.length;
-    return Number.isInteger(action.jokers) && action.jokers >= 0 && action.jokers <= seat.jokers.length && ids.length + action.jokers <= 5;
-  }
-  if (action.type === 'draw' || action.type === 'compose' || action.type === 'fold' || action.type === 'match') return false;
-  if (action.type === 'pass') return legalActions(round, seatIndex)[0].type === 'pass';
-  if (action.type === 'place' && !(action.slot >= 0 && action.slot < seat.slots.length)) return false;
-  if (action.type === 'discard') return round.deck.length > 0 && seat.hand.some((c) => c.id === action.cardId);
-  return seat.hand.some((c) => c.id === action.cardId) || seat.jokers.some((c) => c.id === action.cardId);
-}
-
-function discardCard(round: RoundState, seat: Seat, cardId: string) {
-  const [card] = seat.hand.splice(seat.hand.findIndex((c) => c.id === cardId), 1);
-  round.discards.push(card);
-  seat.discarded.push(card);
-}
-
-function applyAction(round: RoundState, seat: Seat, action: Action) {
-  if (action.type === 'pass' || action.type === 'fold' || action.type === 'match') return;
-  if (action.type === 'discard') {
-    discardCard(round, seat, action.cardId);
-    drawToSeat(round, seat);
+  record();
+  // A raise on the River: the rest still in answer it before the showdown.
+  if (round.street === 2 && round.raisers.length && left.some((i) => !round.raisers.includes(i))) {
+    round.street = 3;
     return;
   }
-  if (action.type === 'draw') {
-    if (round.street === 0) seat.flopDiscards = action.cardIds.length;
-    for (const id of action.cardIds) discardCard(round, seat, id);
-    for (let i = 0; i < action.cardIds.length; i++) drawToSeat(round, seat);
-    return;
-  }
-  if (action.type === 'compose') {
-    seat.slots = [
-      ...action.cardIds.map((id) => seat.hand.find((c) => c.id === id)!),
-      ...seat.jokers.splice(0, action.jokers),
-    ];
-    seat.hand = seat.hand.filter((c) => !action.cardIds.includes(c.id));
-    return;
-  }
-  let card: Card;
-  const hi = seat.hand.findIndex((c) => c.id === action.cardId);
-  if (hi >= 0) card = seat.hand.splice(hi, 1)[0];
-  else card = seat.jokers.splice(seat.jokers.findIndex((c) => c.id === action.cardId), 1)[0];
-  returnToHand(seat, seat.slots[action.slot]);
-  seat.slots[action.slot] = card;
-}
-
-function returnToHand(seat: Seat, card: Card | null) {
-  if (!card) return;
-  if (isJoker(card)) seat.jokers.push(card);
-  else seat.hand.push(card);
-}
-
-/**
- * Applies both players' secret actions simultaneously, then deals the next
- * street or resolves the showdown.
- */
-export function resolveStreet(round: RoundState, actions: [Action, Action], config: RulesConfig) {
-  if (round.result) throw new Error('Round is over');
-  actions.forEach((a, i) => {
-    if (!isLegal(round, i, a)) throw new Error(`Illegal action for seat ${i}: ${JSON.stringify(a)}`);
-  });
-  const folds = actions.map((a) => a.type === 'fold');
-  if (folds[0] || folds[1]) {
-    round.history.push({ street: round.street, actions });
-    // Both folding is a stand-off: the pot is split.
-    return foldEnd(round, folds[0] && folds[1] ? null : folds[0] ? 0 : 1);
-  }
-  // Nobody pays more than they have: short of the price, all in.
-  actions.forEach((a, i) => (round.bets[i] += Math.min(actionCost(round, i, a, config), roundLeft(round, i))));
-  actions.forEach((a, i) => applyAction(round, round.seats[i], a));
-  round.history.push({ street: round.street, actions });
-  if (round.playStyle === 'draw' && round.street === 2) return showdown(round, config); // hands composed
+  if (round.street >= 2) return showdown(round, config);
   round.street++;
-  if (round.street <= 2) dealStreet(round, config);
-  else showdown(round, config);
+  for (let i = 0; i < config.communitySchedule[round.street]; i++) round.community.push(draw(round));
 }
 
-/** The own-card rule for a seat: draw style uses exactly the cards played. */
-export function ownCardRule(round: RoundState, seatIndex: number, config: RulesConfig) {
-  if (round.playStyle === 'slots') return config.ownCards;
-  const n = round.seats[seatIndex].slots.length;
-  return { min: n, max: n };
+/** The one winner, or null on a split pot. */
+export function winnerOf(result: RoundResult): number | null {
+  return result.winners.length === 1 ? result.winners[0] : null;
 }
 
-export function handInPlay(round: RoundState, seatIndex: number, config: RulesConfig): HandValue {
-  return bestHand(round.seats[seatIndex].slots, round.community, ownCardRule(round, seatIndex, config));
+/** The first seat that folded, if any did. */
+export function foldedSeat(round: RoundState): number | null {
+  const i = round.seats.findIndex((s) => s.folded);
+  return i < 0 ? null : i;
 }
 
-function showdown(round: RoundState, config: RulesConfig) {
-  const hands: [HandValue, HandValue] = [handInPlay(round, 0, config), handInPlay(round, 1, config)];
-  const cmp = compareHands(hands[0], hands[1]);
-  const winner: 0 | 1 | null = cmp > 0 ? 0 : cmp < 0 ? 1 : null;
+/** Each seat's hand once the round is over: the one shown down, or for a seat that wasn't, the best its cards could have made with the board. */
+export function handsOf(round: RoundState): HandValue[] {
+  return round.seats.map((s, i) => round.result?.hands[i] ?? bestHand(s.hand, round.community, { min: 0, max: s.hand.length }));
+}
 
-  const communityJokers = round.community.filter(isJoker);
-  if (round.communityJoker) communityJokers.push(round.communityJoker);
-  const placed = round.seats.map((s) => s.slots.filter(isJoker));
-  const returnedToPool = round.deck.filter(isJoker);
+const potOf = (round: RoundState) => round.bets.reduce((a, b) => a + b, 0);
 
-  let dumped: JokerCard[] = [];
-  let communityTaken: JokerCard[] = [];
-  if (winner === null) {
-    round.seats.forEach((s, i) => s.jokers.push(...placed[i]));
-    returnedToPool.push(...communityJokers);
-  } else {
-    const loser = round.seats[1 - winner];
-    dumped = placed[winner];
-    communityTaken = communityJokers;
-    loser.jokers.push(...dumped, ...placed[1 - winner], ...communityTaken);
-  }
+/** The pot (and the forfeits) split among the winners; the odd coins to the earliest of them in seat order. */
+function shares(round: RoundState, winners: number[], forfeits: number): number[] {
+  const total = potOf(round) + forfeits;
+  const share = round.seats.map(() => 0);
+  const each = Math.floor(total / winners.length);
+  winners.forEach((i) => (share[i] = each));
+  share[winners[0]] += total - each * winners.length;
+  return share;
+}
 
-  const pot = round.bets[0] + round.bets[1];
+/** Everyone else folded: the last seat in takes the pot; no hands shown, no snags change hands, the board's go back. */
+function endByFolds(round: RoundState, winners: number[]) {
+  const order = seatOrder(round);
+  winners.sort((a, b) => order.indexOf(a) - order.indexOf(b));
   round.result = {
-    winner,
-    hands,
-    gain: winner === null ? 0 : round.potMode ? pot : config.winGain[hands[winner].category],
-    pot,
-    folded: null,
-    // The loser's forfeit, as far as their purse goes.
-    forfeit: winner === null ? 0 : Math.min(placed[1 - winner].length * (config.jokerForfeit ?? 0), round.potMode ? roundLeft(round, 1 - winner) : Infinity),
-    dumped,
-    communityTaken,
-    returnedToPool,
+    winners,
+    hands: round.seats.map(() => null),
+    pot: potOf(round),
+    share: shares(round, winners, 0),
+    weakest: null,
+    dumped: [],
+    boardTaken: [],
+    forfeit: round.seats.map(() => 0),
+    byFolds: true,
+    returnedToPool: [...round.deck.filter(isJoker), ...round.community.filter(isJoker)],
   };
 }
 
-/**
- * A fold ends the round at once: the other seat takes the pot. Nobody's hand is
- * shown, no Jokers change hands, and community Jokers go back into the deal.
- */
-function foldEnd(round: RoundState, folder: 0 | 1 | null) {
-  const winner: 0 | 1 | null = folder === null ? null : folder === 0 ? 1 : 0;
-  const returnedToPool = [...round.deck.filter(isJoker), ...round.community.filter(isJoker)];
-  if (round.communityJoker) returnedToPool.push(round.communityJoker);
-  const any = (seat: Seat) => bestHand(seat.hand, round.community, { min: 0, max: seat.hand.length });
-  const pot = round.bets[0] + round.bets[1];
+function showdown(round: RoundState, config: RulesConfig) {
+  const left = inHand(round);
+  const hands: (HandValue | null)[] = round.seats.map((s, i) =>
+    left.includes(i) ? bestHand(s.slots, round.community, { min: s.slots.length, max: s.slots.length }) : null,
+  );
+  const score = (i: number) => hands[i]!.score;
+  const top = Math.max(...left.map(score));
+  const winners = left.filter((i) => score(i) === top);
+  const losers = left.filter((i) => score(i) < top);
+  // The weakest hand still in (on a tie, the one acting earliest this hand).
+  const weakest = losers.length ? losers.reduce((w, i) => (score(i) < score(w) ? i : w)) : null;
+
+  const played = round.seats.map((s) => s.slots.filter(isJoker));
+  const boardSnags = round.community.filter(isJoker);
+  // A loser's forfeits, as far as its purse goes (a lesson without a pot has none).
+  const forfeit = round.seats.map((_, i) => (round.potMode && losers.includes(i) ? Math.min(played[i].length * (config.jokerForfeit ?? 0), roundLeft(round, i)) : 0));
+  // A winner's played snags (and the board's) go to the weakest hand; a loser keeps its own.
+  // If everyone still in tied, there's no weakest: each keeps its own, and the board's go back to the pool.
+  const dumped = weakest === null ? [] : winners.flatMap((i) => played[i]);
+  const boardTaken = weakest === null ? [] : boardSnags;
+  round.seats.forEach((s, i) => {
+    if (i === weakest) s.jokers.push(...dumped, ...played[i], ...boardTaken);
+    else if (weakest === null || !winners.includes(i)) s.jokers.push(...played[i]);
+  });
+
   round.result = {
-    winner,
-    hands: [any(round.seats[0]), any(round.seats[1])],
-    gain: winner === null ? 0 : pot,
-    pot,
-    folded: folder ?? 0,
-    forfeit: 0,
-    dumped: [],
-    communityTaken: [],
-    returnedToPool,
+    winners,
+    hands,
+    pot: potOf(round),
+    share: shares(round, winners, forfeit.reduce((a, b) => a + b, 0)),
+    weakest,
+    dumped,
+    boardTaken,
+    forfeit,
+    byFolds: false,
+    returnedToPool: [...round.deck.filter(isJoker), ...(weakest === null ? boardSnags : [])],
   };
 }

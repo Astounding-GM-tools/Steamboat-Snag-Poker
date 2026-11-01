@@ -9,7 +9,7 @@ import { Rng } from './rng';
 
 function jokerCount(s: GameState) {
   const owned = s.players.reduce((n, p) => n + p.jokers.length, 0);
-  return owned + s.pool.length + (s.round && !s.round.result && s.round.communityJoker ? 1 : 0);
+  return owned + s.pool.length;
 }
 
 /** Plays the Captain with random legal moves until the game ends. */
@@ -41,10 +41,6 @@ describe('game', () => {
     expect(s).toEqual(snapshot);
   });
 
-  it('never has a community Joker in month 1', () => {
-    for (let seed = 0; seed < 50; seed++) expect(newGame(seed).round!.communityJoker).toBeNull();
-  });
-
   for (const [presetName, config] of Object.entries(PRESETS)) {
     it(`plays complete games (${presetName}) and conserves Jokers`, () => {
       for (let seed = 1; seed <= 3; seed++) {
@@ -56,18 +52,48 @@ describe('game', () => {
     });
   }
 
-  it('only allows passing when nothing else is possible', () => {
-    const s = newGame(5);
-    expect(legalActions(s.round!, 0).some((a) => a.type === 'pass')).toBe(false);
-  });
-
   it('migrates saves from before a rule setting existed', () => {
     const old = newGame(3);
-    delete (old.config as Partial<RulesConfig>).loserPays;
+    delete (old.config as Partial<RulesConfig>).jokerForfeit;
     old.players[1].money = NaN;
     const fixed = migrateGame(old);
-    expect(fixed.config.loserPays).toBe(DEFAULT_CONFIG.loserPays);
+    expect(fixed.config.jokerForfeit).toBe(DEFAULT_CONFIG.jokerForfeit);
     expect(Number.isFinite(fixed.players[1].money)).toBe(true);
+  });
+
+  it('migrates a voyage saved before duels and tables shared one engine', () => {
+    // A crossing just won, saved the old way: two seats, one winner, the board's snags apart.
+    let s = newGame(4);
+    const rng = new Rng(1);
+    while (s.phase === 'duel') s = submitAction(s, chooseAction('careful', viewFor(s.round!, 0, s.config), s.config, rng));
+    const now = s.round!.result!;
+    const old = structuredClone(s) as unknown as { round: Record<string, unknown> & { result: unknown; seats: { slots: unknown[] }[] }; report: { duel: { result: unknown } } };
+    for (const key of ['first', 'stakes', 'feeDivisors', 'raise', 'raisers']) delete old.round[key];
+    old.round.playStyle = 'draw';
+    old.round.communityJoker = null;
+    const winner = now.winners.length === 1 ? now.winners[0] : null;
+    const oldResult = {
+      winner,
+      hands: now.hands,
+      gain: now.pot,
+      pot: now.pot,
+      folded: null,
+      forfeit: now.forfeit[0] + now.forfeit[1],
+      dumped: now.dumped,
+      communityTaken: now.boardTaken,
+      returnedToPool: now.returnedToPool,
+    };
+    old.round.result = oldResult;
+    old.report.duel.result = oldResult;
+    const fixed = migrateGame(old as unknown as GameState);
+    expect(fixed.round!.first).toBe(0);
+    expect(fixed.round!.feeDivisors).toEqual(DEFAULT_CONFIG.streetFeeDivisors);
+    expect(fixed.round!.result!.winners).toEqual(now.winners);
+    expect(fixed.round!.result!.share.reduce((a, b) => a + b, 0)).toBe(now.pot + now.forfeit[0] + now.forfeit[1]);
+    expect(fixed.report!.duel.result.winners).toEqual(now.winners);
+    expect('playStyle' in fixed.round!).toBe(false);
+    // And it plays on.
+    if (fixed.phase === 'monthEnd') expect(nextMonth(fixed).phase).toBe('duel');
   });
 
   it('keeps a log of the Captain\'s recent showdowns', () => {
@@ -172,7 +198,7 @@ describe('the League finale', () => {
   const toMonthEnd = () => {
     let s = newGame(11, PRESETS.draw, ['gaylord', 'eliza', 'finlay'].map((id) => ({ def: ROSTER.find((c) => c.id === id)!, joins: 'start' as const })));
     const rng = new Rng(2);
-    while (s.phase === 'duel') s = submitAction(s, chooseAction('careful', viewFor(s.round!, 0), s.config, rng));
+    while (s.phase === 'duel') s = submitAction(s, chooseAction('careful', viewFor(s.round!, 0, s.config), s.config, rng));
     return s;
   };
 
@@ -209,7 +235,7 @@ describe('the League finale', () => {
   it('a story never goes to a final table', () => {
     let s = newGame(11, PRESETS.draw, ['gaylord', 'eliza', 'finlay'].map((id) => ({ def: ROSTER.find((c) => c.id === id)!, joins: 'start' as const })), { story: 'test' });
     const rng = new Rng(2);
-    while (s.phase === 'duel') s = submitAction(s, chooseAction('careful', viewFor(s.round!, 0), s.config, rng));
+    while (s.phase === 'duel') s = submitAction(s, chooseAction('careful', viewFor(s.round!, 0, s.config), s.config, rng));
     expect(s.finaleNext).toBeFalsy();
   });
 });

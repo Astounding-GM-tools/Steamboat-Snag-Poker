@@ -21,16 +21,19 @@ function composeRound(hands: [string, string], board: string, jokers: [number, n
   const used = new Set([...hands.join(' ').split(' '), ...board.split(' ')]);
   return {
     month: 2,
-    playStyle: 'draw',
     seats: [seat(hands[0], jokers[0]), seat(hands[1], jokers[1])],
+    first: 0,
     deck: fullDeck().filter((c: StdCard) => !used.has(c.id.replace('T', 'T'))),
     community: cards(board) as Card[],
-    communityJoker: null,
     street: 2,
     discards: [],
     history: [],
     fished: [],
-    potMode: false,
+    potMode: true,
+    stakes: 1,
+    feeDivisors: [3, 2],
+    raise: 0,
+    raisers: [],
     bets: [0, 0],
     result: null,
   };
@@ -64,8 +67,8 @@ describe('draw style', () => {
   it('trips plus two Jokers plays no board at all, and the winner sheds both Jokers', () => {
     const r = composeRound(['9s 9d 9h', 'Qs 2d 3h'], 'Ah Kc 7d 4s Jc', [2, 0]);
     resolveStreet(r, [{ type: 'compose', cardIds: ['9s', '9d', '9h'], jokers: 2 }, { type: 'compose', cardIds: ['Qs'], jokers: 0 }], config);
-    expect(r.result!.winner).toBe(0);
-    expect(r.result!.hands[0].category).toBe('threeOfAKind');
+    expect(r.result!.winners).toEqual([0]);
+    expect(r.result!.hands[0]!.category).toBe('threeOfAKind');
     expect(r.result!.dumped).toHaveLength(2);
     expect(r.seats[1].jokers).toHaveLength(2);
     expect(r.seats[0].jokers).toHaveLength(0);
@@ -75,15 +78,15 @@ describe('draw style', () => {
     const r = composeRound(['Ks Kd 4h', 'Qs Qd Qh'], 'Kh 4c 7d 2s 9c', [1, 0]);
     // Without the Joker this is kings full of fours; with it, the 4♥ needs a partner it can no longer get.
     resolveStreet(r, [{ type: 'compose', cardIds: ['Ks', 'Kd', '4h'], jokers: 1 }, { type: 'compose', cardIds: ['Qs', 'Qd', 'Qh'], jokers: 0 }], config);
-    expect(r.result!.hands[0].category).toBe('threeOfAKind');
-    expect(r.result!.winner).toBe(0); // kings still beat queens…
+    expect(r.result!.hands[0]!.category).toBe('threeOfAKind');
+    expect(r.result!.winners).toEqual([0]); // kings still beat queens…
     expect(r.result!.dumped).toHaveLength(1); // …and the Joker goes over
   });
 
   it('playing zero cards plays the board', () => {
     const r = composeRound(['2s 3d 5h', 'Qs Qd 3h'], 'Ah Ac Ad Kh Kc');
     resolveStreet(r, [{ type: 'compose', cardIds: [], jokers: 0 }, { type: 'compose', cardIds: ['Qs'], jokers: 0 }], config);
-    expect(r.result!.hands[0].category).toBe('fullHouse');
+    expect(r.result!.hands[0]!.category).toBe('fullHouse');
   });
 });
 
@@ -119,14 +122,14 @@ describe('Joker forfeit', () => {
   it('the loser pays a forfeit for every Joker they risked; the winner pays none', () => {
     const r = composeRound(['2s 3d 5h', 'As Ad 9c'], 'Ah Kc 7d 4s Jc', [2, 1]);
     resolveStreet(r, [{ type: 'compose', cardIds: ['2s'], jokers: 2 }, { type: 'compose', cardIds: ['As', 'Ad'], jokers: 1 }], config);
-    expect(r.result!.winner).toBe(1);
-    expect(r.result!.forfeit).toBe(2 * config.jokerForfeit);
+    expect(r.result!.winners).toEqual([1]);
+    expect(r.result!.forfeit).toEqual([2 * config.jokerForfeit, 0]);
   });
 
   it('is zero when the loser risked no Jokers', () => {
     const r = composeRound(['2s 3d 5h', 'As Ad 9c'], 'Ah Kc 7d 4s Jc', [0, 1]);
     resolveStreet(r, [{ type: 'compose', cardIds: ['2s'], jokers: 0 }, { type: 'compose', cardIds: ['As', 'Ad'], jokers: 1 }], config);
-    expect(r.result!.forfeit).toBe(0);
+    expect(r.result!.forfeit).toEqual([0, 0]);
   });
 });
 

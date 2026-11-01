@@ -15,7 +15,7 @@ for (const ai of ['careful', 'gambler'] as AiId[]) {
         continue;
       }
       const before = s.round!;
-      s = submitAction(s, chooseAction(ai, viewFor(s.round!, 0), DEFAULT_CONFIG, rng));
+      s = submitAction(s, chooseAction(ai, viewFor(s.round!, 0, DEFAULT_CONFIG), DEFAULT_CONFIG, rng));
       const r = s.round!;
       if (r.result && r !== before && s.phase !== 'duel') {
         per.push(...r.bets);

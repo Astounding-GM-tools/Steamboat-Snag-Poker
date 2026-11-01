@@ -11,7 +11,7 @@ it('timing', () => {
     const step = s.round!.street;
     const opp = s.players.find((p) => p.id === s.opponentId)!.ai!;
     let t0 = performance.now();
-    chooseAction(opp, viewFor(s.round!, 1), s.config, rng);
+    chooseAction(opp, viewFor(s.round!, 1, s.config), s.config, rng);
     rec(`${opp}@${step}`, performance.now() - t0);
     t0 = performance.now();
     s = submitAction(s, legalActions(s.round!, 0)[0]);

@@ -8,7 +8,9 @@
     roundLeft,
     discardCost,
     isComposing,
-    streetFee,
+    feeFor,
+    foldedSeat,
+    winnerOf,
     isJoker,
     rankLabel,
     opponentOdds,
@@ -292,7 +294,10 @@
   // The showdown, on the table: their played cards flip in place, one per Next,
   // with their hand so far called where the street name was.
   const result = $derived(round.result);
-  const shownDown = $derived(!!result && result.folded == null);
+  /** Who won (null on a split pot), and who folded, if anyone did. */
+  const winner = $derived(result ? winnerOf(result) : null);
+  const folder = $derived(result ? foldedSeat(round) : null);
+  const shownDown = $derived(!!result && !result.byFolds);
   const steps = $derived(shownDown ? planReveal(round, 1, new Rng(round.month * 31 + round.discards.length)) : []);
   // How many of their cards are face up, counted per round: a new showdown starts
   // at its first card at once (a reset after the fact would let the last
@@ -311,7 +316,7 @@
   $effect(() => {
     if (verdictShown) untrack(() => onverdict?.());
   });
-  const theirPlayed = $derived(shownDown ? them.slots.filter((c): c is Card => c !== null) : []);
+  const theirPlayed = $derived(shownDown ? them.slots : []);
   const playedIds = $derived(new Set(theirPlayed.map((c) => c.id)));
   /** Their cards face up: those flipped so far, or all they played once the showdown is over. */
   const faceUp = $derived(
@@ -320,27 +325,27 @@
   const theirHand = $derived(revealStep?.hand ?? (shownDown ? result!.hands[1] : null));
   /** Once the verdict is in, only the winning hand gets its exclamation mark. */
   const decided = $derived(shownDown && (verdictShown || stage === 'result'));
-  const theirCall = $derived(theirHand ? handLabel(theirHand, { exclaim: decided && result?.winner === 1 }) : null);
+  const theirCall = $derived(theirHand ? handLabel(theirHand, { exclaim: decided && winner === 1 }) : null);
   /** The third line, once the last card is down: what decided it, on a tie-break. (No odds while the cards turn: let them play out.) */
   const theirNote = $derived.by(() => {
     if (!revealing || !result || !verdictShown) return '';
-    if (result.winner === null) return '';
-    const tb = tiebreak(result.hands[result.winner], result.hands[1 - result.winner]);
-    return tb ? t(`show.tb.${tb.kind}.${result.winner === 0 ? 'you' : 'them'}`, { name: name(opponentId), win: tb.winner, lose: tb.loser }) : '';
+    if (winner === null) return '';
+    const tb = tiebreak(result.hands[winner]!, result.hands[1 - winner]!);
+    return tb ? t(`show.tb.${tb.kind}.${winner === 0 ? 'you' : 'them'}`, { name: name(opponentId), win: tb.winner, lose: tb.loser }) : '';
   });
   /**
    * The result, where the pot was, once the last card is down (or a fold ends
    * the hand) and the coins have gone: a win, or what it cost you.
    */
-  const outcomeShown = $derived(!playing && !!result && (decided || result.folded != null));
+  const outcomeShown = $derived(!playing && !!result && (decided || result.byFolds));
   const outcomeText = $derived.by(() => {
     if (!result) return '';
-    if (result.winner === 0) return t('show.youWin');
-    if (result.winner === null) return round.potMode ? t('show.split') : t('show.draw');
-    const lost = (round.potMode ? round.bets[0] : 0) + (result.forfeit ?? 0);
+    if (winner === 0) return t('show.youWin');
+    if (winner === null) return round.potMode ? t('show.split') : t('show.draw');
+    const lost = (round.potMode ? round.bets[0] : 0) + result.forfeit[0];
     if (lost) return t('show.lost', { amount: money(lost) });
     // A fold with nothing in the pot isn't a defeat (in a lesson it may be the wise move).
-    return result.folded === 0 ? t('show.folded') : t('show.youLose');
+    return folder === 0 ? t('show.folded') : t('show.youLose');
   });
   function revealNext() {
     // Past the verdict: the round's closing lines first, if it has any.
@@ -363,12 +368,12 @@
   }
   /** Board cards each hand uses: theirs marked above, yours below. */
   const theirBoard = $derived(
-    revealStep ? new Set(revealStep.boardUsed) : shownDown && !revealing ? new Set(result!.hands[1].cards.map((c) => c.id)) : new Set<string>(),
+    revealStep ? new Set(revealStep.boardUsed) : shownDown && !revealing ? new Set(result!.hands[1]!.cards.map((c) => c.id)) : new Set<string>(),
   );
-  const myCall = $derived(shownDown ? handLabel(result!.hands[0], { exclaim: decided && result?.winner === 0 }) : null);
+  const myCall = $derived(shownDown ? handLabel(result!.hands[0]!, { exclaim: decided && winner === 0 }) : null);
   /** After Play hand the played cards leave the hand for the slots: show them first, the rest dimmed. */
-  const myPlayed = $derived(shownDown ? me.slots.filter((c): c is Card => c !== null && !isJoker(c)) : []);
-  const myPlayedSnagIds = $derived(new Set(shownDown ? me.slots.filter((c): c is Card => c !== null && isJoker(c)).map((c) => c.id) : []));
+  const myPlayed = $derived(shownDown ? me.slots.filter((c) => !isJoker(c)) : []);
+  const myPlayedSnagIds = $derived(new Set(shownDown ? me.slots.filter(isJoker).map((c) => c.id) : []));
   /**
    * A side's snags in its fan. The hand is already resolved when the showdown
    * starts (the loser keeps the snags it played, and takes the winner's), so
@@ -376,9 +381,9 @@
    * played, then the outcome: snags dumped on the loser land in their fan.
    */
   function fan(seat: typeof me): Card[] {
-    const played = seat.slots.filter((c): c is Card => c !== null && isJoker(c));
+    const played = seat.slots.filter(isJoker);
     if (!shownDown || settled) return seat.jokers;
-    const moved = new Set([...result!.dumped, ...result!.communityTaken].map((c) => c.id));
+    const moved = new Set([...result!.dumped, ...result!.boardTaken].map((c) => c.id));
     const kept = seat.jokers.filter((j) => !moved.has(j.id) && !played.some((p) => p.id === j.id));
     return [...kept, ...played];
   }
@@ -388,9 +393,9 @@
   const callout = $derived(preview ? handLabel(preview) : null);
   // Like the callout, the marks under the board wait for the lesson.
   const usedIdsPlay = $derived(new Set(lessonAhead && !naming ? [] : (preview?.cards.map((c) => c.id) ?? [])));
-  const usedIds = $derived(shownDown ? new Set(result!.hands[0].cards.map((c) => c.id)) : usedIdsPlay);
+  const usedIds = $derived(shownDown ? new Set(result!.hands[0]!.cards.map((c) => c.id)) : usedIdsPlay);
 
-  const stakes = $derived([...(round.communityJoker ? [round.communityJoker] : []), ...round.community.filter(isJoker)]);
+  const stakes = $derived(round.community.filter(isJoker));
   const streetName = $derived(composing ? 'compose' : round.street <= 2 ? STREETS[round.street] : 'showdown');
 
   // Willie's reckoning appears on the captain card while a round is being played.
@@ -398,7 +403,7 @@
     if (!showCaptain || !playing) return null;
     // Seeded from the visible situation so the numbers stay put while you look.
     const seed = round.community.length * 7919 + round.discards.length * 104729 + round.month;
-    return opponentOdds(viewFor(round, 0), config, new Rng(seed), 600);
+    return opponentOdds(viewFor(round, 0, config), config, new Rng(seed), 600);
   });
 
   // A new street or a new month clears the selection.
@@ -501,7 +506,7 @@
   let fired = new Set<string>();
   function fire(trigger: Trigger): boolean {
     const key = `${game.month}:${trigger}`;
-    const won = result?.winner === 0;
+    const won = !!result && winner === 0;
     // Dumped or kept only while the game goes on: at the end, the last word says it all.
     const outcomes = won
       ? game.phase === 'victory' ? ['wonAll'] : ['won', result!.dumped.length ? 'dumped' : 'kept']
@@ -532,7 +537,7 @@
 
   // A round that ends in a fold has no showdown: its closing lines come as it ends.
   $effect(() => {
-    if (!playing && result?.folded != null)
+    if (!playing && result?.byFolds)
       untrack(() => {
         // In a story with nothing to say about it, the next round comes after a beat.
         if (!fire('verdict') && script) setTimeout(() => onrevealed?.(), 1200);
@@ -577,7 +582,7 @@
   }
 
   // Pot mode: purses shrink as you pay in, and every action shows its price.
-  const bets = $derived<[number, number]>(round.potMode ? round.bets : [0, 0]);
+  const bets = $derived<number[]>(round.potMode ? round.bets : [0, 0]);
   /**
    * What each purse shows: during a round, money minus what's in the pot; while
    * the showdown is being revealed, the purse as it was before the payout; then
@@ -594,10 +599,10 @@
     const p = seat === 0 ? captain : opponent;
     return playing ? p.money : (game.report?.money[p.id]?.before ?? p.money);
   }
-  const potBets = $derived<[number, number]>(round.potMode ? bets : [0, 0]);
+  const potBets = $derived<number[]>(round.potMode ? bets : [0, 0]);
   const payout = $derived<'me' | 'them' | 'split' | null>(
     !playing && settled && round.result && round.potMode
-      ? round.result.winner === 0 ? 'me' : round.result.winner === 1 ? 'them' : 'split'
+      ? winner === 0 ? 'me' : winner === 1 ? 'them' : 'split'
       : null,
   );
   // Money moves one purse at a time, heavily: a captain's coins leave from
@@ -717,7 +722,7 @@
 
   const cost = $derived(
     round.potMode && !composing && playing
-      ? streetFee(config, round.month, round.street + 1) + discardCost(me.discarded.length, tappedCards.length)
+      ? feeFor(round, config, round.street + 1) + discardCost(me.discarded.length, tappedCards.length)
       : 0,
   );
   /** A price on the table: dollars, or in the lessons, buttons. */
@@ -844,7 +849,7 @@
       <!-- With no pot (the first lessons) it stays, empty, so the table keeps its shape. -->
       <div class="pot-band" bind:this={potEl}>
         <Pile count={potBets[0] + potBets[1]} paid={!!payout} />
-        {#if outcomeShown}<p class="outcome" class:won={result?.winner === 0} aria-live="polite">{outcomeText}</p>{/if}
+        {#if outcomeShown}<p class="outcome" class:won={winner === 0} aria-live="polite">{outcomeText}</p>{/if}
       </div>
       <div class="community" bind:this={communityEl}>
         {#each Array.from({ length: boardSize }) as _, i}
@@ -857,7 +862,7 @@
       {#if standing}<div class="standings-over"><Standings {game} />{#if game.finaleNext}<p class="finale-next">{t('finale.next')}</p>{/if}</div>{/if}
     </div>
     <!-- Always there, so a snag coming up never moves the table; empty when nothing is at stake (after a fold the snag goes back into the deck). -->
-    <p class="stakes">{#if stakes.length && !standing && result?.folded == null}{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}{/if}</p>
+    <p class="stakes">{#if stakes.length && !standing && !result?.byFolds}{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}{/if}</p>
     {#if showCaptain}
       <!-- Their details take the river's place (tap to go back to the board): who they are and, mid-round, Willie's reckoning. -->
       <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
@@ -887,7 +892,7 @@
       <!-- On the River your coins are idle, so the hand you're making is called over them, with the count of snags riding along and their forfeit. Fixed size: it never shifts as you tap. -->
       {#if shownDown && myCall}
         <!-- At the showdown your coins show again (the pot may fly to them); your hand is one line above. -->
-        <button class="my-hand ladder-link" onclick={() => (cardPrefs.ladder = result?.hands[0].category ?? 'all')}>{myCall.lingo ?? myCall.call}</button>
+        <button class="my-hand ladder-link" onclick={() => (cardPrefs.ladder = result?.hands[0]?.category ?? 'all')}>{myCall.lingo ?? myCall.call}</button>
       {:else if playing && (composing || naming) && callout && (naming || !lessonAhead)}
         <div class="callout" aria-live="polite">
           <button class="call ladder-link" class:long={callout.call.length > 30} onclick={() => (cardPrefs.ladder = preview?.category ?? 'all')}>{callout.call}</button>

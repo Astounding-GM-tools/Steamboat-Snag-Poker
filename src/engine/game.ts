@@ -7,7 +7,8 @@ import { chooseAction, viewFor } from './ai';
 import { jokerCard, type Card, type JokerCard } from './cards';
 import { HUMAN_ID, LEGACY_AI, RETIRED_IDS, ROSTER, drawLineUp, type AiId, type CharacterDef, type LineUpEntry } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
-import { createRound, isLegal, resolveStreet, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
+import { createRound, foldedSeat, handsOf, isLegal, resolveStreet, winnerOf, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
+import type { HandValue } from './evaluate';
 import { Rng } from './rng';
 import type { HighRollersResult, HighRollersSetup, HighRollersState } from './highrollers';
 
@@ -52,8 +53,8 @@ export interface ShowdownRecord {
   board: Card[];
   /** Cards each side played (Captain first), Jokers included. */
   played: [Card[], Card[]];
-  /** Each side's final hand. */
-  hands: RoundResult['hands'];
+  /** Each side's final hand (after a fold, the best they held). */
+  hands: [HandValue, HandValue];
   winner: 0 | 1 | null;
   gain: number;
   forfeit: number;
@@ -122,13 +123,14 @@ export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): 
   let json = JSON.stringify(saved);
   for (const [old, now] of Object.entries(RETIRED_IDS)) json = json.replaceAll(`"${old}"`, `"${now}"`);
   const state = JSON.parse(json) as GameState;
-  state.config = { ...DEFAULT_CONFIG, ...state.config, winGain: { ...DEFAULT_CONFIG.winGain, ...state.config.winGain } };
+  state.config = { ...DEFAULT_CONFIG, ...state.config };
   state.log ??= [];
-  if (state.round) {
-    state.round.fished ??= [];
-    state.round.potMode ??= false;
-    state.round.bets ??= [0, 0];
+  if (state.round) state.round = migrateRound(state.round, state.config);
+  if (state.report) {
+    state.report.duel.result = migrateResult(state.report.duel.result);
+    for (const d of state.report.offscreen) d.result = migrateResult(d.result);
   }
+  if (state.finaleTable?.round) state.finaleTable.round = migrateRound(state.finaleTable.round, state.config);
   if (state.report && !state.report.money) {
     state.report.money = (state.report as MonthReport & { popularity?: MonthReport['money'] }).popularity ?? {};
   }
@@ -145,6 +147,57 @@ export function migrateGame(saved: GameState, roster: CharacterDef[] = ROSTER): 
     }
   }
   return state;
+}
+
+/** A round saved before duels and tables shared one engine (or before pot mode). */
+function migrateRound(saved: RoundState, config: RulesConfig): RoundState {
+  const round = saved as RoundState & { playStyle?: string; communityJoker?: unknown };
+  const table = 'raisers' in round;
+  round.first ??= 0;
+  round.fished ??= [];
+  round.potMode ??= table;
+  round.bets ??= round.seats.map(() => 0);
+  round.stakes ??= 1;
+  round.raise ??= 0;
+  round.raisers ??= [];
+  // A table saved before it was one engine had High Rollers' fees; a duel, the rules'.
+  round.feeDivisors ??= table ? [2, 1] : config.streetFeeDivisors;
+  delete round.playStyle;
+  delete round.communityJoker;
+  for (const s of round.seats) s.slots = s.slots.filter((c) => c !== null);
+  if (round.result) {
+    const old = round.result as unknown as { folded?: number | null };
+    if (old.folded != null) round.seats[old.folded].folded = true;
+    round.result = migrateResult(round.result, round.community);
+  }
+  return round;
+}
+
+/** A result saved before duels and tables shared one engine: a duel's (one winner) or a table's (the board's snags among the dumped). */
+function migrateResult(saved: RoundResult, community: Card[] = []): RoundResult {
+  const old = saved as RoundResult;
+  if ('boardTaken' in old) return old;
+  if ('winners' in (old as object)) {
+    // A table's: the snags the weakest took included the board's.
+    const board = new Set(community.map((c) => c.id));
+    const table = old as Omit<RoundResult, 'boardTaken'>;
+    return { ...table, dumped: table.dumped.filter((j) => !board.has(j.id)), boardTaken: table.dumped.filter((j) => board.has(j.id)) };
+  }
+  const duel = old as unknown as { winner: 0 | 1 | null; hands: [HandValue, HandValue]; pot: number; gain: number; folded: 0 | 1 | null; forfeit: number; dumped: RoundResult['dumped']; communityTaken: RoundResult['dumped']; returnedToPool: RoundResult['dumped'] };
+  const w = duel.winner;
+  const byFolds = duel.folded != null;
+  return {
+    winners: w === null ? [0, 1] : [w],
+    hands: byFolds ? [null, null] : duel.hands,
+    pot: duel.pot,
+    share: w === null ? [Math.ceil(duel.pot / 2), Math.floor(duel.pot / 2)] : w === 0 ? [duel.pot + duel.forfeit, 0] : [0, duel.pot + duel.forfeit],
+    weakest: w === null || byFolds ? null : 1 - w,
+    dumped: duel.dumped,
+    boardTaken: duel.communityTaken ?? [],
+    forfeit: w === null ? [0, 0] : w === 0 ? [0, duel.forfeit] : [duel.forfeit, 0],
+    byFolds,
+    returnedToPool: duel.returnedToPool,
+  };
 }
 
 /**
@@ -226,7 +279,7 @@ function startMonthMut(state: GameState): GameState {
   const opponent = pickOpponent(state, rng);
   state.opponentId = opponent.id;
   const human = player(state, HUMAN_ID);
-  state.round = createRound(state.month, [human, opponent], state.pool, state.config, rng, state.arranged?.[state.month - 1]);
+  state.round = createRound(state.month, [human, opponent], state.pool, state.config, rng, { arranged: state.arranged?.[state.month - 1]?.deck });
   state.phase = 'duel';
   state.report = null;
   state.rngState = rng.state;
@@ -242,7 +295,7 @@ export function submitAction(prev: GameState, action: Action): GameState {
   const opponent = player(state, state.opponentId!);
   // An arranged hand may script the opponent's move (if it is still a legal one).
   const scripted = state.arranged?.[state.month - 1]?.opponent?.[round.history.length];
-  const reply = scripted && isLegal(round, 1, scripted) ? scripted : chooseAction(opponent.ai!, viewFor(round, 1), state.config, rng);
+  const reply = scripted && isLegal(round, 1, scripted) ? scripted : chooseAction(opponent.ai!, viewFor(round, 1, state.config), state.config, rng);
   resolveStreet(round, [action, reply], state.config);
   if (round.result) finishMonth(state, rng);
   state.rngState = rng.state;
@@ -255,7 +308,7 @@ function simulateDuel(state: GameState, a: Player, b: Player, rng: Rng): RoundSt
   while (!round.result) {
     resolveStreet(
       round,
-      [chooseAction(a.ai!, viewFor(round, 0), state.config, rng), chooseAction(b.ai!, viewFor(round, 1), state.config, rng)],
+      [chooseAction(a.ai!, viewFor(round, 0, state.config), state.config, rng), chooseAction(b.ai!, viewFor(round, 1, state.config), state.config, rng)],
       state.config,
     );
   }
@@ -268,25 +321,19 @@ function finishMonth(state: GameState, rng: Rng) {
 
   const settle = (round: RoundState): DuelSummary => {
     const res = round.result!;
+    const winner = winnerOf(res);
     round.seats.forEach((seat, i) => {
       const p = player(state, seat.playerId);
       before[p.id] ??= p.money;
       p.jokers = seat.jokers;
-      if (res.winner === i) p.won = (p.won ?? 0) + 1;
-      else if (res.winner !== null) p.lost = (p.lost ?? 0) + 1;
+      if (winner === i) p.won = (p.won ?? 0) + 1;
+      else if (winner !== null) p.lost = (p.lost ?? 0) + 1;
       if (p.id !== HUMAN_ID && round.seats[1 - i].playerId === HUMAN_ID) {
-        if (res.winner === i) p.wonVsYou = (p.wonVsYou ?? 0) + 1;
-        else if (res.winner !== null) p.lostVsYou = (p.lostVsYou ?? 0) + 1;
+        if (winner === i) p.wonVsYou = (p.wonVsYou ?? 0) + 1;
+        else if (winner !== null) p.lostVsYou = (p.lostVsYou ?? 0) + 1;
       }
-      const forfeit = res.forfeit ?? 0;
-      if (round.potMode) {
-        // Pot mode: pay in what you bet; the winner takes the pot (a tie splits it).
-        p.money -= round.bets[i];
-        if (res.winner === i) p.money += res.pot + forfeit;
-        else if (res.winner === null) p.money += Math.floor(res.pot / 2);
-        else p.money -= forfeit;
-      } else if (res.winner === i) p.money += res.gain + forfeit;
-      else if (res.winner !== null) p.money = Math.max(0, p.money - Math.round(res.gain * (cfg.loserPays ?? 0)) - forfeit);
+      // Pay in what you bet, take your share of the pot, pay your forfeits (a lesson without a pot moves no money).
+      if (round.potMode) p.money += res.share[i] - round.bets[i] - res.forfeit[i];
     });
     state.pool.push(...res.returnedToPool);
     return { players: [round.seats[0].playerId, round.seats[1].playerId], result: res };
@@ -294,22 +341,20 @@ function finishMonth(state: GameState, rng: Rng) {
 
   const duel = settle(state.round!);
   const finished = state.round!;
+  const res = duel.result;
   const record: ShowdownRecord = {
     month: state.month,
     opponentId: state.opponentId!,
     board: finished.community.slice(),
-    played: [
-      finished.seats[0].slots.filter((c): c is Card => c !== null),
-      finished.seats[1].slots.filter((c): c is Card => c !== null),
-    ],
-    hands: duel.result.hands,
-    winner: duel.result.winner,
-    gain: duel.result.gain,
-    forfeit: duel.result.forfeit,
+    played: [finished.seats[0].slots.slice(), finished.seats[1].slots.slice()],
+    hands: handsOf(finished) as [HandValue, HandValue],
+    winner: winnerOf(res) as 0 | 1 | null,
+    gain: winnerOf(res) === null ? 0 : res.pot,
+    forfeit: res.forfeit[0] + res.forfeit[1],
     paid: finished.potMode ? [finished.bets[0], finished.bets[1]] : undefined,
-    folded: duel.result.folded ?? null,
-    dumped: duel.result.dumped,
-    communityTaken: duel.result.communityTaken,
+    folded: foldedSeat(finished) as 0 | 1 | null,
+    dumped: res.dumped,
+    communityTaken: res.boardTaken,
   };
   state.log = [record, ...(state.log ?? [])].slice(0, LOG_SIZE);
 
@@ -328,7 +373,7 @@ function finishMonth(state: GameState, rng: Rng) {
     before[p.id] ??= p.money;
     // In pot mode Joker upkeep is paid into each ante instead, except by the
     // captain sitting the round out, who has no ante but still pays upkeep.
-    const potUpkeep = cfg.playStyle === 'draw' && cfg.pot;
+    const potUpkeep = cfg.pot;
     const drained = !potUpkeep || p.id === state.sitterId ? p.jokers.length * cfg.drainPerJoker : 0;
     if (drained) p.money = Math.max(0, p.money - drained);
     money[p.id] = { before: before[p.id], after: p.money, drained };

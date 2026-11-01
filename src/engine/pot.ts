@@ -10,15 +10,15 @@ export function baseAnte(config: RulesConfig, month: number): number {
   return Math.ceil((month - (config.antePast ?? 0)) / (config.anteEvery || 3));
 }
 
-/** A captain's ante: the table ante plus upkeep for every Joker they carry. */
-export function anteFor(config: RulesConfig, month: number, jokers: number): number {
-  return baseAnte(config, month) + jokers * config.drainPerJoker;
+/** A captain's ante: the table ante (times the stakes) plus upkeep for every snag they carry (not raised by the stakes). */
+export function anteFor(config: RulesConfig, month: number, jokers: number, stakes = 1): number {
+  return baseAnte(config, month) * stakes + jokers * config.drainPerJoker;
 }
 
-/** Fee to see the next street (1 = Turn, 2 = River): a fraction of the table ante. */
-export function streetFee(config: RulesConfig, month: number, nextStreet: number): number {
-  const divisor = (config.streetFeeDivisors ?? [3, 2])[nextStreet - 1];
-  return divisor ? Math.floor(baseAnte(config, month) / divisor) : 0;
+/** Fee to see the next street (1 = Turn, 2 = River): the table ante (times the stakes) over a divisor. */
+export function streetFee(config: RulesConfig, month: number, nextStreet: number, stakes = 1, divisors = config.streetFeeDivisors ?? [3, 2]): number {
+  const divisor = divisors[nextStreet - 1];
+  return divisor ? Math.floor((baseAnte(config, month) * stakes) / divisor) : 0;
 }
 
 /** Throwing away cards gets dearer: the k-th card in a crossing costs $k. */

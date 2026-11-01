@@ -6,14 +6,13 @@
  * walk away with is your score. Every function is pure: it clones the state
  * it's given.
  */
-import { chooseAction, type SeatView } from './ai';
-import { isJoker, jokerCard, type JokerCard } from './cards';
+import { chooseAction, viewFor } from './ai';
+import { jokerCard, type JokerCard } from './cards';
 import { HUMAN_ID, ROSTER, type AiId } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
-import type { Action } from './round';
+import { createRound, movers, resolveStreet, type Action, type RoundState } from './round';
 import { Rng } from './rng';
 import { raiseChance, wantsMatch, wantsRaise, type Standing } from './raise';
-import { createTableRound, inHand, resolveTableStreet, tableCanFold, tableComposing, tableMovers, type TableRound } from './table';
 
 export interface HighRoller {
   id: string;
@@ -38,7 +37,7 @@ export interface HighRollersState {
   pool: JokerCard[];
   /** Players at this hand's table, in seat order (indices into `players`). */
   seated: number[];
-  round: TableRound | null;
+  round: RoundState | null;
   /** 'hand' while it's played, 'handEnd' when it's done, 'over' after The Last Hand (or when one captain is left). */
   phase: 'hand' | 'handEnd' | 'over';
   /** The hand being played is The Last Hand (or, at 'handEnd', the next one will be). */
@@ -70,6 +69,9 @@ export interface HighRollersSetup {
   /** Raising on the River (default on). */
   raising?: boolean;
 }
+
+/** The table's street fees: half the ante to see the Turn, the full ante to see the River. */
+export const HIGH_ROLLERS_FEES: [number, number] = [2, 1];
 
 /** The standalone table's purses: about five to eight hands before The Last Hand is over. */
 export const HIGH_ROLLERS_PURSE = 160;
@@ -110,15 +112,13 @@ function deal(state: HighRollersState): HighRollersState {
   const rng = new Rng(state.rngState);
   state.seated = state.players.map((_, i) => i).filter((i) => !state.players[i].out);
   state.button %= state.seated.length;
-  state.round = createTableRound(
+  state.round = createRound(
     state.hand,
-    state.seated.map((i) => ({ id: state.players[i].id, jokers: state.players[i].jokers })),
-    state.button,
+    state.seated.map((i) => state.players[i]),
     state.pool,
     state.config,
     rng,
-    undefined,
-    { stakes: state.lastHand ? state.lastHandStakes : 1, raising: state.raising, purses: state.seated.map((i) => state.players[i].money) },
+    { first: state.button, stakes: state.lastHand ? state.lastHandStakes : 1, raising: state.raising, feeDivisors: HIGH_ROLLERS_FEES },
   );
   state.phase = 'hand';
   state.rngState = rng.state;
@@ -131,38 +131,6 @@ export function mySeat(state: HighRollersState): number {
 }
 
 /**
- * What an AI sees at a table: its own cards, the board, and the rest of the
- * table folded into one "opponent" (all their discards, the most snags any
- * of them holds), so the duel AIs can play here as they are.
- */
-export function tableView(round: TableRound, seat: number): SeatView {
-  const me = round.seats[seat];
-  const others = inHand(round).filter((i) => i !== seat).map((i) => round.seats[i]);
-  return {
-    playStyle: 'draw',
-    composing: tableComposing(round),
-    street: round.street,
-    hand: me.hand,
-    jokers: me.jokers,
-    slots: me.slots,
-    community: round.community,
-    communityJoker: null,
-    opponentSlots: [],
-    opponentHandSize: 3,
-    opponentJokerCount: Math.max(0, ...others.map((s) => s.jokers.length)),
-    discards: round.discards,
-    opponentDiscarded: others.flatMap((s) => s.discarded),
-    discardedCount: me.discarded.length,
-    month: round.month,
-    potMode: true,
-    pot: round.bets.reduce((a, b) => a + b, 0),
-    canFold: tableCanFold(round, seat),
-    deckSnags: round.deck.filter(isJoker).length,
-    deckSize: round.deck.length,
-  };
-}
-
-/**
  * Your move for this street (null if you've folded or are out: the street is
  * played without you); the rivals answer, and it all resolves in seat order.
  */
@@ -172,10 +140,10 @@ export function playHighRollers(prev: HighRollersState, mine: Action | null): Hi
   const rng = new Rng(state.rngState);
   const round = state.round!;
   const me = mySeat(state);
-  const movers = tableMovers(round);
+  const moving = movers(round);
   const pot = round.bets.reduce((a, b) => a + b, 0);
   const actions = round.seats.map((s, seat): Action | null => {
-    if (!movers.includes(seat)) return null;
+    if (!moving.includes(seat)) return null;
     if (seat === me) return mine;
     const ai = state.players[state.seated[seat]].ai!;
     if (round.street === 3) {
@@ -183,14 +151,14 @@ export function playHighRollers(prev: HighRollersState, mine: Action | null): Hi
       const chance = raiseChance(round, seat, s.slots, rng);
       return wantsMatch(ai, chance, round.raise, pot, standingOf(state, seat)) ? { type: 'match' } : { type: 'fold' };
     }
-    const action = chooseAction(ai, tableView(round, seat), state.config, rng);
+    const action = chooseAction(ai, viewFor(round, seat, state.config), state.config, rng);
     if (action.type === 'compose' && round.raise) {
       const laid = [...action.cardIds.map((id) => s.hand.find((c) => c.id === id)!), ...Array.from({ length: action.jokers }, () => null)];
       return { ...action, raise: wantsRaise(ai, raiseChance(round, seat, laid, rng), rng) };
     }
     return action;
   });
-  resolveTableStreet(round, actions, state.config);
+  resolveStreet(round, actions, state.config);
   if (round.result) settle(state);
   state.rngState = rng.state;
   return state;

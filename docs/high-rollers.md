@@ -114,8 +114,8 @@ What you walk away with is your score.
 
 ## The engine (built)
 
-`src/engine/table.ts` (a hand at a table of several) and
-`src/engine/highrollers.ts` (the game, to two left). Starting from 120 each at
+`src/engine/round.ts` (a hand at a table of any size: the League's duels
+are tables of two) and `src/engine/highrollers.ts` (the game, to two left). Starting from 120 each at
 hand 24 (an ante of 8), a table lasts about **7 hands** (4 to 14); a careful
 player finishes first about a third of the time, in the money about two
 thirds.

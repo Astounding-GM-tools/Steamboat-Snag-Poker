@@ -2,7 +2,7 @@
  * Balance simulation: lets an AI play the Captain for many games under each
  * rules preset and prints how long games last.
  *   npm run sim
- *   SIM_GAMES=10 SIM_PRESETS=kansas,texas SIM_DRAIN=3 npm run sim
+ *   SIM_GAMES=10 SIM_PRESETS=draw,kansasDraw SIM_DRAIN=3 npm run sim
  *   SIM_CAPTAINS=careful,gambler (skip the clueless captain, who never wins)
  *
  * "final4": how often the Captain is still afloat when four captains are left
@@ -20,7 +20,6 @@ const overrides = {
   ...(process.env.SIM_JOKERS ? { totalJokers: Number(process.env.SIM_JOKERS) } : {}),
   ...(process.env.SIM_ANTE ? { anteEvery: Number(process.env.SIM_ANTE) } : {}),
   ...(process.env.SIM_FORFEIT ? { jokerForfeit: Number(process.env.SIM_FORFEIT) } : {}),
-  ...(process.env.SIM_LOSER ? { loserPays: Number(process.env.SIM_LOSER) } : {}),
   ...(process.env.SIM_EVERY ? { shuffledJokerEveryMonths: Number(process.env.SIM_EVERY) } : {}),
 };
 
@@ -51,15 +50,15 @@ it('balance', () => {
           }
           if (s.phase === 'monthEnd') s = nextMonth(s);
           else {
-            s = submitAction(s, chooseAction(captainAi, viewFor(s.round!, 0), config, rng));
+            s = submitAction(s, chooseAction(captainAi, viewFor(s.round!, 0, config), config, rng));
             if (s.report) {
               const r = s.report.duel.result;
               captainDuels++;
-              if (r.winner === 0) {
+              if (r.winners.length === 1 && r.winners[0] === 0) {
                 captainWins++;
                 jokersShed += r.dumped.length;
               }
-              for (const h of [r.hands[0], r.hands[1]]) cats[h.category] = (cats[h.category] ?? 0) + 1;
+              for (const h of r.hands) if (h) cats[h.category] = (cats[h.category] ?? 0) + 1;
             }
           }
           maxJ = Math.max(maxJ, player(s, HUMAN_ID).jokers.length);
