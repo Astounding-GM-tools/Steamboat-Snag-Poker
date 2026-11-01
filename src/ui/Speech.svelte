@@ -35,9 +35,16 @@
      * the move is tapped; making it then skips ahead past the next line that
      * asks for a move (no need to ask what you already know). A rank (`4`, `T`, `A`) matches any suit;
      * a card (`4c`) only itself. An empty list is standing pat; `fold` is the
-     * black button. The move closes it.
+     * black button. The move closes it. `help` waits for How it works to be
+     * opened and closed again (the lesson shows you where it is).
      */
-    require?: string[] | 'fold';
+    require?: string[] | 'fold' | 'help';
+    /**
+     * "Show me": tap these cards (as for `require`) to see what they make,
+     * named over your purse on any street, without it counting as a move
+     * (no swap); then the replies unlock. Answering clears the taps.
+     */
+    names?: string[];
     /**
      * Only after this outcome (for lines after the verdict): you won the hand
      * or lost it with the game going on (a win either `dumped` a snag on them

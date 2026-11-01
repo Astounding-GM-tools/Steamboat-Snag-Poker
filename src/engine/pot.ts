@@ -5,9 +5,9 @@
  */
 import type { RulesConfig } from './config';
 
-/** The table ante for a crossing: ceil(crossing / anteEvery). */
+/** The table ante for a crossing: ceil(crossing / anteEvery), not counting the crossings in `antePast`. */
 export function baseAnte(config: RulesConfig, month: number): number {
-  return Math.ceil(month / (config.anteEvery || 3));
+  return Math.ceil((month - (config.antePast ?? 0)) / (config.anteEvery || 3));
 }
 
 /** A captain's ante: the table ante plus upkeep for every Joker they carry. */

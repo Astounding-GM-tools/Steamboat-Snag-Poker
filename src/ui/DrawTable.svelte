@@ -93,19 +93,25 @@
   /** A line waiting for the coins: the buttons wait with it, so it can't be skipped unseen. */
   const lineWaiting = $derived(!!nextUp && !line);
   /** The line is waiting for a move at the table: the white button only takes that one. */
-  const complies = $derived.by(() => {
-    const want = line?.require;
-    // A move asked for later in the conversation: no playing ahead of it.
-    if (!want) return !lessonAhead;
-    if (want === 'fold') return false;
+  /** Exactly these cards tapped, and only these. Whole cards first, then ranks, so `4c` and `4` both find their four. */
+  function tappedAre(want: string[]): boolean {
     if (tapped.length !== want.length || tappedJokers.length) return false;
-    // Whole cards first, then ranks, so `4c` and `4` both find their four.
     const open = [...want].sort((a, b) => b.length - a.length);
     return tappedCards.every((c) => {
       const k = open.findIndex((w) => w === c.id || (!isJoker(c) && w === rankLabel(c.rank)));
       return k >= 0 && open.splice(k, 1).length > 0;
     });
+  }
+  const complies = $derived.by(() => {
+    const want = line?.require;
+    // A move asked for later in the conversation: no playing ahead of it.
+    if (!want) return !lessonAhead;
+    if (want === 'fold' || want === 'help') return false;
+    return tappedAre(want);
   });
+  /** "Show me": the line wants cards tapped to see what they make (no move); its replies wait for them. */
+  const naming = $derived(!!line?.names);
+  const named = $derived(!!line?.names && tappedAre(line.names));
   // Replies side by side unless one would be cut off on this screen: then they stack (measured, not guessed).
   let stackFor = $state<SpeechLine | null>(null);
   const stackReplies = $derived(!!line && stackFor === line);
@@ -186,6 +192,8 @@
     if (!talk) talkOver();
   }
   function answer(reply: Reply) {
+    // Shown, not played: the taps go.
+    if (line?.names) tapped = [];
     if (reply.effect) ontalk?.(reply.effect);
     if (reply.end) talk = null;
     else nextLine(reply.go);
@@ -225,6 +233,15 @@
     if (tableEl && actionsEl) helpBottom = tableEl.getBoundingClientRect().bottom - actionsEl.getBoundingClientRect().top + 6;
     showHelp = true;
   }
+  /** The line asks you to open How it works (the "?" beckons) and close it again: then on. */
+  const helpWanted = $derived(line?.require === 'help');
+  let helpOpened = false;
+  $effect(() => {
+    const open = showHelp;
+    if (!helpWanted) return void (helpOpened = false);
+    if (open) helpOpened = true;
+    else if (helpOpened) untrack(() => ((helpOpened = false), nextLine()));
+  });
   let showCaptain = $state(false);
   // Their details close when the next round is dealt.
   let infoMonth = -1;
@@ -270,7 +287,7 @@
   const tappedCards = $derived(me.hand.filter((c) => tapped.includes(c.id)));
   const tappedJokers = $derived(me.jokers.filter((c) => tapped.includes(c.id)));
   const preview = $derived(
-    composing ? bestHand([...tappedCards, ...tappedJokers], round.community, { min: tapped.length, max: tapped.length }) : null,
+    composing || (naming && tapped.length) ? bestHand([...tappedCards, ...tappedJokers], round.community, { min: tapped.length, max: tapped.length }) : null,
   );
   // The showdown, on the table: their played cards flip in place, one per Next,
   // with their hand so far called where the street name was.
@@ -370,7 +387,7 @@
 
   const callout = $derived(preview ? handLabel(preview) : null);
   // Like the callout, the marks under the board wait for the lesson.
-  const usedIdsPlay = $derived(new Set(lessonAhead ? [] : (preview?.cards.map((c) => c.id) ?? [])));
+  const usedIdsPlay = $derived(new Set(lessonAhead && !naming ? [] : (preview?.cards.map((c) => c.id) ?? [])));
   const usedIds = $derived(shownDown ? new Set(result!.hands[0].cards.map((c) => c.id)) : usedIdsPlay);
 
   const stakes = $derived([...(round.communityJoker ? [round.communityJoker] : []), ...round.community.filter(isJoker)]);
@@ -739,7 +756,8 @@
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div class="table solo layout" class:buttons={game.currency === 'buttons'} onclick={finishDeal} bind:this={tableEl}>
   {#if showHelp}<div class="help-layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
-  {#if line}
+  <!-- How it works covers what's said: the line comes back when it closes. -->
+  {#if line && !showHelp}
     <Speech
       {line}
       name={speakerName(line.who)}
@@ -817,7 +835,7 @@
         <!-- Every street has a second line (blank at the showdown), so nothing moves. -->
         <span class="street-sub">{standing || streetName === 'showdown' ? '' : t(`street.sub.${streetName}`)}</span>
       </span>
-      <button class="ghost icon" onclick={openHelp} aria-label={t('title.howTo')}>?</button>
+      <button class="ghost icon" class:beckon={helpWanted && !showHelp} onclick={openHelp} aria-label={t('title.howTo')}>?</button>
     </div>
     {/if}
     <!-- After the round the standings take the pot's and the board's place (those stay, hidden, so nothing moves). -->
@@ -870,7 +888,7 @@
       {#if shownDown && myCall}
         <!-- At the showdown your coins show again (the pot may fly to them); your hand is one line above. -->
         <button class="my-hand ladder-link" onclick={() => (cardPrefs.ladder = result?.hands[0].category ?? 'all')}>{myCall.lingo ?? myCall.call}</button>
-      {:else if playing && composing && callout && !lessonAhead}
+      {:else if playing && (composing || naming) && callout && (naming || !lessonAhead)}
         <div class="callout" aria-live="polite">
           <button class="call ladder-link" class:long={callout.call.length > 30} onclick={() => (cardPrefs.ladder = preview?.category ?? 'all')}>{callout.call}</button>
           <span class="lingo">{callout.lingo ?? ''}</span>
@@ -887,9 +905,9 @@
       {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
         <span class="held" out:thrown={card.id}><CardView
           {card}
-          selected={composing && tapped.includes(card.id)}
-          toss={!composing && tapped.includes(card.id)}
-          used={composing && usedIds.has(card.id)}
+          selected={(composing || naming) && tapped.includes(card.id)}
+          toss={!composing && !naming && tapped.includes(card.id)}
+          used={(composing || naming) && usedIds.has(card.id)}
           faded={shownDown}
           deal="left"
           onclick={playing ? () => tap(card) : undefined}
@@ -926,18 +944,19 @@
       {#if replies.length <= 2 && !stackReplies}
         <!-- A line waiting for an answer: two replies (black, white), or one on the white button and nothing pretending on the black. -->
         {#if replies.length === 2}
-          <button class="ghost" onclick={() => answer(replies[0])}>{label(replies[0], 0)}</button>
-          <button onclick={() => answer(replies[1])}>{label(replies[1], 1)}</button>
+          <button class="ghost" onclick={() => answer(replies[0])} disabled={naming && !named}>{label(replies[0], 0)}</button>
+          <button onclick={() => answer(replies[1])} disabled={naming && !named}>{label(replies[1], 1)}</button>
         {:else}
           <button class="ghost" disabled style="visibility: hidden" aria-hidden="true"></button>
-          <button onclick={() => answer(replies[0])}>{label(replies[0], 0)}</button>
+          <!-- "Show me": the answer waits for the cards it asks you to tap. -->
+          <button onclick={() => answer(replies[0])} disabled={naming && !named}>{label(replies[0], 0)}</button>
         {/if}
       {:else}
         <!-- More replies, or longer ones than half the row holds: stacked, rising over the table, the last (white) nearest the thumb.
              The row keeps its height (an invisible stand-in), so nothing above moves. -->
         <button class="stand-in" disabled aria-hidden="true">&nbsp;</button>
         <div class="stack">
-          {#each replies as r, i (i)}<button class:ghost={i < replies.length - 1} onclick={() => answer(r)}>{label(r, i)}</button>{/each}
+          {#each replies as r, i (i)}<button class:ghost={i < replies.length - 1} onclick={() => answer(r)} disabled={naming && !named}>{label(r, i)}</button>{/each}
         </div>
       {/if}
     {:else if holding}
@@ -1001,6 +1020,18 @@
     padding: 0 0.55em;
     font-size: 1rem;
     border-radius: 50%;
+  }
+  /* A lesson pointing at How it works: the "?" pulses until it's opened. */
+  .icon.beckon {
+    border-color: var(--paper);
+    color: var(--paper);
+    animation: beckon 1.1s ease-in-out infinite;
+  }
+  @keyframes beckon {
+    50% {
+      box-shadow: 0 0 0 6px rgba(242, 239, 230, 0.25);
+      transform: scale(1.12);
+    }
   }
   .opponent {
     row-gap: 0.5rem;

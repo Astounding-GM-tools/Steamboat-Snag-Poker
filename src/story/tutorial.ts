@@ -1,6 +1,7 @@
 import { HUMAN_ID, PRESETS, ROSTER, jokerCard, newGame, nextMonth, submitAction, type Action, type ArrangedHand, type GameState, type RulesConfig } from '../engine';
 import type { SpeechLine } from '../ui/Speech.svelte';
 import type { Script } from './script';
+import { handsDeal, handsRound } from './hands';
 
 /**
  * Morag's lessons: the deckhand meets Morag MacTavish and learns Snag Poker
@@ -45,15 +46,18 @@ const roundTwo: ArrangedHand = {
   opponent: [STAND_PAT, STAND_PAT],
 };
 
+/** Round three, if you don't know your hands: Morag's lesson on them (src/story/hands.ts). Skipped if you do. */
+export const HANDS_ROUND = 3;
+
 /**
- * Round three, room for a snag: the first hand for buttons, both snags in
+ * Round four, room for a snag: the first hand for buttons, both snags in
  * play. You: 8♠ 8♦ K♣ and Grudging Respect; Morag: A♣ K♦ 6♥ and the Solemn
  * Oath. The Flop 8♥ A♦ 4♣, the Turn 4♠, the River J♥. You call twice (no
  * swaps: the deck is arranged). On the River your eights make a full house,
  * which has no room for a snag; three eights with Respect riding still beat
  * her two pair (aces and fours, the Oath riding), and hand her your Respect.
  */
-const roundThree: ArrangedHand = {
+const roundFour: ArrangedHand = {
   deck: ['8h', 'Ad', '4c', '8s', 'Ac', '8d', 'Kd', 'Kc', '6h', '4s', 'Jh'],
   opponent: [STAND_PAT, STAND_PAT, { type: 'compose', cardIds: ['Ac'], jokers: 1 }],
 };
@@ -64,9 +68,11 @@ export const OATH = 13;
 
 /**
  * The buttons come out: from the next round it's a real game, shuffled, for a
- * pot, a knockout until one side has all the buttons. 20 each; the ante is the
- * round number (3, then 4…), a button to see the Turn and one for the River;
- * each snag adds a button of upkeep to the ante, and a lost snag costs 2.
+ * pot, a knockout until one side has all the buttons. 20 each; the ante counts
+ * up from 3 (the lesson on the hands doesn't count), a button to see the Turn
+ * and one for the River; each snag adds a button of upkeep to the ante, and a
+ * lost snag costs 2. Coming straight from round two, the lesson on the hands
+ * is passed by.
  */
 export function giveButtons(prev: GameState): GameState {
   const state = structuredClone(prev);
@@ -74,10 +80,12 @@ export function giveButtons(prev: GameState): GameState {
     ...state.config,
     pot: true,
     anteEvery: 1,
+    antePast: 1,
     drainPerJoker: 1,
     jokerForfeit: 2,
   };
   state.currency = 'buttons';
+  state.month = Math.max(state.month, HANDS_ROUND);
   for (const p of state.players) {
     p.money = 20;
     p.jokers = [jokerCard(p.id === HUMAN_ID ? RESPECT : OATH)];
@@ -85,16 +93,25 @@ export function giveButtons(prev: GameState): GameState {
   return state;
 }
 
-/** The two arranged rounds played as the script asks, and on to the first hand for buttons (tests, and trying it out). */
-export function skipToButtons(seed: number): GameState {
+/** The first two arranged rounds played as the script asks. */
+function playTwoRounds(seed: number): GameState {
   let g = newTutorial(seed);
   g = submitAction(g, STAND_PAT);
   g = submitAction(g, { type: 'draw', cardIds: ['Jc', 'Kd'] });
   g = submitAction(g, { type: 'compose', cardIds: ['Qh', '2h'], jokers: 0 });
   g = nextMonth(g);
   g = submitAction(g, STAND_PAT);
-  g = submitAction(g, { type: 'fold' });
-  return nextMonth(giveButtons(g));
+  return submitAction(g, { type: 'fold' });
+}
+
+/** Straight on to the first hand for buttons, knowing your hands (tests, and trying it out). */
+export function skipToButtons(seed: number): GameState {
+  return nextMonth(giveButtons(playTwoRounds(seed)));
+}
+
+/** On to the lesson on the hands (trying it out). */
+export function skipToHands(seed: number): GameState {
+  return nextMonth(playTwoRounds(seed));
 }
 
 /** Another knockout after the last: 20 buttons each again, Respect back with you and the Oath with her. */
@@ -109,7 +126,7 @@ export function newTutorial(seed: number): GameState {
   const morag = ROSTER.find((c) => c.id === 'morag')!;
   const game = newGame(seed, config, [{ def: morag, joins: 'start' }], {
     story: TUTORIAL,
-    arranged: [roundOne, roundTwo, roundThree],
+    arranged: [roundOne, roundTwo, handsDeal, roundFour],
   });
   // Her Solemn Oath is hers from the first frame: her burden, part of who she is, long before it comes into play.
   game.players[1].jokers = [jokerCard(OATH)];
@@ -173,6 +190,28 @@ const AFTER: SpeechLine[] = [
     who: M,
     text: ['Buttons are not money.', 'My oath is quite safe. Deal.'],
     replies: [{ label: 'Deal', effect: 'rematch', end: true }],
+  },
+];
+
+/** On to the snags, and the buttons come out: after round two, or after the lesson on the hands. */
+const SNAGS: SpeechLine[] = [
+  {
+    size: 'scene',
+    who: M,
+    text: 'And that’s how you dodge snags: you win, or you fold wisely.',
+    replies: [{ label: 'Snag?' }],
+  },
+  {
+    size: 'scene',
+    who: M,
+    text: 'Ah yes, snags. We’d need some stakes for that. Here, have some buttons, so we have something for the pot.',
+    replies: [{ label: 'Buttons?' }],
+  },
+  {
+    size: 'scene',
+    who: M,
+    text: 'You should NEVER play for money!',
+    replies: [{ label: 'Yes, ma’am', effect: 'buttons', end: true }],
   },
 ];
 
@@ -366,24 +405,16 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
-          text: ['Your jacks never stood a chance.', 'And that’s how you dodge snags: you win, or you fold wisely.'],
-          replies: [{ label: 'Snag?' }],
+          text: ['Your jacks never stood a chance.', 'Do you know your hands, child? Which beats which?'],
+          // Not knowing them is round three, her lesson on the hands; knowing them, on to the snags.
+          replies: [{ label: 'No, ma’am', effect: 'next', end: true }, { label: 'Of course' }],
         },
-        {
-          size: 'scene',
-          who: M,
-          text: 'Ah yes, snags. We’d need some stakes for that. Here, have some buttons, so we have something for the pot.',
-          replies: [{ label: 'Buttons?' }],
-        },
-        {
-          size: 'scene',
-          who: M,
-          text: 'You should NEVER play for money!',
-          replies: [{ label: 'Yes, ma’am', effect: 'buttons', end: true }],
-        },
+        ...SNAGS,
       ],
     },
-    // Round three, for buttons with both snags in play, is still arranged: the snag lesson. From round four, the knockout.
+    // Round three, only if you don't know your hands: the lesson on them, and on to the snags.
+    handsRound(SNAGS),
+    // Round four, for buttons with both snags in play, is still arranged: the snag lesson. From round five, the knockout.
     {
       // Drafts: the snag explanation is still to be written properly.
       deal: [

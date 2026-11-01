@@ -48,6 +48,8 @@ export interface RulesConfig {
   pot: boolean;
   /** Pot mode: the ante is ceil(crossing / anteEvery). */
   anteEvery: number;
+  /** Pot mode: crossings played before the pot came in (a lesson's), not counted towards the ante. */
+  antePast?: number;
   /** Pot mode: the Turn and River fees are floor(ante / divisor). */
   streetFeeDivisors: [number, number];
   startMoney: number;

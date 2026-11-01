@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { anteFor, nextMonth, streetFee, submitAction } from '../engine';
-import { OATH, RESPECT, newTutorial, rematch, skipToButtons } from './tutorial';
+import { OATH, RESPECT, giveButtons, newTutorial, rematch, skipToButtons, skipToHands } from './tutorial';
 
 describe('the tutorial', () => {
   it('round one plays as scripted: Ducks full of Ladies beat aces and deuces', () => {
@@ -45,17 +45,49 @@ describe('the tutorial', () => {
     expect(g.players.map((p) => p.money)).toEqual(purses);
   });
 
-  it('the buttons: from round three a shuffled game for a pot, with a snag each', () => {
-    const g = skipToButtons(1);
+  it('round three, the hands: her open deal climbs the ladder, and your four threes beat her full house', () => {
+    let g = skipToHands(1);
     expect(g.month).toBe(3);
+    expect(g.round!.potMode).toBe(false);
+    const ids = (seat: number) => g.round!.seats[seat].hand.map((c) => c.id).sort();
+    expect(g.round!.community.map((c) => c.id)).toEqual(['2h', '3c', '4h']);
+    expect(ids(0)).toEqual(['4c', '7s', 'Ah']);
+    g = submitAction(g, { type: 'draw', cardIds: ['7s', '4c'] });
+    expect(ids(0)).toEqual(['5h', '6h', 'Ah']);
+    expect(ids(1)).toEqual(['2s', '5s', '6c']);
+    expect(g.round!.community.at(-1)!.id).toBe('2d');
+    g = submitAction(g, { type: 'draw', cardIds: ['5h', '6h'] });
+    expect(ids(0)).toEqual(['3d', '3s', 'Ah']);
+    expect(g.round!.community.at(-1)!.id).toBe('3h');
+    g = submitAction(g, { type: 'compose', cardIds: ['3d', '3s'], jokers: 0 });
+    const res = g.round!.result!;
+    expect(res.winner).toBe(0);
+    expect(res.hands.map((h) => h.category)).toEqual(['fourOfAKind', 'fullHouse']);
+  });
+
+  it('after the lesson on the hands, the same first hand for buttons', () => {
+    let g = skipToHands(1);
+    g = submitAction(g, { type: 'draw', cardIds: ['7s', '4c'] });
+    g = submitAction(g, { type: 'draw', cardIds: ['5h', '6h'] });
+    g = submitAction(g, { type: 'compose', cardIds: ['3d', '3s'], jokers: 0 });
+    g = nextMonth(giveButtons(g));
+    const skipped = skipToButtons(1);
+    expect(g.month).toBe(skipped.month);
+    expect(g.round!.seats[0].hand.map((c) => c.id).sort()).toEqual(['8d', '8s', 'Kc']);
+    expect(g.round!.bets).toEqual(skipped.round!.bets);
+  });
+
+  it('the buttons: from round four a shuffled game for a pot, with a snag each', () => {
+    const g = skipToButtons(1);
+    expect(g.month).toBe(4); // round three, the lesson on the hands, passed by
     expect(g.round!.potMode).toBe(true);
     expect(g.players.map((p) => p.jokers.map((j) => j.index))).toEqual([[RESPECT], [OATH]]);
-    expect(anteFor(g.config, 3, 1)).toBe(4); // the ante, 3, and a button of upkeep
-    expect([streetFee(g.config, 3, 1), streetFee(g.config, 3, 2)]).toEqual([1, 1]);
+    expect(anteFor(g.config, 4, 1)).toBe(4); // the ante, 3 (the lesson doesn't count), and a button of upkeep
+    expect([streetFee(g.config, 4, 1), streetFee(g.config, 4, 2)]).toEqual([1, 1]);
     expect(g.round!.bets).toEqual([4, 4]);
   });
 
-  it('round three: three eights with Respect riding beat her two pair, and she takes your Respect', () => {
+  it('round four: three eights with Respect riding beat her two pair, and she takes your Respect', () => {
     let g = skipToButtons(1);
     const ids = (seat: number) => g.round!.seats[seat].hand.map((c) => c.id).sort();
     expect(ids(0)).toEqual(['8d', '8s', 'Kc']);
@@ -69,7 +101,7 @@ describe('the tutorial', () => {
     expect(g.players.map((p) => p.jokers.map((j) => j.index).sort())).toEqual([[], [OATH, RESPECT].sort()]);
   });
 
-  it('round three: the full house wins too, but keeps your Respect', () => {
+  it('round four: the full house wins too, but keeps your Respect', () => {
     let g = skipToButtons(1);
     g = submitAction(g, { type: 'draw', cardIds: [] });
     g = submitAction(g, { type: 'draw', cardIds: [] });
@@ -98,7 +130,7 @@ describe('the tutorial', () => {
     expect(g.phase).toBe('victory');
     g = rematch(g);
     expect(g.phase).toBe('duel');
-    expect(g.month).toBe(4);
+    expect(g.month).toBe(5);
     expect(g.round!.potMode).toBe(true);
     expect(g.players.map((p) => [p.status, p.jokers.map((j) => j.index)])).toEqual([
       ['active', [RESPECT]],

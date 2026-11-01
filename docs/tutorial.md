@@ -153,7 +153,7 @@ captain who stands pat on four hearts is the tell.
    when one first comes up, in the pickle. An earlier line that may still
    find a place: *"You should NEVER play for money!"*)
 
-## Round three: room for a snag (buttons, still arranged)
+## Round four: room for a snag (buttons, still arranged; round three is the hands, below)
 
 The buttons are out and both snags are in play, but the deck is still
 arranged: the last lesson before the knockout.
@@ -182,9 +182,9 @@ of a kind as the snag goes in.
   house: a fine hand, with no room for a snag. / The pot is yours. So is your
   Respect, still."* You lost: *"And now you carry my Oath. / Mind your cards."*
 
-## Round four and on: the knockout (buttons)
+## Round five and on: the knockout (buttons)
 
-No more arranged decks: from round four it is a real game,
+No more arranged decks: from round five it is a real game,
 shuffled, until one side has all the buttons. (Any further constructed lesson
 goes in before the pot and the snags arrive.)
 
@@ -233,31 +233,38 @@ tutorial, and buttons aren't money, so her oath is safe: *"Buttons are not
 money. / My oath is quite safe. Deal."* (draft) A fresh knockout
 follows, 20 buttons each, Respect back with you and the Oath with her.
 
-If the game ends on round three itself, these are her words there too (her
+If the game ends on round four itself, these are her words there too (her
 round-three reactions are for a game that goes on).
 
 For now every ending goes back to the title. Later the last caption offers
 **Menu** (black) and **Story** (white).
 
-## The hands (a lesson of its own, skippable; in the making)
+## The hands (round three, skippable)
 
-Offered separately (whether before or after round one is still open). One
-round, the deck **openly rigged** and Morag **playing open**: it is a
+Offered at the end of round two: "Your jacks never stood a chance. Do you
+know your hands, child? Which beats which?" **No, ma'am** deals this round;
+**Of course** goes straight on to the snags and the buttons (the round is
+passed by, and the ante still starts at 3). Either way the snag lines and
+the buttons follow. One round, the deck **openly rigged** and Morag **playing open**: it is a
 teaching moment, not a game, and the sequence is always the same. The
 weak hands on the Flop, the middling ones on the Turn, the big ones on the
 River; and the lesson worth coming back for: a good middling hand must be
 given up when the board makes bigger ones easy. Deal in `src/story/hands.ts`.
 
 - The Flop 2♥ 3♣ 4♥. You A♥ 7♠ 4♣; Morag 2♠ 4♦ K♣.
-- Swaps: you 7♠ 4♣ for 9♥ 6♥; she 4♦ K♣ for 5♠ 6♣.
-- The Turn 2♦ (the board pairs). You A♥ 9♥ 6♥ (a flush); she has a straight
-  (two to six), and three twos.
-- You give up the flush: 9♥ 6♥ for 3♦ 3♠.
+- Swaps: you 7♠ 4♣ for 5♥ 6♥; she 4♦ K♣ for 5♠ 6♣.
+- The Turn 2♦ (the board pairs). You A♥ 5♥ 6♥: the wheel (ace and five, a
+  straight five-high) and a flush (all three); she has a straight (two to
+  six), and three twos.
+- You give up the flush: 5♥ 6♥ for 3♦ 3♠.
 - The River 3♥. You: a full house (3♦), four of a kind (3♦ 3♠); she lays
   2♠: twos full of threes. Your four threes win.
 
 Where the answer is a card, you tap the card and the button names what it
-makes (**High card**, **Pair**): the "show me" tap (to build).
+makes (**High card**, **Pair**): the "show me" tap (`names` on a line: the
+callout names the hand, nothing is played, and the reply waits for exactly
+those cards). Her lines sit between her cards and the board, which holds
+about four rows: the longer lines below are said one sentence at a time.
 
 ### The Flop
 
@@ -279,7 +286,57 @@ makes (**High card**, **Pair**): the "show me" tap (to build).
 8. Her own swap, as the cards land: "And for me… a five, a six. That will
    do nicely."
 
-The ace counting as one comes up on the Turn.
+### The Turn
+
+1. "Oh, another deuce. With my deuce, I can count three alike." / "We call
+   that three of a kind, or trips, and it beats two pair." → **Next**
+2. "But I can do better. Now I can count from two to six, do you see it?
+   Two, three, four in the middle, and five and six in my hand." / "When the
+   cards run in a row like that, it's called a straight." → **Right.**
+3. "And so can you, because an ace can also count as a one and start a
+   run." → tap the A♥ and 5♥: **Straight**
+4. "Exactly. That straight is called the wheel, and since its highest card
+   is a five, it doesn't beat my straight. So you must try something else."
+   → tap all three: **Flush**
+5. "That's right! Five cards of the same suit are called a flush, and a
+   flush beats any straight." → **I win?**
+6. "Not yet. See the pair on the board?" → **Ducks** (matter-of-fact: the
+   lingo has stuck)
+7. "With a pair in the middle, someone could easily have a full house: a
+   pair and a three of a kind together. A full house beats every hand we
+   have now, pretty as they are." → **I lose?**
+8. "Most likely, unless you give up the hand you've got. A flush is a decent
+   hand, but often not good enough with a pair in the middle." / "Throw away
+   the five and the six. I'll find you something better still." → swap
+   5♥ 6♥
+9. She deals you 3♦ 3♠, without a word: yours to notice.
+
+### The River
+
+1. "Oh! Two pair on the board now. Do you see them?" → **Crabs over ducks**
+2. "Very good! So everyone at the table has two pair now. Tap one of your
+   threes. What do you have now?" → tap the 3♦: **Full house!**
+3. "Exactly! And so do I." (her deuce) "Ducks full of crabs. Whose hand is
+   stronger?" → **Yours** ("No: mine is weaker. Your house has three threes;
+   mine only three deuces. The bigger three wins.") / **Mine** ("You are
+   right: your house is stronger.") → **I win?**
+4. "You do, but you have an even stronger hand waiting for you. Do you see
+   it?" → tap the 3♠ too: **Four of a kind**
+5. "Exactly. Four alike, also called quads, is the strongest hand on this
+   board." → **Strongest?**
+6. "Well, there are also straight flushes: all the numbers in a row, and in
+   the same suit. Exceedingly rare, so it does not pay to chase them." →
+   **Next**
+7. "And those are the hands. In case you forget, they're ranked in How it
+   works: open the question mark and see." → the "?" pulses; open How it
+   works (her pamphlet against the game, the hands near the top) and close
+   it (`require: 'help'`) → "Now play your four threes." → **Play hand**:
+   four threes against her full house. You win.
+8. "Four threes beat my full house. Now you know your hands." → **Thank
+   you, ma'am**, and on to the snags (as after round two).
+
+No "Again?" here: that's for the real play that follows. The lesson comes
+round again only with the tutorial.
 
 ## Needs from the build
 

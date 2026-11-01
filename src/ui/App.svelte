@@ -10,12 +10,11 @@
   import Table from './Table.svelte';
   import Title from './Title.svelte';
   import { loadBest, loadGame, recordResult, saveGame } from './storage';
-  import { giveButtons, newTutorial, rematch, skipToButtons, tutorialScript, TUTORIAL } from '../story/tutorial';
+  import { giveButtons, newTutorial, rematch, skipToButtons, skipToHands, tutorialScript, TUTORIAL } from '../story/tutorial';
   import { roundScript, type Script } from '../story/script';
-  import { HANDS, handsScript, newHandsLesson } from '../story/hands';
 
   /** Lessons and story encounters, by the id a game carries. */
-  const scripts: Record<string, Script> = { [TUTORIAL]: tutorialScript, [HANDS]: handsScript };
+  const scripts: Record<string, Script> = { [TUTORIAL]: tutorialScript };
 
   let best = $state(loadBest());
   /** Paused or saved voyage, shown as "Continue" on the title screen. */
@@ -63,10 +62,10 @@
   if (import.meta.env.DEV) {
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;
-    // Morag's lesson on the hands (in the making): the rigged deal, her cards face up. A lesson: never saved.
+    // Straight to Morag's lesson on the hands (the tutorial's round three, if you don't know them).
     w.handsLesson = () => {
       stage = 'play';
-      setGame(newHandsLesson(Date.now() >>> 0));
+      setGame(skipToHands(Date.now() >>> 0));
     };
     w.highRollers = (purse?: number) => (highRollers = { purse });
     w.finaleSoon = finaleSoon;
