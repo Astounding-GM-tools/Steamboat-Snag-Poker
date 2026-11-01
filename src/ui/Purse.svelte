@@ -1,5 +1,6 @@
 <script lang="ts">
   import { untrack } from 'svelte';
+  import { flight } from './flight.svelte';
   import { dollars } from './format';
 
   /**
@@ -33,6 +34,7 @@
     keep,
     paid = 0,
     won = 0,
+    tidy = false,
   }: {
     amount: number;
     /** The purse at the start of the round, which sets the picture. */
@@ -48,6 +50,8 @@
     paid?: number;
     /** Kept stacks: coins won this hand. */
     won?: number;
+    /** Kept stacks: a tap tidies them into neat stacks of ten (your own purse; not while money is moving). */
+    tidy?: boolean;
   } = $props();
 
   const DEPLETED = 10;
@@ -57,7 +61,9 @@
   const STACK = 10;
 
   const n = $derived(Math.max(0, Math.min(start, ROW * MAX_ROWS)));
-  const mood = $derived(start < DEPLETED ? 'depleted' : start < NEAT ? 'low' : 'rich');
+  type Mood = 'depleted' | 'low' | 'rich';
+  const moodOf = (count: number): Mood => (count < DEPLETED ? 'depleted' : count < NEAT ? 'low' : 'rich');
+  const mood = $derived(moodOf(start));
   /** Dollars gone into the pot this round: coins with a lower `d` than this are spent. */
   const spent = $derived(Math.max(0, n - Math.max(0, amount)));
 
@@ -98,7 +104,8 @@
     return out;
   }
 
-  const coins = $derived.by((): Coin[] => {
+  /** The neat picture of `n` coins, in the given mood: loose, a pile, or rows of stacks. */
+  function neatCoins(n: number, mood: Mood): Coin[] {
     const { w, step, gap, rise } = dims;
     if (mood === 'depleted') {
       // A handful of loose coins lying about, spent from the left.
@@ -138,7 +145,8 @@
       out.push(...row.map((c) => ({ ...c, z: r })));
     }
     return out;
-  });
+  }
+  const coins = $derived(neatCoins(n, mood));
   // --- Kept stacks -------------------------------------------------------
   /** A stack on the table: x in px from the purse's left edge, its row's lift, its height in coins; a loose coin lies flat at a tilt. */
   interface Stack {
@@ -157,9 +165,9 @@
   const inOrder = (stacks: Stack[]) => [...stacks].sort((a, b) => a.lift - b.lift || a.x - b.x);
 
   /** The neat picture, as stacks in px. */
-  function asStacks(): Stack[] {
+  function asStacks(from: Coin[] = coins): Stack[] {
     const at = new Map<string, Stack>();
-    for (const c of coins) {
+    for (const c of from) {
       const x = c.fromLeft ? c.x : (width * focus) / 100 + c.x;
       // A stack is its place and its row (rows two apart line up); its lift is its bottom coin's height.
       const key = c.flat ? `loose ${c.d}` : `${Math.round(x)} ${c.z ?? 0}`;
@@ -256,12 +264,23 @@
   });
   const keptTotal = $derived(kept ? kept.reduce((a, s) => a + s.h, 0) - paid + won : 0);
 
+  /** A tap on your own purse: the coins slide into neat stacks of ten (they're left as they fall otherwise). */
+  let tidying = $state(false);
+  function tidyUp() {
+    if (!tidy || !kept || flight.coins || flight.flows) return;
+    const total = Math.min(kept.reduce((a, s) => a + s.h, 0), ROW * MAX_ROWS);
+    kept = asStacks(neatCoins(total, moodOf(total)));
+    tidying = true;
+    setTimeout(() => (tidying = false), 700);
+  }
+
   /** Back rows first, then each stack from the bottom up. */
   const drawn = $derived([...(keptCoins ?? coins)].sort((a, b) => (a.z ?? 0) - (b.z ?? 0) || a.y - b.y));
   const moths = $derived(keptCoins ? keptTotal < DEPLETED : mood === 'depleted');
 </script>
 
-<div class="purse {mood} {size}" aria-label={label ? `${label} ${dollars(amount)}` : dollars(amount)}>
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+<div class="purse {mood} {size}" class:tidying aria-label={label ? `${label} ${dollars(amount)}` : dollars(amount)} onclick={tidy ? tidyUp : undefined}>
   <div class="coins" aria-hidden="true" style="--w: {dims.w}px; --focus: {focus}%" bind:clientWidth={width}>
     {#each drawn as c (c.d)}
       {@const g = 'g' in c ? (c.g as number | undefined) : undefined}
@@ -328,6 +347,12 @@
     height: 56px;
   }
   /* A silver dollar lying flat, seen at an angle; stacked, each one shows its rim. */
+  /* Tidied: each coin slides to its place in the neat stacks. */
+  .tidying .coin {
+    transition:
+      left 0.5s ease-in-out,
+      bottom 0.5s ease-in-out;
+  }
   .coin {
     position: absolute;
     display: block;

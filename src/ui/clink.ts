@@ -4,6 +4,8 @@
  * over a short tick of noise, each a little different in pitch. When coins
  * pour, clinks closer together than a few milliseconds merge into one.
  */
+import { settings } from './settings.svelte';
+
 let ctx: AudioContext | null = null;
 let noise: AudioBuffer | null = null;
 let last = 0;
@@ -17,7 +19,7 @@ const PARTIALS: [number, number, number][] = [
 ];
 
 export function clink(volume = 0.08) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !settings.sound) return;
   const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!AC) return;
   try {

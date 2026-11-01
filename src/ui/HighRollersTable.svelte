@@ -31,6 +31,8 @@
   import { dollars, tagName } from './format';
   import { handLabel } from './handNames';
   import { heavy } from './heavy';
+  import { cardPrefs } from './cards.svelte';
+  import { switchFaces } from './settings.svelte';
   import { clink } from './clink';
   import { flyInto, landAll, reducedMotion } from './coins';
   import { onMount, tick, untrack } from 'svelte';
@@ -773,7 +775,12 @@
         <div class="rival-purse" data-purse={seat}>
           <Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} keep={game.hand} paid={paidOut(seat)} won={wonIn(seat)} />
         </div>
-        <p class="line">{rivalLine(seat)}</p>
+        {#if turnedUp(seat) && round.result?.hands[seat]}
+          <!-- Their hand's name opens the hands, best first. -->
+          <button class="line ladder-link" onclick={() => (cardPrefs.ladder = round.result?.hands[seat]?.category ?? 'all')}>{rivalLine(seat)}</button>
+        {:else}
+          <p class="line">{rivalLine(seat)}</p>
+        {/if}
       </div>
       {/if}
     {/each}
@@ -799,7 +806,7 @@
       {#each Array.from({ length: 5 }) as _, i}
         {@const card = i < boardShown && (i >= 3 || flopIndex(i) < dealt) ? (round.community[i] ?? null) : null}
         <!-- Each lands with a thud; the Flop's last card and the River slam down. -->
-        {#key card?.id}<span class="board-card" data-snag={card && isJoker(card) ? card.id : undefined}><CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} /></span>{/key}
+        {#key card?.id}<span class="board-card" data-snag={card && isJoker(card) ? card.id : undefined}><CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} onclick={card ? switchFaces : undefined} /></span>{/key}
       {/each}
     </div>
   </div>
@@ -808,9 +815,9 @@
   <div class="mine">
     <div class="my-purse" data-purse={me}>
       {#if mine}
-        <Purse amount={purse(me)} start={startMoney[game.seated[me]] ?? captain(me).money} showAmount={false} focus={18} label={t('character.captain.you')} keep={game.hand} paid={paidOut(me)} won={wonIn(me)} />
+        <Purse amount={purse(me)} start={startMoney[game.seated[me]] ?? captain(me).money} showAmount={false} focus={18} label={t('character.captain.you')} keep={game.hand} paid={paidOut(me)} won={wonIn(me)} tidy />
         {#if dealer === me}<span class="button own" title={t('hr.dealer')}></span>{/if}
-        {#if preview && !tapped.length && !laid}<p class="my-hand">{t('draw.boardOnly')}</p>{:else if myCall}<p class="my-hand">{myCall.lingo ?? myCall.call}</p>{/if}
+        {#if preview && !tapped.length && !laid}<p class="my-hand">{t('draw.boardOnly')}</p>{:else if myCall}<button class="my-hand ladder-link" onclick={() => (cardPrefs.ladder = (preview ?? round.result?.hands[me])?.category ?? 'all')}>{myCall.lingo ?? myCall.call}</button>{/if}
       {:else}
         <p class="my-hand">{t('hr.youAreOut')}</p>
       {/if}
@@ -1117,7 +1124,10 @@
     text-shadow:
       0 0 3px #000,
       0 0 6px #000;
-    pointer-events: none;
+    /* Only the words are a tap target (the hands, best first). */
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
   }
   .hand-row {
     display: grid;

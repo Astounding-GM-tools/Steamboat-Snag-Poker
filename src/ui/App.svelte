@@ -2,6 +2,7 @@
   import { untrack } from 'svelte';
   import { DEFAULT_CONFIG, ROSTER, Rng, finaleSetup, finishFinale, newGame, nextMonth, submitAction, type Action, type GameState, type HighRollersResult, type HighRollersState } from '../engine';
   import CardZoom from './CardZoom.svelte';
+  import HandLadder from './HandLadder.svelte';
   import DrawTable from './DrawTable.svelte';
   import HighRollersTable from './HighRollersTable.svelte';
   import MonthEnd from './MonthEnd.svelte';
@@ -177,3 +178,4 @@
   {/if}
 </div>
 <CardZoom />
+<HandLadder />

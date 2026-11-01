@@ -423,11 +423,17 @@ as a fallback. Dropping is final.
 - Distinct snag types with different effects.
 - Larger, rotating roster.
 
-## Quality of life (saved for later)
+## Quality of life
 
-- **Order your stacks:** tap your purse to tidy it into neat stacks of ten
-  (they're left as they fall: no time to fiddle at the table).
-- **Community cards, value or suit:** tap the board to switch what each card
-  shows big in its middle, the value or the suit.
-- **Order your hand:** by value or by suit.
+- **The hands, best first:** tap a hand's name at the table (yours, or theirs
+  at the showdown) for the nine hands with an example each, that one picked
+  out; also in How it works.
+- **Card faces:** the value big in the middle, or value and suit side by side
+  (a flush is easier to spot). Tap a board card to switch; also in Options.
+- **Tidy your stacks:** tap your own purse and the coins slide into neat
+  stacks of ten (they're left as they fall otherwise).
+- **Options** (the gear on the title): the clink of coins on or off, and card
+  faces. Remembered on the device.
+- Left out: ordering your hand (three cards; a card arriving where you can see
+  it matters more).
 $$

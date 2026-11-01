@@ -32,6 +32,8 @@
   import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
   import Countdown from './Countdown.svelte';
   import { heavy } from './heavy';
+  import { cardPrefs } from './cards.svelte';
+  import { switchFaces } from './settings.svelte';
   import { flyInto, reducedMotion } from './coins';
   import { flight } from './flight.svelte';
   import type { RoundScript, Trigger } from '../story/script';
@@ -802,7 +804,8 @@
     {#if revealing && theirCall}
       <!-- The showdown: their hand so far, called where the street name was. -->
       <div class="callout theirs" aria-live="polite">
-        <span class="call" class:long={theirCall.call.length > 30}>{theirCall.call}</span>
+        <!-- A hand's name opens the hands, best first, with it picked out. -->
+        <button class="call ladder-link" class:long={theirCall.call.length > 30} onclick={() => (cardPrefs.ladder = theirHand?.category ?? 'all')}>{theirCall.call}</button>
         <span class="lingo">{theirCall.lingo ?? ''}</span>
         <span class="note">{theirNote}</span>
       </div>
@@ -829,7 +832,8 @@
         {#each Array.from({ length: boardSize }) as _, i}
           {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
           <!-- Each lands with a thud; the Flop's last card and the River slam down. -->
-          <CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} />
+          <!-- A tap on the board switches every card's face: the value, or value and suit (for spotting flushes). -->
+          <CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} onclick={card ? switchFaces : undefined} />
         {/each}
       </div>
       {#if standing}<div class="standings-over"><Standings {game} />{#if game.finaleNext}<p class="finale-next">{t('finale.next')}</p>{/if}</div>{/if}
@@ -861,14 +865,14 @@
   <section class="captain">
     <!-- Your money nearest the pot, no figure: never count your money at the table. -->
     <div class="my-purse" bind:this={myPurseEl}>
-      {#if round.potMode}<Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} keep={game.month} paid={paidWon(0)[0]} won={paidWon(0)[1]} />{/if}
+      {#if round.potMode}<Purse amount={shownMoney(0)} start={startMoney(0)} showAmount={false} focus={18} label={t('character.captain.you')} keep={game.month} paid={paidWon(0)[0]} won={paidWon(0)[1]} tidy />{/if}
       <!-- On the River your coins are idle, so the hand you're making is called over them, with the count of snags riding along and their forfeit. Fixed size: it never shifts as you tap. -->
       {#if shownDown && myCall}
         <!-- At the showdown your coins show again (the pot may fly to them); your hand is one line above. -->
-        <p class="my-hand">{myCall.lingo ?? myCall.call}</p>
+        <button class="my-hand ladder-link" onclick={() => (cardPrefs.ladder = result?.hands[0].category ?? 'all')}>{myCall.lingo ?? myCall.call}</button>
       {:else if playing && composing && callout && !lessonAhead}
         <div class="callout" aria-live="polite">
-          <span class="call" class:long={callout.call.length > 30}>{callout.call}</span>
+          <button class="call ladder-link" class:long={callout.call.length > 30} onclick={() => (cardPrefs.ladder = preview?.category ?? 'all')}>{callout.call}</button>
           <span class="lingo">{callout.lingo ?? ''}</span>
           <span class="note">
             {#if tappedJokers.length === 1}{t('draw.ridingOne', { cost: money(config.jokerForfeit ?? 0) })}{:else if tappedJokers.length}{t('draw.riding', { n: t(`number.${tappedJokers.length}`), cost: money(tappedJokers.length * (config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
@@ -1356,7 +1360,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     text-shadow: 0 0 3px #000, 0 0 6px #000;
-    pointer-events: none;
+    /* Only the words are a tap target (the hands, best first); the purse around them stays the purse's. */
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
   }
   .callout {
     position: absolute;

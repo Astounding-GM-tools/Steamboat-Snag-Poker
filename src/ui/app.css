@@ -48,6 +48,22 @@ button:disabled {
   cursor: default;
 }
 
+/* A hand's name at the table: tap it for the hands, best first. It reads as the text it was, dotted underneath. */
+button.ladder-link {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  text-decoration: underline dotted rgba(242, 239, 230, 0.45);
+  text-underline-offset: 0.2em;
+}
+button.ladder-link:hover:not(:disabled) {
+  transform: none;
+}
+
 button.ghost {
   background: transparent;
   color: var(--paper);

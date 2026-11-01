@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from '../i18n';
+  import HandLadder from './HandLadder.svelte';
 
   /**
    * How it works, as a plain page laid over the screen above the two buttons
@@ -11,6 +12,7 @@
   <h2>{t('title.howTo')}</h2>
   {#each t('title.howToBody').split('\n\n') as para}<p>{para}</p>{/each}
   <p class="tip">{t('cards.zoomTip')}</p>
+  <div class="ladder-part"><HandLadder inline /></div>
 </div>
 
 <style>
@@ -37,6 +39,9 @@
   }
   .tip {
     color: var(--grey);
+  }
+  .ladder-part {
+    margin-top: 1rem;
   }
   @keyframes howto-in {
     from { opacity: 0; }

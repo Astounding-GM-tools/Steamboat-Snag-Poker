@@ -1,6 +1,7 @@
 <script lang="ts">
   import { t } from '../i18n';
   import HowTo from './HowTo.svelte';
+  import Options from './Options.svelte';
   import { heavy } from './heavy';
 
   interface Props {
@@ -13,6 +14,7 @@
   }
   let { savedMonth, onstart, oncontinue, ontutorial }: Props = $props();
   let showHowTo = $state(false);
+  let showOptions = $state(false);
   /** How many taglines the language file has (title.tagline.0 … n-1); one is picked per visit. */
   const TAGLINES = 12;
   const tagline = Math.floor(Math.random() * TAGLINES);
@@ -37,6 +39,7 @@
 <div class="title">
   <div class="stage">
   {#if showHowTo}<HowTo />{/if}
+  {#if showOptions}<Options />{/if}
   <!-- A stern-wheeler steaming to the right: the wheel at the back turns so its
        lower paddles push the water astern; smoke trails back from three stacks
        that puff as they breathe; the river laps up over the hull. -->
@@ -160,6 +163,8 @@
 
   <div class="intertitle menu">
     <button class="ghost icon help" onclick={() => (showHowTo = true)} aria-label={t('title.howTo')}>?</button>
+    <!-- Options: the gear as text (an iPhone would draw the emoji in colour). -->
+    <button class="ghost icon gear" onclick={() => (showOptions = true)} aria-label={t('options.title')}>{'\u2699\uFE0E'}</button>
     <h1 class="game-title">
       <span class="line-1">{t('title.line1')}</span>
       <span class="line-2">{t('title.line2')}</span>
@@ -172,7 +177,9 @@
   <div class="dock">
     <!-- The tutorial takes the free black button: for new players, and on How to play for everyone. -->
     <div class="actions" use:heavy>
-      {#if showHowTo}
+      {#if showOptions}
+        <button onclick={() => (showOptions = false)}>{t('draw.close')}</button>
+      {:else if showHowTo}
         <button class="ghost" onclick={() => ((showHowTo = false), ontutorial())}>{t('title.tutorial')}</button>
         <button onclick={() => (showHowTo = false)}>{t('draw.close')}</button>
       {:else}
@@ -363,6 +370,14 @@
     position: relative;
   }
   /* How it works, tucked into the corner of the menu card. */
+  .gear {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem;
+    padding: 0 0.45em;
+    font-size: 1rem;
+    border-radius: 50%;
+  }
   .help {
     position: absolute;
     top: 0.6rem;
