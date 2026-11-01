@@ -239,6 +239,48 @@ round-three reactions are for a game that goes on).
 For now every ending goes back to the title. Later the last caption offers
 **Menu** (black) and **Story** (white).
 
+## The hands (a lesson of its own, skippable; in the making)
+
+Offered separately (whether before or after round one is still open). One
+round, the deck **openly rigged** and Morag **playing open**: it is a
+teaching moment, not a game, and the sequence is always the same. The
+weak hands on the Flop, the middling ones on the Turn, the big ones on the
+River; and the lesson worth coming back for: a good middling hand must be
+given up when the board makes bigger ones easy. Deal in `src/story/hands.ts`.
+
+- The Flop 2♥ 3♣ 4♥. You A♥ 7♠ 4♣; Morag 2♠ 4♦ K♣.
+- Swaps: you 7♠ 4♣ for 9♥ 6♥; she 4♦ K♣ for 5♠ 6♣.
+- The Turn 2♦ (the board pairs). You A♥ 9♥ 6♥ (a flush); she has a straight
+  (two to six), and three twos.
+- You give up the flush: 9♥ 6♥ for 3♦ 3♠.
+- The River 3♥. You: a full house (3♦), four of a kind (3♦ 3♠); she lays
+  2♠: twos full of threes. Your four threes win.
+
+Where the answer is a card, you tap the card and the button names what it
+makes (**High card**, **Pair**): the "show me" tap (to build).
+
+### The Flop
+
+1. "Hands it is, then. I'll rig the deck, and I'll play open: you see my
+   cards, I see yours."
+2. "We share the cards in the middle. See your ace?" → tap the A♥:
+   **High card**
+3. "That's the high card. If you play that and I play my king, you win."
+4. "But I can play my deuce instead, and have a pair. Any pair beats any
+   high card. So what do you do?" → tap the 4♣: **Pair**
+5. "Right: you play the four. Your pair of fours beats my pair of deuces."
+   → **Ducks!** (remembering) "Exactly: a pair of deuces is called ducks.
+   Well done."
+6. "But I have a four too. And two pair beats one pair. So what do you do?"
+   → **Swap?**
+7. "That's right. These are all weak hands." / "Let me rifle the deck for
+   something that suits you better. Throw away the seven and the four." →
+   swap 7♠ 4♣
+8. Her own swap, as the cards land: "And for me… a five, a six. That will
+   do nicely."
+
+The ace counting as one comes up on the Turn.
+
 ## Needs from the build
 
 - **An arranged deck per hand,** and Morag's moves scripted to match (the
