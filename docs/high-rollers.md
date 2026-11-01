@@ -52,7 +52,8 @@ What you walk away with is your score.
   is counted out.
 - **Purses:** $160 each on its own (in the story, whatever the captains
   bring). With that, a table lasts **5–8 hands** about 85% of the time
-  (`scripts/raise-*.sim.ts`, with the latest results beside them).
+  (simulated while the raise was tuned; the scripts are in git history,
+  removed in the tidy-up of 1 November 2026).
 - **No banter** in this mode (perhaps later, in the story).
 - **How the rivals raise** (`src/engine/raise.ts`): each judges its laid hand
   against those still in (they've been swapping, so as the best three of
