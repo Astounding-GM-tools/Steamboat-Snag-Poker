@@ -27,13 +27,12 @@
   import { t } from '../i18n';
   import ActionBar from './ActionBar.svelte';
   import Board from './Board.svelte';
-  import CardView from './CardView.svelte';
   import MyCards from './MyCards.svelte';
+  import OpponentSeat, { type SeatCard } from './OpponentSeat.svelte';
   import PotBand from './PotBand.svelte';
   import SnagFan from './SnagFan.svelte';
   import Standings from './Standings.svelte';
   import Purse from './Purse.svelte';
-  import DiscardChips from './DiscardChips.svelte';
   import HowTo from './HowTo.svelte';
   import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
   import Countdown from './Countdown.svelte';
@@ -42,7 +41,7 @@
   import { moneyText, moveLabel, priceText } from './prices';
   import { flight } from './flight.svelte';
   import type { RoundScript, Trigger } from '../story/script';
-  import { cardLabel, jokerList, name, nickname } from './format';
+  import { cardLabel, jokerList, name } from './format';
   import { handLabel, tiebreak } from './handNames';
 
   interface Props {
@@ -327,6 +326,24 @@
   const faceUp = $derived(
     !shownDown ? new Set<string>() : revealing ? new Set(steps.slice(0, revealIndex + 1).map((s) => s.card.id)) : playedIds,
   );
+  /**
+   * Their cards as they should be seen: at the showdown the played ones turn
+   * over in place, then the ones they held back (dimmed: you get to see how
+   * they play); until then face down, a thrown one leaving before its
+   * replacement is dealt.
+   */
+  const opponentCards = $derived.by((): SeatCard[] => [
+    ...theirPlayed
+      .filter((c) => !isJoker(c))
+      .map((card): SeatCard => (faceUp.has(card.id) || theyShowed ? { key: card.id, card, fresh: revealStep?.card.id === card.id, deal: revealing ? 'flip' : null } : { key: card.id, faceDown: true })),
+    ...them.hand
+      .filter((c) => dealt.has(c.id))
+      .map((card, k): SeatCard => {
+        const turned = decided || theyShowed || (revealing && revealIndex >= steps.length + k);
+        const fresh = (revealing && revealIndex === steps.length + k) || (theyShowed && !shownDown);
+        return turned ? { key: card.id, card, faded: shownDown, fresh, deal: revealing ? 'flip' : null, held: true } : { key: card.id, card, faceDown: true, faded: shownDown, deal: 'top', held: true };
+      }),
+  ]);
   const theirHand = $derived(revealStep?.hand ?? (shownDown ? result!.hands[1] : null));
   /** Once the verdict is in, only the winning hand gets its exclamation mark. */
   const decided = $derived(shownDown && (verdictShown || stage === 'result'));
@@ -624,8 +641,8 @@
   });
 
   /** A card thrown away: up out of the hand, turning, and gone (only a card that went onto the discard pile). */
-  function thrown(_node: Element, card: Card) {
-    return thrownCard(round.discards.some((c) => c.id === card.id) && !coins.still);
+  function thrown(_node: Element, card: Card | null | undefined) {
+    return thrownCard(!!card && round.discards.some((c) => c.id === card.id) && !coins.still);
   }
 
   /**
@@ -702,41 +719,22 @@
   {/if}
   <!-- Their side of the table: everything above the board belongs to the opponent. -->
   <section class="opponent">
-    <!-- Name and title over their coins; a tall portrait beside both. -->
-    <div class="opp-head">
-      <div class="opp-left">
-        <button class="name-btn" onclick={() => (showCaptain = !showCaptain)}>
-          <span class="who">
-            <span class="name">{name(opponentId)}</span>
-            <span class="title">{nickname(opponentId) ? `“${nickname(opponentId)}”` : t(`character.${opponentId}.boat`)}</span>
-          </span>
-        </button>
-        <!-- No pot, no money on the table (the first lessons). -->
-        <div class="opp-purse" bind:this={theirPurseEl}>{#if round.potMode}<Purse amount={shownMoney(1)} start={startMoney(1)} showAmount={false} focus={18} label={name(opponentId)} keep={game.month} paid={paidWon(1)[0]} won={paidWon(1)[1]} />{/if}</div>
-      </div>
-      <button class="portrait-btn" onclick={() => (showCaptain = !showCaptain)} aria-label={name(opponentId)}>
-        <span class="oval portrait">{name(opponentId)[0]}{#if line && lineMs && line.who === opponentId && line.size !== 'full' && line.at !== 'low'}{#key line}<Countdown ms={lineMs} />{/key}{/if}</span>
-      </button>
-    </div>
-    <div class="opp-cards" bind:this={oppCardsEl}>
-      <div class="hand-cell">
-      <!-- At the showdown their played cards flip in place, one per Next. -->
-      {#each theirPlayed.filter((c) => !isJoker(c)) as card (card.id)}
-        {#if faceUp.has(card.id) || theyShowed}<CardView {card} fresh={revealStep?.card.id === card.id} deal={revealing ? 'flip' : null} />{:else}<CardView faceDown />{/if}
-      {/each}
-      <!-- Held back, but turned over too (dimmed), one per Next after the played ones: you get to see how they play. -->
-      {#each them.hand.filter((c) => dealt.has(c.id)) as card, k (card.id)}
-        {@const turned = decided || theyShowed || (revealing && revealIndex >= steps.length + k)}
-        <!-- A card they throw away leaves their hand before its replacement is dealt. -->
-        <span class="held" out:thrown={card}>
-          {#if turned}<CardView {card} faded={shownDown} fresh={(revealing && revealIndex === steps.length + k) || (theyShowed && !shownDown)} deal={revealing ? 'flip' : null} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
-        </span>
-      {/each}
-      </div>
-      <!-- Played snags rise out of the fan as they're revealed: riding along in their hand. -->
-      <div class="fan-cell"><SnagFan cards={theirSnags} look={(card) => ({ lifted: playedIds.has(card.id) && (faceUp.has(card.id) || theyShowed), fresh: revealStep?.card.id === card.id })} /></div>
-      <div class="discard-cell"><DiscardChips tall cards={them.discarded} flop={them.flopDiscards} title={t('draw.theirDiscards', { name: name(opponentId) })} /></div>
-    </div>
+    <OpponentSeat
+      id={opponentId}
+      seat={1}
+      cards={opponentCards}
+      {thrown}
+      snags={theirSnags}
+      snagLook={(card) => ({ lifted: playedIds.has(card.id) && (faceUp.has(card.id) || theyShowed), fresh: revealStep?.card.id === card.id })}
+      discarded={them.discarded}
+      flopDiscards={them.flopDiscards}
+      purse={round.potMode ? { amount: shownMoney(1), start: startMoney(1), keep: game.month, paid: paidWon(1)[0], won: paidWon(1)[1] } : null}
+      onselect={() => (showCaptain = !showCaptain)}
+      bind:cardsEl={oppCardsEl}
+      bind:purseEl={theirPurseEl}
+    >
+      {#snippet portrait()}{#if line && lineMs && line.who === opponentId && line.size !== 'full' && line.at !== 'low'}{#key line}<Countdown ms={lineMs} />{/key}{/if}{/snippet}
+    </OpponentSeat>
   </section>
 
   <!-- The river: the border between them and you. -->
@@ -934,62 +932,13 @@
   .opponent {
     row-gap: 0.5rem;
   }
-  /* Name and title over their coins in columns 1–8; the portrait in 9–12. */
-  .opp-head {
-    display: grid;
-    grid-template-columns: subgrid;
-    grid-column: 1 / -1;
-  }
-  .opp-left {
-    grid-column: 1 / 9;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  /* Centred in the space beside the portrait; a long title wraps rather than spill. */
-  .opp-left .name-btn {
-    align-self: center;
-    max-width: 100%;
-  }
-  .opp-left .title {
-    white-space: normal;
-    text-align: center;
-    line-height: 1.15;
-  }
   /* Lifted clear of their cards, into the room under the name. */
   /* A purse's place keeps its height when there is no money on the table, so nothing moves. */
-  .opp-purse,
   .my-purse {
     min-height: 72px;
   }
-  :global(.short) .opp-purse,
   :global(.short) .my-purse {
     min-height: 56px;
-  }
-  .opp-purse {
-    transform: translateY(-12px);
-  }
-  /* The portrait sits on the bottom of the head row and may rise above it, so it never makes the row taller. */
-  .portrait-btn {
-    grid-column: 9 / 13;
-    position: relative;
-    display: block;
-    padding: 0;
-    background: none;
-    border: none;
-    outline: none;
-    box-shadow: none;
-  }
-  /* A round portrait, as wide as its four columns. */
-  .portrait {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    font-size: 3.2rem;
   }
   .river {
     position: relative;
@@ -1078,78 +1027,6 @@
   }
   .standings-over {
     padding: 0.2rem 0;
-  }
-  /*
-   * Their card row on the grid, like yours (MyCards): three cards in columns
-   * 1–6, the snag fan in 7–10, the discards in 11–12. A card is two columns wide.
-   */
-  .opp-cards {
-    display: grid;
-    grid-template-columns: subgrid;
-    grid-column: 1 / -1;
-    align-items: end;
-  }
-  /* A card held in a hand: its own box, so it can leave on its own. */
-  .held {
-    display: block;
-    flex: none;
-  }
-  .hand-cell {
-    grid-column: 1 / 7;
-    display: flex;
-    gap: var(--gap);
-    align-items: flex-end;
-  }
-  .fan-cell {
-    grid-column: 7 / 11;
-    display: flex;
-    align-items: flex-end;
-  }
-  .discard-cell {
-    grid-column: 11 / 13;
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-  }
-  .name-btn {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: none;
-    outline: none;
-    border: none;
-    color: var(--paper);
-    padding: 0;
-  }
-  .who {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    line-height: 1.15;
-  }
-  .who {
-    align-items: center;
-  }
-  .title {
-    font-size: 0.8rem;
-    color: var(--grey);
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-  }
-  /* An outline keeps the name readable where it overlaps the coins. */
-  .name,
-  .title {
-    text-shadow: 0 0 2px #000, 0 0 4px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-  }
-  .name {
-    white-space: nowrap;
-    font-family: var(--title-font);
-    font-size: 1.3rem;
-    text-decoration: underline dotted var(--grey);
-    text-underline-offset: 4px;
   }
   /*
    * The screen grid: 12 columns, and rows top (them), center (the river),

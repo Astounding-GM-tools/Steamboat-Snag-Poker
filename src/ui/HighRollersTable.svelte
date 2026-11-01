@@ -28,6 +28,7 @@
   import Board from './Board.svelte';
   import CardView from './CardView.svelte';
   import MyCards from './MyCards.svelte';
+  import OpponentSeat, { type SeatCard } from './OpponentSeat.svelte';
   import PotBand from './PotBand.svelte';
   import SnagFan from './SnagFan.svelte';
   import DiscardChips from './DiscardChips.svelte';
@@ -203,7 +204,7 @@
   }
 
   /** A thrown card: up out of the hand, turning, and gone (only in a swap, and not when hurried). */
-  function thrown(_node: Element, _card?: Card) {
+  function thrown(_node: Element, _card?: Card | null) {
     return thrownCard(!!swapping && !coins.still);
   }
 
@@ -612,6 +613,18 @@
     return seen(seat).seats[seat].folded ? t('hr.folded') : '';
   }
   const played = (cards: (Card | null)[]) => cards.filter((c): c is Card => c !== null);
+  /** A rival's cards as they should be seen: face down while held (thrown ones leave, replacements are dealt in); at the showdown the played ones turning over one by one, then what they kept back, dimmed. */
+  function rivalCards(seat: number): SeatCard[] {
+    const s = seen(seat).seats[seat];
+    const shown = played(s.played).filter((c) => !isJoker(c));
+    if (s.folded) return s.hand.map((_, i) => ({ key: `f${i}`, faceDown: true, faded: true }));
+    if (shownTo(seat) && shown.length)
+      return [
+        ...shown.map((card, k): SeatCard => (turning(seat) && k >= turned ? { key: card.id, faceDown: true } : { key: card.id, card, deal: turning(seat) ? 'flip' : null })),
+        ...s.hand.map((card): SeatCard => (turnedUp(seat) ? { key: card.id, card, faded: true } : { key: card.id, faceDown: true, faded: true })),
+      ];
+    return Array.from({ length: Math.min(shown.length + handOf(seat).length, holeDealt(seat)) }, (_, i) => ({ key: `h${i}`, faceDown: true, deal: 'top' as const, held: true }));
+  }
   const myPlayed = $derived(mine ? played(mine.played).filter((c) => !isJoker(c)) : []);
   const myPlayedSnags = $derived(new Set(mine ? played(mine.played).filter(isJoker).map((c) => c.id) : []));
   /**
@@ -644,52 +657,26 @@
       {@const seat = game.seated.indexOf(chair)}
       {#if seat < 0}
         <!-- Broke: still at the table, watching from the rail. -->
-        <div class="rival broke">
-          <div class="who"><span class="tag">{tagName(game.players[chair].id)}</span></div>
-          <div class="rival-cards"><div class="rival-hand"></div></div>
-          <div class="rival-purse"><Purse amount={0} start={0} size="tiny" showAmount={false} focus={30} label={tagName(game.players[chair].id)} /></div>
-          <p class="line">{t('hr.out')}</p>
-        </div>
+        <OpponentSeat id={game.players[chair].id} seat={-1} span={12 / chairs.length} cards={[]} {thrown} snags={[]} discarded={[]} purse={{ amount: 0, start: 0 }} broke />
       {:else}
-      {@const p = captain(seat)}
-      {@const s = seen(seat).seats[seat]}
-      {@const cards = played(s.played).filter((c) => !isJoker(c))}
-      {@const snags = snagsOf(seat)}
-      <div class="rival" class:focus={focus === seat} class:folded={s.folded}>
-        <div class="who">
-          {#if dealer === seat}<span class="button" title={t('hr.dealer')}></span>{/if}
-          <span class="tag">{tagName(p.id)}</span>
-          <SnagFan tiny cards={snags} look={(card) => ({ lifted: turnedUp(seat) && s.played.some((c) => c.id === card.id) })} />
-        </div>
-        <div class="rival-cards">
-          <div class="rival-hand">
-            {#if s.folded}
-              {#each s.hand as _, i (i)}<CardView faceDown faded />{/each}
-            {:else if shownTo(seat) && cards.length}
-              <!-- The showdown: their played cards turn over one by one, then what they kept back, dimmed. -->
-              {#each cards as card, k (card.id)}
-                {#if turning(seat) && k >= turned}<CardView faceDown />{:else}<CardView {card} deal={turning(seat) ? 'flip' : null} />{/if}
-              {/each}
-              {#each s.hand as card (card.id)}{#if turnedUp(seat)}<CardView {card} faded />{:else}<CardView faceDown faded />{/if}{/each}
-            {:else}
-              <!-- Thrown cards leave; replacements are dealt in, face down. -->
-              {#each Array.from({ length: Math.min(cards.length + handOf(seat).length, holeDealt(seat)) }) as _, i (i)}
-                <span class="held" out:thrown><CardView faceDown deal="top" /></span>
-              {/each}
-            {/if}
-          </div>
-          <DiscardChips cards={s.discarded} flop={s.flopDiscards} title={tagName(p.id)} />
-        </div>
-        <div class="rival-purse" data-purse={seat}>
-          <Purse amount={purse(seat)} start={startMoney[game.seated[seat]] ?? p.money} size="tiny" showAmount={false} focus={30} label={tagName(p.id)} keep={game.hand} paid={paidOut(seat)} won={wonIn(seat)} />
-        </div>
-        {#if turnedUp(seat) && round.result?.hands[seat]}
-          <!-- Their hand's name opens the hands, best first. -->
-          <button class="line ladder-link" onclick={() => (cardPrefs.ladder = round.result?.hands[seat]?.category ?? 'all')}>{rivalLine(seat)}</button>
-        {:else}
-          <p class="line">{rivalLine(seat)}</p>
-        {/if}
-      </div>
+        {@const s = seen(seat).seats[seat]}
+        <OpponentSeat
+          id={captain(seat).id}
+          {seat}
+          span={12 / chairs.length}
+          cards={rivalCards(seat)}
+          {thrown}
+          snags={snagsOf(seat)}
+          snagLook={(card) => ({ lifted: turnedUp(seat) && s.played.some((c) => c.id === card.id) })}
+          discarded={s.discarded}
+          flopDiscards={s.flopDiscards}
+          purse={{ amount: purse(seat), start: startMoney[game.seated[seat]] ?? captain(seat).money, keep: game.hand, paid: paidOut(seat), won: wonIn(seat) }}
+          line={rivalLine(seat)}
+          lineCategory={turnedUp(seat) ? (round.result?.hands[seat]?.category ?? null) : null}
+          dealer={dealer === seat}
+          focus={focus === seat}
+          folded={s.folded}
+        />
       {/if}
     {/each}
   </div>
@@ -830,46 +817,6 @@
   .hr :global(.card:not(.huge)) {
     --w: var(--card-w) !important;
   }
-
-  /* The rivals: four columns each, every one the same fixed height, so nothing moves. */
-  .rival {
-    grid-column: span 4;
-    container-type: inline-size;
-    display: grid;
-    /* Mirroring yours across the table: name at their edge, cards held close, their purse with them, and what they do (or hold) under it, nearest the pot. */
-    grid-template-rows: 26px auto auto 1.9rem;
-    row-gap: 3px;
-    padding: 3px 4px 0;
-    margin: -4px -4px 0;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    min-width: 0;
-    transition:
-      border-color 0.2s,
-      background 0.2s;
-  }
-  .rival.focus {
-    border-color: var(--paper);
-    background: rgba(242, 239, 230, 0.06);
-  }
-  .rival.folded .who,
-  .rival.folded :global(.purse) {
-    opacity: 0.5;
-  }
-  .who {
-    display: flex;
-    align-items: flex-end;
-    gap: 4px;
-    min-width: 0;
-  }
-  .tag {
-    font-family: var(--title-font);
-    font-size: 0.85rem;
-    line-height: 1.2;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
   /* The dealer's button: the dealer this hand (the one on their left acts, and draws, first). */
   .button {
     flex: none;
@@ -887,51 +834,10 @@
     top: 4px;
     right: 4px;
   }
-  /* Three small cards, and their discards in a column beside them. */
-  .rival-cards {
-    --small-w: calc((100cqw - 32px) / 3);
-    display: flex;
-    align-items: flex-end;
-    gap: 4px;
-  }
-  .rival-hand {
-    display: flex;
-    gap: 2px;
-    flex: none;
-    width: calc(100cqw - 28px);
-  }
-  .rival .rival-hand :global(.card:not(.huge)) {
-    --w: var(--small-w) !important;
-  }
   /* A card held in a hand: its own box, so it can leave on its own. */
   .held {
     display: block;
     flex: none;
-  }
-  .rival-cards :global(.discards) {
-    --h: calc(var(--small-w) * 1.4);
-    width: 20px;
-  }
-  .rival-cards :global(.discards .chip) {
-    font-size: 0.55rem;
-    border-radius: 2px;
-  }
-  .rival-cards :global(.discards .suit) {
-    display: none;
-  }
-  /* Winnings come to rest on it, placed from here. */
-  .rival-purse {
-    position: relative;
-  }
-  .line {
-    margin: 0;
-    font-size: 0.7rem;
-    line-height: 1.25;
-    text-align: center;
-    overflow: hidden;
-  }
-  .rival.folded .line {
-    color: var(--grey);
   }
 
   /* The river: the street, the pot, the board. */
@@ -1041,13 +947,6 @@
   .medal.m2 {
     background: #5d5a54;
     color: var(--paper);
-  }
-  /* A broke captain: still in their chair, greyed. */
-  .rival.broke {
-    opacity: 0.45;
-  }
-  .rival-hand {
-    min-height: calc(var(--small-w) * 1.4);
   }
   /* The Last Hand's title, over the pot and the board for a moment. */
   .felt {

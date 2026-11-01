@@ -53,8 +53,12 @@
     stage = 'play';
     setGame(newGame(Date.now() >>> 0, DEFAULT_CONFIG, drawn.map((def) => ({ def, joins: 'start' as const }))));
   }
-  /** In development, the High Rollers table on its own (highRollers() in the console; highRollers(40) seats everyone with $40, quicker to an ending). */
-  let highRollers = $state<{ purse?: number } | null>(null);
+  /** In development, the High Rollers table on its own (highRollers() in the console; highRollers(40) seats everyone with $40, quicker to an ending; highRollers(40, 2) with two rivals). */
+  let highRollers = $state<{ purse?: number; rivals?: number } | null>(null);
+  function devTable({ purse, rivals }: { purse?: number; rivals?: number }) {
+    const drawn = rivals ? new Rng(Date.now() >>> 0).shuffle(ROSTER.filter((c) => !c.follows && c.tier !== 'rascal')).slice(0, rivals).map((c) => c.id) : undefined;
+    return { ...(purse ? { money: purse } : {}), ...(drawn ? { rivals: drawn } : {}) };
+  }
   // A voyage in progress opens where it was left (a phone that slept, a page reloaded): the title is a Menu away.
   if (untrack(() => saved)) resume();
   if (import.meta.env.DEV) {
@@ -65,7 +69,7 @@
       stage = 'play';
       setGame(skipToHands(Date.now() >>> 0));
     };
-    w.highRollers = (purse?: number) => (highRollers = { purse });
+    w.highRollers = (purse?: number, rivals?: number) => (highRollers = { purse, rivals });
     w.finaleSoon = finaleSoon;
     // Straight to the first hand for buttons; give purses (yours, hers) to try an ending.
     w.tutorialButtons = (mine?: number, hers?: number) => {
@@ -154,7 +158,7 @@
 
 <div class="film">
   {#if highRollers}
-    <HighRollersTable onmenu={() => (highRollers = null)} setup={highRollers.purse ? { money: highRollers.purse } : undefined} />
+    {#key highRollers}<HighRollersTable onmenu={() => (highRollers = null)} setup={devTable(highRollers)} />{/key}
   {:else if game?.phase === 'finale'}
     <!-- The League's last four at the final table (the same deal again if a voyage is picked up here). -->
     {#key game.rngState}<HighRollersTable onmenu={pause} setup={finaleSetup(game)} saved={game.finaleTable} onsave={saveTable} onfinish={finished} />{/key}
