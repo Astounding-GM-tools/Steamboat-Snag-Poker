@@ -129,6 +129,8 @@
     --w: 76px;
     width: var(--w);
     height: calc(var(--w) * 1.4);
+    /* Sitting in a line of text (a card in its own box), no baseline gap under it: a face-up card and an empty place stand the same height. */
+    vertical-align: top;
     border-radius: 6px;
     position: relative;
     flex: none;

@@ -143,7 +143,8 @@
       <div class="fan-cell"><SnagFan cards={snags} look={snagLook} /></div>
       <div class="discard-cell"><DiscardChips tall cards={discarded} flop={flopDiscards} title={t('draw.theirDiscards', { name: name(id) })} /></div>
     </div>
-    {#if line}{@render theLine()}{/if}
+    <!-- Always there (empty when there's nothing to say), so a move shown or a hand named never moves the table. -->
+    {@render theLine()}
   {:else}
     <!-- Mirroring yours across the table: the name at their edge, cards held close, their purse with them, and what they do (or hold) under it, nearest the pot. -->
     <div class="tagline">
@@ -286,6 +287,7 @@
   }
   .full .line {
     grid-column: 1 / -1;
+    min-height: 1.25em;
   }
 
   /* Half or a third of the table: the seat lays itself out, every one the same fixed height, so nothing moves. */
