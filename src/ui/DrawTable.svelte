@@ -25,17 +25,19 @@
     type OpponentOdds,
   } from '../engine';
   import { t } from '../i18n';
+  import ActionBar from './ActionBar.svelte';
+  import Board from './Board.svelte';
   import CardView from './CardView.svelte';
-  import Pile from './Pile.svelte';
+  import MyCards from './MyCards.svelte';
+  import PotBand from './PotBand.svelte';
+  import SnagFan from './SnagFan.svelte';
   import Standings from './Standings.svelte';
   import Purse from './Purse.svelte';
   import DiscardChips from './DiscardChips.svelte';
   import HowTo from './HowTo.svelte';
   import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
   import Countdown from './Countdown.svelte';
-  import { heavy } from './heavy';
   import { cardPrefs } from './cards.svelte';
-  import { switchFaces } from './settings.svelte';
   import { CoinFlow, FACE_DOWN_MS, FACE_UP_MS, FLOP_MS, thrownCard } from './coinflow.svelte';
   import { moneyText, moveLabel, priceText } from './prices';
   import { flight } from './flight.svelte';
@@ -285,6 +287,8 @@
   const playing = $derived(game.phase === 'duel');
   const composing = $derived(isComposing(round));
   const boardSize = $derived(config.communitySchedule.reduce((a, b) => a + b, 0));
+  /** The board as dealt so far. */
+  const boardCards = $derived(Array.from({ length: boardSize }, (_, i) => (round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null)));
 
   // Jokers are interchangeable, so the selection only tracks how many are in.
   const tappedCards = $derived(me.hand.filter((c) => tapped.includes(c.id)));
@@ -620,8 +624,8 @@
   });
 
   /** A card thrown away: up out of the hand, turning, and gone (only a card that went onto the discard pile). */
-  function thrown(_node: Element, id: string) {
-    return thrownCard(round.discards.some((c) => c.id === id) && !coins.still);
+  function thrown(_node: Element, card: Card) {
+    return thrownCard(round.discards.some((c) => c.id === card.id) && !coins.still);
   }
 
   /**
@@ -724,23 +728,13 @@
       {#each them.hand.filter((c) => dealt.has(c.id)) as card, k (card.id)}
         {@const turned = decided || theyShowed || (revealing && revealIndex >= steps.length + k)}
         <!-- A card they throw away leaves their hand before its replacement is dealt. -->
-        <span class="held" out:thrown={card.id}>
+        <span class="held" out:thrown={card}>
           {#if turned}<CardView {card} faded={shownDown} fresh={(revealing && revealIndex === steps.length + k) || (theyShowed && !shownDown)} deal={revealing ? 'flip' : null} />{:else}<CardView faceDown deal="top" faded={shownDown} />{/if}
         </span>
       {/each}
       </div>
-      <div class="fan-cell">
-      {#if theirSnags.length}
-        <!-- However many snags they carry, the fan never grows past its width. Played snags flip like their cards. -->
-        <div class="snag-fan" style="--n: {theirSnags.length}">
-          {#each theirSnags as card (card.id)}
-            <!-- Snags are public: always face up. One they played rises out of the fan as it's revealed: riding along in their hand. -->
-            <CardView {card} lifted={playedIds.has(card.id) && (faceUp.has(card.id) || theyShowed)} fresh={revealStep?.card.id === card.id} />
-          {/each}
-          {#if theirSnags.length > 2}<span class="snag-count">×{theirSnags.length}</span>{/if}
-        </div>
-      {/if}
-      </div>
+      <!-- Played snags rise out of the fan as they're revealed: riding along in their hand. -->
+      <div class="fan-cell"><SnagFan cards={theirSnags} look={(card) => ({ lifted: playedIds.has(card.id) && (faceUp.has(card.id) || theyShowed), fresh: revealStep?.card.id === card.id })} /></div>
       <div class="discard-cell"><DiscardChips tall cards={them.discarded} flop={them.flopDiscards} title={t('draw.theirDiscards', { name: name(opponentId) })} /></div>
     </div>
   </section>
@@ -770,18 +764,8 @@
     <div class="river-body" class:cleared={standing}>
       <!-- The pot: their coins above the middle, yours below, filling in from the left. -->
       <!-- With no pot (the first lessons) it stays, empty, so the table keeps its shape. -->
-      <div class="pot-band" bind:this={potEl}>
-        <Pile count={potBets[0] + potBets[1]} paid={!!payout} />
-        {#if outcomeShown}<p class="outcome" class:won={winner === 0} aria-live="polite">{outcomeText}</p>{/if}
-      </div>
-      <div class="community" bind:this={communityEl}>
-        {#each Array.from({ length: boardSize }) as _, i}
-          {@const card = round.community[i] && dealt.has(round.community[i].id) ? round.community[i] : null}
-          <!-- Each lands with a thud; the Flop's last card and the River slam down. -->
-          <!-- A tap on the board switches every card's face: the value, or value and suit (for spotting flushes). -->
-          <CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} markAbove={!!card && theirBoard.has(card.id)} markBelow={!!card && usedIds.has(card.id)} onclick={card ? switchFaces : undefined} />
-        {/each}
-      </div>
+      <PotBand count={potBets[0] + potBets[1]} paid={!!payout} outcome={outcomeShown ? outcomeText : null} won={winner === 0} bind:el={potEl} />
+      <Board cards={boardCards} marks={(card) => ({ above: theirBoard.has(card.id), below: usedIds.has(card.id) })} bind:el={communityEl} />
       {#if standing}<div class="standings-over"><Standings {game} />{#if game.finaleNext}<p class="finale-next">{t('finale.next')}</p>{/if}</div>{/if}
     </div>
     <!-- Always there, so a snag coming up never moves the table; empty when nothing is at stake (after a fold the snag goes back into the deck). -->
@@ -826,42 +810,28 @@
         </div>
       {/if}
     </div>
-    <div class="hand-row">
-      <div class="hand-cell">
-      <!-- At the showdown: the cards you played, then any you kept back, dimmed. -->
-      {#each myPlayed as card (card.id)}<CardView {card} used />{/each}
-      {#each me.hand.filter((c) => dealt.has(c.id)) as card (card.id)}
-        <span class="held" out:thrown={card.id}><CardView
-          {card}
-          selected={(composing || naming) && tapped.includes(card.id)}
-          toss={!composing && !naming && tapped.includes(card.id)}
-          used={(composing || naming) && usedIds.has(card.id)}
-          faded={shownDown}
-          deal="left"
-          onclick={playing ? () => tap(card) : undefined}
-        /></span>
-      {/each}
-      </div>
-      <div class="fan-cell">
-      {#if mySnags.length}
-        <!-- However many snags you carry, the fan never grows past its width. -->
-        <div class="snag-fan mine" class:live={composing} style="--n: {mySnags.length}">
-          {#each mySnags as card (card.id)}
-            <CardView {card} selected={tapped.includes(card.id)} used={shownDown && myPlayedSnagIds.has(card.id)} lifted={shownDown && myPlayedSnagIds.has(card.id)} onclick={playing && composing ? () => tap(card) : undefined} />
-          {/each}
-          {#if mySnags.length > 2}<span class="snag-count">×{mySnags.length}</span>{/if}
-        </div>
-      {/if}
-      </div>
-      <div class="discard-cell"><DiscardChips tall cards={me.discarded} flop={me.flopDiscards} title={t('draw.yourDiscards')} /></div>
-    </div>
-
-
-
+    <!-- At the showdown: the cards you played, then any you kept back, dimmed. -->
+    <MyCards
+      played={myPlayed}
+      hand={me.hand.filter((c) => dealt.has(c.id))}
+      look={(card) => ({
+        selected: (composing || naming) && tapped.includes(card.id),
+        toss: !composing && !naming && tapped.includes(card.id),
+        used: (composing || naming) && usedIds.has(card.id),
+        faded: shownDown,
+      })}
+      ontap={playing ? tap : undefined}
+      {thrown}
+      snags={mySnags}
+      snagLook={(card) => ({ selected: tapped.includes(card.id), used: shownDown && myPlayedSnagIds.has(card.id), lifted: shownDown && myPlayedSnagIds.has(card.id) })}
+      onsnag={playing && composing ? tap : undefined}
+      discarded={me.discarded}
+      flopDiscards={me.flopDiscards}
+    />
   </section>
 
   <!-- The two buttons, the same on every screen: black on the left half, white on the right. -->
-  <div class="actions" class:idle={!playing && !revealing && !standing && !showCaptain && !showHelp && !holding} inert={lineWaiting} bind:this={actionsEl} use:heavy>
+  <ActionBar idle={!playing && !revealing && !standing && !showCaptain && !showHelp && !holding} inert={lineWaiting} row={4} bind:el={actionsEl}>
     {#if showHelp}
       <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
       <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>
@@ -909,7 +879,7 @@
       <!-- Call, Swap and Play hand commit you to the hand: held, not tapped (heavy.ts). A free Check is a light tap. -->
       <button onclick={go} disabled={!playing || dealing || !complies} data-heavy={composing || tapped.length > 0 || cost > 0 ? 'true' : undefined}>{buttonLabel}</button>
     {/if}
-  </div>
+  </ActionBar>
 </div>
 
 
@@ -1109,44 +1079,11 @@
   .standings-over {
     padding: 0.2rem 0;
   }
-  .pot-band {
-    position: relative;
-    margin: 0.2rem 0 0.5rem;
-  }
-  /* The result takes the pot's place once the coins have flown. */
-  .outcome {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    margin: 0;
-    font-family: var(--title-font);
-    font-size: 1.6rem;
-    letter-spacing: 0.06em;
-    color: var(--grey);
-    animation: outcome 0.4s ease-out 0.8s backwards;
-  }
-  .outcome.won {
-    font-size: 2rem;
-    color: var(--paper);
-  }
-  @keyframes outcome {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .outcome {
-      animation: none;
-    }
-  }
   /*
-   * Card rows (theirs and yours) on the grid: three cards in columns 1–6, the
-   * snag fan in 7–10, the discards in 11–12. A card is two columns wide.
+   * Their card row on the grid, like yours (MyCards): three cards in columns
+   * 1–6, the snag fan in 7–10, the discards in 11–12. A card is two columns wide.
    */
-  .opp-cards,
-  .hand-row {
+  .opp-cards {
     display: grid;
     grid-template-columns: subgrid;
     grid-column: 1 / -1;
@@ -1173,30 +1110,6 @@
     display: flex;
     justify-content: flex-end;
     align-items: flex-end;
-  }
-  /* However many snags, the fan keeps to its four columns. */
-  .snag-fan {
-    --fan: calc(4 * var(--col) + 3 * var(--gap));
-    position: relative;
-    display: flex;
-    max-width: var(--fan);
-  }
-  .snag-fan :global(.card + .card) {
-    margin-left: min(3px, calc((var(--fan) - var(--card-w) * var(--n)) / (var(--n) - 1)));
-  }
-  /* How many snags, as a badge on the fan: more than two can't be counted by eye. */
-  .snag-count {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    z-index: 4;
-    padding: 0 4px;
-    border-radius: 8px;
-    background: var(--ink);
-    border: 1px solid var(--grey);
-    font-family: var(--title-font);
-    font-size: 0.75rem;
-    line-height: 1.3;
   }
   .name-btn {
     position: relative;
@@ -1280,27 +1193,14 @@
   .table.solo > .captain {
     grid-row: 3;
   }
-  .table.solo > .actions {
-    grid-row: 4;
-    /* Above the film's vignette and grain: the buttons must read clearly, whatever the edges do. */
-    position: relative;
-    z-index: 51;
-  }
   .table.solo > section > :global(*) {
     grid-column: 1 / -1;
   }
   .table.solo :global(.card:not(.huge)) {
     --w: var(--card-w) !important;
   }
-  .table.solo .community {
-    gap: var(--gap);
-  }
   .captain {
     row-gap: 0.4rem;
-  }
-  /* Tall enough for a lifted card, so selecting one doesn't push anything. */
-  .hand-row {
-    height: calc(var(--card-w) * 1.4 + 14px);
   }
   .my-purse {
     position: relative;
@@ -1388,53 +1288,6 @@
   @keyframes callout-in {
     from { opacity: 0; }
   }
-  /* Two fixed halves of the grid: changing labels and prices never move them. */
-  .actions > :first-child {
-    grid-column: 1 / 7;
-  }
-  .actions > :last-child {
-    grid-column: 7 / 13;
-  }
-  /* Stacked replies: an invisible stand-in keeps the row's height; the stack rises from it over the table. */
-  .actions > .stand-in {
-    grid-column: 1 / -1;
-    visibility: hidden;
-  }
-  .actions > .stack {
-    grid-column: 1 / -1;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    /* A dark backing, so the table doesn't peek between the buttons. */
-    padding-top: 0.6rem;
-    background: #0c0c0b;
-    box-shadow: 0 -0.6rem 0.8rem #0c0c0b;
-  }
-  .stack button {
-    width: 100%;
-  }
-  /* Over the table, the black buttons need a black of their own. */
-  .stack button.ghost {
-    background: #0c0c0b;
-  }
-  /* The main button's outline goes inside its edge, so both buttons stand the same size. */
-  .actions button:not(.ghost) {
-    outline-offset: -2px;
-  }
-  .actions button {
-    padding-top: 0.6em;
-    padding-bottom: 0.6em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .actions.idle {
-    visibility: hidden;
-  }
   /* Short screens, decided once at load (so hiding a phone's browser bars never changes it): the gaps and paddings give way first. */
   :global(.short) .table.solo {
     gap: 0.4rem;
@@ -1450,16 +1303,5 @@
   }
   :global(.short) .opponent {
     row-gap: 0.25rem;
-  }
-  /* Phones: bigger button type. */
-  @media (max-width: 600px) {
-    .actions button {
-      font-size: 1.15rem;
-      padding-left: 0.5em;
-      padding-right: 0.5em;
-    }
-  }
-  .snag-fan.live :global(.card:hover) {
-    z-index: 3;
   }
 </style>

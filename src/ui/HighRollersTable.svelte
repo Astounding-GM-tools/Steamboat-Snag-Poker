@@ -24,15 +24,17 @@
     type RoundState,
   } from '../engine';
   import { t } from '../i18n';
+  import ActionBar from './ActionBar.svelte';
+  import Board from './Board.svelte';
   import CardView from './CardView.svelte';
+  import MyCards from './MyCards.svelte';
+  import PotBand from './PotBand.svelte';
+  import SnagFan from './SnagFan.svelte';
   import DiscardChips from './DiscardChips.svelte';
-  import Pile from './Pile.svelte';
   import Purse from './Purse.svelte';
   import { dollars, tagName } from './format';
   import { handLabel } from './handNames';
-  import { heavy } from './heavy';
   import { cardPrefs } from './cards.svelte';
-  import { switchFaces } from './settings.svelte';
   import { clink } from './clink';
   import { CoinFlow, FACE_DOWN_MS, FACE_UP_MS, FLOP_MS, thrownCard } from './coinflow.svelte';
   import { moveLabel } from './prices';
@@ -201,7 +203,7 @@
   }
 
   /** A thrown card: up out of the hand, turning, and gone (only in a swap, and not when hurried). */
-  function thrown(_node: Element) {
+  function thrown(_node: Element, _card?: Card) {
     return thrownCard(!!swapping && !coins.still);
   }
 
@@ -415,6 +417,8 @@
   const holeDealt = (seat: number) => [0, 1, 2].filter((k) => dealIndex(seat, k) < dealt).length;
   /** The Flop's i-th card in dealing order: after every hole card. */
   const flopIndex = (i: number) => 3 * round.seats.length + i;
+  /** The board as dealt so far: the Flop after every hole card, a new street's card once the replay is done. */
+  const boardCards = $derived(Array.from({ length: 5 }, (_, i) => (i < boardShown && (i >= 3 || flopIndex(i) < dealt) ? (round.community[i] ?? null) : null)));
   function deal(): Promise<void> {
     if (coins.still) {
       dealt = DEALT_ALL;
@@ -655,12 +659,7 @@
         <div class="who">
           {#if dealer === seat}<span class="button" title={t('hr.dealer')}></span>{/if}
           <span class="tag">{tagName(p.id)}</span>
-          {#if snags.length}
-            <div class="snag-fan tiny" style="--n: {snags.length}">
-              {#each snags as card (card.id)}<span class="snag" data-snag={card.id}><CardView {card} lifted={turnedUp(seat) && s.played.some((c) => c?.id === card.id)} /></span>{/each}
-              {#if snags.length > 1}<span class="snag-count">×{snags.length}</span>{/if}
-            </div>
-          {/if}
+          <SnagFan tiny cards={snags} look={(card) => ({ lifted: turnedUp(seat) && s.played.some((c) => c.id === card.id) })} />
         </div>
         <div class="rival-cards">
           <div class="rival-hand">
@@ -707,17 +706,8 @@
         <p class="small">{t('hr.lastHandStakes', { n: round.stakes })}</p>
       </div>
     {/if}
-    <div class="pot-band">
-      <div bind:this={pileEl}><Pile count={potCount} paid={settled} /></div>
-      {#if settled}<p class="outcome" class:won={round.result?.winners.includes(me)} aria-live="polite">{verdictText}</p>{/if}
-    </div>
-    <div class="community">
-      {#each Array.from({ length: 5 }) as _, i}
-        {@const card = i < boardShown && (i >= 3 || flopIndex(i) < dealt) ? (round.community[i] ?? null) : null}
-        <!-- Each lands with a thud; the Flop's last card and the River slam down. -->
-        {#key card?.id}<span class="board-card" data-snag={card && isJoker(card) ? card.id : undefined}><CardView {card} deal={i === 2 || i === 4 ? 'slam' : 'drop'} onclick={card ? switchFaces : undefined} /></span>{/key}
-      {/each}
-    </div>
+    <PotBand count={potCount} paid={settled} outcome={settled ? verdictText : null} won={!!round.result?.winners.includes(me)} wordy bind:el={pileEl} />
+    <Board cards={boardCards} />
   </div>
 
   <!-- Your side, as in a duel: your money nearest the pot, then your cards, your snags and your discards. -->
@@ -731,46 +721,33 @@
         <p class="my-hand">{t('hr.youAreOut')}</p>
       {/if}
     </div>
-    <div class="hand-row">
-      {#if mine}
-        <div class="hand-cell">
-          {#each myPlayed as card (card.id)}<CardView {card} used />{/each}
-          {#each handOf(me).filter((_, k) => k >= 3 || dealIndex(me, k) < dealt) as card (card.id)}
-            <span class="held" out:thrown><CardView
-              {card}
-              deal="left"
-              selected={composing && !laid && tapped.includes(card.id)}
-              used={laid && tapped.includes(card.id)}
-              toss={!composing && tapped.includes(card.id)}
-              faded={mine.folded || (shownTo(me) && myPlayed.length > 0) || (laid && !tapped.includes(card.id))}
-              onclick={view === 'choose' && meIn ? () => tap(card) : undefined}
-            /></span>
-          {/each}
-        </div>
-        <div class="fan-cell">
-          {#if mySnags.length}
-            <!-- However many snags you carry, the fan never grows past its width. -->
-            <div class="snag-fan" style="--n: {mySnags.length}">
-              {#each mySnags as card (card.id)}
-                <span class="snag" data-snag={card.id}><CardView
-                  {card}
-                  selected={!laid && tapped.includes(card.id)}
-                  used={myPlayedSnags.has(card.id) || (laid && tapped.includes(card.id))}
-                  lifted={shownTo(me) && myPlayedSnags.has(card.id)}
-                  onclick={view === 'choose' && meIn && composing ? () => tap(card) : undefined}
-                /></span>
-              {/each}
-              {#if mySnags.length > 2}<span class="snag-count">×{mySnags.length}</span>{/if}
-            </div>
-          {/if}
-        </div>
-        <div class="discard-cell"><DiscardChips tall cards={mine.discarded} flop={mine.flopDiscards} title={t('draw.yourDiscards')} /></div>
-      {/if}
-    </div>
+    {#if mine}
+      <MyCards
+        played={myPlayed}
+        hand={handOf(me).filter((_, k) => k >= 3 || dealIndex(me, k) < dealt)}
+        look={(card) => ({
+          selected: composing && !laid && tapped.includes(card.id),
+          used: laid && tapped.includes(card.id),
+          toss: !composing && tapped.includes(card.id),
+          faded: mine.folded || (shownTo(me) && myPlayed.length > 0) || (laid && !tapped.includes(card.id)),
+        })}
+        ontap={view === 'choose' && meIn ? tap : undefined}
+        {thrown}
+        snags={mySnags}
+        snagLook={(card) => ({
+          selected: !laid && tapped.includes(card.id),
+          used: myPlayedSnags.has(card.id) || (laid && tapped.includes(card.id)),
+          lifted: shownTo(me) && myPlayedSnags.has(card.id),
+        })}
+        onsnag={view === 'choose' && meIn && composing ? tap : undefined}
+        discarded={mine.discarded}
+        flopDiscards={mine.flopDiscards}
+      />
+    {/if}
   </div>
 
   <!-- The two buttons. Call, Swap and Play hand are held (heavy); the rest are light taps. -->
-  <div class="actions" use:heavy inert={busy}>
+  <ActionBar inert={busy}>
     {#if view === 'choose' && myTurn && composing && round.raise && laid}
       <!-- The River, your hand laid: raise on it, or let it stand. Either commits you. -->
       <!-- All in already: nothing left to raise with. -->
@@ -794,7 +771,7 @@
       <button class="ghost" onclick={onmenu}>{t('end.pause')}</button>
       <button onclick={next}>{t('show.next')}</button>
     {/if}
-  </div>
+  </ActionBar>
 
   {/key}
 
@@ -926,9 +903,6 @@
   .rival .rival-hand :global(.card:not(.huge)) {
     --w: var(--small-w) !important;
   }
-  .rival .snag-fan :global(.card:not(.huge)) {
-    --w: 18px !important;
-  }
   /* A card held in a hand: its own box, so it can leave on its own. */
   .held {
     display: block;
@@ -970,42 +944,6 @@
     font-family: var(--title-font);
     font-size: 1.3rem;
   }
-  .pot-band {
-    position: relative;
-    margin: 0.2rem 0 0.5rem;
-  }
-  .outcome {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    margin: 0;
-    font-family: var(--title-font);
-    font-size: 1.1rem;
-    line-height: 1.2;
-    color: var(--grey);
-    text-wrap: balance;
-    /* Once the coins are on their way. */
-    animation: outcome 0.4s ease-out 0.6s backwards;
-  }
-  .outcome.won {
-    color: var(--paper);
-  }
-  @keyframes outcome {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-  }
-  .board-card {
-    display: block;
-    flex: none;
-  }
-  .community {
-    display: flex;
-    justify-content: center;
-    gap: var(--gap);
-  }
 
   /* Your side: the duel's rows (cards in columns 1–6, the snag fan 7–10, the discards 11–12). */
   .mine {
@@ -1037,87 +975,6 @@
     width: fit-content;
     max-width: 100%;
     margin: 0 auto;
-  }
-  .hand-row {
-    display: grid;
-    grid-template-columns: subgrid;
-    align-items: end;
-    height: calc(var(--card-w) * 1.4 + 14px);
-  }
-  .hand-cell {
-    grid-column: 1 / 7;
-    display: flex;
-    gap: var(--gap);
-    align-items: flex-end;
-  }
-  .fan-cell {
-    grid-column: 7 / 11;
-    display: flex;
-    align-items: flex-end;
-  }
-  .discard-cell {
-    grid-column: 11 / 13;
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-  }
-  /* However many snags, the fan keeps to its four columns. */
-  .snag-fan {
-    --fan: calc(4 * var(--col) + 3 * var(--gap));
-    position: relative;
-    display: flex;
-    max-width: var(--fan);
-  }
-  .snag-fan .snag {
-    display: block;
-    flex: none;
-  }
-  .snag-fan .snag + .snag {
-    margin-left: min(3px, calc((var(--fan) - var(--card-w) * var(--n)) / (var(--n) - 1)));
-  }
-  /* A rival's fan: little snags, overlapping, beside the purse. */
-  .snag-fan.tiny {
-    --fan: 32px;
-    flex: none;
-    margin-left: auto;
-  }
-  .snag-fan.tiny .snag + .snag {
-    margin-left: min(2px, calc((var(--fan) - 18px * var(--n)) / (var(--n) - 1)));
-  }
-  .snag-count {
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    z-index: 4;
-    padding: 0 4px;
-    border-radius: 8px;
-    background: var(--ink);
-    border: 1px solid var(--grey);
-    font-family: var(--title-font);
-    font-size: 0.75rem;
-    line-height: 1.3;
-  }
-  .tiny .snag-count {
-    font-size: 0.6rem;
-    padding: 0 3px;
-  }
-
-  .actions {
-    position: relative;
-    z-index: 51;
-  }
-  .actions > button:first-child {
-    grid-column: 1 / 7;
-  }
-  .actions > button:last-child {
-    grid-column: 7 / 13;
-  }
-  .actions button {
-    padding-top: 0.6em;
-    padding-bottom: 0.6em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .placings {
     position: absolute;
