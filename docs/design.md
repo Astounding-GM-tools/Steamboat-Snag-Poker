@@ -92,26 +92,29 @@ The shape of a hand decides how many snags it can carry:
 
 | Hand | Cards that matter | Room for snags |
 |---|---|---|
+| Straight / flush / full house | 5 | none |
 | Four of a kind | 4 | 1 |
 | Three of a kind | 3 | 2 |
 | Two pair | 4 | 1 |
-| Straight / flush / full house | 5 | none |
+| Pair | 2 | 3 |
+| High card | 1 | 4 |
 
-**The deal** (always fast for people who prefer reduced motion): cards are dealt like at a real table — hole cards one at a time
+**The deal:** cards are dealt like at a real table — hole cards one at a time
 round the table (you, them, you, them…), a beat, then the Flop one, two, three;
-Turn and River cards and replacement cards slide in too. A **Fast deal**
-checkbox speeds it up (remembered per browser), and a click on the table
-finishes the deal at once. Actions are disabled until the deal is done.
+Turn and River cards and replacement cards slide in too. Players who prefer
+reduced motion get a fast deal, and a tap on the table finishes the deal at
+once. Actions are disabled until the deal is done.
 
 **Willie's reckoning** (in the opponent's details) shows what they could be
 harbouring: the chance of each hand category, every rank listed, based only
 on what you can see.
 
 **The reveal:** your hand is announced first (with its nickname, if any). Then
-the opponent's played cards are turned over one at a time — teasers first
-("a flush is still possible!"), then snags ("the stakes go up!"), and the
-deciding card last — each showing how it combines with the board. No auto-advance: the
-player steps through with Next (or Skip to the result).
+the opponent's played cards turn over by themselves, one every 0.75 s, the
+deciding card last, each showing how it combines with the board; snags they
+played rise out of their fan (snags are public, always face up). No odds
+while the cards turn: they play out. Skip jumps to the verdict; Next is for
+after it.
 
 ### The pot (draw style)
 
@@ -130,8 +133,9 @@ felt, and the winner takes it (a tie splits it).
   other captain takes the pot; you keep your snags (including any fished this
   crossing); community snags go back into the deck.
 - **Forfeit:** each snag in a losing hand still costs $5, paid to the winner.
-- **Debt is all-in:** fees can push a purse below $0 mid-crossing. End a
-  crossing at $0 or less and you are busted.
+- **All in:** nobody pays more than they have. Short of the price (the
+  ante, a fee, a forfeit), you put in everything and play on; the pot holds
+  only real money. End a crossing with nothing left and you are busted.
 
 The pot sits left of the board; coins fly in from each side as captains pay,
 and every button shows its price ("Discard 2 · $4").
@@ -151,17 +155,11 @@ These were stepping stones on the way to Kansas Shuffle.
 
 ## Hand ranking
 
-Standard poker ranks. Your hand is the **best 5 cards** made from your slot cards
-and the community cards, using the preset's number of own cards (Kansas:
-exactly 2 of your 3 slots + exactly 3 of the 5 board cards). Snags and empty
-slots are dead cards — but they still count as "your cards", so:
-
-- **1 snag** in your slots is nearly free if the other two carry the hand
-  (but you lose your fallback card).
-- **2 snags** force you to use a dead card: a 4-card hand.
-- **3 snags**: only 3 board cards — suicide unless the opponent is as stuck.
-- Snags on the board narrow everyone's choice of board cards the same way.
-
+Standard poker ranks. Your hand is the cards you play (any of your hand
+cards, plus any snags you dare, up to 5) with the best community cards
+filling the rest of the five. Snags are dead cards that still take a place
+in the five, so they only fit hands with room for them (the table above);
+a snag on the board narrows everyone's choice of board cards the same way.
 Straights and flushes need 5 real cards.
 
 Straight flush > Four of a kind > Full house > Flush > Straight > Three of a kind
@@ -172,7 +170,17 @@ suits card-by-card from the highest card down, with **♣ < ♦ < ♥ < ♠**.
 Only when both hands contain exactly the same real cards is it a true **draw**:
 nobody wins, no snags move, no money is gained.
 
-## The round in the slots style
+## The slots style (retired)
+
+Kept for the record: the rules before Snag Poker settled on draw style. None
+of this is in the game. There, money is won from the pot (above), snag
+upkeep is paid in the ante, and nobody is paid by the hand. In the slots
+style your hand was the best 5 from your slot cards and the board, with the
+preset's number of own cards (Kansas: exactly 2 of your 3 slots + exactly 3
+of the 5 board cards); snags and empty slots were dead cards that still
+counted as your cards.
+
+### The round
 
 Two players, three **streets**: Flop, Turn, River. On each street:
 
@@ -195,10 +203,10 @@ An empty slot at showdown is a dead card.
 ### Community snags (🔧 snag mode)
 
 - **Shuffled** (default): after the Flop deal, some unowned snags are shuffled
-  into the deck (🔧 one per N months elapsed, capped by the unowned pool). A
+  into the deck (🔧 one per N crossings elapsed, capped by the unowned pool). A
   snag drawn by a player joins their hand (now owned!); one drawn to the board
   is a dead community card and goes to the loser. Discarding is a gamble.
-- **Slot** (Classic only): a separate fourth community slot; from month 2, with
+- **Slot** (Classic only): a separate fourth community slot; from crossing 2, with
   some chance, an unowned snag sits there as the loser's prize.
 
 ### Showdown and snag transfer
@@ -217,7 +225,7 @@ An empty slot at showdown is a dead card.
 `loserPays` (0–1) sets how much of the winner's gain the loser loses: 0 = losing
 costs nothing, 1 = **zero-sum (default)**: the winner's points come out of
 the loser's money. Simulated, this shortens a good player's game from
-about 29 to about 20 months.
+about 29 to about 20 crossings.
 
 ### End of round
 
@@ -226,7 +234,7 @@ about 29 to about 20 months.
    (🔧 default $4 each).
 3. Anyone at $0 is eliminated. An eliminated opponent's snags return to the pool.
 
-### money for a win (🔧 tunable)
+### Money for a win (🔧 tunable)
 
 | Hand | Winnings ($) |
 |---|---|
@@ -276,8 +284,11 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
 
 ## Screens
 
-1. **Title** — riverboat, "START" button, best result, short "How it works"
-   card: *Steer public opinion. Avoid ruin. Dump your mess on someone else.*
+1. **Title** — the name, a tagline drawn at random ("Dump Your Snags
+   Downstream", "Mind the Snags, Captain"…), and the menu: Tutorial, League,
+   Continue; the best result; the gear (Options: the clink of coins, card
+   faces) and the **?** (How it works: Mrs MacTavish's pamphlet against the
+   game, the hands near the top).
 2. **The Table** (draw style), one column so it fits a phone, split by the
    board into **their side** (top) and **yours** (bottom):
    - top: the opponent's name (tap it or the portrait for their **details**,
@@ -290,8 +301,7 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
      behind the name; then
      their face-down hand and snags (a fan that never grows past its width,
      with a count badge from three snags), and their discards;
-   - middle: crossing number, street, the **?** button (Willie: how to play,
-     fast-deal setting), the **pot** and the board; snags at stake are named
+   - middle: crossing number, street, the **?** button (How it works), the **pot** and the board; snags at stake are named
      only when there are any;
    - bottom, in fixed rows that never shift, from the pot outwards: your
      **purse** (coins only, no figure: you never count your money at the
@@ -346,15 +356,16 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
    the purse to its spot in the pot, so emptied stacks show what has gone in.
    At the verdict the pot's coins fly to the winner.
 3. **Showdown** (draw style) — on the table, no modal. Their played cards
-   flip in place, one per **Next**; at the verdict the cards they held back are
-   shown too, dimmed, so you see how they play (played
-   snags flip in their fan); the board marks ▼ the cards their hand uses and ▲
-   yours. Their hand so far is called where the street name was (same height,
-   nothing moves): the call, the table talk, and "Still open: Three of a kind ·
-   27% against you" (the chance the cards still down beat you). Your callout
-   over your coins shows the hand you played. At the last card the verdict goes
-   on the white button ("You win! ▸"), any tiebreak on their callout, and the
-   pot flies to the winner. **Skip** on the black button.
+   turn over by themselves, one every 0.75 s; at the verdict the cards they
+   held back are shown too, dimmed, so you see how they play. Snags are
+   public, always face up: a snag they played rises out of their fan. The
+   board marks ▼ the cards their hand uses and ▲ yours. Their hand so far is
+   called where the street name was (same height, nothing moves): the call
+   and the table talk; no odds while the cards turn (let them play out). Your
+   callout over your coins shows the hand you played. At the last card comes
+   the verdict, any tiebreak on their callout, and the pot flies to the
+   winner. **Skip** (black) jumps to the verdict; **Next** (white) is for
+   after it.
 4. **Round end** — on the table too: the river shows the **standings** (the
    pot and board stay underneath, hidden, so its height never changes). One
    row per captain afloat (plus any who went broke this round, struck through,
