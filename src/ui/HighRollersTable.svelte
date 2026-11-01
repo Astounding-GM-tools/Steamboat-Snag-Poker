@@ -34,7 +34,8 @@
   import { cardPrefs } from './cards.svelte';
   import { switchFaces } from './settings.svelte';
   import { clink } from './clink';
-  import { flyInto, landAll, reducedMotion } from './coins';
+  import { CoinFlow, FACE_DOWN_MS, FACE_UP_MS, FLOP_MS, thrownCard } from './coinflow.svelte';
+  import { moveLabel } from './prices';
   import { onMount, tick, untrack } from 'svelte';
 
   /**
@@ -152,21 +153,7 @@
   );
   /** What you have left to put in this hand: a price beyond it is everything, all in. */
   const left = $derived(me >= 0 ? roundLeft(round, me) : 0);
-  const goLabel = $derived(
-    cost > left && left > 0
-      ? t('hr.allIn', { amount: dollars(left) })
-      : cost > left
-      ? t('draw.check') // all in already: nothing more to put in, and you stay in
-      : answering
-      ? t('hr.match', { amount: dollars(cost) })
-      : composing
-      ? t('draw.play')
-      : tappedCards.length
-        ? `${t('draw.discard', { n: tappedCards.length })} · ${dollars(cost)}`
-        : cost
-          ? `${t('draw.call')} · ${dollars(cost)}`
-          : t('draw.check'),
-  );
+  const goLabel = $derived(moveLabel({ composing, answering, swaps: tappedCards.length, cost, left }));
 
   /** On the River, your hand is laid (Play hand): what's left is to raise, or not (Next). A tap picks it back up. */
   let laid = $state(false);
@@ -215,11 +202,11 @@
 
   /** A thrown card: up out of the hand, turning, and gone (only in a swap, and not when hurried). */
   function thrown(_node: Element) {
-    return { duration: !swapping || rushing || reducedMotion() ? 0 : THROW_MS, css: (t: number) => `transform: translate(${(1 - t) * 14}px, ${(1 - t) * -26}px) rotate(${(1 - t) * 12}deg); opacity: ${t}` };
+    return thrownCard(!!swapping && !coins.still);
   }
 
   /** A breath between beats (none when hurried). */
-  const pause = (ms: number) => (rushing || reducedMotion() ? Promise.resolve() : new Promise<void>((r) => setTimeout(r, ms)));
+  const pause = (ms: number) => (coins.still ? Promise.resolve() : new Promise<void>((r) => setTimeout(r, ms)));
   const STEP_MS = 700;
   const THROW_MS = 450;
 
@@ -229,7 +216,7 @@
    * slowly), then its money goes in, and a breath before the next.
    */
   async function playOut() {
-    pending++;
+    coins.begin();
     try {
       for (let i = 0; i < queue.length; i++) {
         at = i;
@@ -245,12 +232,12 @@
         }
         betsAt = i;
         await tick();
-        await flows;
+        await coins.idle;
         await pause(STEP_MS);
       }
     } finally {
       swapping = null;
-      if (--pending === 0) rushing = false;
+      coins.end();
     }
     afterReplay();
   }
@@ -284,16 +271,16 @@
   /** Past the rest of the rivals' moves at once: their money goes in without the flights. */
   async function skipReplay() {
     if (view !== 'replay') return;
-    rushing = true;
+    coins.rushing = true;
     afterReplay();
     // Their payments are queued once the table updates; the hurry ends when they're done.
     await tick();
-    later(async () => {});
+    coins.later(async () => {});
   }
 
   function afterReplay() {
     // A new card for the board waits its turn, after the money.
-    if (round.community.length > boardShown) later(dealBoard);
+    if (round.community.length > boardShown) coins.later(dealBoard);
     const res = round.result;
     if (!res) {
       // On to the next street (or a raise to answer): your move, or, with nothing for you to do, on we go without you.
@@ -316,7 +303,7 @@
 
   /** The showdown, by itself: each hand in turn (yours you know: just its name), a breath between, then the verdict. */
   async function showdown() {
-    pending++;
+    coins.begin();
     try {
       for (let i = 0; i < revealOrder.length; i++) {
         revealed = i;
@@ -324,7 +311,7 @@
         await pause(STEP_MS);
       }
     } finally {
-      if (--pending === 0) rushing = false;
+      coins.end();
     }
     noteSnags();
     view = 'verdict';
@@ -362,8 +349,8 @@
   /** A rival's showdown: each card it played turned over in turn, a breath apart, then the rest. Yours you know already. */
   async function turnOver(seat: number) {
     const n = played(round.seats[seat].played).filter((c) => !isJoker(c)).length;
-    if (seat === me || !n || rushing || reducedMotion()) return;
-    pending++;
+    if (seat === me || !n || coins.still) return;
+    coins.begin();
     turned = 0;
     try {
       for (let k = 0; k < n; k++) {
@@ -373,7 +360,7 @@
       await pause(FLIP_MS);
     } finally {
       turned = TURNED_ALL;
-      if (--pending === 0) rushing = false;
+      coins.end();
     }
   }
   /** What a rival did, in a word or two. */
@@ -393,102 +380,26 @@
   const potCount = $derived(shownBets.reduce((a, b) => a + b, 0));
 
   // --- Coins in flight, and the deal ------------------------------------------
-  // Money moves one purse at a time, and heavily: a seat's coins leave from
-  // where they stood in its purse and land on the pile's next spots, and only
-  // when the last has landed does the next purse pour. At the verdict the pile
-  // flies to the winners, onto the spots their purses have laid out for what
-  // they won (purses keep their stacks from hand to hand, so that's where the
-  // coins stay). The cards are dealt the same way, after the antes. Everything
-  // waits its turn in one queue; a tap anywhere hurries it all along (the
-  // stacks just change, as they do for those who'd rather have no motion).
+  // Money moves through the shared coin queue (coinflow.svelte.ts): a purse at
+  // a time, the pile to the winners. The cards are dealt in the same queue,
+  // after the antes; a tap anywhere hurries it all along (the stacks just
+  // change, as they do for those who'd rather have no motion).
   let rootEl = $state<HTMLElement>();
   let pileEl = $state<HTMLElement>();
-  /** Whose each coin in the pile is, in the order they landed. */
-  let owners: number[] = [];
   let flown: number[] = [];
   let flownHand = -1;
   let paidHand = -1;
   /** Which table this is (Again deals a new one). */
   let tableNo = $state(0);
-  const MAX_FLYERS = 40;
-  /** A coin's flight, and the beat between one coin and the next. */
-  const FLIGHT_MS = 650;
-  const POUR_MS = 70;
-  /** The deal: a card face up (the board, yours) changes the game, so it comes slowly; one face down to a rival, quicker. */
-  const FACE_UP_MS = 650;
-  const FACE_DOWN_MS = 220;
   const purseEl = (seat: number) => rootEl?.querySelector<HTMLElement>(`[data-purse="${seat}"]`) ?? null;
+  const coins = new CoinFlow({ purse: purseEl, pot: () => pileEl });
 
-  /** Flows waiting or under way; while there are any, the table is busy and the buttons wait. */
-  let pending = $state(0);
-  let flows: Promise<void> = Promise.resolve();
-  /** Hurrying: what's queued happens at once, without movement. */
-  let rushing = false;
-  function later(run: () => Promise<void>) {
-    pending++;
-    flows = flows
-      .then(run)
-      .catch(() => {})
-      .finally(() => {
-        if (--pending === 0) rushing = false;
-      });
-  }
-  /** Coins moving from one place to another, one after another; resolves when the last has landed. */
-  function pour(moves: [Element, HTMLElement][], { handful = 1, gap = POUR_MS } = {}): Promise<void> {
-    for (const [src] of moves) src.classList.remove('waiting');
-    if (rushing || reducedMotion()) {
-      for (const [, spot] of moves) spot.classList.remove('landing');
-      return Promise.resolve();
-    }
-    return Promise.all(moves.map(([src, spot], i) => flyInto(src, spot, Math.floor(i / handful) * gap, undefined, FLIGHT_MS))).then(() => {});
-  }
   /** A tap on the table (not on a button or a card: those are moves): everything in the air lands, and whatever is queued happens at once. */
   function hurry(e?: MouseEvent) {
-    if (!pending || (e?.target instanceof Element && e.target.closest('button'))) return;
-    rushing = true;
-    landAll();
+    if (e?.target instanceof Element && e.target.closest('button')) return;
+    if (!coins.hurry()) return;
     dealt = DEALT_ALL;
     boardShown = Math.max(boardShown, round.community.length);
-  }
-
-  /** A seat paid dollars a..b into the pot: its coins wait in its purse for its turn, then pour into the pile. */
-  function payIn(seat: number, a: number, b: number) {
-    const purse = purseEl(seat);
-    const moves: [Element, HTMLElement][] = [];
-    for (let k = a; k < b; k++) {
-      const spot = pileEl?.querySelector<HTMLElement>(`[data-k="${owners.length}"]`);
-      owners.push(seat);
-      const src = purse?.querySelector(`[data-d="${k}"]`);
-      if (!spot || !src || k >= a + MAX_FLYERS) continue;
-      spot.classList.add('landing');
-      src.classList.add('waiting');
-      moves.push([src, spot]);
-    }
-    if (moves.length) later(() => pour(moves));
-  }
-
-  /** The verdict: the pile flies to the winners (a winner's own coins to it, the rest shared out among them in turn). */
-  function payOut(winners: number[]) {
-    if (!pileEl) return;
-    const landed = new Map<number, number>();
-    let shared = 0;
-    const coins = [...pileEl.querySelectorAll<HTMLElement>('[data-k]')];
-    const first = Math.max(0, coins.length - MAX_FLYERS * 2);
-    const moves: [Element, HTMLElement][] = [];
-    coins.forEach((c, i) => {
-      const owner = owners[Number(c.dataset.k)];
-      const to = winners.includes(owner) ? owner : winners[shared++ % winners.length];
-      const g = landed.get(to) ?? 0;
-      landed.set(to, g + 1);
-      const spot = purseEl(to)?.querySelector<HTMLElement>(`[data-g="${g}"]`);
-      // Only the last few dozen fly (the rest are there already when the pot is paid).
-      if (!spot || i < first) return;
-      spot.classList.add('landing');
-      c.classList.add('waiting');
-      moves.push([c, spot]);
-    });
-    // A pot is heavy too, but paid out in handfuls: big pots still look big, without the wait.
-    if (moves.length) later(() => pour(moves, { handful: 3, gap: 45 }).then(() => moves.forEach(([c]) => c.classList.remove('waiting'))));
   }
 
   // The deal, as at a real table: one card at a time round the table, from the
@@ -504,10 +415,8 @@
   const holeDealt = (seat: number) => [0, 1, 2].filter((k) => dealIndex(seat, k) < dealt).length;
   /** The Flop's i-th card in dealing order: after every hole card. */
   const flopIndex = (i: number) => 3 * round.seats.length + i;
-  /** The pause before the Flop, and between its cards: Boom. Boom. BOOM. */
-  const FLOP_MS = [1100, 1000, 1300];
   function deal(): Promise<void> {
-    if (rushing || reducedMotion()) {
+    if (coins.still) {
       dealt = DEALT_ALL;
       return Promise.resolve();
     }
@@ -523,7 +432,7 @@
     return new Promise((done) => {
       const tick = () => {
         // Hurried along: the rest at once.
-        if (rushing) dealt = DEALT_ALL;
+        if (coins.rushing) dealt = DEALT_ALL;
         if (dealt >= cards) return done();
         const i = dealt++;
         setTimeout(tick, after(i));
@@ -534,7 +443,7 @@
 
   /** The next street's card onto the board, in a beat of its own. */
   function dealBoard(): Promise<void> {
-    if (rushing || reducedMotion()) {
+    if (coins.still) {
       boardShown = round.community.length;
       return Promise.resolve();
     }
@@ -550,7 +459,7 @@
   let announcing = $state(false);
   const ANNOUNCE_MS = 2400;
   function announce(): Promise<void> {
-    if (rushing || reducedMotion()) return Promise.resolve();
+    if (coins.still) return Promise.resolve();
     announcing = true;
     return pause(ANNOUNCE_MS).then(() => {
       announcing = false;
@@ -565,7 +474,7 @@
   async function ceremony() {
     const order = placings(game);
     const score = highRollersResult(game).score;
-    pending++;
+    coins.begin();
     try {
       placed = 0;
       counted = 0;
@@ -574,13 +483,13 @@
         placed = i + 1;
       }
       await pause(PLACE_MS / 2);
-      if (rushing || reducedMotion() || !score) counted = score;
+      if (coins.still || !score) counted = score;
       else {
         const start = performance.now();
         await new Promise<void>((done) => {
           const step = (now: number) => {
             const f = Math.min(1, (now - start) / COUNT_MS);
-            counted = rushing ? score : Math.round(score * (1 - Math.pow(1 - f, 3)));
+            counted = coins.rushing ? score : Math.round(score * (1 - Math.pow(1 - f, 3)));
             if (counted >= score) return done();
             requestAnimationFrame(step);
           };
@@ -591,7 +500,7 @@
     } finally {
       placed = 99;
       counted = score;
-      if (--pending === 0) rushing = false;
+      coins.end();
     }
   }
 
@@ -609,11 +518,11 @@
     // Waiting their turn, they're not in their new fan yet.
     for (const m of moves) m.el.classList.add('landing');
     return new Promise((done) =>
-      later(async () => {
+      coins.later(async () => {
         await Promise.all(
           moves.map(({ from, el }, i) => {
             el.classList.remove('landing');
-            if (rushing || reducedMotion()) return;
+            if (coins.still) return;
             const to = el.getBoundingClientRect();
             return el
               .animate([{ transform: `translate(${from.left - to.left}px, ${from.top - to.top}px)`, zIndex: 30 }, { transform: 'none', zIndex: 30 }], {
@@ -639,29 +548,29 @@
       if (fresh) {
         flownHand = hand;
         flown = bets.map(() => 0);
-        owners = [];
+        coins.reset();
         dealt = 0;
         // The Last Hand is announced before anything moves.
-        if (round.stakes > 1) later(announce);
+        if (round.stakes > 1) coins.later(announce);
       }
       // In seat order from the first, so the pile fills the way the table played: a purse at a time.
       for (let j = 0; j < bets.length; j++) {
         const s = (round.first + j) % bets.length;
-        if (bets[s] > flown[s]) payIn(s, flown[s], bets[s]);
+        if (bets[s] > flown[s]) coins.payIn(s, flown[s], bets[s]);
       }
       flown = [...bets];
       // A new hand: the antes in, then the deal.
-      if (fresh) later(deal);
+      if (fresh) coins.later(deal);
       if (winners && paidHand !== hand) {
         paidHand = hand;
-        payOut(winners);
+        coins.payOut(winners);
         const dumped = round.result ? [...round.result.dumped, ...round.result.boardTaken] : [];
         if (dumped.length) void slideSnags(dumped.map((j) => j.id));
       }
     });
   });
   /** The table is moving: money in the air, cards being dealt. The buttons wait. */
-  const busy = $derived(pending > 0);
+  const busy = $derived(coins.pending > 0);
   /** What a seat has paid out this hand (into the pot, and forfeits at the verdict) and won (at the verdict): its purse settles them. */
   const paidOut = (seat: number) => (settled && round.result ? round.bets[seat] + round.result.forfeit[seat] : betOf(seat));
   const wonIn = (seat: number) => (settled && round.result ? round.result.share[seat] : 0);
@@ -865,7 +774,7 @@
     {#if view === 'choose' && myTurn && composing && round.raise && laid}
       <!-- The River, your hand laid: raise on it, or let it stand. Either commits you. -->
       <!-- All in already: nothing left to raise with. -->
-      <button class="ghost" onclick={() => go(true)} data-heavy="true" disabled={left === 0}>{round.raise > left && left > 0 ? t('hr.allIn', { amount: dollars(left) }) : t('hr.raise', { amount: dollars(round.raise) })}</button>
+      <button class="ghost" onclick={() => go(true)} data-heavy="true" disabled={left === 0}>{round.raise > left && left > 0 ? t('draw.allIn', { amount: dollars(left) }) : t('hr.raise', { amount: dollars(round.raise) })}</button>
       <button onclick={() => go()} data-heavy="true">{t('show.next')}</button>
     {:else if view === 'choose' && myTurn && composing && round.raise}
       <!-- The River, first: lay your hand (held: high stakes, heavy decisions; then Raise or Next commits it). -->

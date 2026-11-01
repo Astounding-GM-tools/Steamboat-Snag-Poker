@@ -221,7 +221,6 @@ export const en = {
   'finale.go': 'Accept',
   'hr.raise': 'Raise · {amount}',
   'hr.match': 'Match · {amount}',
-  'hr.allIn': 'All in · {amount}',
   'hr.move.raise': 'Raises · {amount}',
   'hr.move.match': 'Matches · {amount}',
   'hr.raised': 'Raised · {amount}',

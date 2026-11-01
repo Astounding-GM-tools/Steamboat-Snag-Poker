@@ -36,10 +36,11 @@
   import { heavy } from './heavy';
   import { cardPrefs } from './cards.svelte';
   import { switchFaces } from './settings.svelte';
-  import { flyInto, reducedMotion } from './coins';
+  import { CoinFlow, FACE_DOWN_MS, FACE_UP_MS, FLOP_MS, thrownCard } from './coinflow.svelte';
+  import { moneyText, moveLabel, priceText } from './prices';
   import { flight } from './flight.svelte';
   import type { RoundScript, Trigger } from '../story/script';
-  import { cardLabel, dollars, jokerList, name, nickname } from './format';
+  import { cardLabel, jokerList, name, nickname } from './format';
   import { handLabel, tiebreak } from './handNames';
 
   interface Props {
@@ -359,7 +360,7 @@
     const i = revealIndex;
     const id = setTimeout(() => {
       if (revealIndex === i) revealPos = { month: game.month, i: i + 1 };
-    }, still() ? 0 : TURN_MS);
+    }, coins.still ? 0 : TURN_MS);
     return () => clearTimeout(id);
   });
   /** Skip to the result: every card turned and the verdict in; the next press goes on from there. */
@@ -491,7 +492,7 @@
     const board = round.community.findIndex((c) => c.id === id);
     const boardNext = round.community.some((c) => c.id === rest[0]) && board < 0;
     const mine = round.seats[0].hand.some((c) => c.id === id);
-    const delay = fastDeal ? 70 : boardNext ? 1100 : board === 0 ? 1000 : board === 1 ? 1300 : mine ? 650 : 220;
+    const delay = fastDeal ? 70 : boardNext ? FLOP_MS[0] : board === 0 ? FLOP_MS[1] : board === 1 ? FLOP_MS[2] : mine ? FACE_UP_MS : FACE_DOWN_MS;
     dealTimer = setTimeout(dealNext, delay);
   }
 
@@ -605,87 +606,22 @@
       ? winner === 0 ? 'me' : winner === 1 ? 'them' : 'split'
       : null,
   );
-  // Money moves one purse at a time, heavily: a captain's coins leave from
-  // where they stood in their purse and land on the heap's next spots, and only
-  // when the last has landed does the next purse pour. At the verdict the heap
-  // flies to the winner, onto the spots their purse has laid out for what they
-  // won (purses keep their stacks from round to round, so that's where the
-  // coins stay); on a tie, each captain's coins go home.
+  // Money moves through the shared coin queue (coinflow.svelte.ts): one purse at a time, the pot to the winner.
   let myPurseEl = $state<HTMLElement>();
   let theirPurseEl = $state<HTMLElement>();
   let potEl = $state<HTMLElement>();
   let flownMonth = -1;
   let flown: [number, number] = [0, 0];
-  /** Whose each coin in the pot is (0 you, 1 them), in the order they landed on the heap. */
-  let owners: (0 | 1)[] = [];
   let paidMonth = -1;
-  const MAX_FLYERS = 40;
-  /** A coin's flight, and the beat between one coin and the next. */
-  const FLIGHT_MS = 650;
-  const POUR_MS = 70;
-  const still = reducedMotion;
-  const coinClass = () => (game.currency === 'buttons' ? 'flying-coin button' : 'flying-coin');
+  const coins = new CoinFlow({
+    purse: (seat) => (seat === 0 ? myPurseEl : theirPurseEl),
+    pot: () => potEl,
+    coinClass: () => (game.currency === 'buttons' ? 'flying-coin button' : 'flying-coin'),
+  });
 
-  /** Payments wait their turn: one flow at a time. */
-  let flows: Promise<void> = Promise.resolve();
-  function later(run: () => Promise<void>) {
-    flight.flows++;
-    flows = flows
-      .then(run)
-      .catch(() => {})
-      .finally(() => flight.flows--);
-  }
-  /** Coins moving from one place to another, one after another (or a handful at a time); resolves when the last has landed. */
-  function pour(moves: [Element, HTMLElement][], { handful = 1, gap = POUR_MS } = {}): Promise<void> {
-    for (const [src] of moves) src.classList.remove('waiting');
-    if (still()) {
-      for (const [, spot] of moves) spot.classList.remove('landing');
-      return Promise.resolve();
-    }
-    return Promise.all(moves.map(([src, spot], i) => flyInto(src, spot, Math.floor(i / handful) * gap, coinClass(), FLIGHT_MS))).then(() => {});
-  }
-
-  /** A card thrown away: up out of the hand, turning, and gone (only a card that went onto the discard pile, and not when hurried). */
+  /** A card thrown away: up out of the hand, turning, and gone (only a card that went onto the discard pile). */
   function thrown(_node: Element, id: string) {
-    const gone = round.discards.some((c) => c.id === id);
-    return { duration: gone && !still() ? 450 : 0, css: (t: number) => `transform: translate(${(1 - t) * 14}px, ${(1 - t) * -26}px) rotate(${(1 - t) * 12}deg); opacity: ${t}` };
-  }
-
-  /** A captain paid dollars a..b into the pot: the coins wait in their purse for their turn, then pour onto the heap. */
-  function payIn(seat: 0 | 1, a: number, b: number) {
-    const purse = seat === 0 ? myPurseEl : theirPurseEl;
-    const moves: [Element, HTMLElement][] = [];
-    for (let k = a; k < b; k++) {
-      const dst = potEl?.querySelector<HTMLElement>(`[data-k="${owners.length}"]`);
-      owners.push(seat);
-      const src = purse?.querySelector(`[data-d="${k}"]`);
-      if (!src || !dst || k >= a + MAX_FLYERS) continue;
-      dst.classList.add('landing');
-      src.classList.add('waiting');
-      moves.push([src, dst]);
-    }
-    if (moves.length) later(() => pour(moves));
-  }
-
-  /** The verdict: the heap flies to the winner (on a tie, each captain's coins home), onto the spots laid out for what was won. */
-  function payOut(to: 'me' | 'them' | 'split') {
-    if (!potEl) return;
-    const all = [...potEl.querySelectorAll<HTMLElement>('[data-k]')];
-    const first = Math.max(0, all.length - MAX_FLYERS * 2);
-    const landed = [0, 0];
-    const moves: [Element, HTMLElement][] = [];
-    all.forEach((c, i) => {
-      const from = owners[Number(c.dataset.k)] ?? 0;
-      const seat = to === 'split' ? from : to === 'me' ? 0 : 1;
-      const spot = (seat === 0 ? myPurseEl : theirPurseEl)?.querySelector<HTMLElement>(`[data-g="${landed[seat]++}"]`);
-      // Only the last few dozen fly (the rest are there already when the pot is paid).
-      if (!spot || i < first) return;
-      spot.classList.add('landing');
-      c.classList.add('waiting');
-      moves.push([c, spot]);
-    });
-    // Heavy, but paid out in handfuls: no wait.
-    if (moves.length) later(() => pour(moves, { handful: 3, gap: 45 }).then(() => moves.forEach(([c]) => c.classList.remove('waiting'))));
+    return thrownCard(round.discards.some((c) => c.id === id) && !coins.still);
   }
 
   /**
@@ -707,15 +643,15 @@
       if (month !== flownMonth) {
         flownMonth = month;
         flown = [0, 0];
-        owners = [];
+        coins.reset();
       }
       ([0, 1] as const).forEach((seat) => {
-        if (b[seat] > flown[seat]) payIn(seat, flown[seat], b[seat]);
+        if (b[seat] > flown[seat]) coins.payIn(seat, flown[seat], b[seat]);
       });
       flown = [b[0], b[1]];
       if (pay && paidMonth !== month) {
         paidMonth = month;
-        payOut(pay);
+        coins.payOut(pay === 'me' ? [0] : pay === 'them' ? [1] : [0, 1]);
       }
     });
   });
@@ -725,24 +661,11 @@
       ? feeFor(round, config, round.street + 1) + discardCost(me.discarded.length, tappedCards.length)
       : 0,
   );
-  /** A price on the table: dollars, or in the lessons, buttons. */
-  const money = (n: number) => (game.currency === 'buttons' ? t(n === 1 ? 'money.button' : 'money.buttons', { n }) : dollars(n));
-  /** On the action buttons there's only room for a sign and the figure: $3, or ⚇3 (a button, two holes). */
-  const price = (n: number) => (game.currency === 'buttons' ? `⚇${n}` : dollars(n));
-  const priced = (label: string) => (cost ? `${label} · ${price(cost)}` : label);
-  /** What you have left to put in this round: a price beyond it is everything, all in (and with nothing left, you just stay in). */
+  const money = (n: number) => moneyText(n, game.currency);
+  const price = (n: number) => priceText(n, game.currency);
+  /** What you have left to put in this round: a price beyond it is everything, all in. */
   const left = $derived(round.potMode ? roundLeft(round, 0) : Infinity);
-  const buttonLabel = $derived(
-    composing
-      ? t('draw.play')
-      : cost > left
-        ? left > 0 ? t('draw.allIn', { amount: price(left) }) : t('draw.check')
-      : tapped.length
-        ? priced(t('draw.discard', { n: tapped.length }))
-        : cost
-          ? priced(t('draw.call'))
-          : t('draw.check'),
-  );
+  const buttonLabel = $derived(moveLabel({ composing, swaps: tapped.length, cost, left, currency: game.currency }));
   const showFold = $derived(playing && !composing);
   // Folding gives up everything you have put into the pot so far.
   /** What you'd walk away from (already in the pot, not a price), and only while you may fold at all. */
