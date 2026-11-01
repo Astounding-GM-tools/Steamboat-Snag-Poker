@@ -4,16 +4,21 @@
   import CardView from './CardView.svelte';
   import { cardPrefs } from './cards.svelte';
   import { saveSettings, settings, switchFaces } from './settings.svelte';
+  import { canFullscreen, setFullscreen } from './fullscreen';
 
   /**
    * Options, as a plain page over the screen above the buttons (like How it
-   * works): the sound of coins, and how card faces read. Remembered on this
-   * device.
+   * works): the sound of coins, full screen (on a phone), and how card faces
+   * read. Remembered on this device.
    */
   const sample = [stdCard(14, 's'), stdCard(10, 'h'), stdCard(7, 'd')];
 
   function sound(on: boolean) {
     settings.sound = on;
+    saveSettings();
+  }
+  function fullscreen(on: boolean) {
+    setFullscreen(on);
     saveSettings();
   }
 </script>
@@ -28,6 +33,17 @@
       <button class:ghost={settings.sound} aria-pressed={!settings.sound} onclick={() => sound(false)}>{t('options.off')}</button>
     </div>
   </section>
+
+  {#if canFullscreen()}
+    <section>
+      <h3>{t('options.fullscreen')}</h3>
+      <div class="choice">
+        <button class:ghost={!settings.fullscreen} aria-pressed={settings.fullscreen} onclick={() => fullscreen(true)}>{t('options.on')}</button>
+        <button class:ghost={settings.fullscreen} aria-pressed={!settings.fullscreen} onclick={() => fullscreen(false)} data-no-fullscreen>{t('options.off')}</button>
+      </div>
+      <p class="tip">{t('options.fullscreenTip')}</p>
+    </section>
+  {/if}
 
   <section>
     <h3>{t('options.faces')}</h3>

@@ -1,16 +1,18 @@
 import { cardPrefs, type CardFace } from './cards.svelte';
 
 /**
- * The player's settings, remembered on this device: the sound of coins, and
- * how card faces read (kept in cardPrefs, where the cards look).
+ * The player's settings, remembered on this device: the sound of coins, full
+ * screen on a phone, and how card faces read (kept in cardPrefs, where the
+ * cards look).
  */
-export const settings = $state({ sound: true });
+export const settings = $state({ sound: true, fullscreen: true });
 
 const KEY = 'wwr.settings';
 
 try {
-  const saved = JSON.parse(localStorage.getItem(KEY) ?? '{}') as { sound?: boolean; face?: CardFace };
+  const saved = JSON.parse(localStorage.getItem(KEY) ?? '{}') as { sound?: boolean; fullscreen?: boolean; face?: CardFace };
   if (typeof saved.sound === 'boolean') settings.sound = saved.sound;
+  if (typeof saved.fullscreen === 'boolean') settings.fullscreen = saved.fullscreen;
   if (saved.face === 'value' || saved.face === 'pair') cardPrefs.face = saved.face;
 } catch {
   /* no storage: the defaults */
@@ -18,7 +20,7 @@ try {
 
 export function saveSettings() {
   try {
-    localStorage.setItem(KEY, JSON.stringify({ sound: settings.sound, face: cardPrefs.face }));
+    localStorage.setItem(KEY, JSON.stringify({ sound: settings.sound, fullscreen: settings.fullscreen, face: cardPrefs.face }));
   } catch {
     /* no storage */
   }

@@ -28,6 +28,8 @@ export const en = {
   'options.sound': 'The clink of coins',
   'options.on': 'On',
   'options.off': 'Off',
+  'options.fullscreen': 'Full screen',
+  'options.fullscreenTip': 'The whole screen for the table, without the browser’s bars. Any tap goes back to it if the phone drops out of it.',
   'options.faces': 'Card faces',
   'options.faceValue': 'Value',
   'options.facePair': 'Value and suit',
