@@ -124,7 +124,7 @@ thirds.
 
 When a month ends with four captains afloat (you among them), the standings
 say so ("Four captains left. You have been invited to The High Rollers Table.") and Next becomes
-**To the final table**. The four sit down with their League purses plus the
+**Accept**. The four sit down with their League purses plus the
 League's **$60 stake** each, their very snags, at the next crossing's hand
 (about the 23rd, an $8 ante). The stake keeps the League's order (a rich run
 still matters) but gives the poorest finalist a fighting chance: with

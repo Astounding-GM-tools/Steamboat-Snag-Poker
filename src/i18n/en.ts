@@ -322,7 +322,7 @@ export const en = {
   'hr.youAreOut': 'You’re out. Watch the rest play it out.',
   'hr.again': 'Again',
   'finale.next': 'Four captains left. You have been invited to The High Rollers Table.',
-  'finale.go': 'To the final table',
+  'finale.go': 'Accept',
   'hr.raise': 'Raise · {amount}',
   'hr.match': 'Match · {amount}',
   'hr.allIn': 'All in · {amount}',
