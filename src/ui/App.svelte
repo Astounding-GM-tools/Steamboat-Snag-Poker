@@ -76,6 +76,11 @@
     };
     w.highRollers = (purse?: number, rivals?: number) => (highRollers = { purse, rivals });
     w.finaleSoon = finaleSoon;
+    // A story's full table: you and n rivals at the first crossing (a story, so never saved; fullTable(2) in the console).
+    w.fullTable = (n = 2) => {
+      const drawn = new Rng(Date.now() >>> 0).shuffle(ROSTER.filter((c) => !c.follows && c.tier !== 'rascal')).slice(0, 5);
+      newVoyage(newGame(Date.now() >>> 0, DEFAULT_CONFIG, drawn.map((def) => ({ def, joins: 'start' as const })), { story: 'fullTable', tables: [drawn.slice(0, n).map((d) => d.id)] }));
+    };
     // Straight to the first hand for buttons; give purses (yours, hers) to try an ending.
     w.tutorialButtons = (mine?: number, hers?: number) => {
       const g = skipToButtons(Date.now() >>> 0);

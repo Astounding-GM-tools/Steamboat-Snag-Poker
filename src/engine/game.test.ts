@@ -108,6 +108,46 @@ describe('game', () => {
 
 });
 
+describe('a story seats several at your table', () => {
+  const def = (id: string) => ROSTER.find((c) => c.id === id)!;
+  const lineUp = ['morag', 'finlay', 'gaylord', 'eliza', 'walrus'].map((id) => ({ def: def(id), joins: 'start' as const }));
+
+  it('the crossing it names deals for everyone it seats; the rest of the river pairs off; then back to duels', () => {
+    let s = newGame(17, DEFAULT_CONFIG, lineUp, { story: 'test', tables: [['morag', 'finlay']] });
+    expect(s.round!.seats.map((x) => x.playerId)).toEqual([HUMAN_ID, 'morag', 'finlay']);
+    expect(s.tableIds).toEqual(['morag', 'finlay']);
+    expect(s.opponentId).toBe('morag');
+    // Three left on the river besides your table: one sits out.
+    expect(['gaylord', 'eliza', 'walrus']).toContain(s.sitterId);
+    const total = s.players.reduce((a, p) => a + p.money, 0);
+    const rng = new Rng(3);
+    while (s.phase === 'duel') s = submitAction(s, rng.pick(legalActions(s.round!, 0)));
+    const report = s.report!;
+    expect(report.duel.players).toEqual([HUMAN_ID, 'morag', 'finlay']);
+    const drained = Object.values(report.money).reduce((a, m) => a + m.drained, 0);
+    expect(s.players.reduce((a, p) => a + p.money, 0)).toBe(total - drained);
+    if (s.phase === 'monthEnd') {
+      s = nextMonth(s);
+      expect(s.round!.seats).toHaveLength(2);
+      expect(s.tableIds).toHaveLength(1);
+    }
+  });
+
+  it('an arranged hand scripts each of them', () => {
+    const fold = { type: 'fold' as const };
+    const s = newGame(17, DEFAULT_CONFIG, lineUp, { story: 'test', tables: [['morag', 'finlay']], arranged: [{ deck: [], opponent: [fold], others: [[fold]] }] });
+    const after = submitAction(s, { type: 'draw', cardIds: [] });
+    // Both folded on the Flop: the pot is yours.
+    expect(after.round!.result!.byFolds).toBe(true);
+    expect(after.round!.result!.winners).toEqual([0]);
+  });
+
+  it('a captain it names who is no longer afloat leaves the river to decide', () => {
+    const s = newGame(17, DEFAULT_CONFIG, lineUp, { story: 'test', tables: [['nobody']] });
+    expect(s.round!.seats).toHaveLength(2);
+  });
+});
+
 describe('the League finale', () => {
   /** A League down to its last four: you and three rivals, played through the first crossing. */
   const toMonthEnd = () => {

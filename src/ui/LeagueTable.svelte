@@ -9,7 +9,7 @@
 
   /**
    * A crossing of the voyage (the League, or Morag's lessons) at the table:
-   * you and this crossing's opponent. It keeps nothing of the game itself
+   * you and this crossing's opponent (or, where a story seats them, several). It keeps nothing of the game itself
    * (App does), only what goes over the board between moves: the opponent's
    * details (tap their name: who they are, and mid-hand Willie's reckoning of
    * what they could be holding) and, after the crossing, the standings.
@@ -36,7 +36,8 @@
 
   const round = $derived(game.round!);
   const playing = $derived(game.phase === 'duel');
-  const opponentId = $derived(game.opponentId!);
+  /** Everyone at your table besides you, by seat from the first after yours. */
+  const tableIds = $derived(game.tableIds?.length ? game.tableIds : [game.opponentId!]);
 
   const view = $derived.by((): TableView => {
     const ids = round.seats.map((s) => s.playerId);
@@ -48,7 +49,7 @@
       hand: game.month,
       ids,
       me: 0,
-      chairs: [{ id: opponentId, seat: 1 }],
+      chairs: tableIds.map((id, k) => ({ id, seat: k + 1 })),
       start,
       money: ids.map((id) => player(game, id).money),
       phase: playing ? 'hand' : 'handEnd',
@@ -61,8 +62,9 @@
 
   /** After the crossing: the standings over the board, until Next. */
   let standing = $state(false);
-  /** Their details over the board (tap their name or portrait, and again, or Back, to close). */
-  let details = $state(false);
+  /** Someone's details over the board (tap their name or portrait, and again, or Back, to close): their seat. */
+  let details = $state<number | null>(null);
+  const detailsId = $derived(details === null ? null : round.seats[details]?.playerId ?? null);
   // A new crossing clears both.
   let shownMonth = untrack(() => game.month);
   $effect(() => {
@@ -71,14 +73,14 @@
       if (m !== shownMonth) {
         shownMonth = m;
         standing = false;
-        details = false;
+        details = null;
       }
     });
   });
 
   /** After the verdict: a lesson goes straight on (or home, when the game is over); the League shows the standings; the end of the voyage is App's. */
   function next() {
-    details = false;
+    details = null;
     if (game.phase === 'gameOver' || game.phase === 'victory') {
       if (game.story) onmenu();
       else onend();
@@ -97,7 +99,7 @@
 
   // Willie's reckoning appears in their details while a crossing is being played.
   const odds = $derived.by((): OpponentOdds | null => {
-    if (!details || !playing) return null;
+    if (details === null || !playing) return null;
     // Seeded from the visible situation so the numbers stay put while you look.
     const seed = round.community.length * 7919 + round.discards.length * 104729 + round.month;
     return opponentOdds(viewFor(round, 0, game.config), game.config, new Rng(seed), 600);
@@ -110,10 +112,10 @@
 {#snippet info()}
   <!-- Their details take the board's place (tap to go back to it): who they are and, mid-crossing, Willie's reckoning. -->
   <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-  <div class="river-info" onclick={() => (details = false)}>
-    <p class="blurb">{t(`character.${opponentId}.blurb`)}</p>
+  <div class="river-info" onclick={() => (details = null)}>
+    <p class="blurb">{t(`character.${detailsId}.blurb`)}</p>
     {#if odds}
-      <p class="harbour">{t('draw.oddsTitle', { name: name(opponentId) })}</p>
+      <p class="harbour">{t(tableIds.length > 1 ? 'draw.oddsTitleTable' : 'draw.oddsTitle', { name: name(detailsId!) })}</p>
       <!-- Every rank, even the impossible ones (a reminder of what beats what); not the all-but-mythical straight flush. -->
       {#each [...CATEGORIES].filter((c) => c !== 'straightFlush').reverse() as cat}
         {@const p = odds.categories[cat]}
@@ -133,7 +135,7 @@
 {/snippet}
 {#snippet detailButtons()}
   <button class="ghost" disabled>{t('end.pause')}</button>
-  <button onclick={() => (details = false)}>{t('draw.back')}</button>
+  <button onclick={() => (details = null)}>{t('draw.back')}</button>
 {/snippet}
 
 <Table
@@ -141,9 +143,9 @@
   onplay={(action) => action && onaction(action)}
   onnext={next}
   {onmenu}
-  onseat={() => (details = !details)}
-  cover={details ? info : showStandings ? standings : undefined}
-  buttons={details ? detailButtons : showStandings ? standingButtons : undefined}
+  onseat={(seat) => (details = details === seat ? null : seat)}
+  cover={details !== null ? info : showStandings ? standings : undefined}
+  buttons={details !== null ? detailButtons : showStandings ? standingButtons : undefined}
   {script}
   {ontalk}
 />

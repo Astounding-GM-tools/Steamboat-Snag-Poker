@@ -7,7 +7,7 @@ import { chooseAction, viewFor } from './ai';
 import { jokerCard, type JokerCard } from './cards';
 import { HUMAN_ID, ROSTER, drawLineUp, type AiId, type LineUpEntry } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
-import { createRound, isLegal, resolveStreet, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
+import { createRound, isLegal, movers, resolveStreet, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
 import { Rng } from './rng';
 import type { HighRollersResult, HighRollersSetup, HighRollersState } from './highrollers';
 
@@ -23,7 +23,8 @@ export interface Player {
 }
 
 export interface DuelSummary {
-  players: [string, string];
+  /** The captains at the table, by seat (you first in yours). */
+  players: string[];
   result: RoundResult;
 }
 
@@ -59,7 +60,10 @@ export interface GameState {
   /** Unowned Jokers. */
   pool: JokerCard[];
   phase: Phase;
+  /** Your opponent this crossing (at a fuller table, the first of them). */
   opponentId: string | null;
+  /** Everyone at your table this crossing besides you, by seat: a duel's one opponent, or (where a story seats them) several. */
+  tableIds?: string[];
   /** This round's sitter: with an odd number of captains, a random rival sits out (and pays snag upkeep). */
   sitterId?: string | null;
   lastOpponentId: string | null;
@@ -69,6 +73,8 @@ export interface GameState {
   story?: string;
   /** Hands dealt to order, one per round from the first; later rounds are shuffled as usual. */
   arranged?: ArrangedHand[];
+  /** A story's encounters: who sits at your table, round by round from the first (none, or a captain not afloat: the river decides). */
+  tables?: (string[] | null)[];
   /** What the money on the table is: dollars, or (in Morag's lessons) buttons. */
   currency?: 'buttons';
   /** Four are left: when the month's report is read, the League goes to the final table. */
@@ -89,7 +95,7 @@ export function newGame(
   seed: number,
   config: RulesConfig = DEFAULT_CONFIG,
   lineUp?: LineUpEntry[],
-  extra: Pick<GameState, 'story' | 'arranged'> = {},
+  extra: Pick<GameState, 'story' | 'arranged' | 'tables'> = {},
 ): GameState {
   const drawRng = new Rng((seed ^ 0x5eed) >>> 0);
   const entries = lineUp ?? drawLineUp(ROSTER, (n) => drawRng.int(n));
@@ -153,13 +159,30 @@ export function pickOpponent(state: GameState, rng: Rng): Player {
   return rng.pick(fresh.length ? fresh : candidates);
 }
 
+/** A story's table for this crossing: the captains it names that are afloat (none: the river decides). */
+function encounter(state: GameState): Player[] {
+  const ids = state.tables?.[state.month - 1] ?? [];
+  return ids.map((id) => state.players.find((p) => p.id === id && p.status === 'active')).filter((p): p is Player => !!p);
+}
+
 function startMonthMut(state: GameState): GameState {
   const rng = new Rng(state.rngState);
-  state.sitterId = chooseSitter(state, rng)?.id ?? null;
-  const opponent = pickOpponent(state, rng);
-  state.opponentId = opponent.id;
+  const seated = encounter(state);
+  let table: Player[];
+  if (seated.length) {
+    // A story seats you with whoever it says; the rest of the river pairs off, someone sitting out if they're odd.
+    table = seated;
+    const rest = activeOpponents(state).filter((p) => !seated.includes(p));
+    const fresh = rest.filter((p) => p.id !== state.sitterId);
+    state.sitterId = rest.length % 2 ? rng.pick(fresh.length ? fresh : rest).id : null;
+  } else {
+    state.sitterId = chooseSitter(state, rng)?.id ?? null;
+    table = [pickOpponent(state, rng)];
+  }
+  state.opponentId = table[0].id;
+  state.tableIds = table.map((p) => p.id);
   const human = player(state, HUMAN_ID);
-  state.round = createRound(state.month, [human, opponent], state.pool, state.config, rng, { arranged: state.arranged?.[state.month - 1]?.deck });
+  state.round = createRound(state.month, [human, ...table], state.pool, state.config, rng, { arranged: state.arranged?.[state.month - 1]?.deck });
   state.phase = 'duel';
   state.report = null;
   state.rngState = rng.state;
@@ -172,11 +195,17 @@ export function submitAction(prev: GameState, action: Action): GameState {
   const state = clone(prev);
   const rng = new Rng(state.rngState);
   const round = state.round!;
-  const opponent = player(state, state.opponentId!);
-  // An arranged hand may script the opponent's move (if it is still a legal one).
-  const scripted = state.arranged?.[state.month - 1]?.opponent?.[round.history.length];
-  const reply = scripted && isLegal(round, 1, scripted) ? scripted : chooseAction(opponent.ai!, viewFor(round, 1, state.config), state.config, rng);
-  resolveStreet(round, [action, reply], state.config);
+  const arranged = state.arranged?.[state.month - 1];
+  const moving = movers(round);
+  // Everyone else at the table answers (an arranged hand may script their moves, if still legal ones).
+  const actions = round.seats.map((seat, i): Action | null => {
+    if (i === 0) return action;
+    if (!moving.includes(i)) return null;
+    const scripted = (i === 1 ? arranged?.opponent : arranged?.others?.[i - 2])?.[round.history.length];
+    if (scripted && isLegal(round, i, scripted)) return scripted;
+    return chooseAction(player(state, seat.playerId).ai!, viewFor(round, i, state.config), state.config, rng);
+  });
+  resolveStreet(round, actions, state.config);
   if (round.result) finishMonth(state, rng);
   state.rngState = rng.state;
   return state;
@@ -209,13 +238,14 @@ function finishMonth(state: GameState, rng: Rng) {
       if (round.potMode) p.money += res.share[i] - round.bets[i] - res.forfeit[i];
     });
     state.pool.push(...res.returnedToPool);
-    return { players: [round.seats[0].playerId, round.seats[1].playerId], result: res };
+    return { players: round.seats.map((s) => s.playerId), result: res };
   };
 
   const duel = settle(state.round!);
 
   // Meanwhile, on the river: everyone else not in the Captain's duel pairs up.
-  const others = rng.shuffle(activeOpponents(state).filter((p) => p.id !== state.opponentId && p.id !== state.sitterId));
+  const atTable = state.tableIds ?? [state.opponentId];
+  const others = rng.shuffle(activeOpponents(state).filter((p) => !atTable.includes(p.id) && p.id !== state.sitterId));
   for (let i = 0; i + 1 < others.length; i += 2) settle(simulateDuel(state, others[i], others[i + 1], rng));
 
   // Joker drain hits every player still on the river.
@@ -274,6 +304,7 @@ export function nextMonth(prev: GameState): GameState {
     state.phase = 'finale';
     state.round = null;
     state.opponentId = null;
+    state.tableIds = [];
     return state;
   }
   state.month++;

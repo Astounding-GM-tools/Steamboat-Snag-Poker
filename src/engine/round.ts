@@ -114,12 +114,15 @@ export interface RoundPlayer {
  * A hand dealt to order, for lessons and story encounters: the cards in the
  * order they come off the deck (the Flop, then the hole cards round the table,
  * you first, then each swap's replacements as they are drawn, the Turn, the
- * River), and the opponent's moves street by street (null: their own choice).
+ * River), and the opponent's moves street by street (null: their own choice;
+ * at a fuller table, `others` for the rest).
  * The rest of the deck is shuffled underneath.
  */
 export interface ArrangedHand {
   deck: string[];
   opponent?: (Action | null)[];
+  /** At a fuller table, the moves of the seats after the first opponent's, seat by seat. */
+  others?: (Action | null)[][];
 }
 
 export interface RoundOptions {

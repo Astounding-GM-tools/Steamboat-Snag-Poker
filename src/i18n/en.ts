@@ -84,6 +84,7 @@ export const en = {
   'draw.back': 'Back',
   'draw.close': 'Close',
   'draw.oddsTitle': 'Here’s what {name} could be harbouring:',
+  'draw.oddsTitleTable': 'Here’s what any of them could be harbouring:',
   'draw.theirDiscards': 'Discarded by {name}',
   'draw.yourDiscards': 'Your discards',
 
