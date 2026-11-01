@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { anteFor, handsOf, nextMonth, streetFee, submitAction } from '../engine';
+import { anteFor, bestHand, nextMonth, streetFee, submitAction } from '../engine';
 import { OATH, RESPECT, giveButtons, newTutorial, rematch, skipToButtons, skipToHands } from './tutorial';
 
 describe('the tutorial', () => {
@@ -40,7 +40,8 @@ describe('the tutorial', () => {
 
     g = submitAction(g, { type: 'fold' });
     expect(r().seats[0].folded).toBe(true);
-    expect(handsOf(r())[1].category).toBe('flush'); // what she shows after your fold
+    const hers = r().seats[1].hand;
+    expect(bestHand(hers, r().community, { min: 0, max: hers.length }).category).toBe('flush'); // what she shows after your fold
     expect(g.players.map((p) => p.money)).toEqual(purses);
   });
 

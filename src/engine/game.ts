@@ -4,11 +4,10 @@
  * receives and returns a new one.
  */
 import { chooseAction, viewFor } from './ai';
-import { jokerCard, type Card, type JokerCard } from './cards';
+import { jokerCard, type JokerCard } from './cards';
 import { HUMAN_ID, ROSTER, drawLineUp, type AiId, type LineUpEntry } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
-import { createRound, foldedSeat, handsOf, isLegal, resolveStreet, winnerOf, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
-import type { HandValue } from './evaluate';
+import { createRound, isLegal, resolveStreet, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
 import { Rng } from './rng';
 import type { HighRollersResult, HighRollersSetup, HighRollersState } from './highrollers';
 
@@ -21,12 +20,6 @@ export interface Player {
   status: 'waiting' | 'active' | 'eliminated';
   /** For a waiting captain: joins once this captain is busted ('*' = anyone). */
   joinsAfter?: string;
-  /** Duels won and lost this tournament (a tie counts as neither). */
-  won?: number;
-  lost?: number;
-  /** A rival's duels won and lost against the Captain, from the rival's side. */
-  wonVsYou?: number;
-  lostVsYou?: number;
 }
 
 export interface DuelSummary {
@@ -37,7 +30,6 @@ export interface DuelSummary {
 export interface MonthReport {
   month: number;
   duel: DuelSummary;
-  offscreen: DuelSummary[];
   /** Money before → after for every player who took part this month. */
   money: Record<string, { before: number; after: number; drained: number }>;
   eliminated: string[];
@@ -45,28 +37,6 @@ export interface MonthReport {
   /** The captain who sat this crossing out (the poorest, when the count is odd). */
   sittingOut?: string | null;
 }
-
-/** One of the Captain's showdowns, kept so a player can check what happened. */
-export interface ShowdownRecord {
-  month: number;
-  opponentId: string;
-  board: Card[];
-  /** Cards each side played (Captain first), Jokers included. */
-  played: [Card[], Card[]];
-  /** Each side's final hand (after a fold, the best they held). */
-  hands: [HandValue, HandValue];
-  winner: 0 | 1 | null;
-  gain: number;
-  forfeit: number;
-  /** Pot mode: what each side paid in; and who folded, if anyone. */
-  paid?: [number, number];
-  folded?: 0 | 1 | null;
-  dumped: JokerCard[];
-  communityTaken: JokerCard[];
-}
-
-/** How many recent showdowns the hand log keeps. */
-export const LOG_SIZE = 10;
 
 /**
  * 'duel' and 'monthEnd' through the League; 'finale' at the High Rollers
@@ -95,8 +65,6 @@ export interface GameState {
   lastOpponentId: string | null;
   round: RoundState | null;
   report: MonthReport | null;
-  /** The Captain's most recent showdowns, newest first. */
-  log: ShowdownRecord[];
   /** A lesson or story encounter, by script id: it is played, not saved or recorded. */
   story?: string;
   /** Hands dealt to order, one per round from the first; later rounds are shuffled as usual. */
@@ -147,7 +115,6 @@ export function newGame(
     lastOpponentId: null,
     round: null,
     report: null,
-    log: [],
     ...extra,
   };
   return startMonthMut(state);
@@ -234,17 +201,10 @@ function finishMonth(state: GameState, rng: Rng) {
 
   const settle = (round: RoundState): DuelSummary => {
     const res = round.result!;
-    const winner = winnerOf(res);
     round.seats.forEach((seat, i) => {
       const p = player(state, seat.playerId);
       before[p.id] ??= p.money;
       p.jokers = seat.jokers;
-      if (winner === i) p.won = (p.won ?? 0) + 1;
-      else if (winner !== null) p.lost = (p.lost ?? 0) + 1;
-      if (p.id !== HUMAN_ID && round.seats[1 - i].playerId === HUMAN_ID) {
-        if (winner === i) p.wonVsYou = (p.wonVsYou ?? 0) + 1;
-        else if (winner !== null) p.lostVsYou = (p.lostVsYou ?? 0) + 1;
-      }
       // Pay in what you bet, take your share of the pot, pay your forfeits (a lesson without a pot moves no money).
       if (round.potMode) p.money += res.share[i] - round.bets[i] - res.forfeit[i];
     });
@@ -253,30 +213,10 @@ function finishMonth(state: GameState, rng: Rng) {
   };
 
   const duel = settle(state.round!);
-  const finished = state.round!;
-  const res = duel.result;
-  const record: ShowdownRecord = {
-    month: state.month,
-    opponentId: state.opponentId!,
-    board: finished.community.slice(),
-    played: [finished.seats[0].slots.slice(), finished.seats[1].slots.slice()],
-    hands: handsOf(finished) as [HandValue, HandValue],
-    winner: winnerOf(res) as 0 | 1 | null,
-    gain: winnerOf(res) === null ? 0 : res.pot,
-    forfeit: res.forfeit[0] + res.forfeit[1],
-    paid: finished.potMode ? [finished.bets[0], finished.bets[1]] : undefined,
-    folded: foldedSeat(finished) as 0 | 1 | null,
-    dumped: res.dumped,
-    communityTaken: res.boardTaken,
-  };
-  state.log = [record, ...(state.log ?? [])].slice(0, LOG_SIZE);
 
   // Meanwhile, on the river: everyone else not in the Captain's duel pairs up.
   const others = rng.shuffle(activeOpponents(state).filter((p) => p.id !== state.opponentId && p.id !== state.sitterId));
-  const offscreen: DuelSummary[] = [];
-  for (let i = 0; i + 1 < others.length; i += 2) {
-    offscreen.push(settle(simulateDuel(state, others[i], others[i + 1], rng)));
-  }
+  for (let i = 0; i + 1 < others.length; i += 2) settle(simulateDuel(state, others[i], others[i + 1], rng));
 
   // Joker drain hits every player still on the river.
   const money: MonthReport['money'] = {};
@@ -313,7 +253,7 @@ function finishMonth(state: GameState, rng: Rng) {
     }
   }
 
-  state.report = { month: state.month, duel, offscreen, money, eliminated, joined, sittingOut: state.sitterId ?? null };
+  state.report = { month: state.month, duel, money, eliminated, joined, sittingOut: state.sitterId ?? null };
   state.lastOpponentId = state.opponentId;
 
   if (player(state, HUMAN_ID).status === 'eliminated') state.phase = 'gameOver';

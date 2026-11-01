@@ -36,7 +36,7 @@ export function raiseChance(round: RoundState, seat: number, laid: readonly (Car
   const others = inHand(round).filter((i) => i !== seat).length;
   if (!others) return 1;
   const mine = bestScore(laid, round.community, { min: laid.length, max: laid.length });
-  const shown = new Set([...round.seats[seat].hand, ...round.seats[seat].slots, ...round.community, ...round.discards].map((c) => c?.id));
+  const shown = new Set([...round.seats[seat].hand, ...round.seats[seat].played, ...round.community, ...round.discards].map((c) => c?.id));
   const pool = fullDeck().filter((c) => !shown.has(c.id));
   let wins = 0;
   for (let s = 0; s < samples; s++) {

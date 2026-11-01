@@ -298,7 +298,7 @@
   const winner = $derived(result ? winnerOf(result) : null);
   const folder = $derived(result ? foldedSeat(round) : null);
   const shownDown = $derived(!!result && !result.byFolds);
-  const steps = $derived(shownDown ? planReveal(round, 1, new Rng(round.month * 31 + round.discards.length)) : []);
+  const steps = $derived(shownDown ? planReveal(round, 1) : []);
   // How many of their cards are face up, counted per round: a new showdown starts
   // at its first card at once (a reset after the fact would let the last
   // round's count fire this round's verdict, and pay out the pot, too early).
@@ -316,7 +316,7 @@
   $effect(() => {
     if (verdictShown) untrack(() => onverdict?.());
   });
-  const theirPlayed = $derived(shownDown ? them.slots : []);
+  const theirPlayed = $derived(shownDown ? them.played : []);
   const playedIds = $derived(new Set(theirPlayed.map((c) => c.id)));
   /** Their cards face up: those flipped so far, or all they played once the showdown is over. */
   const faceUp = $derived(
@@ -371,9 +371,9 @@
     revealStep ? new Set(revealStep.boardUsed) : shownDown && !revealing ? new Set(result!.hands[1]!.cards.map((c) => c.id)) : new Set<string>(),
   );
   const myCall = $derived(shownDown ? handLabel(result!.hands[0]!, { exclaim: decided && winner === 0 }) : null);
-  /** After Play hand the played cards leave the hand for the slots: show them first, the rest dimmed. */
-  const myPlayed = $derived(shownDown ? me.slots.filter((c) => !isJoker(c)) : []);
-  const myPlayedSnagIds = $derived(new Set(shownDown ? me.slots.filter(isJoker).map((c) => c.id) : []));
+  /** After Play hand the played cards leave the hand: show them first, the rest dimmed. */
+  const myPlayed = $derived(shownDown ? me.played.filter((c) => !isJoker(c)) : []);
+  const myPlayedSnagIds = $derived(new Set(shownDown ? me.played.filter(isJoker).map((c) => c.id) : []));
   /**
    * A side's snags in its fan. The hand is already resolved when the showdown
    * starts (the loser keeps the snags it played, and takes the winner's), so
@@ -381,7 +381,7 @@
    * played, then the outcome: snags dumped on the loser land in their fan.
    */
   function fan(seat: typeof me): Card[] {
-    const played = seat.slots.filter(isJoker);
+    const played = seat.played.filter(isJoker);
     if (!shownDown || settled) return seat.jokers;
     const moved = new Set([...result!.dumped, ...result!.boardTaken].map((c) => c.id));
     const kept = seat.jokers.filter((j) => !moved.has(j.id) && !played.some((p) => p.id === j.id));

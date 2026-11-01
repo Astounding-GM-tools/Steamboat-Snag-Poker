@@ -1,49 +1,29 @@
 /**
- * Showdown drama: the order in which the opponent's played cards are turned
- * over, and what each reveal means for the viewer. Teasers first, then Jokers,
- * and the card that decides the duel last.
+ * Showdown drama: the order in which a seat's played cards are turned over,
+ * and the hand they make with the board so far. The cards that make the
+ * revealed hand look best come first, then any snags, and the card that
+ * decides the duel last.
  */
-import { fullDeck, isJoker, isStd, type Card, type StdCard } from './cards';
-import { bestHand, bestScore, CATEGORIES, categoryOf, type Category, type HandValue } from './evaluate';
+import { isJoker, isStd, type Card, type StdCard } from './cards';
+import { bestHand, bestScore, type HandValue } from './evaluate';
 import type { RoundState } from './round';
-import type { Rng } from './rng';
-
-export type Standing = 'ahead' | 'behind' | 'level';
 
 export interface RevealStep {
   card: Card;
-  /** The opponent's best hand from the cards revealed so far plus the board. */
+  /** The best hand from the cards revealed so far plus the board. */
   hand: HandValue;
   /** Board cards that hand uses. */
   boardUsed: string[];
-  /** How the viewer stands against that hand. */
-  standing: Standing;
-  /** Better categories the hidden cards could still make, best first (empty on the last step). */
-  possible: Category[];
-  /** Chance the remaining hidden cards turn the duel against the viewer. */
-  threat: number;
-  last: boolean;
 }
 
 const exact = (n: number) => ({ min: n, max: n });
 
-function partial(cards: Card[], board: Card[]): HandValue {
-  return bestHand(cards, board, exact(cards.length));
-}
-
-function standing(viewer: number, theirs: number): Standing {
-  return viewer > theirs ? 'ahead' : viewer < theirs ? 'behind' : 'level';
-}
-
-/**
- * Plans the reveal of `revealSeat`'s played cards as seen by `viewer` (in a
- * duel, the other seat).
- */
-export function planReveal(round: RoundState, revealSeat: number, rng: Rng, samples = 150, viewer = revealSeat === 0 ? 1 : 0): RevealStep[] {
+/** Plans the reveal of `revealSeat`'s played cards, as seen by `viewer` (in a duel, the other seat). */
+export function planReveal(round: RoundState, revealSeat: number, viewer = revealSeat === 0 ? 1 : 0): RevealStep[] {
   const board = round.community;
-  const played = round.seats[revealSeat].slots;
+  const played = round.seats[revealSeat].played;
   const viewerSeat = round.seats[viewer];
-  const viewerScore = bestScore(viewerSeat.slots, board, exact(viewerSeat.slots.length));
+  const viewerScore = bestScore(viewerSeat.played, board, exact(viewerSeat.played.length));
   const real = played.filter(isStd);
   const jokers = played.filter(isJoker);
   const finalScore = bestScore(played, board, exact(played.length));
@@ -77,31 +57,10 @@ export function planReveal(round: RoundState, revealSeat: number, rng: Rng, samp
   order.push(...jokers);
   if (pivot) order.push(pivot);
 
-  // Cards the viewer cannot see, for "what could still come" sampling.
-  const seen = new Set<string>([...viewerSeat.slots, ...viewerSeat.hand, ...board, ...round.discards].filter(isStd).map((c) => c.id));
-
   return order.map((card, i): RevealStep => {
     const shown = order.slice(0, i + 1);
-    const hand = partial(shown, board);
-    const hidden = order.length - shown.length;
+    const hand = bestHand(shown, board, exact(shown.length));
     const used = new Set(hand.cards.map((c) => c.id));
-    const boardUsed = board.filter((c) => used.has(c.id)).map((c) => c.id);
-    let possible: Category[] = [];
-    let threat = 0;
-    if (hidden > 0) {
-      const pool = fullDeck().filter((c) => !seen.has(c.id) && !shown.some((s) => s.id === c.id));
-      const reach = new Set<number>();
-      let worse = 0;
-      for (let s = 0; s < samples; s++) {
-        const extra = rng.shuffle(pool).slice(0, hidden);
-        const score = bestScore([...shown, ...extra], board, exact(shown.length + hidden));
-        reach.add(CATEGORIES.indexOf(categoryOf(score)));
-        if (score > viewerScore) worse++;
-      }
-      const current = CATEGORIES.indexOf(hand.category);
-      possible = [...reach].filter((c) => c > current).sort((a, b) => b - a).map((c) => CATEGORIES[c]);
-      threat = worse / samples;
-    }
-    return { card, hand, boardUsed, standing: standing(viewerScore, hand.score), possible, threat, last: hidden === 0 };
+    return { card, hand, boardUsed: board.filter((c) => used.has(c.id)).map((c) => c.id) };
   });
 }

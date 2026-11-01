@@ -148,7 +148,7 @@ export function playHighRollers(prev: HighRollersState, mine: Action | null): Hi
     const ai = state.players[state.seated[seat]].ai!;
     if (round.street === 3) {
       // Facing a raise: match it, or fold.
-      const chance = raiseChance(round, seat, s.slots, rng);
+      const chance = raiseChance(round, seat, s.played, rng);
       return wantsMatch(ai, chance, round.raise, pot, standingOf(state, seat)) ? { type: 'match' } : { type: 'fold' };
     }
     const action = chooseAction(ai, viewFor(round, seat, state.config), state.config, rng);

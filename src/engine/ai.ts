@@ -21,9 +21,9 @@ export interface SeatView {
   street: number;
   hand: StdCard[];
   jokers: JokerCard[];
-  slots: Card[];
+  played: Card[];
   community: Card[];
-  opponentSlots: Card[];
+  opponentPlayed: Card[];
   opponentHandSize: number;
   opponentJokerCount: number;
   discards: StdCard[];
@@ -50,11 +50,11 @@ export function viewFor(round: RoundState, seat: number, config: RulesConfig): S
     street: round.street,
     hand: me.hand,
     jokers: me.jokers,
-    slots: me.slots,
+    played: me.played,
     community: round.community,
-    opponentSlots: others.flatMap((s) => s.slots),
+    opponentPlayed: others.flatMap((s) => s.played),
     opponentHandSize: Math.max(0, ...others.map((s) => s.hand.length)),
-    opponentJokerCount: Math.max(0, ...others.map((s) => s.jokers.length + s.slots.filter(isJoker).length)),
+    opponentJokerCount: Math.max(0, ...others.map((s) => s.jokers.length + s.played.filter(isJoker).length)),
     discards: round.discards,
     opponentDiscarded: others.flatMap((s) => s.discarded),
     discardedCount: me.discarded.length,
@@ -77,7 +77,7 @@ const ANY_OWN = (n: number): OwnCardRule => ({ min: 0, max: n });
 /** Standard cards the viewer cannot see: candidates for the deck and the opponent's hand. */
 function unseen(view: SeatView): StdCard[] {
   const known = new Set<string>(
-    [...view.hand, ...view.slots, ...view.community, ...view.opponentSlots, ...view.discards].filter(isStd).map((c) => c.id),
+    [...view.hand, ...view.played, ...view.community, ...view.opponentPlayed, ...view.discards].filter(isStd).map((c) => c.id),
   );
   return fullDeck().filter((c) => !known.has(c.id));
 }

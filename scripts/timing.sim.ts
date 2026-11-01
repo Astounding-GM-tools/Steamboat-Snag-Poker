@@ -16,7 +16,7 @@ it('timing', () => {
     t0 = performance.now();
     s = submitAction(s, legalActions(s.round!, 0)[0]);
     rec(`submit@${step}`, performance.now() - t0);
-    if (s.round?.result) { t0 = performance.now(); planReveal(s.round, 1, rng); rec('reveal', performance.now() - t0); }
+    if (s.round?.result) { t0 = performance.now(); planReveal(s.round, 1); rec('reveal', performance.now() - t0); }
   }
   for (const [k, v] of Object.entries(times)) console.error(k.padEnd(14), 'max', Math.max(...v).toFixed(0), 'avg', (v.reduce((a, b) => a + b) / v.length).toFixed(0));
 });

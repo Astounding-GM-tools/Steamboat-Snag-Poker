@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, PRESETS, type RulesConfig } from './config';
 import { HUMAN_ID, ROSTER, drawLineUp } from './characters';
-import { FINALE_STAKE, LOG_SIZE, activeOpponents, finaleSetup, finishFinale, newGame, nextMonth, player, submitAction, type GameState } from './game';
+import { FINALE_STAKE, activeOpponents, finaleSetup, finishFinale, newGame, nextMonth, player, submitAction, type GameState } from './game';
 import { chooseAction, viewFor } from './ai';
 import { newHighRollers } from './highrollers';
 import { legalActions } from './round';
@@ -52,34 +52,6 @@ describe('game', () => {
     });
   }
 
-  it('keeps a log of the Captain\'s recent showdowns', () => {
-    let s = newGame(11);
-    const rng = new Rng(2);
-    for (let i = 0; i < 40 && (s.phase === 'duel' || s.phase === 'monthEnd'); i++) {
-      s = s.phase === 'monthEnd' ? nextMonth(s) : submitAction(s, rng.pick(legalActions(s.round!, 0)));
-    }
-    expect(s.log.length).toBeGreaterThan(0);
-    expect(s.log.length).toBeLessThanOrEqual(LOG_SIZE);
-    const last = s.log[0];
-    // A fold can end a crossing before the whole board is out.
-    expect(last.board.length).toBeGreaterThanOrEqual(3);
-    expect(last.hands).toHaveLength(2);
-  });
-
-  it('tallies every captain\'s duels won and lost', () => {
-    const s = playOut(5);
-    const won = s.players.reduce((n, p) => n + (p.won ?? 0), 0);
-    const lost = s.players.reduce((n, p) => n + (p.lost ?? 0), 0);
-    // Every decided duel has one winner and one loser; ties count for neither.
-    expect(won).toBeGreaterThan(0);
-    expect(won).toBe(lost);
-    // Against the Captain, the rivals' wins are the Captain's losses and vice versa.
-    const captain = s.players.find((p) => p.id === HUMAN_ID)!;
-    const rivals = s.players.filter((p) => p.id !== HUMAN_ID);
-    expect(rivals.reduce((n, p) => n + (p.wonVsYou ?? 0), 0)).toBe(captain.lost ?? 0);
-    expect(rivals.reduce((n, p) => n + (p.lostVsYou ?? 0), 0)).toBe(captain.won ?? 0);
-  });
-
   it('Morag comes down to the river once Finlay is busted', () => {
     const def = (id: string) => ROSTER.find((c) => c.id === id)!;
     const lineUp = [
@@ -127,7 +99,6 @@ describe('game', () => {
     const rng = new Rng(9);
     while (s.phase === 'duel') s = submitAction(s, rng.pick(legalActions(s.round!, 0)));
     expect(s.report!.sittingOut).toBe(sitter);
-    expect(s.report!.offscreen.flatMap((d) => d.players)).not.toContain(sitter);
     expect(player(s, sitter).money).toBe(before - 2 * DEFAULT_CONFIG.drainPerJoker);
     expect(s.report!.money[sitter].drained).toBe(2 * DEFAULT_CONFIG.drainPerJoker);
     // Next round someone else sits out.

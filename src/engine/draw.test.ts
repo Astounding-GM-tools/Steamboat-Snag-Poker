@@ -3,7 +3,6 @@ import { fullDeck, isJoker, jokerCard, parseCard, type Card, type StdCard } from
 import { PRESETS } from './config';
 import { planReveal } from './reveal';
 import { isComposing, legalActions, resolveStreet, type RoundState, type Seat } from './round';
-import { Rng } from './rng';
 
 const config = PRESETS.draw;
 const cards = (codes: string) => codes.split(' ').map(parseCard);
@@ -15,7 +14,7 @@ function composeRound(hands: [string, string], board: string, jokers: [number, n
     playerId: `p${next}`,
     hand: cards(hand),
     jokers: Array.from({ length: j }, () => jokerCard(next++)),
-    slots: [],
+    played: [],
     discarded: [],
   });
   const used = new Set([...hands.join(' ').split(' '), ...board.split(' ')]);
@@ -91,16 +90,14 @@ describe('draw style', () => {
 });
 
 describe('planReveal', () => {
-  it('reveals teasers first, Jokers next and the deciding card last', () => {
+  it('reveals the best-looking cards first, snags next and the deciding card last', () => {
     const r = composeRound(['As Ad 2c', 'Ks Qs 3c'], 'Js Ts 7d 4h 2d', [0, 1]);
     // Opponent plays K♠ Q♠ + Joker: K Q J T + dead → King high (no straight with a dead card).
     resolveStreet(r, [{ type: 'compose', cardIds: ['As', 'Ad'], jokers: 0 }, { type: 'compose', cardIds: ['Ks', 'Qs'], jokers: 1 }], config);
-    const steps = planReveal(r, 1, new Rng(1));
+    const steps = planReveal(r, 1);
     expect(steps).toHaveLength(3);
     expect(isJoker(steps[1].card)).toBe(true);
-    expect(steps[2].last).toBe(true);
-    expect(steps[2].standing).toBe('ahead'); // the viewer's pair of aces wins
-    expect(steps[0].possible.length).toBeGreaterThan(0);
+    expect(steps[2].hand.category).toBe('highCard'); // all of it, at last: King high
   });
 });
 

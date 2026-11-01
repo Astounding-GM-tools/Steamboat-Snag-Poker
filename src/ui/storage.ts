@@ -49,9 +49,9 @@ export function recordResult(months: number, victory: boolean, score = 0): Best 
  * game's state changes shape: the key moves on, and an older voyage is
  * simply left behind (a fresh start costs nothing while it's a prototype).
  */
-const SAVE_KEY = 'wwr.save.v3';
+const SAVE_KEY = 'wwr.save.v4';
 /** Left behind: older voyages, and the settings of the retired rules lab. */
-const OLD_KEYS = ['wwr.save.v2', 'wwr.config.v2', 'wwr.config.v3'];
+const OLD_KEYS = ['wwr.save.v2', 'wwr.save.v3', 'wwr.config.v2', 'wwr.config.v3'];
 
 /** The voyage in progress, saved after every move so it survives a reload. */
 export function loadGame(): GameState | null {

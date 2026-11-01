@@ -6,6 +6,6 @@ export * from './round';
 export * from './game';
 export { chooseAction, opponentOdds, viewFor, type OpponentOdds, type SeatView } from './ai';
 export { Rng, seedFromString } from './rng';
-export { planReveal, type RevealStep, type Standing } from './reveal';
+export { planReveal, type RevealStep } from './reveal';
 export * from './pot';
 export * from './highrollers';

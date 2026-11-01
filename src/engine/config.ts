@@ -5,8 +5,8 @@ export interface RulesConfig {
   preset: string;
   /** Community cards revealed on Flop, Turn, River. */
   communitySchedule: Schedule;
-  /** Cards dealt to each player on Flop, Turn, River (the hole cards come with the Flop). */
-  dealSchedule: Schedule;
+  /** Cards in each player's hand, dealt with the Flop. */
+  handSize: number;
   /** Snags in the game; unowned ones are shuffled into the deck. */
   totalJokers: number;
   /** One more unowned snag goes into the deck every N crossings. */
@@ -36,7 +36,7 @@ export const PRESETS: Record<string, RulesConfig> = {
   draw: {
     preset: 'draw',
     communitySchedule: [3, 1, 1],
-    dealSchedule: [3, 0, 0],
+    handSize: 3,
     totalJokers: 10,
     shuffledJokerEveryMonths: 2,
     drainPerJoker: 4,

@@ -139,21 +139,21 @@ const buf: (Card | null)[] = [];
 
 /**
  * Searches every legal 5-card hand: between `rule.min` and `rule.max` of the
- * player's own slot cards (Jokers and empty slots count, as dead cards) and the
- * rest from the community. While the board is incomplete, missing board cards
+ * player's own cards (snags, or nulls, count as dead cards) and the rest from
+ * the community. While the board is incomplete, missing board cards
  * count as dead. Calls `visit` with the cards for the best one if given.
  */
-export function bestScore(slots: readonly (Card | null)[], board: readonly Card[], rule: OwnCardRule, visit?: (cards: (Card | null)[]) => void): number {
+export function bestScore(own: readonly (Card | null)[], board: readonly Card[], rule: OwnCardRule, visit?: (cards: (Card | null)[]) => void): number {
   let best = -1;
   let bestCards: (Card | null)[] | null = null;
-  const minOwn = Math.min(rule.min, slots.length);
-  const maxOwn = Math.min(rule.max, slots.length, 5);
+  const minOwn = Math.min(rule.min, own.length);
+  const maxOwn = Math.min(rule.max, own.length, 5);
   for (let k = minOwn; k <= maxOwn; k++) {
     const boardSets = indexCombos(board.length, Math.min(5 - k, board.length));
-    for (const own of indexCombos(slots.length, k)) {
+    for (const pick of indexCombos(own.length, k)) {
       for (const fromBoard of boardSets) {
         buf.length = 0;
-        for (const i of own) buf.push(slots[i]);
+        for (const i of pick) buf.push(own[i]);
         for (const i of fromBoard) buf.push(board[i]);
         const s = scoreCards(buf);
         if (s > best) {
@@ -168,8 +168,8 @@ export function bestScore(slots: readonly (Card | null)[], board: readonly Card[
 }
 
 /** Like bestScore, but returns the full HandValue (for display and showdown). */
-export function bestHand(slots: readonly (Card | null)[], board: readonly Card[], rule: OwnCardRule): HandValue {
+export function bestHand(own: readonly (Card | null)[], board: readonly Card[], rule: OwnCardRule): HandValue {
   let cards: (Card | null)[] = [];
-  bestScore(slots, board, rule, (c) => (cards = c));
+  bestScore(own, board, rule, (c) => (cards = c));
   return evaluate(cards);
 }

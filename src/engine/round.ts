@@ -35,7 +35,7 @@ export interface Seat {
   /** Owned snags not played. They never take hand space. */
   jokers: JokerCard[];
   /** The cards played: empty until the hand is made on the River. */
-  slots: Card[];
+  played: Card[];
   /** Cards this seat discarded this hand (face up). */
   discarded: StdCard[];
   /** How many of `discarded` were thrown on the Flop (the rest on the Turn). */
@@ -164,7 +164,7 @@ export function createRound(
   const purses = potMode ? players.map((p) => Math.max(0, p.money ?? Infinity)) : undefined;
   const round: RoundState = {
     month,
-    seats: players.map((p) => ({ playerId: p.id, hand: [], jokers: p.jokers.slice(), slots: [], discarded: [], folded: false })),
+    seats: players.map((p) => ({ playerId: p.id, hand: [], jokers: p.jokers.slice(), played: [], discarded: [], folded: false })),
     first: first % players.length,
     deck: stackDeck(arranged, rng),
     community: [],
@@ -182,7 +182,7 @@ export function createRound(
     result: null,
   };
   for (let i = 0; i < config.communitySchedule[0]; i++) round.community.push(draw(round));
-  for (let k = 0; k < config.dealSchedule[0]; k++) for (const s of seatOrder(round)) drawToSeat(round, s);
+  for (let k = 0; k < config.handSize; k++) for (const s of seatOrder(round)) drawToSeat(round, s);
   if (!arranged) {
     const count = Math.min(pool.length, Math.floor((month - 1) / config.shuffledJokerEveryMonths));
     const snags: Card[] = [];
@@ -343,7 +343,7 @@ export function resolveStreet(round: RoundState, actions: (Action | null)[], con
       }
       for (let k = 0; k < a.cardIds.length; k++) drawToSeat(round, i);
     } else if (a.type === 'compose') {
-      s.slots = [...a.cardIds.map((id) => s.hand.find((c) => c.id === id)!), ...s.jokers.splice(0, a.jokers)];
+      s.played = [...a.cardIds.map((id) => s.hand.find((c) => c.id === id)!), ...s.jokers.splice(0, a.jokers)];
       s.hand = s.hand.filter((c) => !a.cardIds.includes(c.id));
     }
   }
@@ -367,11 +367,6 @@ export function winnerOf(result: RoundResult): number | null {
 export function foldedSeat(round: RoundState): number | null {
   const i = round.seats.findIndex((s) => s.folded);
   return i < 0 ? null : i;
-}
-
-/** Each seat's hand once the round is over: the one shown down, or for a seat that wasn't, the best its cards could have made with the board. */
-export function handsOf(round: RoundState): HandValue[] {
-  return round.seats.map((s, i) => round.result?.hands[i] ?? bestHand(s.hand, round.community, { min: 0, max: s.hand.length }));
 }
 
 const potOf = (round: RoundState) => round.bets.reduce((a, b) => a + b, 0);
@@ -407,7 +402,7 @@ function endByFolds(round: RoundState, winners: number[]) {
 function showdown(round: RoundState, config: RulesConfig) {
   const left = inHand(round);
   const hands: (HandValue | null)[] = round.seats.map((s, i) =>
-    left.includes(i) ? bestHand(s.slots, round.community, { min: s.slots.length, max: s.slots.length }) : null,
+    left.includes(i) ? bestHand(s.played, round.community, { min: s.played.length, max: s.played.length }) : null,
   );
   const score = (i: number) => hands[i]!.score;
   const top = Math.max(...left.map(score));
@@ -416,7 +411,7 @@ function showdown(round: RoundState, config: RulesConfig) {
   // The weakest hand still in (on a tie, the one acting earliest this hand).
   const weakest = losers.length ? losers.reduce((w, i) => (score(i) < score(w) ? i : w)) : null;
 
-  const played = round.seats.map((s) => s.slots.filter(isJoker));
+  const played = round.seats.map((s) => s.played.filter(isJoker));
   const boardSnags = round.community.filter(isJoker);
   // A loser's forfeits, as far as its purse goes (a lesson without a pot has none).
   const forfeit = round.seats.map((_, i) => (round.potMode && losers.includes(i) ? Math.min(played[i].length * (config.jokerForfeit ?? 0), roundLeft(round, i)) : 0));

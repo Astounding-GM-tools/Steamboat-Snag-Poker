@@ -26,7 +26,7 @@ describe('evaluate', () => {
     expect(cat('X X 9h 9c 2s')).toBe('pair');
   });
 
-  it('handles empty slots', () => {
+  it('counts missing cards as dead', () => {
     expect(evaluate([null, null, parseCard('9h'), parseCard('9c'), parseCard('2s')]).category).toBe('pair');
   });
 
@@ -66,8 +66,8 @@ describe('bestHand', () => {
   const cards = (codes: string) => codes.split(' ').map((c) => (c === 'X' ? jokerCard(1) : c === '_' ? null : parseCard(c)));
   const omaha = { min: 2, max: 2 };
   const texas = { min: 0, max: 3 };
-  const best = (slots: string, board: string, rule = omaha) =>
-    bestHand(cards(slots), cards(board) as Card[], rule).category;
+  const best = (own: string, board: string, rule = omaha) =>
+    bestHand(cards(own), cards(board) as Card[], rule).category;
 
   it('Omaha rule: must use exactly two own cards', () => {
     // Four hearts on the board but only one heart in hand: no flush in Omaha.

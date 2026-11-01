@@ -361,7 +361,7 @@
   const turnedUp = (seat: number) => shownTo(seat) && !turning(seat);
   /** A rival's showdown: each card it played turned over in turn, a breath apart, then the rest. Yours you know already. */
   async function turnOver(seat: number) {
-    const n = played(round.seats[seat].slots).filter((c) => !isJoker(c)).length;
+    const n = played(round.seats[seat].played).filter((c) => !isJoker(c)).length;
     if (seat === me || !n || rushing || reducedMotion()) return;
     pending++;
     turned = 0;
@@ -699,8 +699,8 @@
     return seen(seat).seats[seat].folded ? t('hr.folded') : '';
   }
   const played = (cards: (Card | null)[]) => cards.filter((c): c is Card => c !== null);
-  const myPlayed = $derived(mine ? played(mine.slots).filter((c) => !isJoker(c)) : []);
-  const myPlayedSnags = $derived(new Set(mine ? played(mine.slots).filter(isJoker).map((c) => c.id) : []));
+  const myPlayed = $derived(mine ? played(mine.played).filter((c) => !isJoker(c)) : []);
+  const myPlayedSnags = $derived(new Set(mine ? played(mine.played).filter(isJoker).map((c) => c.id) : []));
   /**
    * A seat's snags. At the showdown, as they stood before the River was
    * played (those played lift out of the fan); at the verdict, those it owns
@@ -740,7 +740,7 @@
       {:else}
       {@const p = captain(seat)}
       {@const s = seen(seat).seats[seat]}
-      {@const cards = played(s.slots).filter((c) => !isJoker(c))}
+      {@const cards = played(s.played).filter((c) => !isJoker(c))}
       {@const snags = snagsOf(seat)}
       <div class="rival" class:focus={focus === seat} class:folded={s.folded}>
         <div class="who">
@@ -748,7 +748,7 @@
           <span class="tag">{tagName(p.id)}</span>
           {#if snags.length}
             <div class="snag-fan tiny" style="--n: {snags.length}">
-              {#each snags as card (card.id)}<span class="snag" data-snag={card.id}><CardView {card} lifted={turnedUp(seat) && s.slots.some((c) => c?.id === card.id)} /></span>{/each}
+              {#each snags as card (card.id)}<span class="snag" data-snag={card.id}><CardView {card} lifted={turnedUp(seat) && s.played.some((c) => c?.id === card.id)} /></span>{/each}
               {#if snags.length > 1}<span class="snag-count">×{snags.length}</span>{/if}
             </div>
           {/if}
