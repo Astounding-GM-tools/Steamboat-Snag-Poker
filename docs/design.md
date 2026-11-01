@@ -419,6 +419,10 @@ as a fallback. Dropping is final.
   High Rollers table one of three or four (its own fees, the River raise, the
   stakes). `game.ts` runs the League on it, `highrollers.ts` the final table.
 - **UI** (`src/ui`): Svelte components, i18n dictionary in `src/i18n`.
+- **The bench** (`/bench.html` on the dev server, `src/bench`): the table's
+  pieces in their variants (an opponent's seat at a third, half and all of
+  the table; your cards; the board and the pot; the buttons; snag fans) at a
+  phone's width, updating as you save. Development only: not in the build.
 - **Saving:** localStorage for now.
 - **Tests:** Vitest on the engine.
 

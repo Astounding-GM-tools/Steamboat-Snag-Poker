@@ -51,6 +51,7 @@
     font-size: 1.1rem;
     letter-spacing: normal;
     line-height: 1.2;
+    text-align: center;
     text-wrap: balance;
     animation-delay: 0.6s;
   }
