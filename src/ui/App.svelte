@@ -12,9 +12,10 @@
   import { loadBest, loadGame, recordResult, saveGame } from './storage';
   import { giveButtons, newTutorial, rematch, skipToButtons, tutorialScript, TUTORIAL } from '../story/tutorial';
   import { roundScript, type Script } from '../story/script';
+  import { HANDS, handsScript, newHandsLesson } from '../story/hands';
 
   /** Lessons and story encounters, by the id a game carries. */
-  const scripts: Record<string, Script> = { [TUTORIAL]: tutorialScript };
+  const scripts: Record<string, Script> = { [TUTORIAL]: tutorialScript, [HANDS]: handsScript };
 
   let best = $state(loadBest());
   /** Paused or saved voyage, shown as "Continue" on the title screen. */
@@ -62,6 +63,11 @@
   if (import.meta.env.DEV) {
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;
+    // Morag's lesson on the hands (in the making): the rigged deal, her cards face up. A lesson: never saved.
+    w.handsLesson = () => {
+      stage = 'play';
+      setGame(newHandsLesson(Date.now() >>> 0));
+    };
     w.highRollers = (purse?: number) => (highRollers = { purse });
     w.finaleSoon = finaleSoon;
     // Straight to the first hand for buttons; give purses (yours, hers) to try an ending.
