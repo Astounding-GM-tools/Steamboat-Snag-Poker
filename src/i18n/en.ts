@@ -299,6 +299,7 @@ export const en = {
   'hr.allIn': 'All in · {amount}',
   'hr.move.raise': 'Raises · {amount}',
   'hr.move.match': 'Matches · {amount}',
+  'hr.raised': 'Raised · {amount}',
   'hr.lastHand': 'The Last Hand · stakes ×{n}',
   'hr.lastHandNext': 'Next: The Last Hand.',
   'hr.lastHandTitle': 'The Last Hand',

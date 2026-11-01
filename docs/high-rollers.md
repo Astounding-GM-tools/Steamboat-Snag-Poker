@@ -101,12 +101,14 @@ What you walk away with is your score.
   money goes in, and a breath before the next. A tap hurries it. Purses,
   snags and discards change only as each is shown; the new board card waits
   for the end. Folded, you watch the same way. **The River:** only the raises
-  are shown, then how the rest answered them, each in its seat (yours too), a
-  **Next** at a time; then the showdown.
+  are shown, then how the rest answered them, each in its seat (yours too),
+  by themselves; while you answer, a raiser's line keeps saying "Raised".
+  Then the showdown.
 - **The showdown:** your hand first (you know it already: just its name),
-  then the others in their seats, **left to right**, a Next each: each
-  rival's played cards turn over one by one, then what they kept back,
-  dimmed, then the hand's name. At the verdict the pot is paid out in
+  then the others in their seats, **left to right**, by itself: each rival's
+  played cards turn over one by one, then what they kept back, dimmed, then
+  the hand's name, a breath, and the next. **Next** is for after the verdict
+  (the duel's showdown turns by itself the same way). At the verdict the pot is paid out in
   handfuls (heavy, but no wait), and snags that change hands slide from the
   winner's fan (or the board) to the weakest hand's.
 

@@ -200,13 +200,14 @@
     // Every move with something to show, in its seat: yours too (but your own fold shows nothing new).
     const shown = (s: number, a: Action | null) => !!a && !(s === me && a.type === 'fold') && (auto || !river || (a.type === 'compose' && !!a.raise));
     queue = order.filter((s) => shown(s, moves[s])).map((s) => ({ seat: s, action: moves[s]! }));
-    at = auto ? -1 : 0;
-    betsAt = at;
+    // All of it plays out by itself, in seat order: the Flop's and the Turn's moves, the River's raises, the answers.
+    at = -1;
+    betsAt = -1;
     boardShown = before.community.length;
     if (!queue.length) afterReplay();
     else {
       view = 'replay';
-      if (auto) void playOut();
+      void playOut();
     }
   }
 
@@ -308,7 +309,23 @@
     revealOrder = [...(inHand.includes(me) ? [me] : []), ...others];
     revealed = 0;
     view = 'reveal';
-    void turnOver(revealOrder[0]);
+    void showdown();
+  }
+
+  /** The showdown, by itself: each hand in turn (yours you know: just its name), a breath between, then the verdict. */
+  async function showdown() {
+    pending++;
+    try {
+      for (let i = 0; i < revealOrder.length; i++) {
+        revealed = i;
+        await turnOver(revealOrder[i]);
+        await pause(STEP_MS);
+      }
+    } finally {
+      if (--pending === 0) rushing = false;
+    }
+    noteSnags();
+    view = 'verdict';
   }
 
   function nextHand() {
@@ -674,6 +691,8 @@
   /** A rival's line under their cards: the move being shown, their hand at the showdown, or that they're out of it. */
   function rivalLine(seat: number): string {
     if (view === 'replay' && focus === seat) return moveText(queue[at].action);
+    // While the rest answer a raise, the raisers keep saying so.
+    if (view === 'choose' && round.street === 3 && round.raisers.includes(seat)) return t('hr.raised', { amount: dollars(round.raise) });
     if (turnedUp(seat) && handName(seat)) return handName(seat)!.call;
     return seen(seat).seats[seat].folded ? t('hr.folded') : '';
   }
