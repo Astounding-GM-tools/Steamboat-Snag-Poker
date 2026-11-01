@@ -157,6 +157,7 @@
 </script>
 
 <div class="film">
+  <div class="flicker" aria-hidden="true"></div>
   {#if passPlay}
     <PassAndPlay players={passPlay} onmenu={() => (passPlay = null)} />
   {:else if highRollers}

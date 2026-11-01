@@ -58,7 +58,7 @@
       <span class="who">{r.id === HUMAN_ID ? t('character.captain.you') : shortName(r.id)}{#if r.joined}<small> {t('table.new')}</small>{/if}</span>
       <span class="purse">{dollars(shown(r))}</span>
       <span class="delta">{r.out ? t('table.out') : r.satOut && !delta ? '—' : delta > 0 ? `+${dollars(delta)}` : delta < 0 ? `−${dollars(-delta)}` : ''}</span>
-      <span class="snags">{r.snags && !r.out ? `🪵${r.snags}` : ''}</span>
+      <span class="snags">{#if r.snags && !r.out}<span class="log">🪵</span>{r.snags}{/if}</span>
     </li>
   {/each}
 </ol>
@@ -127,5 +127,9 @@
   .out .purse {
     text-decoration: line-through;
     color: var(--dim);
+  }
+  /* A silent film: the emoji in grey too. */
+  .log {
+    filter: grayscale(1);
   }
 </style>

@@ -21,12 +21,12 @@
 
   /** Suit-shaped clouds of very different sizes; each gets a random tilt per visit. */
   const clouds = [
-    { s: '♥', y: -6, size: 56, dur: 70, delay: 0 },
-    { s: '♦', y: 22, size: 20, dur: 52, delay: -12 },
-    { s: '♦', y: -20, size: 34, dur: 60, delay: -30 },
-    { s: '♥', y: 6, size: 74, dur: 88, delay: -45 },
-    { s: '♥', y: 30, size: 16, dur: 44, delay: -26 },
-    { s: '♦', y: -10, size: 44, dur: 76, delay: -60 },
+    { s: '♥\uFE0E', y: -6, size: 56, dur: 70, delay: 0 },
+    { s: '♦\uFE0E', y: 22, size: 20, dur: 52, delay: -12 },
+    { s: '♦\uFE0E', y: -20, size: 34, dur: 60, delay: -30 },
+    { s: '♥\uFE0E', y: 6, size: 74, dur: 88, delay: -45 },
+    { s: '♥\uFE0E', y: 30, size: 16, dur: 44, delay: -26 },
+    { s: '♦\uFE0E', y: -10, size: 44, dur: 76, delay: -60 },
   ].map((c) => ({ ...c, tilt: Math.round(Math.random() * 70 - 35) }));
   let confirmAbandon = $state(false);
 
@@ -67,10 +67,10 @@
       {/each}
       <g class="moon">
         <circle cx="190" cy="-6" r="13" fill="#f2efe6" opacity="0.18" filter="url(#soft-cloud)" />
-        <circle cx="190" cy="-6" r="9" fill="#e9e5da" />
-        <circle cx="187" cy="-8" r="2" fill="#cfcbc1" />
-        <circle cx="193" cy="-3" r="1.4" fill="#cfcbc1" />
-        <circle cx="192" cy="-10" r="1" fill="#cfcbc1" />
+        <circle cx="190" cy="-6" r="9" fill="#e5e5e5" />
+        <circle cx="187" cy="-8" r="2" fill="#cbcbcb" />
+        <circle cx="193" cy="-3" r="1.4" fill="#cbcbcb" />
+        <circle cx="192" cy="-10" r="1" fill="#cbcbcb" />
       </g>
       {#each clouds as cloud, i (i)}
         <g class="cloud" style="--dur: {cloud.dur}s; --delay: {cloud.delay}s">
@@ -87,7 +87,7 @@
       {/each}
       <g class="bank">
         <rect x="-400" y="104" width="1100" height="8" fill="#5a5852" />
-        {#each [{ x: -360.0, s: '♠', size: 29 }, { x: -345.1, s: '♣', size: 21 }, { x: -334.3, s: '♠', size: 21 }, { x: -310.8, s: '♣', size: 19 }, { x: -300.9, s: '♣', size: 27 }, { x: -286.9, s: '♠', size: 21 }, { x: -258.6, s: '♣', size: 18 }, { x: -249.4, s: '♣', size: 22 }, { x: -237.9, s: '♣', size: 18 }, { x: -228.9, s: '♠', size: 26 }, { x: -180.0, s: '♠', size: 29 }, { x: -165.1, s: '♣', size: 21 }, { x: -154.3, s: '♠', size: 21 }, { x: -130.8, s: '♣', size: 19 }, { x: -120.9, s: '♣', size: 27 }, { x: -106.9, s: '♠', size: 21 }, { x: -78.6, s: '♣', size: 18 }, { x: -69.4, s: '♣', size: 22 }, { x: -57.9, s: '♣', size: 18 }, { x: -48.9, s: '♠', size: 26 }, { x: 0.0, s: '♠', size: 29 }, { x: 14.9, s: '♣', size: 21 }, { x: 25.7, s: '♠', size: 21 }, { x: 49.2, s: '♣', size: 19 }, { x: 59.1, s: '♣', size: 27 }, { x: 73.1, s: '♠', size: 21 }, { x: 101.4, s: '♣', size: 18 }, { x: 110.6, s: '♣', size: 22 }, { x: 122.1, s: '♣', size: 18 }, { x: 131.1, s: '♠', size: 26 }, { x: 180.0, s: '♠', size: 29 }, { x: 194.9, s: '♣', size: 21 }, { x: 205.7, s: '♠', size: 21 }, { x: 229.2, s: '♣', size: 19 }, { x: 239.1, s: '♣', size: 27 }, { x: 253.1, s: '♠', size: 21 }, { x: 281.4, s: '♣', size: 18 }, { x: 290.6, s: '♣', size: 22 }, { x: 302.1, s: '♣', size: 18 }, { x: 311.1, s: '♠', size: 26 }, { x: 360.0, s: '♠', size: 29 }, { x: 374.9, s: '♣', size: 21 }, { x: 385.7, s: '♠', size: 21 }, { x: 409.2, s: '♣', size: 19 }, { x: 419.1, s: '♣', size: 27 }, { x: 433.1, s: '♠', size: 21 }, { x: 461.4, s: '♣', size: 18 }, { x: 470.6, s: '♣', size: 22 }, { x: 482.1, s: '♣', size: 18 }, { x: 491.1, s: '♠', size: 26 }, { x: 540.0, s: '♠', size: 29 }, { x: 554.9, s: '♣', size: 21 }, { x: 565.7, s: '♠', size: 21 }, { x: 589.2, s: '♣', size: 19 }, { x: 599.1, s: '♣', size: 27 }, { x: 613.1, s: '♠', size: 21 }, { x: 641.4, s: '♣', size: 18 }, { x: 650.6, s: '♣', size: 22 }, { x: 662.1, s: '♣', size: 18 }, { x: 671.1, s: '♠', size: 26 }] as tree, i (i)}
+        {#each [{ x: -360.0, s: '♠\uFE0E', size: 29 }, { x: -345.1, s: '♣\uFE0E', size: 21 }, { x: -334.3, s: '♠\uFE0E', size: 21 }, { x: -310.8, s: '♣\uFE0E', size: 19 }, { x: -300.9, s: '♣\uFE0E', size: 27 }, { x: -286.9, s: '♠\uFE0E', size: 21 }, { x: -258.6, s: '♣\uFE0E', size: 18 }, { x: -249.4, s: '♣\uFE0E', size: 22 }, { x: -237.9, s: '♣\uFE0E', size: 18 }, { x: -228.9, s: '♠\uFE0E', size: 26 }, { x: -180.0, s: '♠\uFE0E', size: 29 }, { x: -165.1, s: '♣\uFE0E', size: 21 }, { x: -154.3, s: '♠\uFE0E', size: 21 }, { x: -130.8, s: '♣\uFE0E', size: 19 }, { x: -120.9, s: '♣\uFE0E', size: 27 }, { x: -106.9, s: '♠\uFE0E', size: 21 }, { x: -78.6, s: '♣\uFE0E', size: 18 }, { x: -69.4, s: '♣\uFE0E', size: 22 }, { x: -57.9, s: '♣\uFE0E', size: 18 }, { x: -48.9, s: '♠\uFE0E', size: 26 }, { x: 0.0, s: '♠\uFE0E', size: 29 }, { x: 14.9, s: '♣\uFE0E', size: 21 }, { x: 25.7, s: '♠\uFE0E', size: 21 }, { x: 49.2, s: '♣\uFE0E', size: 19 }, { x: 59.1, s: '♣\uFE0E', size: 27 }, { x: 73.1, s: '♠\uFE0E', size: 21 }, { x: 101.4, s: '♣\uFE0E', size: 18 }, { x: 110.6, s: '♣\uFE0E', size: 22 }, { x: 122.1, s: '♣\uFE0E', size: 18 }, { x: 131.1, s: '♠\uFE0E', size: 26 }, { x: 180.0, s: '♠\uFE0E', size: 29 }, { x: 194.9, s: '♣\uFE0E', size: 21 }, { x: 205.7, s: '♠\uFE0E', size: 21 }, { x: 229.2, s: '♣\uFE0E', size: 19 }, { x: 239.1, s: '♣\uFE0E', size: 27 }, { x: 253.1, s: '♠\uFE0E', size: 21 }, { x: 281.4, s: '♣\uFE0E', size: 18 }, { x: 290.6, s: '♣\uFE0E', size: 22 }, { x: 302.1, s: '♣\uFE0E', size: 18 }, { x: 311.1, s: '♠\uFE0E', size: 26 }, { x: 360.0, s: '♠\uFE0E', size: 29 }, { x: 374.9, s: '♣\uFE0E', size: 21 }, { x: 385.7, s: '♠\uFE0E', size: 21 }, { x: 409.2, s: '♣\uFE0E', size: 19 }, { x: 419.1, s: '♣\uFE0E', size: 27 }, { x: 433.1, s: '♠\uFE0E', size: 21 }, { x: 461.4, s: '♣\uFE0E', size: 18 }, { x: 470.6, s: '♣\uFE0E', size: 22 }, { x: 482.1, s: '♣\uFE0E', size: 18 }, { x: 491.1, s: '♠\uFE0E', size: 26 }, { x: 540.0, s: '♠\uFE0E', size: 29 }, { x: 554.9, s: '♣\uFE0E', size: 21 }, { x: 565.7, s: '♠\uFE0E', size: 21 }, { x: 589.2, s: '♣\uFE0E', size: 19 }, { x: 599.1, s: '♣\uFE0E', size: 27 }, { x: 613.1, s: '♠\uFE0E', size: 21 }, { x: 641.4, s: '♣\uFE0E', size: 18 }, { x: 650.6, s: '♣\uFE0E', size: 22 }, { x: 662.1, s: '♣\uFE0E', size: 18 }, { x: 671.1, s: '♠\uFE0E', size: 26 }] as tree, i (i)}
           <text x={tree.x} y="108" font-size={tree.size} fill="#5a5852">{tree.s}</text>
         {/each}
       </g>
@@ -119,7 +119,7 @@
 
       <!-- Main cabin with suit windows -->
       <rect x="66" y="76" width="124" height="20" fill="#f2efe6" stroke="#111" stroke-width="2.5" />
-      {#each ['♠', '♡', '♢', '♣'] as suit, i (suit)}
+      {#each ['♠\uFE0E', '♡\uFE0E', '♢\uFE0E', '♣\uFE0E'] as suit, i (suit)}
         <text x={86 + i * 28} y="91" text-anchor="middle" font-size="13" fill="#111">{suit}</text>
       {/each}
 

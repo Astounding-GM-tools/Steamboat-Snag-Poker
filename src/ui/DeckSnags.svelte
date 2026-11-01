@@ -39,5 +39,6 @@
   .log {
     font-size: 8px;
     line-height: 1;
+    filter: grayscale(1);
   }
 </style>

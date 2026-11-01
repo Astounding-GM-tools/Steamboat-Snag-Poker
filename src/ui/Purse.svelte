@@ -384,7 +384,7 @@
     height: 8px;
   }
   .moth .wings {
-    fill: #cfcbc1;
+    fill: #cbcbcb;
     stroke: #6d6a63;
     stroke-width: 0.6;
     transform-origin: 12px 8px;

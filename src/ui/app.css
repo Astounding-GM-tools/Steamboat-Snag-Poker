@@ -47,6 +47,8 @@
   --title-font: 'Limelight', 'Georgia', serif;
   --body-font: 'Special Elite', 'Courier New', monospace;
   color-scheme: dark;
+  /* A silent film: suits and the like as text, never as coloured emoji (the snag's log is greyed where it's drawn). */
+  font-variant-emoji: text;
 }
 
 * {
@@ -175,8 +177,6 @@ button.ghost {
   position: relative;
   min-height: 100svh;
   background: radial-gradient(ellipse at center, #2a2926 0%, var(--screen) 60%, #000 100%);
-  filter: grayscale(1) contrast(1.08);
-  animation: flicker 0.18s infinite steps(2);
   /* clip, not hidden: a hidden box can still be scrolled (by focus or scrollIntoView), shifting the whole table. */
   overflow: clip;
 }
@@ -195,6 +195,8 @@ button.ghost {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
   opacity: 0.16;
   animation: grain 0.5s steps(6) infinite;
+  /* Room for the grain's jitter (at most 7% of its own size) beyond the screen's edges, and no more: a layer this size is redrawn as it moves. */
+  inset: -20%;
 }
 
 /* Vignette + scratches */
@@ -216,9 +218,23 @@ button.ghost {
   100% { transform: translate(-2%, -4%); }
 }
 
+/*
+ * The projector's flicker: a breath of black over the picture, on and off.
+ * A layer of its own (only it changes), not the whole picture fading: that
+ * would have the browser redraw everything beneath at every step.
+ */
+.flicker {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background: #000;
+  opacity: 0;
+  animation: flicker 0.18s infinite steps(2);
+}
 @keyframes flicker {
-  0% { opacity: 1; }
-  100% { opacity: 0.965; }
+  0% { opacity: 0; }
+  100% { opacity: 0.035; }
 }
 
 @keyframes scratch {
@@ -230,7 +246,8 @@ button.ghost {
 @media (prefers-reduced-motion: reduce) {
   .film,
   .film::before,
-  .film::after {
+  .film::after,
+  .flicker {
     animation: none;
   }
 }
@@ -322,7 +339,7 @@ button.ghost {
   background:
     radial-gradient(ellipse 12% 30% at 36% 50%, #1b1a18 75%, transparent 100%),
     radial-gradient(ellipse 12% 30% at 64% 50%, #1b1a18 75%, transparent 100%),
-    linear-gradient(#d9ccaa, #7d7058);
+    linear-gradient(#cccccc, #717171);
 }
 
 /* A pot coin whose flight hasn't landed yet. */

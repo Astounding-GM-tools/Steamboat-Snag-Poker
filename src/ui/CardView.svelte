@@ -337,6 +337,8 @@
   }
   .jester {
     display: block;
+    /* A silent film: the emoji in grey too. */
+    filter: grayscale(1);
     font-size: calc(var(--w) * 0.45);
     margin-top: 2%;
   }

@@ -40,31 +40,24 @@ const st = new Int8Array(5);
 const counts = new Int8Array(15);
 const groups = new Int8Array(5);
 
-/**
- * Scores up to 5 cards as one comparable number: category, then ranks (group
- * ranks, kickers), then suits card-by-card (♣ < ♦ < ♥ < ♠). Jokers and nulls
- * are dead, so fewer real cards lose once everything else is equal.
- * Straights and flushes need 5 real cards.
- */
-export function scoreCards(inPlay: readonly (Card | null)[]): number {
-  let n = 0;
-  for (let i = 0; i < inPlay.length; i++) {
-    const c = inPlay[i];
-    if (c && c.kind === 'std') {
-      if (n === 5) throw new Error('At most 5 real cards can be evaluated');
-      // Insertion sort: rank desc, then suit desc.
-      const r = c.rank, sv = suitValue(c.suit);
-      let j = n++;
-      while (j > 0 && (rk[j - 1] < r || (rk[j - 1] === r && st[j - 1] < sv))) {
-        rk[j] = rk[j - 1];
-        st[j] = st[j - 1];
-        j--;
-      }
-      rk[j] = r;
-      st[j] = sv;
-    }
-  }
+/** The cards scored so far, sorted as they come: rank down, then suit down. */
+let n = 0;
 
+/** One real card into the hand being scored (insertion sort: rank desc, then suit desc). */
+function add(r: number, sv: number) {
+  if (n === 5) throw new Error('At most 5 real cards can be evaluated');
+  let j = n++;
+  while (j > 0 && (rk[j - 1] < r || (rk[j - 1] === r && st[j - 1] < sv))) {
+    rk[j] = rk[j - 1];
+    st[j] = st[j - 1];
+    j--;
+  }
+  rk[j] = r;
+  st[j] = sv;
+}
+
+/** The score of the cards added since `n` was last set to 0. */
+function finish(): number {
   for (let i = 0; i < n; i++) counts[rk[i]]++;
   let g = 0;
   for (let c = 4; c >= 1; c--) for (let i = 0; i < n; i++) if (counts[rk[i]] === c && (g === 0 || groups[g - 1] !== rk[i])) groups[g++] = rk[i];
@@ -96,6 +89,21 @@ export function scoreCards(inPlay: readonly (Card | null)[]): number {
   score *= 1024;
   for (let i = 0; i < n; i++) score += st[i] * SUIT_W[i];
   return score;
+}
+
+/**
+ * Scores up to 5 cards as one comparable number: category, then ranks (group
+ * ranks, kickers), then suits card-by-card (♣ < ♦ < ♥ < ♠). Jokers and nulls
+ * are dead, so fewer real cards lose once everything else is equal.
+ * Straights and flushes need 5 real cards.
+ */
+export function scoreCards(inPlay: readonly (Card | null)[]): number {
+  n = 0;
+  for (let i = 0; i < inPlay.length; i++) {
+    const c = inPlay[i];
+    if (c && c.kind === 'std') add(c.rank, suitValue(c.suit));
+  }
+  return finish();
 }
 
 export function categoryOf(score: number): Category {
@@ -135,7 +143,20 @@ function indexCombos(n: number, k: number): number[][] {
   return out;
 }
 
-const buf: (Card | null)[] = [];
+/** A search's cards as numbers, read once rather than for every combination: rank (0 for a dead card) and suit. */
+let ownR = new Int8Array(8);
+let ownS = new Int8Array(8);
+let boardR = new Int8Array(8);
+let boardS = new Int8Array(8);
+function load(cards: readonly (Card | null)[], r: Int8Array, s: Int8Array) {
+  for (let i = 0; i < cards.length; i++) {
+    const c = cards[i];
+    if (c && c.kind === 'std') {
+      r[i] = c.rank;
+      s[i] = suitValue(c.suit);
+    } else r[i] = 0;
+  }
+}
 
 /**
  * Searches every legal 5-card hand: between `rule.min` and `rule.max` of the
@@ -144,26 +165,32 @@ const buf: (Card | null)[] = [];
  * count as dead. Calls `visit` with the cards for the best one if given.
  */
 export function bestScore(own: readonly (Card | null)[], board: readonly Card[], rule: OwnCardRule, visit?: (cards: (Card | null)[]) => void): number {
+  if (own.length > ownR.length) (ownR = new Int8Array(own.length)), (ownS = new Int8Array(own.length));
+  if (board.length > boardR.length) (boardR = new Int8Array(board.length)), (boardS = new Int8Array(board.length));
+  load(own, ownR, ownS);
+  load(board, boardR, boardS);
   let best = -1;
-  let bestCards: (Card | null)[] | null = null;
+  let bestPick: number[] | null = null;
+  let bestBoard: number[] | null = null;
   const minOwn = Math.min(rule.min, own.length);
   const maxOwn = Math.min(rule.max, own.length, 5);
   for (let k = minOwn; k <= maxOwn; k++) {
     const boardSets = indexCombos(board.length, Math.min(5 - k, board.length));
     for (const pick of indexCombos(own.length, k)) {
       for (const fromBoard of boardSets) {
-        buf.length = 0;
-        for (const i of pick) buf.push(own[i]);
-        for (const i of fromBoard) buf.push(board[i]);
-        const s = scoreCards(buf);
+        n = 0;
+        for (const i of pick) if (ownR[i]) add(ownR[i], ownS[i]);
+        for (const i of fromBoard) if (boardR[i]) add(boardR[i], boardS[i]);
+        const s = finish();
         if (s > best) {
           best = s;
-          if (visit) bestCards = buf.slice();
+          bestPick = pick;
+          bestBoard = fromBoard;
         }
       }
     }
   }
-  if (visit && bestCards) visit(bestCards);
+  if (visit && bestPick && bestBoard) visit([...bestPick.map((i) => own[i]), ...bestBoard.map((i) => board[i])]);
   return Math.max(best, 0);
 }
 

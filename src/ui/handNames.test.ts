@@ -23,7 +23,8 @@ describe('tiebreak', () => {
   });
 
   it('falls back to suits when every rank matches', () => {
-    expect(tiebreak(hand('As 9d 7c 5h 3c'), hand('Ah 9c 7d 5s 3d'))).toEqual({ kind: 'suit', winner: '♠', loser: '♡' });
+    // (Each suit asks to be drawn as text, U+FE0E: never a coloured emoji.)
+    expect(tiebreak(hand('As 9d 7c 5h 3c'), hand('Ah 9c 7d 5s 3d'))).toEqual({ kind: 'suit', winner: '♠\uFE0E', loser: '♡\uFE0E' });
   });
 
   it('says nothing when the hands already have different names', () => {

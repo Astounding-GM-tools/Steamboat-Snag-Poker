@@ -1,8 +1,8 @@
 import { isJoker, rankLabel, type Card, type JokerCard } from '../engine';
 import { t } from '../i18n';
 
-/** Black-and-white film: red suits are drawn as outlines. */
-export const SUIT_GLYPH = { c: '♣', d: '♢', h: '♡', s: '♠' } as const;
+/** Black-and-white film: red suits are drawn as outlines; each asks to be drawn as text (U+FE0E), never as a coloured emoji. */
+export const SUIT_GLYPH = { c: '♣\uFE0E', d: '♢\uFE0E', h: '♡\uFE0E', s: '♠\uFE0E' } as const;
 
 /** How many Joker names the language file has; more Jokers than that reuse names. */
 const JOKER_NAMES = 12;
