@@ -75,6 +75,8 @@
     heading?: string;
     /** The game is over with this hand: all the money yours, or all of it theirs (for what's said after it). */
     ending?: 'wonAll' | 'lostAll';
+    /** A hand already under way, shown as it stands to someone taking their seat: no antes poured, no deal. */
+    asItStands?: boolean;
   }
 
   let {
@@ -201,6 +203,8 @@
     laid = false;
     // Whoever runs the game has played the street: the table now shows its outcome.
     const r = table.round;
+    // Or not yet: other people owe their moves (the phone goes round), and there's nothing to show until they're in.
+    if (r.history.length === before.history.length && !r.result) return;
     const moves = r.history.at(-1)!.actions;
     const order = Array.from({ length: r.seats.length }, (_, k) => (r.first + k) % r.seats.length);
     // The Flop and the Turn play out by themselves, every seat in turn (yours too); on the River only a raise is
@@ -790,6 +794,14 @@
     const winners = settled ? round.result?.winners : undefined;
     untrack(() => {
       const fresh = hand !== flownHand;
+      if (fresh && table.asItStands && flownHand === -1) {
+        // Taking a seat at a hand under way: the money's in, the cards are out.
+        flownHand = hand;
+        flown = [...bets];
+        dealt = DEALT_ALL;
+        dealtHand = hand;
+        return;
+      }
       if (fresh) {
         flownHand = hand;
         flown = bets.map(() => 0);

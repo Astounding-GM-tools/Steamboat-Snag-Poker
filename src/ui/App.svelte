@@ -1,9 +1,10 @@
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { DEFAULT_CONFIG, ROSTER, Rng, finaleSetup, finishFinale, newGame, nextMonth, submitAction, type Action, type GameState, type HighRollersResult, type HighRollersState } from '../engine';
+  import { DEFAULT_CONFIG, ROSTER, Rng, finaleSetup, finishFinale, newGame, nextMonth, submitAction, type Action, type GameState, type HighRollersResult, type HighRollersState, type SessionPlayer } from '../engine';
   import CardZoom from './CardZoom.svelte';
   import HandLadder from './HandLadder.svelte';
   import LeagueTable from './LeagueTable.svelte';
+  import PassAndPlay from './PassAndPlay.svelte';
   import HighRollersTable from './HighRollersTable.svelte';
   import MonthEnd from './MonthEnd.svelte';
   import Title from './Title.svelte';
@@ -60,6 +61,8 @@
   }
   /** In development, the High Rollers table on its own (highRollers() in the console; highRollers(40) seats everyone with $40, quicker to an ending; highRollers(40, 2) with two rivals). */
   let highRollers = $state<{ purse?: number; rivals?: number } | null>(null);
+  /** In development, pass-and-play on this device (passAndPlay(2) in the console: two people; passAndPlay(2, 1) and an AI). */
+  let passPlay = $state<SessionPlayer[] | null>(null);
   function devTable({ purse, rivals }: { purse?: number; rivals?: number }) {
     const drawn = rivals ? new Rng(Date.now() >>> 0).shuffle(ROSTER.filter((c) => !c.follows && c.tier !== 'rascal')).slice(0, rivals).map((c) => c.id) : undefined;
     return { ...(purse ? { money: purse } : {}), ...(drawn ? { rivals: drawn } : {}) };
@@ -75,6 +78,13 @@
       newVoyage(skipToHands(Date.now() >>> 0));
     };
     w.highRollers = (purse?: number, rivals?: number) => (highRollers = { purse, rivals });
+    w.passAndPlay = (people = 2, ais = 0) => {
+      const drawn = new Rng(Date.now() >>> 0).shuffle(ROSTER.filter((c) => !c.follows && c.tier !== 'rascal'));
+      passPlay = [
+        ...drawn.slice(0, people).map((c) => ({ id: c.id })),
+        ...drawn.slice(people, people + ais).map((c) => ({ id: c.id, ai: c.ai })),
+      ];
+    };
     w.finaleSoon = finaleSoon;
     // A story's full table: you and n rivals at the first crossing (a story, so never saved; fullTable(2) in the console).
     w.fullTable = (n = 2) => {
@@ -147,7 +157,9 @@
 </script>
 
 <div class="film">
-  {#if highRollers}
+  {#if passPlay}
+    <PassAndPlay players={passPlay} onmenu={() => (passPlay = null)} />
+  {:else if highRollers}
     {#key highRollers}<HighRollersTable onmenu={() => (highRollers = null)} setup={devTable(highRollers)} />{/key}
   {:else if game?.phase === 'finale'}
     <!-- The League's last four at the final table (the same deal again if a voyage is picked up here). -->

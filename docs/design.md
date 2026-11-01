@@ -418,6 +418,12 @@ as a fallback. Dropping is final.
   number of seats: a duel is a table of two (the rules' fees, no raise), the
   High Rollers table one of three or four (its own fees, the River raise, the
   stakes). `game.ts` runs the League on it, `highrollers.ts` the final table.
+  `session.ts` is a table of people and AIs, ready for multiplayer: each
+  person's move is collected (`submit`), and once the last one owed is in, the
+  AIs move and the street resolves. Plain data, so a server could hold it and
+  show each person their own seat; for now it drives pass-and-play on one
+  device (`PassAndPlay.svelte`, `passAndPlay(2, 1)` in the development
+  console: two people and an AI).
 - **UI** (`src/ui`): Svelte components, i18n dictionary in `src/i18n`. One
   table on screen (`Table.svelte`) for any number of seats: your opponents
   across the top (an `OpponentSeat` each, laid out by the room it gets: the

@@ -9,3 +9,4 @@ export { Rng, seedFromString } from './rng';
 export { planReveal, type RevealStep } from './reveal';
 export * from './pot';
 export * from './highrollers';
+export * from './session';

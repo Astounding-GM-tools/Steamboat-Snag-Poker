@@ -215,6 +215,10 @@ export const en = {
   'hr.snagsTo': 'The snags go to {name}.',
   'hr.byFolds.you': 'The rest folded: you take the pot.',
   'hr.youFolded': 'You folded: {name} takes the pot.',
+  // Pass-and-play: people taking turns on one device.
+  'pass.passTo': 'Pass the phone to',
+  'pass.itsMe': 'I’m {name}',
+  'pass.wins': '{name} takes the table!',
   'hr.wins.you': 'You take the pot!',
   'hr.snagsTo.you': 'The snags go to you.',
   'hr.youAreOut': 'You’re out. Watch the rest play it out.',
