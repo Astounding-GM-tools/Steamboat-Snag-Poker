@@ -213,6 +213,7 @@ export const en = {
   'hr.wins': '{name} takes the pot!',
   'hr.snagsTo': 'The snags go to {name}.',
   'hr.byFolds.you': 'The rest folded: you take the pot.',
+  'hr.youFolded': 'You folded: {name} takes the pot.',
   'hr.wins.you': 'You take the pot!',
   'hr.snagsTo.you': 'The snags go to you.',
   'hr.youAreOut': 'You’re out. Watch the rest play it out.',

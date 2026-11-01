@@ -832,6 +832,8 @@
     if (!res) return '';
     // You get your own line ("You take the pot!"), not your name in theirs.
     const line = (key: string, s: number) => (s === me ? t(`${key}.you`) : t(key, { name: who(s) }));
+    // You folded and one captain is left: say so (with more still at the table, the rest folded too).
+    if (res.byFolds && me >= 0 && round.seats[me].folded && res.winners.length === 1 && round.seats.length === 2) return t('hr.youFolded', { name: who(res.winners[0]) });
     if (res.byFolds) return line('hr.byFolds', res.winners[0]);
     const wins = res.winners.length > 1 ? t('hr.split', { names: res.winners.map(who).join(' & ') }) : line('hr.wins', res.winners[0]);
     const said = res.weakest !== null && res.dumped.length + res.boardTaken.length ? `${wins} ${line('hr.snagsTo', res.weakest)}` : wins;
