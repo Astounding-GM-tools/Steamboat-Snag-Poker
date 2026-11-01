@@ -3,7 +3,7 @@
   import { DEFAULT_CONFIG, ROSTER, Rng, finaleSetup, finishFinale, newGame, nextMonth, submitAction, type Action, type GameState, type HighRollersResult, type HighRollersState } from '../engine';
   import CardZoom from './CardZoom.svelte';
   import HandLadder from './HandLadder.svelte';
-  import DrawTable from './DrawTable.svelte';
+  import LeagueTable from './LeagueTable.svelte';
   import HighRollersTable from './HighRollersTable.svelte';
   import MonthEnd from './MonthEnd.svelte';
   import Title from './Title.svelte';
@@ -19,11 +19,16 @@
   let saved = $state.raw<GameState | null>(loadGame());
   // Engine state is replaced wholesale on every move, so keep it out of deep reactivity.
   let game = $state.raw<GameState | null>(null);
-  /** After a duel: 'reveal' plays the showdown on the table, then 'result' shows the standings. */
-  let stage = $state<'play' | 'reveal' | 'result'>('play');
-  let endTimer: ReturnType<typeof setTimeout> | undefined;
-  /** The showdown has shown its verdict: the pot may be paid out on the table. */
-  let settled = $state(true);
+  /** The voyage is over (broke, or the last afloat): its ending card is up. */
+  let ended = $state(false);
+
+  /** Which voyage this is: a new one (or one picked up again) gets a fresh table. */
+  let voyage = $state(0);
+  function newVoyage(g: GameState) {
+    voyage++;
+    ended = false;
+    setGame(g);
+  }
 
   function setGame(g: GameState | null) {
     game = g;
@@ -35,13 +40,13 @@
   }
 
   function start() {
-    stage = 'play';
-    setGame(newGame(Date.now() >>> 0, DEFAULT_CONFIG));
+    ended = false;
+    newVoyage(newGame(Date.now() >>> 0, DEFAULT_CONFIG));
   }
 
   function startTutorial() {
-    stage = 'play';
-    setGame(newTutorial(Date.now() >>> 0));
+    ended = false;
+    newVoyage(newTutorial(Date.now() >>> 0));
   }
   /**
    * In development: a League of four (you and three rivals, drawn), whose first crossing ends at the final
@@ -50,8 +55,8 @@
    */
   function finaleSoon() {
     const drawn = new Rng(Date.now() >>> 0).shuffle(ROSTER.filter((c) => !c.follows && c.tier !== 'rascal')).slice(0, 3);
-    stage = 'play';
-    setGame(newGame(Date.now() >>> 0, DEFAULT_CONFIG, drawn.map((def) => ({ def, joins: 'start' as const }))));
+    ended = false;
+    newVoyage(newGame(Date.now() >>> 0, DEFAULT_CONFIG, drawn.map((def) => ({ def, joins: 'start' as const }))));
   }
   /** In development, the High Rollers table on its own (highRollers() in the console; highRollers(40) seats everyone with $40, quicker to an ending; highRollers(40, 2) with two rivals). */
   let highRollers = $state<{ purse?: number; rivals?: number } | null>(null);
@@ -66,8 +71,8 @@
     w.startTutorial = startTutorial;
     // Straight to Morag's lesson on the hands (the tutorial's round three, if you don't know them).
     w.handsLesson = () => {
-      stage = 'play';
-      setGame(skipToHands(Date.now() >>> 0));
+      ended = false;
+      newVoyage(skipToHands(Date.now() >>> 0));
     };
     w.highRollers = (purse?: number, rivals?: number) => (highRollers = { purse, rivals });
     w.finaleSoon = finaleSoon;
@@ -76,8 +81,7 @@
       const g = skipToButtons(Date.now() >>> 0);
       if (mine) g.players[0].money = mine;
       if (hers) g.players[1].money = hers;
-      stage = 'play';
-      setGame(g);
+      newVoyage(g);
     };
   }
 
@@ -87,7 +91,7 @@
     else if (effect === 'next') next();
     else if (effect === 'rematch' && game) {
       // Another knockout, for buttons, from the start.
-      stage = 'play';
+      ended = false;
       setGame(rematch(game));
     } else if (effect === 'buttons' && game) {
       // The lesson's last arranged round is over: out come the buttons, and on to a real game.
@@ -97,16 +101,10 @@
     else if (import.meta.env.DEV) console.info('talk effect:', effect);
   }
 
-  /** The showdown is over. A story goes straight on to its next round (or, when the game is over, home); a tournament shows the standings. */
-  function revealed() {
-    if (!game?.story) stage = 'result';
-    else if (game.phase === 'monthEnd') next();
-    else pause();
-  }
-
   function resume() {
     if (!saved) return;
-    stage = saved.phase === 'duel' ? 'play' : 'result';
+    voyage++;
+    ended = false;
     game = saved;
   }
 
@@ -115,23 +113,11 @@
     const g = submitAction(game, action);
     if (!g.story && (g.phase === 'gameOver' || g.phase === 'victory')) best = recordResult(g.month, g.phase === 'victory');
     setGame(g);
-    if (g.phase !== 'duel') {
-      // A fold has nothing to reveal: straight to the result card.
-      const folded = !!g.round?.result?.byFolds;
-      settled = folded;
-      if (!folded) stage = 'reveal';
-      // A lesson's fold ends in conversation (which says where to go), not in the standings.
-      else if (!g.story) {
-        // Nothing to reveal: let the pot fly to the winner, then show the result card.
-        clearTimeout(endTimer);
-        endTimer = setTimeout(() => (stage = 'result'), 1200);
-      }
-    }
   }
 
   function next() {
     if (!game) return;
-    stage = 'play';
+    ended = false;
     setGame(nextMonth(game));
   }
 
@@ -150,8 +136,7 @@
   }
 
   function pause() {
-    clearTimeout(endTimer);
-    stage = 'play';
+    ended = false;
     game = null;
   }
 </script>
@@ -163,8 +148,8 @@
     <!-- The League's last four at the final table (the same deal again if a voyage is picked up here). -->
     {#key game.rngState}<HighRollersTable onmenu={pause} setup={finaleSetup(game)} saved={game.finaleTable} onsave={saveTable} onfinish={finished} />{/key}
   {:else if game}
-    <DrawTable {game} {settled} {stage} onaction={act} onmenu={pause} onverdict={() => (settled = true)} onrevealed={revealed} onnext={next} script={game.story ? roundScript(scripts[game.story], game.month) : undefined} ontalk={talkEffect} />
-    {#if stage === 'result' && game.report && game.phase !== 'monthEnd'}
+    {#key voyage}<LeagueTable {game} onaction={act} onnext={next} onend={() => (ended = true)} onmenu={pause} script={game.story ? roundScript(scripts[game.story], game.month) : undefined} ontalk={talkEffect} />{/key}
+    {#if ended}
       <MonthEnd {game} onpause={pause} onagain={() => start()} />
     {/if}
   {:else}

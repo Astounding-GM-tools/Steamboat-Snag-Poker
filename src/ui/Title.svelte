@@ -216,7 +216,7 @@
 
 <style>
   /*
-   * The same screen grid as the table (DrawTable): 12 columns, capped at a big
+   * The same screen grid as the table (Table.svelte): 12 columns, capped at a big
    * phone's width, anchored to the bottom with the same padding, so the two
    * buttons sit exactly where the table's do. The boat and the title card share
    * the room above.

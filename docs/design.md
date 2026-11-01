@@ -418,7 +418,15 @@ as a fallback. Dropping is final.
   number of seats: a duel is a table of two (the rules' fees, no raise), the
   High Rollers table one of three or four (its own fees, the River raise, the
   stakes). `game.ts` runs the League on it, `highrollers.ts` the final table.
-- **UI** (`src/ui`): Svelte components, i18n dictionary in `src/i18n`.
+- **UI** (`src/ui`): Svelte components, i18n dictionary in `src/i18n`. One
+  table on screen (`Table.svelte`) for any number of seats: your opponents
+  across the top (an `OpponentSeat` each, laid out by the room it gets: the
+  whole width, half or a third), the river, your side, the two buttons; the
+  moves replayed seat by seat, the showdown a card at a time, and the table
+  talk (lessons, encounters, Willie). Whoever runs a game owns it and shows it
+  there: `LeagueTable` (a crossing of the voyage, with the standings and a
+  captain's details over the board) and `HighRollersTable` (the final table,
+  with its placings).
 - **The bench** (`/bench.html` on the dev server, `src/bench`): the table's
   pieces in their variants (an opponent's seat at a third, half and all of
   the table; your cards; the board and the pot; the buttons; snag fans) at a

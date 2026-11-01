@@ -264,7 +264,7 @@ button.ghost {
   }
 }
 
-/* A coin in flight between a purse and the pot (see DrawTable). */
+/* A coin in flight between a purse and the pot (see coinflow.svelte.ts). */
 .flying-coin {
   position: fixed;
   z-index: 40;

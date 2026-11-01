@@ -21,7 +21,13 @@
   import OpponentSeat, { type SeatCard } from './OpponentSeat.svelte';
   import PotBand from './PotBand.svelte';
   import Purse from './Purse.svelte';
-  import { tagName } from './format';
+  import Countdown from './Countdown.svelte';
+  import HowTo from './HowTo.svelte';
+  import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
+  import { cardLabel, jokerList, name, tagName } from './format';
+  import { flight } from './flight.svelte';
+  import { rankLabel, winnerOf } from '../engine';
+  import type { RoundScript, Trigger } from '../story/script';
   import { handLabel } from './handNames';
   import { cardPrefs } from './cards.svelte';
   import { CoinFlow, FACE_DOWN_MS, FACE_UP_MS, FLOP_MS, thrownCard } from './coinflow.svelte';
@@ -63,6 +69,12 @@
     aftermath?: string;
     /** What the money is: dollars, or in Morag's lessons, buttons. */
     currency?: Currency;
+    /** Beside the street's name: which crossing this is. */
+    label?: string;
+    /** In place of the street's name (what covers the board: the standings). */
+    heading?: string;
+    /** The game is over with this hand: all the money yours, or all of it theirs (for what's said after it). */
+    ending?: 'wonAll' | 'lostAll';
   }
 
   let {
@@ -73,6 +85,8 @@
     onseat,
     cover,
     buttons,
+    script,
+    ontalk,
   }: {
     table: TableView;
     /** Your move for the street (null: you're out of the hand, and it plays on without you). */
@@ -86,6 +100,10 @@
     cover?: Snippet;
     /** In place of the table's own two buttons. */
     buttons?: Snippet;
+    /** This hand's lines, spoken as it reaches each trigger (a lesson, a story's encounter). */
+    script?: RoundScript;
+    /** An answer in a conversation set something going (`buttons`, `snag:hides`…): whoever runs the game handles it. */
+    ontalk?: (effect: string) => void;
   } = $props();
 
   let tapped = $state<string[]>([]);
@@ -149,10 +167,8 @@
   const tappedCards = $derived(mine ? mine.hand.filter((c) => tapped.includes(c.id)) : []);
   const tappedSnags = $derived(mine ? mine.jokers.filter((c) => tapped.includes(c.id)) : []);
   const cost = $derived(
-    answering ? round.raise : meIn && !composing ? feeFor(round, table.config, round.street + 1) + discardCost(mine!.discarded.length, tappedCards.length) : 0,
-  );
-  const preview = $derived(
-    view === 'choose' && myTurn && composing ? bestHand([...tappedCards, ...tappedSnags], round.community, { min: tapped.length, max: tapped.length }) : null,
+    // Without a pot (the first lessons) nothing costs anything.
+    !round.potMode ? 0 : answering ? round.raise : meIn && !composing ? feeFor(round, table.config, round.street + 1) + discardCost(mine!.discarded.length, tappedCards.length) : 0,
   );
   /** What you have left to put in this hand: a price beyond it is everything, all in. */
   const left = $derived(me >= 0 ? roundLeft(round, me) : 0);
@@ -248,6 +264,11 @@
 
   function go(raise = false) {
     if (!mine) return;
+    // The move a line was waiting for closes it as it's made; so does any table talk still up: play comes first.
+    // Made while its replies still stood, it skips past the line that would have asked for it.
+    const skip = shortcut;
+    if (skip) nextLine();
+    if (line?.require || (line && !line.replies && line.size === 'aside')) nextLine();
     if (answering) play({ type: 'match' });
     else if (composing) play({ type: 'compose', cardIds: tappedCards.map((c) => c.id), jokers: tappedSnags.length, raise });
     else play({ type: 'draw', cardIds: tappedCards.map((c) => c.id) });
@@ -263,7 +284,10 @@
         noteSnags();
         view = 'verdict';
       }
-    } else if (view === 'verdict') onnext();
+    } else if (view === 'verdict') {
+      // Past the verdict: the hand's closing lines first, if it has any.
+      if (!fire('verdict')) onnext();
+    }
   }
 
   /** Past the rest of the rivals' moves at once: their money goes in without the flights. */
@@ -328,12 +352,272 @@
       laid = false;
       before = null;
       queue = [];
-      view = 'choose';
+      // A hand picked up again after it was over opens at its verdict.
+      view = round.result ? 'verdict' : 'choose';
       boardShown = first ? Math.max(3, round.community.length) : 3;
+      showHelp = false;
       if (table.phase === 'handEnd') onnext();
       else if (table.phase === 'hand' && !round.result && !myTurn) play(null);
     });
   });
+
+  // --- Table talk -------------------------------------------------------
+  // Captains (and Willie) speaking at the table: a conversation is a list of lines, shown one at a time.
+  let talk = $state<{ lines: SpeechLine[]; i: number } | null>(null);
+  /** The line the conversation is at; it comes up once every coin in the air has landed. */
+  const nextUp = $derived(talk ? talk.lines[talk.i] : null);
+  let landedFor = $state<SpeechLine | null>(null);
+  $effect(() => {
+    const up = nextUp;
+    // (Cleared between conversations: a rematch says the very same lines again.)
+    if (!up) {
+      landedFor = null;
+      return;
+    }
+    if (up === landedFor || flight.coins > 0 || flight.flows > 0) return;
+    // A frame later: coins sent off in the same moment as the line (the antes at a deal) are in the air by then.
+    const id = requestAnimationFrame(() => {
+      if (flight.coins === 0 && flight.flows === 0) landedFor = up;
+    });
+    return () => cancelAnimationFrame(id);
+  });
+  const line = $derived(nextUp && nextUp === landedFor ? nextUp : null);
+  /** A line waiting for the coins: the buttons wait with it, so it can't be skipped unseen. */
+  const lineWaiting = $derived(!!nextUp && !line);
+  /** Exactly these cards tapped, and only these. Whole cards first, then ranks, so `4c` and `4` both find their four. */
+  function tappedAre(want: string[]): boolean {
+    if (tapped.length !== want.length || tappedSnags.length) return false;
+    const open = [...want].sort((a, b) => b.length - a.length);
+    return tappedCards.every((c) => {
+      const k = open.findIndex((w) => w === c.id || (!isJoker(c) && w === rankLabel(c.rank)));
+      return k >= 0 && open.splice(k, 1).length > 0;
+    });
+  }
+  /** A move still to be taught in this conversation (and not yet asked for): the table holds its tongue until then. */
+  const lessonAhead = $derived(!line?.require && !!talk?.lines.slice(talk.i).some((l) => l.require));
+  /** The line is waiting for a move at the table: the white button only takes that one. */
+  const complies = $derived.by(() => {
+    const want = line?.require;
+    // A move asked for later in the conversation: no playing ahead of it.
+    if (!want) return !lessonAhead;
+    if (want === 'fold' || want === 'help') return false;
+    return tappedAre(want);
+  });
+  /** "Show me": the line wants cards tapped to see what they make (no move); its replies wait for them. */
+  const naming = $derived(!!line?.names);
+  const named = $derived(!!line?.names && tappedAre(line.names));
+  // Replies side by side unless one would be cut off on this screen: then they stack (measured, not guessed).
+  let actionsEl = $state<HTMLElement>();
+  let stackFor = $state<SpeechLine | null>(null);
+  const stackReplies = $derived(!!line && stackFor === line);
+  $effect(() => {
+    const l = line;
+    if (!l?.replies || l.replies.length > 2) return;
+    tick().then(() => {
+      if (line !== l || !actionsEl) return;
+      const cut = [...actionsEl.querySelectorAll<HTMLButtonElement>(':scope > button:not([disabled])')].some((b) => b.scrollWidth > b.clientWidth + 1);
+      if (cut) stackFor = l;
+    });
+  });
+  /** A line with replies that also takes a move: once the move is tapped, the play buttons replace the replies. */
+  const shortcut = $derived(!!line?.replies && !!line.require && complies);
+  /** The line has the buttons: an answer to give, or a scene or more to read (one that asks for a move leaves them to play). */
+  const holding = $derived(!!line && ((!!line.replies && !shortcut) || (line.size !== 'aside' && !line.require)));
+  /** A rival speaking: their lines come from their side of the table. */
+  const rivalSpeaks = (who: string) => table.ids.some((id, s) => s !== me && id === who);
+  /** Your lines come from your side of the table, theirs from theirs. */
+  const lowLine = $derived(!!line && line.size !== 'full' && (line.who === 'you' || line.at === 'low'));
+  let feltEl = $state<HTMLElement>();
+  let boardEl = $state<HTMLElement>();
+  let myPurseEl = $state<HTMLElement>();
+  let speechAt = $state({ top: 0, bottom: 0 });
+  /** Where a caption of each size sits, in px from the table's top and bottom edges. */
+  function placeSpeech() {
+    if (!line || !rootEl || !actionsEl || !boardEl || !feltEl) return;
+    const tbl = rootEl.getBoundingClientRect();
+    const rivalsEl = rootEl.querySelector('.rivals');
+    const cards = (rivalsEl?.querySelector('.cards, .small-cards') ?? rivalsEl)?.getBoundingClientRect() ?? tbl;
+    const buttonsTop = actionsEl.getBoundingClientRect().top - 10;
+    if (lowLine && myPurseEl) {
+      const purse = myPurseEl.getBoundingClientRect();
+      // Your own asides sit over your purse, where your stacks go.
+      if (line.size === 'aside') speechAt = { top: purse.top - tbl.top, bottom: tbl.bottom - purse.bottom };
+      else {
+        // Over your side: below the name of your hand (which stays readable), down to the buttons.
+        const named = myPurseEl.querySelector('.my-hand')?.getBoundingClientRect().bottom;
+        speechAt = { top: (named ?? purse.top) + 8 - tbl.top, bottom: tbl.bottom - buttonsTop };
+      }
+      return;
+    }
+    const river = feltEl.getBoundingClientRect();
+    if (line.at === 'band') {
+      // Their half, between their cards and the board: both stay in view.
+      speechAt = { top: river.top - tbl.top, bottom: tbl.bottom - (boardEl.getBoundingClientRect().top - 20) }; // clear of the ▼ marks over the board
+      return;
+    }
+    if (line.at === 'mid') {
+      // Over the empty board, before the deal: their cards row (and their snags) stay in view.
+      speechAt = { top: river.top - tbl.top, bottom: tbl.bottom - boardEl.getBoundingClientRect().bottom };
+      return;
+    }
+    const from = line.size === 'full' ? tbl.top + parseFloat(getComputedStyle(rootEl).paddingTop) : cards.top;
+    const to = line.size === 'aside' ? cards.bottom : line.size === 'scene' ? boardEl.getBoundingClientRect().bottom : buttonsTop;
+    speechAt = { top: from - tbl.top, bottom: tbl.bottom - to };
+  }
+  $effect(() => {
+    if (!line) return;
+    untrack(placeSpeech);
+    window.addEventListener('resize', placeSpeech);
+    return () => window.removeEventListener('resize', placeSpeech);
+  });
+  /** Starts a conversation, or queues it behind the one under way. */
+  function say(lines: SpeechLine[]) {
+    if (!lines.length) return;
+    // A line said over the deal gives way to whatever comes next.
+    if (talk && line?.dealing) talk = { lines, i: 0 };
+    else talk = talk ? { ...talk, lines: [...talk.lines, ...lines] } : { lines, i: 0 };
+  }
+  /** On to the line named `go`, or the next in order; past the last, the conversation is over. */
+  function nextLine(go?: string) {
+    if (!talk) return;
+    const lines = talk.lines;
+    // In order, a branch is passed by: only a reply leads there.
+    const i = go ? lines.findIndex((l) => l.id === go) : lines.findIndex((l, k) => k > talk!.i && !l.branch);
+    talk = i >= 0 && i < talk.lines.length ? { ...talk, i } : null;
+    if (!talk) talkOver();
+  }
+  function answer(reply: Reply) {
+    // Shown, not played: the taps go.
+    if (line?.names) tapped = [];
+    if (reply.effect) ontalk?.(reply.effect);
+    if (reply.end) talk = null;
+    else nextLine(reply.go);
+  }
+  /** The lines after a hand, over: on (the next hand, or home), without a word more. */
+  function talkOver() {
+    if (view === 'verdict' && verdictSaid === table.hand) onnext();
+  }
+  const speakerName = (who: string) => (who === 'you' ? t('character.captain.you') : who === 'willie' ? t('willie.name') : name(who));
+  const lineMs = $derived(line ? autoMs(line) : null);
+  // A line that closes by itself: the countdown runs on the speaker's portrait, and the table keeps the time.
+  $effect(() => {
+    if (!lineMs) return;
+    const id = setTimeout(() => nextLine(), lineMs);
+    return () => clearTimeout(id);
+  });
+  // For trying captions out in the browser console (dev builds only): say([...]).
+  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).say = say;
+
+  // How it works, over the table down to the two buttons, which close it.
+  let showHelp = $state(false);
+  let helpBottom = $state(0);
+  function openHelp() {
+    if (rootEl && actionsEl) helpBottom = rootEl.getBoundingClientRect().bottom - actionsEl.getBoundingClientRect().top + 6;
+    showHelp = true;
+  }
+  /** The line asks you to open How it works (the "?" beckons) and close it again: then on. */
+  const helpWanted = $derived(line?.require === 'help');
+  let helpOpened = false;
+  $effect(() => {
+    const open = showHelp;
+    if (!helpWanted) return void (helpOpened = false);
+    if (open) helpOpened = true;
+    else if (helpOpened) untrack(() => ((helpOpened = false), nextLine()));
+  });
+
+  // Snags you just fished out of the deck: Willie announces them.
+  let fishedSeen = 0;
+  let fishedHand = -1;
+  $effect(() => {
+    const r = round;
+    untrack(() => {
+      const caught = r.fished.filter((f) => f.seat === me);
+      if (fishedHand !== table.hand) {
+        // A resumed hand shouldn't re-announce old catches; a new one starts fresh.
+        fishedSeen = fishedHand === -1 ? caught.length : 0;
+        fishedHand = table.hand;
+      }
+      const fresh = caught.slice(fishedSeen);
+      fishedSeen = caught.length;
+      if (fresh.length) say([{ size: 'scene', who: 'willie', text: t('willie.fished', { jokers: jokerList(fresh.map((f) => f.joker)) }), replies: [{ label: t('willie.ok') }] }]);
+    });
+  });
+
+  // A line where they show their hand: their cards stay face up for the rest of the hand.
+  let showed = $state<{ hand: number; seats: number[] }>({ hand: -1, seats: [] });
+  $effect(() => {
+    const l = line;
+    if (!l?.show) return;
+    const seat = table.ids.indexOf(l.who);
+    untrack(() => {
+      if (seat < 0 || seat === me) return;
+      showed = { hand: table.hand, seats: showed.hand === table.hand ? [...showed.seats, seat] : [seat] };
+    });
+  });
+  const shows = (seat: number) => showed.hand === table.hand && showed.seats.includes(seat);
+
+  // The hand's script: each trigger's lines once, when the hand gets there.
+  let fired = new Set<string>();
+  /** The hand whose lines after the verdict have been said (their end moves on). */
+  let verdictSaid = $state(-1);
+  function fire(trigger: Trigger): boolean {
+    const key = `${table.hand}:${trigger}`;
+    const res = round.result;
+    const won = !!res && winnerOf(res) === me;
+    // Dumped or kept only while the game goes on: at the end, the last word says it all.
+    const outcomes = table.ending ? [table.ending] : won ? ['won', res!.dumped.length ? 'dumped' : 'kept'] : ['lost'];
+    const holder = (snag: number) =>
+      round.seats[me]?.jokers.some((j) => j.index === snag) ? 'you' : round.seats.some((s, i) => i !== me && s.jokers.some((j) => j.index === snag)) ? 'them' : null;
+    const lines = script?.[trigger]?.filter((l) => (!l.when || outcomes.includes(l.when)) && (l.holding ?? []).every((h) => holder(h.snag) === h.by));
+    if (!lines?.length || fired.has(key)) return false;
+    fired.add(key);
+    if (trigger === 'verdict') verdictSaid = table.hand;
+    // After the hand, their lines sit on their half between their cards and the board (anyone else's low, over your side);
+    // before the deal, over the empty board, so their snags stay in view.
+    const place = (l: SpeechLine) => (trigger === 'verdict' ? (rivalSpeaks(l.who) ? 'band' : 'low') : trigger === 'deal' ? 'mid' : undefined);
+    say(lines.map((l) => (l.size === 'full' || l.at || !place(l) ? l : { ...l, at: place(l) })));
+    return true;
+  }
+  /** The hand whose cards are all dealt: its street's lines may come. */
+  let dealtHand = $state(-1);
+  // A street's lines once its cards are on the table and the moves before them have played out.
+  $effect(() => {
+    if (table.phase !== 'hand' || round.result || view !== 'choose' || busy || dealtHand !== table.hand || round.street > 2) return;
+    const trigger: Trigger = round.street === 0 ? 'flop' : round.street === 1 ? 'turn' : 'river';
+    untrack(() => fire(trigger));
+  });
+  // Nothing covers the table while the cards turn: anything still up goes (the lines after the verdict come later, low).
+  $effect(() => {
+    if (view === 'reveal' && line && line.at !== 'low') untrack(() => (talk = null));
+  });
+  // A hand that ends in folds has no showdown: its closing lines come as it ends (with none, a lesson moves on after a beat).
+  $effect(() => {
+    if (view !== 'verdict' || !round.result?.byFolds || !script) return;
+    untrack(() => {
+      if (!fire('verdict')) setTimeout(() => onnext(), 1200);
+    });
+  });
+  /** Waits until nothing is being said (or only a line said over the deal, its last beat out). */
+  let quietWaiters: (() => void)[] = [];
+  const quiet = () => (talk && !line?.dealing ? new Promise<void>((done) => quietWaiters.push(done)) : Promise.resolve());
+  $effect(() => {
+    if (talk && !line?.dealing) return;
+    const l = line;
+    const release = () => {
+      const waiting = quietWaiters;
+      quietWaiters = [];
+      waiting.forEach((done) => done());
+    };
+    const wait = l?.dealing ? (beats(l).length - 1) * BEAT_MS + 500 : 0;
+    if (!wait) return release();
+    const id = setTimeout(release, wait);
+    return () => clearTimeout(id);
+  });
+
+  /** The hand your taps make: on the River, or when a line asks you to show it. */
+  const preview = $derived(
+    view === 'choose' && myTurn && (composing || (naming && tapped.length)) ? bestHand([...tappedCards, ...tappedSnags], round.community, { min: tapped.length, max: tapped.length }) : null,
+  );
 
   // --- Showing it ---------------------------------------------------------
   const shownTo = (seat: number) => view === 'verdict' || (view === 'reveal' && revealOrder.includes(seat) && revealOrder.indexOf(seat) <= revealed);
@@ -348,7 +632,7 @@
   /** A rival's showdown: each card it played turned over in turn, a breath apart, then the rest. Yours you know already. */
   async function turnOver(seat: number) {
     const n = played(round.seats[seat].played).filter((c) => !isJoker(c)).length;
-    if (seat === me || !n || coins.still) return;
+    if (seat === me || !n || coins.still || shows(seat)) return;
     coins.begin();
     turned = 0;
     try {
@@ -520,8 +804,13 @@
         if (bets[s] > flown[s]) coins.payIn(s, flown[s], bets[s]);
       }
       flown = [...bets];
-      // A new hand: the antes in, then the deal.
-      if (fresh) coins.later(deal);
+      // A new hand: the antes in, any lines before the deal, then the deal.
+      if (fresh) {
+        const said = fire('deal');
+        const go = () => coins.later(() => deal().then(() => void (dealtHand = hand)));
+        if (said) void quiet().then(go);
+        else go();
+      }
       if (winners && paidHand !== hand) {
         paidHand = hand;
         coins.payOut(winners);
@@ -565,7 +854,10 @@
   function rivalCards(seat: number): SeatCard[] {
     const s = seen(seat).seats[seat];
     const shown = played(s.played).filter((c) => !isJoker(c));
-    if (s.folded) return s.hand.map((_, i) => ({ key: `f${i}`, faceDown: true, faded: true }));
+    if (s.folded && !shows(seat)) return s.hand.map((_, i) => ({ key: `f${i}`, faceDown: true, faded: true }));
+    // Shown (a lesson, an encounter): face up, as they are, for the rest of the hand.
+    if (shows(seat) && !(shownTo(seat) && shown.length))
+      return [...shown, ...handOf(seat)].slice(0, Math.max(shown.length, holeDealt(seat))).map((card) => ({ key: card.id, card, fresh: true, held: !shown.some((c) => c.id === card.id) }));
     if (shownTo(seat) && shown.length)
       return [
         ...shown.map((card, k): SeatCard => (turning(seat) && k >= turned ? { key: card.id, faceDown: true } : { key: card.id, card, deal: turning(seat) ? 'flip' : null })),
@@ -584,11 +876,46 @@
   const mySnags = $derived(mine ? snagsOf(me) : []);
   const myCall = $derived(preview ? handLabel(preview) : mine && shownTo(me) ? handName(me) : null);
 
+  const callout = $derived(preview ? handLabel(preview) : null);
+  /** Board cards your hand uses: marked below. The hand you're making (not while a lesson waits to show you), or at the showdown the one you played. */
+  const usedIds = $derived(
+    new Set(shownTo(me) && round.result?.hands[me] ? round.result.hands[me]!.cards.map((c) => c.id) : lessonAhead && !naming ? [] : (preview?.cards.map((c) => c.id) ?? [])),
+  );
+  /** Board cards their hand uses, marked above: the rival being shown down (or, with one opponent, theirs at the verdict). */
+  const theirBoard = $derived.by(() => {
+    const inHand = round.seats.map((_, i) => i).filter((i) => i !== me && !round.seats[i].folded);
+    const seat = view === 'reveal' ? revealOrder[revealed] : view === 'verdict' && inHand.length === 1 ? inHand[0] : -1;
+    const hand = seat >= 0 && seat !== me && turnedUp(seat) ? round.result?.hands[seat] : null;
+    return new Set(hand ? hand.cards.map((c) => c.id) : []);
+  });
+  /** Folding gives up what you've put in so far: the black button says so, while you may fold at all. */
+  const foldLabel = $derived(mine && round.potMode && round.bets[me] && canFold(round, me) ? t('draw.foldIn', { amount: price(round.bets[me]) }) : t('draw.fold'));
+  function fold() {
+    if (!canFold(round, me)) return;
+    if (line?.require === 'fold') nextLine();
+    play({ type: 'fold' });
+  }
+
+  /** Snags on the board: at stake, the weakest hand takes them. */
+  const stakes = $derived(boardCards.filter((c): c is Card => !!c && isJoker(c)));
 </script>
 
 <!-- A tap anywhere, while the table is moving, hurries it along. -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div class="table" class:buttons={table.currency === 'buttons'} bind:this={rootEl} onclick={hurry}>
+  {#if showHelp}<div class="help-layer layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
+  <!-- How it works covers what's said: the line comes back when it closes. -->
+  {#if line && !showHelp}
+    <Speech
+      {line}
+      name={speakerName(line.who)}
+      opponent={rivalSpeaks(line.who) && table.chairs.length === 1 && line.at !== 'low'}
+      top={speechAt.top}
+      bottom={speechAt.bottom}
+      grow={line.at === 'band' ? 'down' : lowLine && line.size !== 'aside' ? 'up' : undefined}
+      onnext={line.replies || line.require ? undefined : () => nextLine()}
+    />
+  {/if}
   <!-- Your opponents across the top, in seat order: one across the whole width, two or three sharing it. -->
   <div class="rivals">
     {#each table.chairs as chair (chair.id)}
@@ -615,16 +942,26 @@
           focus={focus === seat}
           folded={s.folded}
           onselect={onseat ? () => onseat(seat) : undefined}
-        />
+        >
+          {#snippet portrait()}{#if line && lineMs && line.who === chair.id && line.size !== 'full' && line.at !== 'low'}{#key line}<Countdown ms={lineMs} />{/key}{/if}{/snippet}
+        </OpponentSeat>
       {/if}
     {/each}
   </div>
 
   <!-- The river: the street, the pot and the board. -->
-  <div class="felt">
+  <div class="felt" bind:this={feltEl}>
     <!-- The Last Hand says so over the street's name (it plays for double). -->
     <p class="last-hand">{round.stakes > 1 ? t('hr.lastHand', { n: round.stakes }) : ''}</p>
-    <p class="street">{t(`street.${streetName}`)}</p>
+    <div class="river-head">
+      <span class="crossing">{table.label ?? ''}</span>
+      <span class="street">
+        {table.heading ?? t(`street.${streetName}`)}
+        <!-- Every street has a second line, so nothing moves. -->
+        <span class="street-sub">{round.result || table.heading ? '' : t(`street.sub.${composing ? 'compose' : streetName}`)}</span>
+      </span>
+      <button class="ghost icon" class:beckon={helpWanted && !showHelp} onclick={openHelp} aria-label={t('title.howTo')}>?</button>
+    </div>
     {#if announcing}
       <!-- The Last Hand: its moment, before the antes. -->
       <div class="title-card" aria-live="polite">
@@ -635,18 +972,32 @@
     <!-- Between hands, whatever comes then (the standings, a captain's details) takes the board's place; it stays, hidden, so nothing moves. -->
     <div class="board-place" class:covered={!!cover}>
       <PotBand count={potCount} paid={settled} outcome={settled ? verdictText : null} won={!!round.result?.winners.includes(me)} wordy bind:el={pileEl} />
-      <Board cards={boardCards} />
+      <Board cards={boardCards} marks={(card) => ({ above: theirBoard.has(card.id), below: usedIds.has(card.id) })} bind:el={boardEl} />
       {#if cover}<div class="cover">{@render cover()}</div>{/if}
     </div>
+    <!-- Always there, so a snag coming up never moves the table; empty when nothing is at stake (after a fold the snag goes back into the deck). -->
+    <p class="stakes">{#if stakes.length && !cover && !round.result?.byFolds}{t('table.stakes')}: {stakes.map(cardLabel).join(', ')}{/if}</p>
   </div>
 
   <!-- Your side, as in a duel: your money nearest the pot, then your cards, your snags and your discards. -->
   <div class="mine">
-    <div class="my-purse" data-purse={me}>
+    <div class="my-purse" data-purse={me} bind:this={myPurseEl}>
       {#if mine}
         {#if round.potMode}<Purse amount={purse(me)} start={table.start[me]} showAmount={false} focus={18} label={t('character.captain.you')} keep={table.hand} paid={paidOut(me)} won={wonIn(me)} tidy />{/if}
         {#if dealer === me}<span class="button own" title={t('hr.dealer')}></span>{/if}
-        {#if preview && !tapped.length && !laid}<p class="my-hand">{t('draw.boardOnly')}</p>{:else if myCall}<button class="my-hand ladder-link" onclick={() => (cardPrefs.ladder = (preview ?? round.result?.hands[me])?.category ?? 'all')}>{myCall.lingo ?? myCall.call}</button>{/if}
+        {#if shownTo(me) && myCall}
+          <!-- At the showdown your hand's name, one line above your coins (the pot may fly to them). -->
+          <button class="my-hand ladder-link" onclick={() => (cardPrefs.ladder = round.result?.hands[me]?.category ?? 'all')}>{myCall.lingo ?? myCall.call}</button>
+        {:else if preview && callout && (naming || !lessonAhead)}
+          <!-- On the River (or when a line asks you to show it) the hand you're making is called over your coins, with the snags riding along and their forfeit. Fixed size: it never shifts as you tap. -->
+          <div class="callout" aria-live="polite">
+            <button class="call ladder-link" class:long={callout.call.length > 30} onclick={() => (cardPrefs.ladder = preview?.category ?? 'all')}>{callout.call}</button>
+            <span class="lingo">{callout.lingo ?? ''}</span>
+            <span class="note">
+              {#if tappedSnags.length === 1}{t('draw.ridingOne', { cost: money(table.config.jokerForfeit ?? 0) })}{:else if tappedSnags.length}{t('draw.riding', { n: t(`number.${tappedSnags.length}`), cost: money(tappedSnags.length * (table.config.jokerForfeit ?? 0)) })}{:else if !tapped.length}{t('draw.boardOnly')}{/if}
+            </span>
+          </div>
+        {/if}
       {:else}
         <p class="my-hand">{t('hr.youAreOut')}</p>
       {/if}
@@ -656,9 +1007,9 @@
         played={myPlayed}
         hand={handOf(me).filter((_, k) => k >= 3 || dealIndex(me, k) < dealt)}
         look={(card) => ({
-          selected: composing && !laid && tapped.includes(card.id),
-          used: laid && tapped.includes(card.id),
-          toss: !composing && tapped.includes(card.id),
+          selected: (composing || naming) && !laid && tapped.includes(card.id),
+          used: (laid && tapped.includes(card.id)) || ((composing || naming) && usedIds.has(card.id)),
+          toss: !composing && !naming && tapped.includes(card.id),
           faded: mine.folded || (shownTo(me) && myPlayed.length > 0) || (laid && !tapped.includes(card.id)),
         })}
         ontap={view === 'choose' && meIn ? tap : undefined}
@@ -677,9 +1028,37 @@
   </div>
 
   <!-- The two buttons. Call, Swap and Play hand are held (heavy); the rest are light taps. -->
-  <ActionBar inert={busy}>
+  <ActionBar inert={busy || lineWaiting} bind:el={actionsEl}>
     {#if buttons}
       {@render buttons()}
+    {:else if showHelp}
+      <!-- How it works is up: Menu (the way out mid-hand) and Close. -->
+      <button class="ghost" onclick={() => ((showHelp = false), onmenu())}>{t('end.pause')}</button>
+      <button onclick={() => (showHelp = false)}>{t('draw.close')}</button>
+    {:else if line?.replies && !shortcut}
+      {@const replies = line.replies}
+      {@const label = (r: Reply, i: number) => r.label ?? (replies.length === 2 && i === 0 ? t('talk.decline') : t('talk.agree'))}
+      {#if replies.length <= 2 && !stackReplies}
+        <!-- A line waiting for an answer: two replies (black, white), or one on the white button and nothing pretending on the black. -->
+        {#if replies.length === 2}
+          <button class="ghost" onclick={() => answer(replies[0])} disabled={naming && !named}>{label(replies[0], 0)}</button>
+          <button onclick={() => answer(replies[1])} disabled={naming && !named}>{label(replies[1], 1)}</button>
+        {:else}
+          <button class="ghost" disabled style="visibility: hidden" aria-hidden="true"></button>
+          <!-- "Show me": the answer waits for the cards it asks you to tap. -->
+          <button onclick={() => answer(replies[0])} disabled={naming && !named}>{label(replies[0], 0)}</button>
+        {/if}
+      {:else}
+        <!-- More replies, or longer ones than half the row holds: stacked, rising over the table, the last (white) nearest the thumb. -->
+        <button class="stand-in" disabled aria-hidden="true">&nbsp;</button>
+        <div class="stack">
+          {#each replies as r, i (i)}<button class:ghost={i < replies.length - 1} onclick={() => answer(r)} disabled={naming && !named}>{label(r, i)}</button>{/each}
+        </div>
+      {/if}
+    {:else if holding}
+      <!-- A scene to read: skip the conversation, or on to the next line. -->
+      <button class="ghost" onclick={() => (talk = null)}>{t('show.skip')}</button>
+      <button onclick={() => nextLine()}>{t('show.next')}</button>
     {:else if view === 'choose' && myTurn && composing && round.raise && laid}
       <!-- The River, your hand laid: raise on it, or let it stand. Either commits you. -->
       <!-- All in already: nothing left to raise with. -->
@@ -690,8 +1069,9 @@
       <button class="ghost" disabled>{t('draw.fold')}</button>
       <button onclick={() => (laid = true)} data-heavy="true">{goLabel}</button>
     {:else if view === 'choose' && myTurn}
-      <button class="ghost" onclick={() => play({ type: 'fold' })} disabled={!canFold(round, me)}>{t('draw.fold')}</button>
-      <button onclick={() => go()} data-heavy={composing || answering || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>
+      <!-- A line asking for a move: only that move will do (no folding your way out of a lesson). -->
+      <button class="ghost" onclick={fold} disabled={dealtHand !== table.hand || !canFold(round, me) || (line?.require ? line.require !== 'fold' : !complies)}>{foldLabel}</button>
+      <button onclick={() => go()} disabled={dealtHand !== table.hand || !complies} data-heavy={composing || answering || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>
     {:else if view === 'replay'}
       <!-- The rivals' turns: Next through them, one by one, or Skip to the end. -->
       <button class="ghost" onclick={skipReplay}>{t('show.skip')}</button>
@@ -858,5 +1238,106 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--grey);
+  }
+
+  /* The head and the showdown callout that replaces it are the same height: nothing moves. */
+  .river-head {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    height: 3.5rem;
+    margin-bottom: 0.4rem;
+  }
+  .crossing {
+    font-family: var(--title-font);
+    font-size: 0.85rem;
+    color: var(--grey);
+    text-align: left;
+  }
+  .river-head .street {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    line-height: 1.1;
+  }
+  .street-sub {
+    min-height: 1.2em;
+    font-family: var(--body-font);
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+    color: var(--grey);
+  }
+  .icon {
+    justify-self: end;
+    padding: 0 0.55em;
+    font-size: 1rem;
+    border-radius: 50%;
+  }
+  /* A lesson pointing at How it works: the "?" pulses until it's opened. */
+  .icon.beckon {
+    border-color: var(--paper);
+    color: var(--paper);
+    animation: beckon 1.1s ease-in-out infinite;
+  }
+  @keyframes beckon {
+    50% {
+      box-shadow: 0 0 0 6px rgba(242, 239, 230, 0.25);
+      transform: scale(1.12);
+    }
+  }
+
+  .help-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+  }
+  .callout {
+    position: absolute;
+    inset: -4px 0;
+    display: grid;
+    grid-template-rows: 1fr 1fr auto;
+    align-items: center;
+    justify-items: center;
+    padding: 4px 0.5rem;
+    background: rgba(10, 10, 9, 0.88);
+    border: 3px double var(--paper);
+    text-align: center;
+    overflow: hidden;
+    animation: callout-in 0.2s ease-out;
+  }
+  .callout span {
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .call {
+    font-family: var(--title-font);
+    font-size: 1.1rem;
+    line-height: 1.1;
+  }
+  /* "Straight flush, Diamonds, Queen high" still fits a phone. */
+  .call.long {
+    font-size: 0.9rem;
+  }
+  .lingo {
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.1;
+  }
+  .note {
+    font-size: 0.75rem;
+    color: var(--grey);
+    min-height: 1em;
+    line-height: 1;
+  }
+  @keyframes callout-in {
+    from { opacity: 0; }
+  }
+  :global(.short) .river-head {
+    height: 3.3rem;
   }
 </style>
