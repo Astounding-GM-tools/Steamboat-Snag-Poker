@@ -202,7 +202,7 @@ goes in before the pot and the snags arrive.)
 **When the snags arrive** (first hand only; drafts, the snag explanation still
 to be written properly)
 
-1. *"Here: Grudging Respect, for you. Pawn it off on me, if you can."* →
+1. *"Here: Grudging Respect, for you. Bestow it on me, if you can."* →
    **Snag?**
 2. *"A snag is a burden. Win with it in your hand, and the loser takes it.
    Lose with it, and it costs you."* → **And yours?**

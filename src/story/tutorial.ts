@@ -421,7 +421,7 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
-          text: 'Here: Grudging Respect, for you. Pawn it off on me, if you can.',
+          text: 'Here: Grudging Respect, for you. Bestow it on me, if you can.',
           replies: [{ label: 'Snag?' }],
         },
         {
