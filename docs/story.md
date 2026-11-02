@@ -503,9 +503,11 @@ to it.
 ## Open questions
 
 - Who calls Steamboat Bill ashore.
-- The name of the boat. The game already calls Bill the "Captain of the
-  Stonewall", which echoes the *Stonewall Jackson* in Keaton's *Steamboat
-  Bill, Jr.* (1928): a nod that fits the 1927 frame, but it also names a
-  Confederate general on an Iowa boat. Keep it, or rename the boat.
+- The name of the boat: the **Best Intentions** for now (what the road to
+  hell is paved with; "Captain of the Best Intentions" has a ring to it). She's
+  a freighter, so no *Belle*. Was the *Stonewall*, dropped: it named a
+  Confederate general on an Iowa boat. Also liked: *Persephone*, and
+  *Lucrezia* (if Eliza becomes a passenger on a passenger steamer rather than
+  a captain).
 - How Morag comes aboard, and whether she stays to the Fair.
 - Banter volume in the League.

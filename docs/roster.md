@@ -21,7 +21,7 @@ active trademark). The right-hand column says which.
 | **Ignatz** | *Brickyard* | rascal | anarchist | Throw-happy: always chucks a card or two, usually the small ones; now and then hurls every snag he has. | Free in the EU (Herriman died 1944); check *Krazy Kat* trademarks before featuring prominently |
 | **Nemo** | *Slumber* | rascal | dreamer | Half the time random, half the time a calculating player. | Free (McCay died 1934); name shortened from "Little Nemo" |
 | **James Robert "Jim-Bob" Lee** | *Banjo* | rascal | loose | Quick, cheap reads; bold with snags; rarely folds. | Original |
-| **Steamboat Bill** | *Stonewall* | middle | stubborn | Stands pat on almost anything; cautious with snags. | Free: the 1910 song "Steamboat Bill" (Shields and the Leighton Brothers), not the 1928 film |
+| **Steamboat Bill** | *Best Intentions* | middle | stubborn | Stands pat on almost anything; cautious with snags. | Free: the 1910 song "Steamboat Bill" (Shields and the Leighton Brothers), not the 1928 film |
 | **Finlay MacTavish** | *Night Out* | middle | loose | Quick decisions, bold with snags, chases big pots. | Original (veiled nod to *Bringing Up Father*) |
 | **Lenny King** | *Cardboard Violin* | middle | defeatist | Moody: folds at the first sign of trouble, swaps one card at most, never chases, timid with snags. Still lands a big hand now and then. | Original |
 | **The Walrus** (and the Carpenter) | *Cacophony* | middle | shark | Calculating, and loves a snag tucked into three of a kind. | Free: Lewis Carroll, 1871 |

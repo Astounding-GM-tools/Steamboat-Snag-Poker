@@ -274,7 +274,7 @@ export const en = {
   'character.jimBob.boat': 'Captain of the Banjo',
   'character.jimBob.blurb': 'Cheerful, loud and lucky, or so he keeps telling everyone.',
   'character.steamboatBill.name': 'Steamboat Bill',
-  'character.steamboatBill.boat': 'Captain of the Stonewall',
+  'character.steamboatBill.boat': 'Captain of the Best Intentions',
   'character.steamboatBill.blurb': 'A gruff old-timer who has seen every trick on the river and fallen for none of them.',
   'character.finlay.name': 'Finlay MacTavish',
   'character.finlay.boat': 'Captain of the Night Out',

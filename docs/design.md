@@ -288,7 +288,7 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
      **Willie's reckoning**; the white button reads Back and the black one
      waits until you're back) beside a big portrait, with
      their nickname in quotes under it, or their title ("Captain of the
-     Stonewall") if they have none, portrait on the right; their purse spreads
+     Best Intentions") if they have none, portrait on the right; their purse spreads
      behind the head from the left (facing the pot), a rich one growing in
      behind the name; then
      their face-down hand and snags (a fan that never grows past its width,
