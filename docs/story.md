@@ -120,6 +120,42 @@ every other job you took on along the way delivered or passed on fair and
 square. Then the Fair's great river tournament opens, and the League
 begins.
 
+## The cargo: Pretty Patty
+
+The horseless carriage is a prototype, the only one of its kind, crated on
+deck. Its makers call it something grand and patented; the crew call it
+**Pretty Patty**. The irony stays unstated: the boat is carrying the
+instrument of its own undoing. In a few decades small wheels on tarmac will
+take over from the river, and the ambling life of landings and steamboats
+will go with them. Nobody aboard suspects; the cartoon of 1927 knows, and
+says nothing.
+
+**Its maker is fictional, its flavour real.** A river-town workshop, an
+eccentric inventor, one machine built, and a reputation riding on it reaching
+the Palace of Transportation. Period cars went by the maker's name and the
+word "patent"; the full name is still to settle (Pettibone's Patent Motor
+Buggy was one idea). Real background to borrow from:
+
+- **Adams-Farwell of Dubuque, Iowa**, upriver from Muscatine, made cars from
+  1903, with a rotary engine whose cylinders spun round a crankshaft standing
+  still. A cartoon engine: it whirls of its own accord. (Whether they showed
+  at the Fair: to verify.)
+- **The rival delivery.** In the summer of 1904 the AAA ran a tour of
+  motorcars from New York, Philadelphia and Baltimore to the Fair, about 1,350
+  miles in 18 days, to prove cars could manage America's roads; it began the
+  Glidden Tours. Dozens of cars driving in overland, and one floating down
+  the river.
+- **The Palace of Transportation** was the Fair's second-largest exhibit
+  hall: Benz, Daimler and Panhard & Levassor showed cars there, beside
+  locomotives.
+
+**A Fair a year late.** The Louisiana Purchase was made in 1803: Napoleon,
+his Caribbean empire lost with the failed expedition to Saint-Domingue and
+war with Britain about to resume, sold the territory for $15 million. The
+centennial Fair was meant for 1903 and was put off to 1904, to let more
+states and nations take part, and because the building ran late. A story
+about racing to reach it on time can let that lie, or wink at it once.
+
 ## Snags as cargo
 
 In the League a snag is a penalty to pass on. In the story it is cargo and
