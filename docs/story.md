@@ -573,6 +573,9 @@ leave that out.
 - **Others to place:** Bohemian Czechs (Iowa had them; Dvořák summered in
   Spillville in 1893), Irish, a Chinese American (not a laundry), Jewish
   merchants (never as the money-lender or the sharp).
+- **Already in the gallery: Lenny "Troubadour" King**, a wandering
+  troubadour with a cardboard violin (no captain, no boat), Jewish, and
+  doesn't make a thing of it. His gloom is his own, not his people's.
 - **The engineer: German or Scots?** A Scots engineer is a fine tradition:
   Kipling's *McAndrew's Hymn* (1894, free), the old engineer praying to his
   engines, and later Scotty. But Morag and Finlay are already Scots; a third

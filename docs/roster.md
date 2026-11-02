@@ -23,7 +23,7 @@ active trademark). The right-hand column says which.
 | **James Robert "Jim-Bob" Lee** | *Banjo* | rascal | loose | Quick, cheap reads; bold with snags; rarely folds. | Original |
 | **Steamboat Bill** | *Best Intentions* | middle | stubborn | Stands pat on almost anything; cautious with snags. | Free: the 1910 song "Steamboat Bill" (Shields and the Leighton Brothers), not the 1928 film |
 | **Finlay MacTavish** | *Night Out* | middle | loose | Quick decisions, bold with snags, chases big pots. | Original (veiled nod to *Bringing Up Father*) |
-| **Lenny King** | *Cardboard Violin* | middle | defeatist | Moody: folds at the first sign of trouble, swaps one card at most, never chases, timid with snags. Still lands a big hand now and then. | Original |
+| **Lenny "Troubadour" King** | no boat: a travelling troubadour, with a cardboard violin | middle | defeatist | Moody: folds at the first sign of trouble, swaps one card at most, never chases, timid with snags. Still lands a big hand now and then. | Original |
 | **The Walrus** (and the Carpenter) | *Cacophony* | middle | shark | Calculating, and loves a snag tucked into three of a kind. | Free: Lewis Carroll, 1871 |
 | **Gaylord Montague, Esq.** | rides any boat with a game | sharp | gambler | Counts every card; folds poor odds; snags only when the odds favour it. | Original |
 | **Eliza Bathory** | *Lucrezia III* | sharp | predator | Patient: folds weak hands readily; then ruthless, burying beaten rivals in snags. | Original (name after the historical countess, d. 1614) |
