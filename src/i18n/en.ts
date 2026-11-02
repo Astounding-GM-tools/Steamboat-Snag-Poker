@@ -255,7 +255,7 @@ export const en = {
   // The gallery. Players see personality here, never the playbook (that lives in the code).
   'character.konrad.name': 'Konrad Marlowe',
   'character.konrad.nick': 'Whiteknuckle',
-  'character.konrad.boat': 'Captain of the Roi des Belges',
+  'character.konrad.boat': 'Captain of the Monarch',
   'character.konrad.blurb': 'A hard man from a hard river. Grips the wheel, and his cards, until his knuckles go white.',
   'character.maxMoritz.name': 'Max Moritz',
   'character.maxMoritz.nick': 'Long Coat',

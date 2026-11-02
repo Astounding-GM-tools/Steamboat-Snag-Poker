@@ -362,6 +362,29 @@ Muscatine (from memory, all to verify):
 Still to place, wherever they fit: **a nosy cargo inspector**; **the mail
 bag** (another captain bound downriver could take it…); **Podunk Junction**.
 
+## A day on the river
+
+Taking on cargo, passengers and crew landing by landing makes the voyage a
+small sim, and gives the days a rhythm, one landing a day:
+
+1. **Morning, at the moorings.** Take on cargo and passengers, hire a second
+   fireman if the stretch ahead is hard, buy coal (at the landing's price),
+   cast off. The sim part: what you carry, who rides, what it costs.
+2. **On the river.** Something happens: a sandbar, a fog bank, a runaway mule,
+   a boat in trouble, a passenger's crisis (the river's snags, met as events).
+3. **Evening, the landing.** Make landing, moor, disembark; supper as darkness
+   falls.
+4. **Night, the game.** Wherever there's one to be had: on deck with the
+   passengers, with other travellers or the landing's regulars; at the
+   saloon, if the town has one; or aboard a **grand steamer**, if one is
+   moored there that night. The night's game is the day's encounter.
+
+**Which way people travel.** The first leg goes up, away from St. Louis: the
+passengers aboard are going *up* (to Dubuque and the towns between), never
+to the Fair. Anyone bound for St. Louis is met on the way up and wants
+passage on the way back down: a booking made with a handshake, one more
+obligation to remember when the boat comes past again.
+
 ## The river in segments
 
 The river comes in stretches, each between two gates. Inside a stretch you
@@ -413,6 +436,18 @@ boats tie up alongside, and the evening is cards, supper and whiskey aboard
 the grandest of them. That's where the **High Rollers tables** are, and since
 the steamers move, those tables turn up anywhere along the river.
 
+- **A small fleet**, met up and down the river, each with its own house,
+  table and regulars (first drafts):
+  - the ***Lucrezia***, the most opulent, Italianate and gilded; Eliza
+    "Bone Pale" Bathory's favourite;
+  - the ***Persephone***, which spends half the year on the upper river and
+    half below (the underworld, by the upper river's reckoning);
+  - the ***Gilded Age*** (after Twain and Warner's novel of 1873), all new
+    money and electric light;
+  - one more to find: an excursion boat, cheaper and louder, dancing on the
+    upper deck.
+  Every one of them has a **High Rollers table**. Some saloons have one too
+  (the Tri-Cities' best, Dubuque's).
 - **Dress is the invitation.** Win a decent suit and waistcoat (at a table,
   or as a job's payment), and you're asked aboard. Wardrobe as progression.
 - **Real flavour** (from memory, to verify): the **Diamond Jo Line**, run out
@@ -484,7 +519,9 @@ landing and leave at another, and while aboard they're company at the rail,
 a voice at supper, now and then an opponent. Passage is money, and the
 boat needs money; some passengers are better company than fares, and some
 are **snags** (the In-Laws, the Layabout Nephew and the Travelling Preacher
-already are). First drafts:
+already are). Going up, the passengers are bound up the river; most of
+these are bound for St. Louis, so they're met on the way up and ride on the
+way back down. First drafts:
 
 - **Mrs. Hannelore Pfund**, a widow going down to her daughter in St. Louis.
   Once cooked on a packet boat; pays her fare in the galley, in pies and in
