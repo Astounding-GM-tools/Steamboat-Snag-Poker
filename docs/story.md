@@ -490,7 +490,13 @@ changes something (the risk is that the way back feels like padding).
    herself. She goes with whoever wins, or, if she wins it herself, with the
    runner-up. So you needn't win, only finish ahead of every other captain.
    (A woman pilot isn't a stretch: Mary Becker Greene was licensed on the Ohio
-   in the 1890s; from memory.) Going back down, her table again.
+   in the 1890s; from memory.) She lives at LeClaire, above the rapids, and
+   her day has a rhythm: she takes a client down in the morning, plays the
+   captains waiting at the foot for the afternoon's climb, takes the winner
+   up, and joins the game at LeClaire's saloon (or a steamer) in the evening,
+   where she picks tomorrow morning's client down. **Up** is slow and
+   coal-hungry: many hands at low stakes. **Down** is much, much faster: few
+   hands at high stakes.
 5. **Dubuque.** Pretty Patty and her inventor (see The cargo).
 
 *Downriver,* Patty aboard: LeClaire and the rapids, the Tri-Cities, the coal
@@ -554,6 +560,35 @@ stretch, a few jobs and snags to resolve, and a gate to pass.
    *Gate:* **the Des Moines Rapids**: the canal at Keokuk, the queue at the
    lock.
 4. **Keokuk to St. Louis.** Hannibal, Alton, St. Louis.
+
+### The voyage, day by day (first draft)
+
+Not an obstacle every day: a day's encounter may be the river, or the
+landing (the coal yard, the queue at the lock), or nothing much, a quiet
+run with the passengers. Mix it up, and keep each day coherent: the run and
+the evening belong together.
+
+| Day | Stretch | The day | The evening |
+|---|---|---|---|
+| 1 | Muscatine, up to the Tri-Cities | A quiet run: Morag's lessons aboard | The Tri-Cities: trips or quads; Gaylord in Bettendorf, short of funds, offers a load |
+| 2 | The Tri-Cities | The coal yard on strike: no coal, no climb | The foreman's game: lose an appropriate amount |
+| 3 | The Rock Island Rapids, up | Kitty's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon, Kitty at the table |
+| 4 | LeClaire to Clinton | **The Ice**: a High Rollers table of floes | Clinton, the sawmill town: a game on deck |
+| 5 | Clinton to Bellevue | A quiet run; a log raft from the pineries going by | Bellevue, a small landing: the night's game aboard, crew and passengers |
+| 6 | Bellevue to Dubuque | **The Fog Bank** in the morning | Dubuque: Pretty Patty and her inventor, the advance; a grand steamer moored |
+| 7 | Dubuque down to Clinton | **A Sawyer** (a sunken tree that bobs: the original snag) | Clinton again, something changed |
+| 8 | Clinton to LeClaire | A short run | LeClaire: Kitty's evening table, for tomorrow's client down |
+| 9 | The Rapids, down; the Tri-Cities | The descent (few hands, high stakes); Gaylord plays for his passage | The Tri-Cities, a steamer or the saloon |
+| 10 | Down to Muscatine | **The Sandbar**, a new one: the sand you washed off going up | Muscatine: Finlay and Morag, the next instalment |
+| 11 | Muscatine to Burlington | A quiet run, the St. Louis passengers aboard | Burlington |
+| 12 | Burlington to Keokuk | Fort Madison in passing | **The queue at the lock**: play the captains ahead for their place |
+| 13 | Keokuk to Hannibal | The long run (107 miles) | Hannibal: a grand steamer, the High Rollers |
+| 14 | Hannibal to Alton | High water, flotsam | Alton |
+| 15 | Alton to St. Louis | **The Chain of Rocks**, the last obstacle (from memory, to verify), the Missouri's mud joining | The Fair |
+
+Six days up, nine down: about the two and a half weeks the river allows.
+Obstacles on six days of fifteen, the rapids twice, the coal yard and the
+lock as the day's encounter on land.
 
 ### Distances and days
 
