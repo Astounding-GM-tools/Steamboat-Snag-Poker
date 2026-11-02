@@ -277,7 +277,7 @@ Cap'n, Herr Kapitän; Kitty's "Captain of my heart".
   promising Morag to look for Finlay, getting caught up in one of Kitty's
   schemes, or enlisting Max Moritz against the Walrus and the Inspector.
 
-## Morag MacTavish, the Governess
+## Morag, the Governess
 
 - A governess by trade and by temperament, on the river looking for her
   husband, **Finlay**, who has slipped off to play.
@@ -423,7 +423,7 @@ the steamers move, those tables turn up anywhere along the river.
 
 ## Who is where
 
-- **Muscatine: Finlay MacTavish** carouses here and hereabouts, and
+- **Muscatine: Finlay**, "Carouser", carouses here and hereabouts, and
   **Morag** hunts him down. Passing Muscatine a few times (up, and down
   again) lets their story unfold in instalments: where he was seen, what he
   owes, how close she came.
@@ -436,8 +436,8 @@ the steamers move, those tables turn up anywhere along the river.
   any High Rollers table.
 - **LeClaire: Kitty Sawyer**, the rapids pilot: her High Rollers table going
   up, and again coming down.
-- **Anywhere a grand steamer moors: Eliza Bathory, "Bone-White"**, Mistress
-  of the *Lucrezia III*, the grandest boat on the river. She plays for sport
+- **Anywhere a grand steamer moors: Eliza Bathory, "Bone Pale"**, no
+  captain: a high roller at the grand steamers' tables, now and then. She plays for sport
   and has money to spare: she sets aside a sum to lose each night, and
   usually retires with the pot.
 
@@ -588,7 +588,7 @@ working in the very style we borrow.
 
 **Settled in the roster:** James Robert "Jim-Bob" Lee read like an echo of
 Robert E. Lee (also a famous steamboat, of the 1870 race against the
-*Natchez*); he is now James Robert "Banjo" Tolliver.
+*Natchez*), and had little else going for him: retired.
 
 ## Characters with secrets
 
@@ -628,7 +628,7 @@ Robert E. Lee (also a famous steamboat, of the 1870 race against the
   hell is paved with; "Captain of the Best Intentions" has a ring to it). She's
   a freighter, so no *Belle*. Was the *Stonewall*, dropped: it named a
   Confederate general on an Iowa boat. Also liked: *Persephone*, and
-  *Lucrezia* (if Eliza becomes a passenger on a passenger steamer rather than
-  a captain).
+  *Lucrezia* (free now that Eliza is no captain: a name for a grand
+  steamer).
 - How Morag comes aboard, and whether she stays to the Fair.
 - Banter volume in the League.

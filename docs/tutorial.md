@@ -4,7 +4,7 @@ Status: **playable from start to finish**: **Tutorial** on the title screen
 (always there, and on How to play) (decks and lines in
 `src/story/tutorial.ts`; in development, `tutorialButtons()` in the console
 jumps to the knockout). Chapter one of the story, and canon: the
-deckhand meets Morag MacTavish, who is looking for her husband, and learns
+deckhand meets Morag, who is looking for her husband, and learns
 Snag Poker from the one person on the river who disapproves of it. See
 [story.md](story.md) for the caption system and the story around it.
 
@@ -56,7 +56,7 @@ showdown goes straight to the verdict.
 
 1. *"You, there! / Have you seen my lout of a husband?"* → **Lout?** /
    **Who?**
-2. *"Finlay MacTavish by name, good‑for‑nothing by nature. / Always sneaking
+2. *"Finlay by name, good‑for‑nothing by nature. / Always sneaking
    off to play Snag Poker."* → **Snag?** / **Poker?** (read left to right,
    the deckhand spells out the name of the game)
 3. *"A vile game! / Fit for drunkards, and liars… / … do you not know it?"*

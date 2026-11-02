@@ -279,7 +279,7 @@ when (a second sharp after the first bust; Morag once Finlay is busted).
 1. **Title** — the name, a tagline drawn at random ("Dump Your Snags
    Downstream", "Mind the Snags, Captain"…), and the menu: Tutorial, League,
    Continue; the best result; the gear (Options: the clink of coins, card
-   faces) and the **?** (How it works: Mrs MacTavish's pamphlet against the
+   faces) and the **?** (How it works: Morag's pamphlet against the
    game, the hands near the top).
 2. **The Table** (draw style), one column so it fits a phone, split by the
    board into **their side** (top) and **yours** (bottom):

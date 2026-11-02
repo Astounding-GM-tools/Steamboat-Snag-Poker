@@ -17,7 +17,7 @@ import { inHand, type RoundState } from './round';
  */
 const STYLE: Partial<Record<AiId, { raiseAt: number; bluff: number; nerve: number; always?: boolean }>> = {
   stubborn: { raiseAt: 0.6, bluff: 0, nerve: 0, always: true }, // Bill: never folds
-  loose: { raiseAt: 0.45, bluff: 0.12, nerve: 0.75 }, // Finlay, Banjo
+  loose: { raiseAt: 0.45, bluff: 0.12, nerve: 0.75 }, // Finlay
   defeatist: { raiseAt: 0.75, bluff: 0, nerve: 1.6 }, // Lenny
   shark: { raiseAt: 0.55, bluff: 0.04, nerve: 1 }, // the Walrus
   gambler: { raiseAt: 0.5, bluff: 0.08, nerve: 1 }, // Gaylord

@@ -9,7 +9,7 @@ export type AiId =
   | 'swashbuckler' // Kitty: chases big hands, loves a last-minute triumph
   | 'anarchist' // Ignatz: throw-happy, now and then hurls every snag
   | 'dreamer' // Nemo: half brilliant, half baffling
-  | 'loose' // Finlay, Banjo: quick decisions, bold with snags
+  | 'loose' // Finlay: quick decisions, bold with snags
   | 'stubborn' // Steamboat Bill: stands pat, never changes his mind
   | 'defeatist' // Lenny: folds readily, never chases
   | 'shark' // the Walrus: solid, loves a snag tucked into trips
@@ -43,7 +43,6 @@ export const ROSTER: CharacterDef[] = [
   { id: 'kitty', ai: 'swashbuckler', tier: 'rascal', startMoney: 60 },
   { id: 'ignatz', ai: 'anarchist', tier: 'rascal', startMoney: 45 },
   { id: 'nemo', ai: 'dreamer', tier: 'rascal', startMoney: 50 },
-  { id: 'jimBob', ai: 'loose', tier: 'rascal', startMoney: 55 },
   // Middle
   { id: 'steamboatBill', ai: 'stubborn', tier: 'middle', startMoney: 50 },
   { id: 'finlay', ai: 'loose', tier: 'middle', startMoney: 60 },

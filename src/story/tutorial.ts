@@ -4,7 +4,7 @@ import type { Script } from './script';
 import { handsDeal, handsRound } from './hands';
 
 /**
- * Morag's lessons: the deckhand meets Morag MacTavish and learns Snag Poker
+ * Morag's lessons: the deckhand meets Morag and learns Snag Poker
  * from the one person on the river who disapproves of it. The script and its
  * reasoning are in docs/tutorial.md; this is the playable copy.
  */
@@ -229,7 +229,7 @@ export const tutorialScript: Script = {
           size: 'scene',
           who: M,
           // Non-breaking hyphens: good‑for‑nothing stays in one piece.
-          text: ['Finlay MacTavish by name, good‑for‑nothing by nature.', 'Always sneaking off to play Snag Poker.'],
+          text: ['Finlay by name, good‑for‑nothing by nature.', 'Always sneaking off to play Snag Poker.'],
           // Read left to right, the deckhand spells out the name of the game.
           replies: [{ label: 'Snag?' }, { label: 'Poker?' }],
         },
