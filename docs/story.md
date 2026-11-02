@@ -427,7 +427,7 @@ the steamers move, those tables turn up anywhere along the river.
   **Morag** hunts him down. Passing Muscatine a few times (up, and down
   again) lets their story unfold in instalments: where he was seen, what he
   owes, how close she came.
-- **Bettendorf: Gaylord Montague, Esq.** Where else would a card-sharp live
+- **Bettendorf: Gaylord Montague, "Esquire".** Where else would a card-sharp live
   than a town that bets on anything? Going up, **short of funds**, he offers
   the young captain a load to carry. Coming back down he wants **passage to
   St. Louis**, and plays for it: if he loses he pays the pot, if he wins he

@@ -1,7 +1,13 @@
-# Roster: captains of Steamboat Snag Poker
+# Roster: the river's card players
 
-The gallery is meant to grow to dozens of captains. Each tournament draws a
+The gallery is meant to grow to dozens of characters. Each tournament draws a
 mixed line-up from it (see "Line-up" below).
+
+**Not everyone is a captain.** That was an early idea, since dropped: most
+are travellers and riverfolk (a carouser, a governess, a troubadour, a pilot,
+a gambler), and only some have a boat. Each goes by a nickname that says who
+they are on the river; the nickname shows on their seat, and stands in for
+their name where room is short.
 
 Players only ever see a captain's **personality** (name, boat, a blurb) plus their own **notes**, typed into the captain
 card and saved in their browser. The **playbook** below is internal: it lives
@@ -18,13 +24,13 @@ active trademark). The right-hand column says which.
 | **Konrad "Whiteknuckle" Marlowe** | *Roi des Belges* | rascal | bully | Grips his biggest cards; discards anything below a ten; never risks a snag; never folds. | Original (nod to Joseph Conrad, *Heart of Darkness*, 1899, free) |
 | **Max "Long Coat" Moritz** (secretly Max & Moritz, two boys in a coat) | *Mischief* | rascal | griefer | Not out to win, out to make you lose: never draws while snags are in the deck (let someone else fish them up); gleefully loads snags into its hands; never folds. | Free: Wilhelm Busch, 1865 |
 | **Kitty "Pilot" Sawyer** | no boat: the rapids pilot at LeClaire | rascal | swashbuckler | Drama queen: chases big hands (values a flush or full house far above a pair), loves a last-minute triumph; bold with snags; never folds. | Original (nod to Twain's Tom Sawyer, free) |
-| **Ignatz "Brickbat"** | *Brickyard* | rascal | anarchist | Throw-happy: always chucks a card or two, usually the small ones; now and then hurls every snag he has. | Free in the EU (Herriman died 1944); check *Krazy Kat* trademarks before featuring prominently |
+| **Ignatz "Hurler"** | *Brickyard* | rascal | anarchist | Throw-happy: always chucks a card or two, usually the small ones; now and then hurls every snag he has. | Free in the EU (Herriman died 1944); check *Krazy Kat* trademarks before featuring prominently |
 | **Nemo "Sleepwalker"** | *Slumber* | rascal | dreamer | Half the time random, half the time a calculating player. | Free (McCay died 1934); name shortened from "Little Nemo" |
 | **Steamboat Bill, "Father"** | *Best Intentions* | middle | stubborn | Stands pat on almost anything; cautious with snags. | Free: the 1910 song "Steamboat Bill" (Shields and the Leighton Brothers), not the 1928 film |
 | **Finlay, "Carouser"** | no boat: a husband out carousing | middle | loose | Quick decisions, bold with snags, chases big pots. | Original (veiled nod to *Bringing Up Father*) |
 | **Lenny "Troubadour" King** | no boat: a travelling troubadour, with a cardboard violin | middle | defeatist | Moody: folds at the first sign of trouble, swaps one card at most, never chases, timid with snags. Still lands a big hand now and then. | Original |
 | **The Walrus** (and the Carpenter) | *Cacophony* | middle | shark | Calculating, and loves a snag tucked into three of a kind. | Free: Lewis Carroll, 1871 |
-| **Gaylord Montague, Esq., "The Esquire"** | rides any boat with a game | sharp | gambler | Counts every card; folds poor odds; snags only when the odds favour it. | Original |
+| **Gaylord Montague, "Esquire"** | rides any boat with a game | sharp | gambler | Counts every card; folds poor odds; snags only when the odds favour it. | Original |
 | **Eliza "Bone Pale" Bathory** | no boat: a high roller at the grand steamers' tables | sharp | predator | Patient: folds weak hands readily; then ruthless, burying beaten rivals in snags. | Original (name after the historical countess, d. 1614) |
 | **Morag, "Governess"** | no boat: Finlay's wife, looking for him | (follower) | careful | Tight, patient, punishing; rarely risks a snag. Joins once Finlay is busted, and only in tournaments with Finlay. | Original |
 
