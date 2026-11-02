@@ -291,10 +291,37 @@ prays). So every snag is a cost at the landing games (upkeep) and insurance
 on the river, and carrying a few is a real choice. See the mule home and
 it's gone: no more upkeep, and no more mule.
 
-Open: when a volunteer steps in. The first lost pot of the day would waste
-it on a small one; better, when a loss is big (more than the ante), or the
-snags could each have their own temper (the mule always volunteers, the
-In-Laws need asking, the Layabout Nephew only once the day is nearly lost).
+**Each snag has its own temper:** which hands of the day it helps in. A day
+against an obstacle runs to some eight hands, the stakes rising as it goes
+(the last are the dearest to lose). A volunteer gives back every pot lost in
+its window. One rule: **people and animals volunteer; objects, obligations
+and troubles don't.** First drafts:
+
+| Snag | Helps in hands | Why |
+|---|---|---|
+| **The In-Laws** | 1 | Supportive but elderly: they help with the cheapest loss of the day, then they're all tuckered out. |
+| **The Layabout Nephew** | 1 (or 8) | Lends a hand at the start, before he finds a place to lie down. (Or: sleeps all day, turns up for the last hand, terribly pleased with himself.) |
+| **The Travelling Preacher** | 3 | Appeals to higher powers, on the third (the Trinity). Perhaps also a **blessing**: every other volunteer works one hand longer. |
+| **The Unionized Coal Shoveller** | 3–6 | The union keeps turning up, but takes a while to get going, and goes home at the whistle. |
+| **The Runaway Mule** | 6–8 | Stubborn and temperamental, and strong: won't go first, but once he starts he sticks it out to the end of the day, kicking back every loss when the stakes are highest. |
+| **The Crate of Live Chickens** | one, at random | Chickens. |
+| The Mail Run, the Unpaid Coal Bill | – | Obligations. |
+| The Rotten Eggs, the Stinking Hides | – | Things. |
+| Troubles (Busted Boiler…) | – | Broken things; they need fixing, not thanks. |
+
+*The Sandbar and the Fog Bank* are snags in the League, but in the story
+they're obstacles at the table, not cards in your hand.
+
+Knowing your windows is the strategy: in a covered hand a loss costs
+nothing, so that's the hand to push hard and wash the sand away fastest.
+Two volunteers covering the same hand is a waste (one loss, one helper);
+spreading them across the day is the art. Balance by upkeep: a strong
+volunteer is a dear one to carry to the landings.
+
+**All of a snag in one place.** Each snag's nature (what kind it is, its
+temper, its fixer, its address, what it costs) lives on the snag's own
+definition, one table for the set, and the engine reads it from there: no
+"if it's the mule" scattered through the code. See design.md.
 
 ## Encounters
 

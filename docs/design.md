@@ -437,6 +437,14 @@ as a fallback. Dropping is final.
   pieces in their variants (an opponent's seat at a third, half and all of
   the table; your cards; the board and the pot; the buttons; snag fans) at a
   phone's width, updating as you save. Development only: not in the build.
+- **Snags are defined in one place.** Today a snag card is only an index
+  (`jokerCard(i)` in `cards.ts`), named by `joker.<i>` in the dictionary.
+  Story mode gives snags a nature: a kind (person, animal, object, duty,
+  trouble), a temper (the hands of the day it volunteers in, against an
+  obstacle), a fixer, an address, an upkeep. All of that goes on the snag's
+  own definition, one table for the set (say `snags.ts`), and the engine
+  reads it from there, generically: no `if (snag is the mule)` anywhere in
+  the code. A new snag is a new row.
 - **Saving:** localStorage for now.
 - **Tests:** Vitest on the engine.
 
