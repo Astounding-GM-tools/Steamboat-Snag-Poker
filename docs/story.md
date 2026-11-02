@@ -198,22 +198,32 @@ has to lose for you to win: it's you against the river.
   has: **the Sandbar** stands pat on everything (stubborn); **the Fog Bank**
   plays half blind (dreamer); **the Runaway Mule** throws its cards away
   (anarchist).
-- **Its stack is the obstacle, not money.** Fleece the Sandbar to get off it:
-  every pot you take digs some of it away.
+- **Its stack is the obstacle, not money: sand** (or ice, soggy lumber,
+  flotsam and chaff). The Sandbar takes your coin and turns it into sand:
+  you pour in coal and man-hours, and get nothing back but sandbags. Fleece
+  it to get off: every pot you take washes some of it away.
 - **Time is the price.** A day has a travel allowance (some 8 hours under
   way); every hand against the Sandbar eats into it, and what's left is the
   distance made. Fleece it quickly and you still make the landing; slowly,
   and you tie up short for the night, somewhere along the bank, with
   whoever else is stuck there for company (or nobody).
-- **A sink for snags.** The Sandbar takes on whatever you dump on it: burden
-  it with Yellow-bellies and Runaway Mules to your heart's content. A
-  wholesome way to shed a load, and a reason to welcome the odd hazard.
-- **What it leaves you.** When the Sandbar wins a showdown it dumps its own
-  snags on you, like any player: the troubles (above). Coming off clean is the
-  best ending; carrying a Broken Pole to the next landing is the usual one.
-- **You can't really lose.** The encounter ends when the obstacle's stack is
-  gone, or at dusk; the only question is what it cost (in hours, coal and
-  troubles).
+- **Snags go one way.** The Sandbar cares nothing for your In-Laws or the
+  Mail Run: it's an obstacle to your duties, not a place to leave them. You
+  can't play snags against an obstacle; it can play its own on you. It starts
+  with a chunk of sand and a few troubles (a Twisted Shaft, a Broken Paddle),
+  and when it wins a showdown they're yours, to be fixed later. Coming off
+  clean is the best ending; carrying a Broken Paddle to the next landing is
+  the usual one.
+- **There's nothing to win but freedom.** Win a pot and you get back only
+  what you put in; the sand in it simply drifts off downstream (to make a
+  sandbar somewhere else). Lose one and everything you put in turns to sand
+  on its pile. Against the river you never come out ahead, only lose less,
+  and the battle still has to be fought.
+- **Stuck isn't over.** Run out of money or hours before the sand runs out,
+  and you're stuck: no landing tonight. The night's game aboard, with the
+  crew and passengers, builds your purse (your effort) back up, and you try
+  again in the morning. Or another boat comes by and drags you off, if you
+  take some of its snags, or poker it into it.
 
 **Formats:**
 
@@ -225,8 +235,58 @@ has to lose for you to win: it's you against the river.
   Sandbar's table. Beat it together and both float free: helping, not a
   contest of who stays stuck.
 
-Engine needs: a seat with a stack that isn't a purse (the obstacle), hands
-that cost hours, the day's allowance, and lines keyed to them.
+**How it fits the engine.** Mostly as it is: the obstacle is a seat, its
+sand a purse; antes and fees go into the pot as now; its troubles are snags
+it plays when it wins, and the weakest hand (you) takes them, as now; it
+plays the stubborn style (stands pat, never gives up). What's new:
+
+1. **One-sided settling.** A hand settles as each seat's share of the pot
+   less what it put in. Against an obstacle: if you win, you get back only
+   your own stake and its sand vanishes; if it wins, your whole stake becomes
+   sand on its pile. One rule at the end of the hand; the hand itself is
+   untouched.
+2. **Snags go one way:** your snags can't be played in this encounter (a
+   check on which moves are legal).
+3. **Troubles:** a new set of snags (Twisted Shaft, Broken Paddle, Busted
+   Boiler, Fatigue, Soggy Lumber…), their upkeep the cost of the repair
+   until it's done.
+4. **The ending:** won when its pile is gone; stuck when your purse or the
+   day's hours run out (a hand an hour).
+5. **The picture:** coins flying into the pot and turning to sand on its
+   side; the sand drifting off downstream when you win; ice, flotsam or
+   lumber for the others. The coin flights already know who pays whom: this
+   is drawing, not logic.
+
+*Tuning:* its pile only shrinks when it puts sand in and loses, so a
+stubborn obstacle that always calls keeps feeding the pot, and the pile's
+size sets how long the fight lasts: four to six hands, perhaps, an ordeal
+without a drag.
+
+## Where snags go
+
+Story snags aren't only passed on: many have somewhere they belong, and
+getting them there resolves them for good.
+
+**Troubles have a fixer.** Bestow the Busted Boiler on the engineer and it's
+absorbed: he fixes it. The Broken Pole goes to Lars, the Fatigue to the cook,
+the Broken Heart to Willie's good nature. So the night's game aboard, crew
+and passengers round a lantern (stranded on a bar, or moored at a landing
+with no saloon), is a different game from the landing's: a ceremony of
+resilience and community. Not taking money off strangers, but getting the
+right trouble to the right pair of hands. (The puzzle: a snag goes to the
+weakest hand, so the engineer must be the weakest when you win with the
+boiler played; a friendly crew might play to take what's theirs.)
+
+**Cargo and passengers have an address.** The Mail Run goes to a town; the
+In-Laws are going somewhere; the Runaway Mule belongs in Podunk Junction.
+Stopping there, even as a detour, resolves the snag: delivered, seen home.
+Which makes the route a choice: is the detour worth it, or do you play the
+snag onto someone else?
+
+**And some snags are useful.** The Runaway Mule costs you upkeep at every
+landing game, but it might help haul you off the next sandbar. See it home
+and it's gone: no more upkeep, and no more mule. (How a snag helps against
+an obstacle: to work out; not by being dumped on it.)
 
 ## Encounters
 
