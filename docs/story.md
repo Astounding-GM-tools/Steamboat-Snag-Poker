@@ -82,7 +82,7 @@ go off (the eggs, the ice), there's a queue at the lock.
 
 | Mode | Shape | Banter |
 |---|---|---|
-| **Story** (the default) | Upriver to downriver: Muscatine to the World's Fair in St. Louis. A chain of encounters, beginning with Morag's lessons. No standings. | Full: introductions, table talk, parting words. |
+| **Story** (the default) | Up the river and back down: from Muscatine up to Dubuque for the carriage, then down to the World's Fair in St. Louis. A chain of encounters, beginning with Morag's lessons. No standings. | Full: introductions, table talk, parting words. |
 | **League** | As it is now: crossing after crossing against a line-up drawn from the gallery, the standings after each, until four are left for the High Rollers table. Open from the title already; in the story's world, the Fair could host it. | Sparse: a word at a meeting or a parting, little more. |
 | **Multiplayer** | Later, and its own thing (the table session is ready; pass-and-play works on one device). | None from us. |
 
@@ -94,8 +94,9 @@ on a new device Morag asks *"Have we met, Captain?"*, and the buttons answer
 
 **Muscatine.** The old captain, **Steamboat Bill** (everyone aboard calls him
 Father; the player is no relation, just his trusted deckhand), has just landed a Big Snag: deliver a horseless carriage to the World's
-Fair in St. Louis. That is how fin-de-siècle logistics work. It is all
-downriver from here, an easy passage.
+Fair in St. Louis. That is how fin-de-siècle logistics work. The carriage
+waits upriver in Dubuque: a short run up to fetch it, and then it is all
+downriver, an easy passage.
 
 Then family calls him ashore (someone to tend to; between cargo and family,
 family wins). The deckhand, the player, is made captain: *"You're the captain
@@ -301,26 +302,67 @@ Formats to mix: heads-up until the pot is won, best of three, table games.
 Reasons to mix: to pass on a snag, to get passage, to get funds, to take on a
 job.
 
-1. **Muscatine.** Father ashore; the carriage is aboard; Morag's lessons.
-2. **The harbour master** won't clear the boat unless you beat him.
-3. **Striking coal miners:** no coal for the boilers, unless… (below)
-4. **A nosy cargo inspector.**
-5. **The mail bag:** another captain bound downriver could take it…
-6. **The queue at the lock** (or the railroad bridge works): a line of boats;
-   the eggs are going off; play the captains ahead for their place.
-7. **Podunk Junction:** Gaylord, flush or destitute.
-8. –
-9. –
-10. –
-11. –
-12. **St. Louis.** The carriage delivered; the Fair; the League opens.
+**The route: up, then back down.** From Muscatine up to Dubuque for Pretty
+Patty, then all the way down to St. Louis. Going up is the setup: slow
+against the current and hungry for coal, the deck empty, Morag's lessons,
+promises made and jobs taken on with a handshake. Coming down is the payoff:
+Patty aboard, the current helping, and the same landings again, where the
+people met on the way up remember you: debts called in, favours returned,
+jobs to deliver. Two visits for one setting, as long as the second visit
+changes something (the risk is that the way back feels like padding).
 
-**The river itself can supply them.** Going downstream from Muscatine (from
-memory, all to verify): Burlington and Fort Madison; **Keokuk**, where a canal
-with locks took boats round the Des Moines Rapids (a natural home for the
-queue at the lock, better than invented bridge works); **Hannibal**, Mark
-Twain's boyhood town (an obvious nod, and the cartoon would make the most of
-it); Alton; and **St. Louis** under the Eads Bridge.
+*Upriver:*
+
+1. **Muscatine.** Father ashore; Morag's lessons begin. The harbour master
+   won't clear the boat unless you beat him.
+2. **The Tri-Cities** (Davenport, Rock Island, Moline). In spring 1904 nobody
+   agrees how many cities they are: Gilbert has only just renamed itself
+   **Bettendorf** (1903, after the brothers whose wagon works it lured from
+   Davenport), and East Moline was incorporated the same year; "Quad Cities"
+   only won out around 1930. So the local game runs until someone wins with
+   **trips**, or with **quads**, depending on which side of the argument the
+   table takes: the old guard plays to three, Bettendorf to four (and in
+   Bettendorf they'll bet on anything, including which it'll be). Quads
+   should stay a legend, not a requirement: a game played strictly until four
+   of a kind could go on all night. The **railroad bridge** at Rock Island
+   (the first across the Mississippi, 1856; Lincoln defended it in court
+   after a steamboat hit it: from memory) is the queue: a line of boats, play
+   the captains ahead for their place.
+3. **The coal depot, and the striking miners** (below). Rock Island County
+   was coal country: **Coal Valley**, a few miles south of Moline, was named
+   for its mines, open from the 1850s and worked until 1942, all
+   shallow room-and-pillar diggings in the Rock Island seam. The depot on the
+   Rock Island or Moline levee, fed from Coal Valley (how the coal reached the
+   river: to verify), struck. The boat burns through coal going upstream, so
+   this is where it bites.
+4. **LeClaire and the Rock Island Rapids.** Above the Tri-Cities, some 14
+   miles of rock ledges; boats took on a specialist rapids pilot at LeClaire,
+   a town that lived by the trade (from memory, to verify). **Kitty Sawyer**,
+   the best pilot on the rapids, picks her clients at Snag Poker: she seats
+   the captains waiting to go through at a High Rollers table and plays in it
+   herself. She goes with whoever wins, or, if she wins it herself, with the
+   runner-up. So you needn't win, only finish ahead of every other captain.
+   (A woman pilot isn't a stretch: Mary Becker Greene was licensed on the Ohio
+   in the 1890s; from memory.) Does her deal cover the way back down? Perhaps
+   she makes you play for that too.
+5. **Dubuque.** Pretty Patty and her inventor (see The cargo).
+
+*Downriver,* Patty aboard: LeClaire and the rapids, the Tri-Cities, the coal
+depot and Muscatine again, each with something changed; then new river below
+Muscatine (from memory, all to verify):
+
+6. **Burlington** and **Fort Madison.**
+7. **Keokuk**, where a canal with locks took boats round the Des Moines
+   Rapids: **the queue at the lock**, a line of boats, the eggs going off.
+8. **Hannibal**, Mark Twain's boyhood town (an obvious nod, and the cartoon
+   would make the most of it; Kitty Sawyer is already one).
+9. **Alton.**
+10. **St. Louis**, under the Eads Bridge. Patty delivered; the Fair; the
+    League opens.
+
+Still to place, wherever they fit: **a nosy cargo inspector**; **the mail
+bag** (another captain bound downriver could take it…); **Podunk Junction**:
+Gaylord, flush or destitute.
 
 ### The striking coal miners: you win by losing
 
