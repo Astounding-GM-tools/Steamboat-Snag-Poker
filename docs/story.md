@@ -176,6 +176,58 @@ differently:
   are handed *Yellow-belly* for free. It goes when you pass it on, like any
   snag.
 
+**Three kinds of snag in the story,** all played the same way at the table
+(win a showdown with a snag played, and the weakest hand takes it):
+
+1. **Cargo and duty:** the mail, the eggs, Patty. Delivered, or handed on.
+2. **Reputation:** Yellow-belly. Lived down, by passing it on.
+3. **Troubles:** what the river leaves behind (a Broken Pole, Mud in the
+   Boiler, a Lost Day, a Sprained Back). Each costs upkeep (coal, wages,
+   time) until shed. Shedding them is the evening's guile: in cartoon logic,
+   whoever loses to you agrees to fix your boiler or lend you a pole.
+
+## The river at the table
+
+The river's hazards don't happen to you: they sit down and play. A
+personified Sandbar, Fog Bank or sheet of ice is very 1927 (the Silly
+Symphonies are full of weather with faces), and it makes an ordeal of
+shovels and ropes into a hand of cards, because this is a poker game. Nobody
+has to lose for you to win: it's you against the river.
+
+- **Each hazard plays to its nature,** with play styles the engine already
+  has: **the Sandbar** stands pat on everything (stubborn); **the Fog Bank**
+  plays half blind (dreamer); **the Runaway Mule** throws its cards away
+  (anarchist).
+- **Its stack is the obstacle, not money.** Fleece the Sandbar to get off it:
+  every pot you take digs some of it away.
+- **Time is the price.** A day has a travel allowance (some 8 hours under
+  way); every hand against the Sandbar eats into it, and what's left is the
+  distance made. Fleece it quickly and you still make the landing; slowly,
+  and you tie up short for the night, somewhere along the bank, with
+  whoever else is stuck there for company (or nobody).
+- **A sink for snags.** The Sandbar takes on whatever you dump on it: burden
+  it with Yellow-bellies and Runaway Mules to your heart's content. A
+  wholesome way to shed a load, and a reason to welcome the odd hazard.
+- **What it leaves you.** When the Sandbar wins a showdown it dumps its own
+  snags on you, like any player: the troubles (above). Coming off clean is the
+  best ending; carrying a Broken Pole to the next landing is the usual one.
+- **You can't really lose.** The encounter ends when the obstacle's stack is
+  gone, or at dusk; the only question is what it cost (in hours, coal and
+  troubles).
+
+**Formats:**
+
+- **The Sandbar, heads-up:** fleece it, against the clock.
+- **The ice (High Rollers):** early April, the last of the ice coming down
+  the river: several sheets of ice at one table, each its own seat, to be
+  played clear of one by one.
+- **Two boats on one bar:** the player and a stuck captain both at the
+  Sandbar's table. Beat it together and both float free: helping, not a
+  contest of who stays stuck.
+
+Engine needs: a seat with a stack that isn't a purse (the obstacle), hands
+that cost hours, the day's allowance, and lines keyed to them.
+
 ## Encounters
 
 Every meeting, the tutorial included, is a match with its own settings plus a
@@ -193,10 +245,10 @@ script:
 
 Story mode is a chain of encounters, and flags decide which lines play.
 
-**An encounter must be solved to go on.** Until it is, it is the only thing
-to do: no going back upriver, no going on to the next landing. What "solved"
-means is the encounter's own: usually winning, sometimes not (see the coal
-miners).
+**Only the gates block the way.** Within a stretch of river (see The river
+in segments) you can come and go: an encounter left unsolved waits for you.
+A gate (the rapids, the lock) must be solved to pass. What "solved" means is
+the encounter's own: usually winning, sometimes not (see the coal miners).
 
 ## The caption system
 
