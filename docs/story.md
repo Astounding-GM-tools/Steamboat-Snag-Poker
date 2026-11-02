@@ -268,8 +268,8 @@ Story snags aren't only passed on: many have somewhere they belong, and
 getting them there resolves them for good.
 
 **Troubles have a fixer.** Bestow the Busted Boiler on the engineer and it's
-absorbed: he fixes it. The Broken Pole goes to Lars, the Fatigue to the cook,
-the Broken Heart to Willie's good nature. So the night's game aboard, crew
+absorbed: he fixes it. The Broken Pole goes to Lars; Fatigue and the Broken
+Heart both go to Willie, whose good nature is indomitable. So the night's game aboard, crew
 and passengers round a lantern (stranded on a bar, or moored at a landing
 with no saloon), is a different game from the landing's: a ceremony of
 resilience and community. Not taking money off strangers, but getting the
@@ -283,10 +283,18 @@ Stopping there, even as a detour, resolves the snag: delivered, seen home.
 Which makes the route a choice: is the detour worth it, or do you play the
 snag onto someone else?
 
-**And some snags are useful.** The Runaway Mule costs you upkeep at every
-landing game, but it might help haul you off the next sandbar. See it home
-and it's gone: no more upkeep, and no more mule. (How a snag helps against
-an obstacle: to work out; not by being dumped on it.)
+**And snags help, on the river.** They're your snags, after all. Once a
+day, each one can dodge you a bullet: lose a pot to an obstacle, and a snag
+gives you back what you just lost, and is spent for the day. You don't play
+it; it **volunteers** (the mule hauls, the In-Laws push, the preacher
+prays). So every snag is a cost at the landing games (upkeep) and insurance
+on the river, and carrying a few is a real choice. See the mule home and
+it's gone: no more upkeep, and no more mule.
+
+Open: when a volunteer steps in. The first lost pot of the day would waste
+it on a small one; better, when a loss is big (more than the ante), or the
+snags could each have their own temper (the mule always volunteers, the
+In-Laws need asking, the Layabout Nephew only once the day is nearly lost).
 
 ## Encounters
 
