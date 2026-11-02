@@ -443,65 +443,77 @@ the steamers move, those tables turn up anywhere along the river.
 
 ## The crew of the Best Intentions
 
-A small sternwheel freighter. By law (the federal steamboat inspectors; from
-memory, to verify) a steamboat carried a licensed **master**, **pilot** and
-**engineer**; on a boat this small the master was often the pilot too, but
-the engineer was always his own man. So the mechanic is a crew member, not
-the captain's job. Kept small: four new faces, each with a job in the game.
+A small sternwheel freighter, and she runs tight. By law (the federal
+steamboat inspectors; from memory, to verify) a steamboat carried a licensed
+master, pilot and engineer; on a boat this small the master is often the
+pilot too, but the engineer is always his own man. Everyone else doubles up.
+Names and personalities below are first drafts.
 
-- **The captain: the player.** The deckhand made captain, with no pilot's
-  licence and no time to get one. The cartoon doesn't fuss, except where the
+- **The captain: the player.** The deckhand made captain, and the clerk as
+  well: the books, the purse, the freight bills are all his. No pilot's
+  licence and no time to get one; the cartoon doesn't fuss, except where the
   river does: the rapids want a real pilot (Kitty).
-- **Willie, the deckhand.** The narrator and the player's helper (roster.md):
-  tips, captions, his reckoning on each captain. On a boat this size he's the
-  mate as well: the deck, the lines, the loading.
+- **Willie, deck hand and galley boy.** The narrator and the player's helper
+  (roster.md): tips, captions, his reckoning on each captain. Lines, loading,
+  and the crew's supper, which is mostly beans.
 - **Steamboat Bill, "Father".** The old captain, ashore with family. May turn
   up again down the river.
-- **The engineer.** Keeps the engine and the boilers, and knows to the shovel
-  what each stretch will burn: the voice of coal and the cost of going up.
-  A steam man with a gasoline motor in the hold: either scornful of Pretty
-  Patty, or secretly besotted with her (or both, by turns).
-- **The fireman** (one or two). Shovels the coal; earns his keep at the
-  rapids. One of them is the **Unionized Coal Shoveller**, the snag that
-  already exists: crew who become a snag.
-- **The cook.** River crews ate well, and a fed crew is a happy one. The
-  galley is where the live chickens and the barrel of eggs end up.
-- **The clerk.** Keeps the books and the purse; on the big boats the junior
-  was the "mud clerk", who went ashore in the mud at every landing to see to
-  the freight (from memory). The voice of *money is the fuel*: what the next
-  leg costs, what's owed, what the job pays.
+- **The engineer: Augustus "Gus" Klemm.** From Davenport's Germans (a large
+  community then). Meticulous, oil to the elbows, talks to the engine (who has
+  a name of her own, *Old Hildegard*, and moods). Knows to the shovel what
+  each stretch will burn: the voice of coal and the cost of going up. A steam
+  man with a gasoline motor crated on deck: he scorns Pretty Patty in public
+  and sneaks out at night to look at her.
+- **The fireman: Lars Brekke.** Norwegian, enormous, nearly silent; eats
+  enough for two and shovels enough for three. Sings while he works (a
+  caption of musical notes; the tune is a folk song nobody else knows).
+- **The second fireman, hired by the stretch.** For the hard going (up the
+  rapids, against a spring flood), the captain takes on a second fireman at
+  the landing: an expense, priced by the stretch. Some of them are the
+  **Unionized Coal Shoveller**, the snag that already exists: he works to
+  rule, breaks on the hour, and is a pleasure to pass on.
 
-Aboard but not crew: **Morag** as a passenger, chasing Finlay; **Gaylord**
-coming down, if he wins his passage; **Pretty Patty**, crated on deck. Names
-for the four new faces still to find.
+**A cook?** Not for four. With passengers aboard there are mouths enough,
+and that can be a passenger's fare: someone who pays her passage in the
+galley (below).
 
-### The striking coal miners: you win by losing
+## Passengers
 
-The boat needs coal, but there's a strike at the depot and the river grinds
-to a halt. The solution, as ever, is a friendly game of Snag Poker, heads-up
-against the **foreman**. But this time the goal is not to win: the captain
-must **lose an appropriate amount**, after which the miners hand over a
-"consolation prize" of coal. Not a bribe. Not in any way, shape or form.
+Rotating travellers, each with somewhere to be: they come aboard at one
+landing and leave at another, and while aboard they're company at the rail,
+a voice at supper, now and then an opponent. Passage is money, and the
+boat needs money; some passengers are better company than fares, and some
+are **snags** (the In-Laws, the Layabout Nephew and the Travelling Preacher
+already are). First drafts:
 
-- **Nobody says so.** The player has to work it out: from the foreman's
-  setup line, and from the miners' mood as the strike fund fills (a warmth
-  meter in asides). Sometimes you win by losing.
-- **It has to be a convincing loss.** Folding hand after hand is throwing the
-  game, and that would be a bribe: *"Folding again, Cap'n? You wouldn't be…
-  letting us win?"* You must lose at the showdown: read that you're beaten,
-  and call anyway, like an honest man.
-- **An appropriate amount is a window, not a number** (say $25–40 into the
-  strike fund). Too little: friendly, but no coal, and the river stays stuck.
-  About right: *"Hard luck, Captain. Take a few sacks for your boiler. No hard
-  feelings."* Too much: you've beggared yourself.
-- **The coal is story, not a mechanic:** no counter, no card. Securing it is
-  what solves the encounter; until then there's no going on to St. Louis.
-- Perhaps: the **Unpaid Coal Bill** (an existing snag) as a way to earn
-  goodwill, taking their debt off their hands.
+- **Mrs. Hannelore Pfund**, a widow going down to her daughter in St. Louis.
+  Once cooked on a packet boat; pays her fare in the galley, in pies and in
+  opinions (on the beans, on poker, on Willie's posture). Morag's natural
+  ally, or rival.
+- **Ambrose Quill**, a drummer (a travelling salesman) with two sample cases,
+  getting off at every other landing. Sells anything, plays poker eagerly
+  and badly, and pays his debts in samples (a snag waiting to happen).
+- **A clammer from Muscatine** with a pearl in his pocket. The pearl-button
+  works paid for shells, but now and then a mussel held a freshwater pearl,
+  and the upper Mississippi had a pearl rush round the turn of the century
+  (from memory, to verify). He's taking his to sell in St. Louis and trusts
+  nobody, least of all card players.
+- **A young photographer with a Kodak Brownie** (new in 1900), bound for the
+  Fair to photograph everything. Every landing ends in a group portrait
+  (a frozen frame in the film); she wants a picture of Pretty Patty more than
+  anything.
+- **The Reverend**, going to the Fair to save souls on **the Pike** (its
+  amusement street). Disapproves of the card table loudly, and asks
+  quietly, later, how the betting works. The Travelling Preacher snag, met
+  as a person first.
+- **Honeymooners** going to the Fair, who argue about everything and are
+  delighted with each other.
+- **Morag**, chasing Finlay; **Gaylord**, coming down, if he wins his
+  passage.
 
-Engine needs: a solve condition per encounter (here: the amount lost at
-showdowns, within a window, without folding your way there), and lines keyed
-to it.
+**Not to borrow from 1927:** cartoons of the time leaned on racial
+caricature, rivermen and cooks among their targets. We take the drawing
+style, the music and the timing, and leave that out entirely.
 
 ## Characters with secrets
 
