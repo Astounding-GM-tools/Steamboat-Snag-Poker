@@ -408,6 +408,45 @@ stretch, a few jobs and snags to resolve, and a gate to pass.
    lock.
 4. **Keokuk to St. Louis.** Hannibal, Alton, St. Louis.
 
+### Distances and days
+
+River miles from memory, approximate (counted up from the Ohio at Cairo):
+
+| Landing | Mile | To the next one up |
+|---|---|---|
+| St. Louis | ~180 | |
+| Alton | ~202 | 22 |
+| Hannibal | ~309 | 107 |
+| Keokuk (locks) | ~364 | 55 |
+| Fort Madison | ~383 | 19 |
+| Burlington | ~404 | 21 |
+| **Muscatine** | ~455 | 51 |
+| Tri-Cities | ~482 | 27 |
+| LeClaire (top of the rapids) | ~497 | 15 |
+| Clinton | ~518 | 21 |
+| Bellevue | ~556 | 38 |
+| **Dubuque** | ~580 | 24 |
+
+A small sternwheeler on a spring current: about 5 mph up, 10 down, running by
+day only (some 8 hours under way after the morning's loading; the nights are
+for the game). The Rock Island Rapids are slow either way.
+
+- **Up, Muscatine to Dubuque, ~125 miles:** 3 days pushing hard; **5 days**
+  at a landing a night: the Tri-Cities (a short day, time for the coal yard),
+  LeClaire (15 miles, but the climb up the rapids), Clinton, Bellevue,
+  Dubuque.
+- **Down, Dubuque to St. Louis, ~400 miles:** 5 days pushing hard; **about
+  9–11** stopping everywhere. Short stretches above Muscatine, long ones
+  below (Keokuk to Hannibal is 107 miles), so downstream some landings get
+  run past, or the stop decides the day.
+- **The whole voyage: about 2–2½ weeks**, plus days lost to fog, sandbars,
+  the lock and broke detours.
+
+**The season.** The Fair opened on 30 April. Ice on the upper river broke up
+in late March or early April (to verify), so the voyage starts early to mid
+April: among the first boats of spring, the river high with the spring flood,
+the boats crowded and coal dear. Tight, but reachable.
+
 ## Money is the fuel
 
 Poker is the engine of the river; money is its fuel. The young captain is
