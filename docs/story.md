@@ -568,27 +568,34 @@ landing (the coal yard, the queue at the lock), or nothing much, a quiet
 run with the passengers. Mix it up, and keep each day coherent: the run and
 the evening belong together.
 
+The tutorial (Morag's lessons) is canon, but comes before the story: a
+prologue, not day one.
+
 | Day | Stretch | The day | The evening |
 |---|---|---|---|
-| 1 | Muscatine, up to the Tri-Cities | A quiet run: Morag's lessons aboard | The Tri-Cities: trips or quads; Gaylord in Bettendorf, short of funds, offers a load |
+| 1 | Muscatine, up to the Tri-Cities | The exposition and the handover: Father goes ashore, and the new captain must beat **the harbour master** to clear the boat. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
 | 2 | The Tri-Cities | The coal yard on strike: no coal, no climb | The foreman's game: lose an appropriate amount |
-| 3 | The Rock Island Rapids, up | Kitty's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon, Kitty at the table |
+| 3 | The Rock Island Rapids, up | Kitty's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon: **Kitty, Finlay and Gaylord** at the table. If Gaylord wins, he offers **the loan**: easy come, easy go, and better invested than squandered |
 | 4 | LeClaire to Clinton | **The Ice**: a High Rollers table of floes | Clinton, the sawmill town: a game on deck |
 | 5 | Clinton to Bellevue | A quiet run; a log raft from the pineries going by | Bellevue, a small landing: the night's game aboard, crew and passengers |
 | 6 | Bellevue to Dubuque | **The Fog Bank** in the morning | Dubuque: Pretty Patty and her inventor, the advance; a grand steamer moored |
 | 7 | Dubuque down to Clinton | **A Sawyer** (a sunken tree that bobs: the original snag) | Clinton again, something changed |
-| 8 | Clinton to LeClaire | A short run | LeClaire: Kitty's evening table, for tomorrow's client down |
-| 9 | The Rapids, down; the Tri-Cities | The descent (few hands, high stakes); Gaylord plays for his passage | The Tri-Cities, a steamer or the saloon |
+| 8 | Clinton to LeClaire | A short run | LeClaire's saloon: **Morag** is there, but Finlay has gone downriver; **Gaylord** snitches on him, and wants to sign on as a passenger until he can board a grand steamer with a High Rollers table (he plays for his passage). Kitty's table for tomorrow's client down |
+| 9 | The Rapids, down; the Tri-Cities | The descent (few hands, high stakes) | The Tri-Cities, a steamer or the saloon |
 | 10 | Down to Muscatine | **The Sandbar**, a new one: the sand you washed off going up | Muscatine: Finlay and Morag, the next instalment |
 | 11 | Muscatine to Burlington | A quiet run, the St. Louis passengers aboard | Burlington |
 | 12 | Burlington to Keokuk | Fort Madison in passing | **The queue at the lock**: play the captains ahead for their place |
-| 13 | Keokuk to Hannibal | The long run (107 miles) | Hannibal: a grand steamer, the High Rollers |
+| 13 | Keokuk to Hannibal | **The long haul**, 107 miles at full steam all day: an obstacle in itself. Making time takes the most out of everyone, on deck and in the engine room | Hannibal: a grand steamer at last. Gaylord goes aboard for its High Rollers table, and he'll need **the loan back** first |
 | 14 | Hannibal to Alton | High water, flotsam | Alton |
 | 15 | Alton to St. Louis | **The Chain of Rocks**, the last obstacle (from memory, to verify), the Missouri's mud joining | The Fair |
 
 Six days up, nine down: about the two and a half weeks the river allows.
-Obstacles on six days of fifteen, the rapids twice, the coal yard and the
-lock as the day's encounter on land.
+
+**The long haul as an obstacle:** its stack is the distance (107 miles), and
+every pot won is miles made; the volunteers matter most here (everyone
+aboard pitching in). "In the engine room", not "below": a shallow-draft
+sternwheeler carries her boilers, engine and cargo on the main deck, with
+little or no hold beneath (from memory).
 
 ### Distances and days
 
@@ -683,13 +690,15 @@ the steamers move, those tables turn up anywhere along the river.
   **Morag** hunts him down. Passing Muscatine a few times (up, and down
   again) lets their story unfold in instalments: where he was seen, what he
   owes, how close she came.
-- **Bettendorf: Gaylord Montague, "Esquire".** Where else would a card-sharp live
-  than a town that bets on anything? Going up, **short of funds**, he offers
-  the young captain a load to carry. Coming back down he wants **passage to
-  St. Louis**, and plays for it: if he loses he pays the pot, if he wins he
-  rides for free. Somewhere in between (before or after), he plays for **the
-  loan** (Gaylord's sponsorship, below). He travels, too: he can turn up at
-  any High Rollers table.
+- **Gaylord Montague, "Esquire"**, of Bettendorf (where else would a
+  card-sharp live than a town that bets on anything?), but met at LeClaire's
+  saloon. Going up, if he wins the night, he offers **the loan**: easy come,
+  easy go, better invested than squandered (Gaylord's sponsorship, below).
+  Coming back down he snitches on Finlay to Morag and wants **passage** until
+  he can board a grand steamer, and plays for it: if he loses he pays the
+  pot, if he wins he rides for free. At Hannibal the grand steamer comes,
+  and he'll need the loan back before he goes aboard. He travels: he can turn
+  up at any High Rollers table.
 - **LeClaire: Kitty Sawyer**, the rapids pilot: her High Rollers table going
   up, and again coming down.
 - **Anywhere a grand steamer moors: Eliza Bathory, "Bone Pale"**, no
