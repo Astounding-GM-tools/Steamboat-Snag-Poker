@@ -441,6 +441,40 @@ the steamers move, those tables turn up anywhere along the river.
   and has money to spare: she sets aside a sum to lose each night, and
   usually retires with the pot.
 
+## The crew of the Best Intentions
+
+A small sternwheel freighter. By law (the federal steamboat inspectors; from
+memory, to verify) a steamboat carried a licensed **master**, **pilot** and
+**engineer**; on a boat this small the master was often the pilot too, but
+the engineer was always his own man. So the mechanic is a crew member, not
+the captain's job. Kept small: four new faces, each with a job in the game.
+
+- **The captain: the player.** The deckhand made captain, with no pilot's
+  licence and no time to get one. The cartoon doesn't fuss, except where the
+  river does: the rapids want a real pilot (Kitty).
+- **Willie, the deckhand.** The narrator and the player's helper (roster.md):
+  tips, captions, his reckoning on each captain. On a boat this size he's the
+  mate as well: the deck, the lines, the loading.
+- **Steamboat Bill, "Father".** The old captain, ashore with family. May turn
+  up again down the river.
+- **The engineer.** Keeps the engine and the boilers, and knows to the shovel
+  what each stretch will burn: the voice of coal and the cost of going up.
+  A steam man with a gasoline motor in the hold: either scornful of Pretty
+  Patty, or secretly besotted with her (or both, by turns).
+- **The fireman** (one or two). Shovels the coal; earns his keep at the
+  rapids. One of them is the **Unionized Coal Shoveller**, the snag that
+  already exists: crew who become a snag.
+- **The cook.** River crews ate well, and a fed crew is a happy one. The
+  galley is where the live chickens and the barrel of eggs end up.
+- **The clerk.** Keeps the books and the purse; on the big boats the junior
+  was the "mud clerk", who went ashore in the mud at every landing to see to
+  the freight (from memory). The voice of *money is the fuel*: what the next
+  leg costs, what's owed, what the job pays.
+
+Aboard but not crew: **Morag** as a passenger, chasing Finlay; **Gaylord**
+coming down, if he wins his passage; **Pretty Patty**, crated on deck. Names
+for the four new faces still to find.
+
 ### The striking coal miners: you win by losing
 
 The boat needs coal, but there's a strike at the depot and the river grinds
