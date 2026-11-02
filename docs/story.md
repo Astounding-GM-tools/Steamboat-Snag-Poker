@@ -511,9 +511,82 @@ already are). First drafts:
 - **Morag**, chasing Finlay; **Gaylord**, coming down, if he wins his
   passage.
 
-**Not to borrow from 1927:** cartoons of the time leaned on racial
-caricature, rivermen and cooks among their targets. We take the drawing
-style, the music and the timing, and leave that out entirely.
+## A river of all sorts
+
+The river in 1904 was anything but all white: Black rivermen worked every
+boat, St. Louis had a large Black community and was the capital of ragtime,
+the upper river was Sauk, Meskwaki and Ho-Chunk country within living
+memory, and the towns were full of Germans, Irish, Scandinavians and
+Bohemians. A cast with nobody but white faces would be its own distortion.
+The trap runs both ways: put the only Black character on the coal pile and
+it's the old caricature; leave everyone out to be safe and the river is
+empty. Cartoons of the 1920s leaned hard on racial caricature (rivermen and
+cooks among their targets); we take their drawing, music and timing, and
+leave that out.
+
+**Principles:**
+
+- **Range, not a token.** Every group turns up more than once, across
+  stations: captains and passengers, rich and broke, sharps and fools, crew
+  and gentry. A Black cook is fine when she isn't the only Black person on
+  the river.
+- **The joke is the personality, never the origin.** Everyone is a
+  caricature here, of a temperament (Willie's eagerness, Morag's rectitude,
+  Gaylord's manners), not of a people.
+- **Accents for all or none.** Morag's Scots, Lars's Norwegian, the
+  engineer's German (or Scots): the captions give everyone their voice, and
+  nobody's is the funny one.
+- **Everybody wants something.** Their own goal, their own wit, the last
+  word now and then. Nobody exists to serve someone else's scene.
+- **Mind the drawing.** Rubber-hose cartoons grew partly out of minstrelsy
+  (the white gloves, the wide mouths). The portraits draw everyone as a
+  person with their own features, in the same style and with the same care.
+
+**People to draw from** (first drafts):
+
+- **The pianist on the grand steamers.** St. Louis was ragtime's capital
+  (Scott Joplin wrote *The Cascades* for the 1904 Fair; from memory, to
+  verify). A Black pianist who plays the High Rollers tables, knows every
+  regular's tells, and is, in a silent film, the one supplying the music: the
+  score is his. Sharp, unhurried, in on every joke.
+- **A St. Louis businesswoman** heading home from a selling trip upriver: hair
+  preparations, sold door to door and through agents (the flavour of Annie
+  Turnbo Malone, whose Poro company began in St. Louis around 1902; fictional,
+  not her). Shrewd, well dressed, a formidable card player: a match for
+  Eliza at the grand tables.
+- **Mrs. Pfund, or whoever pays her fare in the galley,** could be Black once
+  the river has these others: her pride (a packet-boat cook, and the best on
+  the river) and her opinions are what she's made of.
+- **The second fireman,** hired by the stretch, is a different man each time:
+  Irish, Black, Bohemian, a farm boy. Rotating, so no group is "the
+  shoveller".
+- **A Meskwaki passenger** going to the Fair, where its anthropology exhibits
+  put living people on show (Geronimo among them; from memory). He's been
+  asked to appear and is going to negotiate his fee: wry, practical, and
+  better informed about the river than anyone aboard. No feathers, no
+  mysticism. The Meskwaki had bought their own land at Tama, Iowa, in 1857
+  (to verify).
+- **The river's mixed families.** Antoine LeClaire, after whom LeClaire is
+  named, was of French and Potawatomi descent (from memory). The rapids
+  pilots could come from such families, Kitty Sawyer among them, if it suits
+  her.
+- **Others to place:** Bohemian Czechs (Iowa had them; Dvořák summered in
+  Spillville in 1893), Irish, a Chinese American (not a laundry), Jewish
+  merchants (never as the money-lender or the sharp).
+- **The engineer: German or Scots?** A Scots engineer is a fine tradition:
+  Kipling's *McAndrew's Hymn* (1894, free), the old engineer praying to his
+  engines, and later Scotty. But Morag and Finlay are already Scots; a third
+  could be the joke (Morag and the engineer arguing in a dialect nobody else
+  aboard can follow), or one too many.
+
+**A cartoonist worth remembering:** George Herriman, who drew *Krazy Kat*
+(Ignatz is in the gallery), was a Creole of colour from New Orleans,
+working in the very style we borrow.
+
+**To check in the roster:** James Robert "Jim-Bob" Lee, Captain of the
+*Banjo*. With the *Stonewall* gone, is the name an echo of Robert E. Lee
+(also a famous steamboat, of the 1870 race against the *Natchez*)? If it
+isn't meant to be, it reads like one.
 
 ## Characters with secrets
 
