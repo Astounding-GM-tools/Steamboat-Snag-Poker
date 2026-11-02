@@ -586,10 +586,9 @@ leave that out.
 (Ignatz is in the gallery), was a Creole of colour from New Orleans,
 working in the very style we borrow.
 
-**To check in the roster:** James Robert "Jim-Bob" Lee, Captain of the
-*Banjo*. With the *Stonewall* gone, is the name an echo of Robert E. Lee
-(also a famous steamboat, of the 1870 race against the *Natchez*)? If it
-isn't meant to be, it reads like one.
+**Settled in the roster:** James Robert "Jim-Bob" Lee read like an echo of
+Robert E. Lee (also a famous steamboat, of the 1870 race against the
+*Natchez*); he is now James Robert "Banjo" Tolliver.
 
 ## Characters with secrets
 

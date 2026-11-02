@@ -16,18 +16,18 @@ active trademark). The right-hand column says which.
 | Captain | Boat | Tier | Style | Playbook (internal) | Rights |
 |---|---|---|---|---|---|
 | **Konrad "Whiteknuckle" Marlowe** | *Roi des Belges* | rascal | bully | Grips his biggest cards; discards anything below a ten; never risks a snag; never folds. | Original (nod to Joseph Conrad, *Heart of Darkness*, 1899, free) |
-| **Max Moritz** (secretly Max & Moritz, two boys in a coat) | *Mischief* | rascal | griefer | Not out to win, out to make you lose: never draws while snags are in the deck (let someone else fish them up); gleefully loads snags into its hands; never folds. | Free: Wilhelm Busch, 1865 |
-| **Kitty Sawyer** | *Queen Rose* | rascal | swashbuckler | Drama queen: chases big hands (values a flush or full house far above a pair), loves a last-minute triumph; bold with snags; never folds. | Original (nod to Twain's Tom Sawyer, free) |
-| **Ignatz** | *Brickyard* | rascal | anarchist | Throw-happy: always chucks a card or two, usually the small ones; now and then hurls every snag he has. | Free in the EU (Herriman died 1944); check *Krazy Kat* trademarks before featuring prominently |
-| **Nemo** | *Slumber* | rascal | dreamer | Half the time random, half the time a calculating player. | Free (McCay died 1934); name shortened from "Little Nemo" |
-| **James Robert "Jim-Bob" Lee** | *Banjo* | rascal | loose | Quick, cheap reads; bold with snags; rarely folds. | Original |
-| **Steamboat Bill** | *Best Intentions* | middle | stubborn | Stands pat on almost anything; cautious with snags. | Free: the 1910 song "Steamboat Bill" (Shields and the Leighton Brothers), not the 1928 film |
-| **Finlay MacTavish** | *Night Out* | middle | loose | Quick decisions, bold with snags, chases big pots. | Original (veiled nod to *Bringing Up Father*) |
+| **Max "Long Coat" Moritz** (secretly Max & Moritz, two boys in a coat) | *Mischief* | rascal | griefer | Not out to win, out to make you lose: never draws while snags are in the deck (let someone else fish them up); gleefully loads snags into its hands; never folds. | Free: Wilhelm Busch, 1865 |
+| **Kitty "Pilot" Sawyer** | no boat: the rapids pilot at LeClaire | rascal | swashbuckler | Drama queen: chases big hands (values a flush or full house far above a pair), loves a last-minute triumph; bold with snags; never folds. | Original (nod to Twain's Tom Sawyer, free) |
+| **Ignatz "Brickbat"** | *Brickyard* | rascal | anarchist | Throw-happy: always chucks a card or two, usually the small ones; now and then hurls every snag he has. | Free in the EU (Herriman died 1944); check *Krazy Kat* trademarks before featuring prominently |
+| **Nemo "Sleepwalker"** | *Slumber* | rascal | dreamer | Half the time random, half the time a calculating player. | Free (McCay died 1934); name shortened from "Little Nemo" |
+| **James Robert "Banjo" Tolliver** | *Banjo* | rascal | loose | Quick, cheap reads; bold with snags; rarely folds. | Original |
+| **Steamboat Bill, "Father"** | *Best Intentions* | middle | stubborn | Stands pat on almost anything; cautious with snags. | Free: the 1910 song "Steamboat Bill" (Shields and the Leighton Brothers), not the 1928 film |
+| **Finlay "Bricklayer" MacTavish** | *Night Out* | middle | loose | Quick decisions, bold with snags, chases big pots. | Original (veiled nod to *Bringing Up Father*) |
 | **Lenny "Troubadour" King** | no boat: a travelling troubadour, with a cardboard violin | middle | defeatist | Moody: folds at the first sign of trouble, swaps one card at most, never chases, timid with snags. Still lands a big hand now and then. | Original |
 | **The Walrus** (and the Carpenter) | *Cacophony* | middle | shark | Calculating, and loves a snag tucked into three of a kind. | Free: Lewis Carroll, 1871 |
-| **Gaylord Montague, Esq.** | rides any boat with a game | sharp | gambler | Counts every card; folds poor odds; snags only when the odds favour it. | Original |
-| **Eliza Bathory** | *Lucrezia III* | sharp | predator | Patient: folds weak hands readily; then ruthless, burying beaten rivals in snags. | Original (name after the historical countess, d. 1614) |
-| **Morag MacTavish** | Tutor (no boat) | (follower) | careful | Tight, patient, punishing; rarely risks a snag. Joins once Finlay is busted, and only in tournaments with Finlay. | Original |
+| **Gaylord "Esquire" Montague, Esq.** | rides any boat with a game | sharp | gambler | Counts every card; folds poor odds; snags only when the odds favour it. | Original |
+| **Eliza "Bone-White" Bathory** | *Lucrezia III* | sharp | predator | Patient: folds weak hands readily; then ruthless, burying beaten rivals in snags. | Original (name after the historical countess, d. 1614) |
+| **Morag "Governess" MacTavish** | Governess (no boat) | (follower) | careful | Tight, patient, punishing; rarely risks a snag. Joins once Finlay is busted, and only in tournaments with Finlay. | Original |
 
 ## Line-up
 

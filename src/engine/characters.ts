@@ -9,7 +9,7 @@ export type AiId =
   | 'swashbuckler' // Kitty: chases big hands, loves a last-minute triumph
   | 'anarchist' // Ignatz: throw-happy, now and then hurls every snag
   | 'dreamer' // Nemo: half brilliant, half baffling
-  | 'loose' // Finlay, Jim-Bob: quick decisions, bold with snags
+  | 'loose' // Finlay, Banjo: quick decisions, bold with snags
   | 'stubborn' // Steamboat Bill: stands pat, never changes his mind
   | 'defeatist' // Lenny: folds readily, never chases
   | 'shark' // the Walrus: solid, loves a snag tucked into trips
