@@ -343,8 +343,7 @@ changes something (the risk is that the way back feels like padding).
    herself. She goes with whoever wins, or, if she wins it herself, with the
    runner-up. So you needn't win, only finish ahead of every other captain.
    (A woman pilot isn't a stretch: Mary Becker Greene was licensed on the Ohio
-   in the 1890s; from memory.) Does her deal cover the way back down? Perhaps
-   she makes you play for that too.
+   in the 1890s; from memory.) Going back down, her table again.
 5. **Dubuque.** Pretty Patty and her inventor (see The cargo).
 
 *Downriver,* Patty aboard: LeClaire and the rapids, the Tri-Cities, the coal
@@ -361,8 +360,86 @@ Muscatine (from memory, all to verify):
     League opens.
 
 Still to place, wherever they fit: **a nosy cargo inspector**; **the mail
-bag** (another captain bound downriver could take it…); **Podunk Junction**:
-Gaylord, flush or destitute.
+bag** (another captain bound downriver could take it…); **Podunk Junction**.
+
+## The river in segments
+
+The river comes in stretches, each between two gates. Inside a stretch you
+can go up and down as you please: to deliver a job, settle a snag, or try a
+table again. The gates are where the river itself says no: you don't go back
+down past the Rock Island Rapids until you've done what needs doing above
+them, because of the pilot and the cost of climbing them again (it's hard
+going, and the coal shoveller earns his keep that day). Almost open world,
+tightly scoped and bite-sized: a few planned encounters and characters per
+stretch, a few jobs and snags to resolve, and a gate to pass.
+
+1. **Muscatine to the Tri-Cities.** Muscatine, the Tri-Cities, the coal
+   yard. Visited going up and again coming down.
+   *Gate:* **the Rock Island Rapids**: Kitty Sawyer's table, and coal enough
+   to climb.
+2. **Above the rapids: LeClaire to Dubuque.** Patty and the advance on her.
+   More to find (Clinton, Bellevue: to look into).
+   *Gate:* the rapids again, going down: Kitty plays for that too.
+3. **Below Muscatine: Burlington to Keokuk.**
+   *Gate:* **the Des Moines Rapids**: the canal at Keokuk, the queue at the
+   lock.
+4. **Keokuk to St. Louis.** Hannibal, Alton, St. Louis.
+
+## Money is the fuel
+
+Poker is the engine of the river; money is its fuel. The young captain is
+underfunded: the jobs don't pay well enough to keep the boat going, so every
+stretch costs more than the work brings in, and the difference is won at the
+table. **One purse all the way down.**
+
+- **Every leg has a price.** Coal, mostly: a dock will always sell it, at a
+  premium. Also pilots, lock fees, harbour dues. To go on, you need the sum;
+  the encounter that unlocks the next stretch has a stake you must afford.
+- **Where the money comes from:** Father's starting cash in Muscatine; the
+  **advance on Pretty Patty** in Dubuque; and until then, winnings, snag
+  resolutions, odd jobs and small freight.
+- **Side jobs:** play someone for the privilege of a well-paying job (a load
+  that goes further up, or back down to settle a snag), and get paid enough
+  for the next ante.
+- **Never stuck.** Losing costs time, not the game: there's always an odd job
+  at poor pay (carrying something, working aboard someone else's boat), so a
+  thin purse is a detour, never a dead end.
+
+## The grand steamers
+
+The big passenger and excursion steamers moor for the night somewhere new
+each evening, at a landing or out on the water, like cruise ships; smaller
+boats tie up alongside, and the evening is cards, supper and whiskey aboard
+the grandest of them. That's where the **High Rollers tables** are, and since
+the steamers move, those tables turn up anywhere along the river.
+
+- **Dress is the invitation.** Win a decent suit and waistcoat (at a table,
+  or as a job's payment), and you're asked aboard. Wardrobe as progression.
+- **Real flavour** (from memory, to verify): the **Diamond Jo Line**, run out
+  of Dubuque, carried passengers between St. Louis and St. Paul until about
+  1911; the **Streckfus** excursion steamers worked out of Rock Island. The
+  riverboat gambler's heyday was before the Civil War, so by 1904 it's half
+  legend, which suits a 1927 cartoon that romanticises it anyway.
+
+## Who is where
+
+- **Muscatine: Finlay MacTavish** carouses here and hereabouts, and
+  **Morag** hunts him down. Passing Muscatine a few times (up, and down
+  again) lets their story unfold in instalments: where he was seen, what he
+  owes, how close she came.
+- **Bettendorf: Gaylord Montague, Esq.** Where else would a card-sharp live
+  than a town that bets on anything? Going up, **short of funds**, he offers
+  the young captain a load to carry. Coming back down he wants **passage to
+  St. Louis**, and plays for it: if he loses he pays the pot, if he wins he
+  rides for free. Somewhere in between (before or after), he plays for **the
+  loan** (Gaylord's sponsorship, below). He travels, too: he can turn up at
+  any High Rollers table.
+- **LeClaire: Kitty Sawyer**, the rapids pilot: her High Rollers table going
+  up, and again coming down.
+- **Anywhere a grand steamer moors: Eliza Bathory, "Bone-White"**, Mistress
+  of the *Lucrezia III*, the grandest boat on the river. She plays for sport
+  and has money to spare: she sets aside a sum to lose each night, and
+  usually retires with the pot.
 
 ### The striking coal miners: you win by losing
 
@@ -426,11 +503,9 @@ to it.
 ## Open questions
 
 - Who calls Steamboat Bill ashore.
-- The name of the boat.
+- The name of the boat. The game already calls Bill the "Captain of the
+  Stonewall", which echoes the *Stonewall Jackson* in Keaton's *Steamboat
+  Bill, Jr.* (1928): a nod that fits the 1927 frame, but it also names a
+  Confederate general on an Iowa boat. Keep it, or rename the boat.
 - How Morag comes aboard, and whether she stays to the Fair.
-- What happens when you run out of money mid-river: not a game over (losing
-  is never punishing), but what then? A loan from Gaylord, an IOU, work
-  aboard someone else's boat?
 - Banter volume in the League.
-- Money across the river: one purse all the way to St. Louis, or each landing
-  standing on its own?
