@@ -575,7 +575,7 @@ prologue, not day one.
 |---|---|---|---|
 | 1 | Muscatine, up to the Tri-Cities | The exposition and the handover: Father goes ashore, and the new captain must beat **the harbour master** to clear the boat. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
 | 2 | The Tri-Cities | The coal yard on strike: no coal, no climb | The foreman's game: lose an appropriate amount |
-| 3 | The Rock Island Rapids, up | Kitty's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon: **Kitty, Finlay and Gaylord** at the table. If Gaylord wins, he offers **the loan**: easy come, easy go, and better invested than squandered |
+| 3 | The Rock Island Rapids, up | Kitty's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon: **Kitty, Finlay and Gaylord** at the table. Gaylord offers **the loan** either way (he has a stash, and likes the captain's style); if he finishes first or second, all the more |
 | 4 | LeClaire to Clinton | **The Ice**: a High Rollers table of floes | Clinton, the sawmill town: a game on deck |
 | 5 | Clinton to Bellevue | A quiet run; a log raft from the pineries going by | Bellevue, a small landing: the night's game aboard, crew and passengers |
 | 6 | Bellevue to Dubuque | **The Fog Bank** in the morning | Dubuque: Pretty Patty and her inventor, the advance; a grand steamer moored |
@@ -689,11 +689,17 @@ the steamers move, those tables turn up anywhere along the river.
 - **Muscatine: Finlay**, "Carouser", carouses here and hereabouts, and
   **Morag** hunts him down. Passing Muscatine a few times (up, and down
   again) lets their story unfold in instalments: where he was seen, what he
-  owes, how close she came.
+  owes, how close she came. Whether they ever meet is open: their showdown
+  may stay unresolved, they may be background characters sailing past each
+  other on the river, or a reconciliation may turn up as the story grows.
 - **Gaylord Montague, "Esquire"**, of Bettendorf (where else would a
   card-sharp live than a town that bets on anything?), but met at LeClaire's
-  saloon. Going up, if he wins the night, he offers **the loan**: easy come,
-  easy go, better invested than squandered (Gaylord's sponsorship, below).
+  saloon. Going up he offers **the loan** whatever the night's outcome: he
+  has a stash (he plays best when the odds are against him, so rarely spikes
+  a pot), and he likes the young captain's style: *"Fearless and audacious.
+  I see myself in you."* If he finishes first or second it's sweeter still:
+  he's on a lucky streak, and he knows himself well enough to invest it
+  before he squanders it (Gaylord's sponsorship, below).
   Coming back down he snitches on Finlay to Morag and wants **passage** until
   he can board a grand steamer, and plays for it: if he loses he pays the
   pot, if he wins he rides for free. At Hannibal the grand steamer comes,
