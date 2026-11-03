@@ -641,7 +641,8 @@ the boats crowded and coal dear. Tight, but reachable.
 Poker is the engine of the river; money is its fuel. The young captain is
 underfunded: the jobs don't pay well enough to keep the boat going, so every
 stretch costs more than the work brings in, and the difference is won at the
-table. **One purse all the way down.**
+table. **One purse all the way down** (the captain's; the crew's strength is
+another thing, below).
 
 - **Every leg has a price.** Coal, mostly: a dock will always sell it, at a
   premium. Also pilots, lock fees, harbour dues. To go on, you need the sum;
@@ -655,6 +656,85 @@ table. **One purse all the way down.**
 - **Never stuck.** Losing costs time, not the game: there's always an odd job
   at poor pay (carrying something, working aboard someone else's boat), so a
   thin purse is a detour, never a dead end.
+
+### Two purses: money and strength
+
+- **The captain's purse (coins).** Fares, freight, jobs, and winnings at the
+  landing tables, against strangers and rivals. It pays for coal, supplies,
+  upgrades and wages.
+- **The crew's strength (buttons).** Made fresh each morning, a few buttons
+  from each hand aboard (Morag's bone buttons, already in the game). It's
+  what the boat throws against an obstacle (the stake against the Sandbar is
+  effort, not dollars), and what's left by evening is what the crew bring to
+  the deck game. After a hard day: a few buttons, nothing left to give.
+
+The captain never plays his crew for their wages: they pool their effort.
+The two meet through the boat:
+
+- **Purse into strength:** food, hammocks, a better galley stove raise each
+  morning's strength. The crew belong to the boat; the captain pays their
+  wages and feeds and lodges them, so their strength is the boat's.
+- **Strength into purse:** odd jobs at a landing, the crew's work for pay.
+- **Coal stays in the purse:** the cost of each stretch, bought in the
+  morning; without enough of it you don't cast off.
+
+### The deck games
+
+The crew's after-supper game is communal, not competitive, and it should feel
+different from the landing tables:
+
+- **For buttons, never coins,** which honours Morag's rule (*"You should
+  NEVER play for money!"*): she'd approve. Buttons won and lost stay in the
+  crew; the pool fills again overnight.
+- **What winning does:** gets the right trouble into the right hands (the
+  boiler to the engineer, see Where snags go), and a good evening might lend
+  tomorrow a button or two.
+- **The feel:** lantern light after supper, Lars singing, coffee not whiskey,
+  warm lines, no "you lose" verdict. When the buttons run out the game simply
+  ends: *"Lars is asleep at the table."*
+
+### The morning council and the trader
+
+Each day brings its own challenge, and the wise captain confers with his
+crew before buying anything or hiring anyone. The obstacles are fixed, and
+the crew know the river: *"Fog's thick below Bellevue this time of year"*
+(Willie); *"The rapids'll want a second shovel, Captain"* (Lars); *"She'll burn
+half again going up"* (Gus). Each suggests what the day needs; the captain
+decides. A tutorial in all but name, and a voice for every hand aboard.
+
+**A trader at each landing,** with what the place has (cheap lumber at
+Clinton, buttons at Muscatine) and what the day ahead calls for. Buying takes
+money out of the gambling purse, but makes the boat as a whole more
+productive: more strength each morning, which is both what the crew throw at
+obstacles and what they bring to the deck games. Hiring is the same counter:
+**a pilot** for the rapids (required), **a second fireman** going up (wise).
+
+Upgrades and supplies, first drafts:
+
+| Item | Does |
+|---|---|
+| Repair materials | Fix a trouble without waiting for its fixer |
+| Food for the crew (better than beans) | More strength tomorrow |
+| Hammocks | More strength every morning |
+| A better galley stove | More strength every morning; and a cook might sign on |
+| An upgraded passenger cabin, furniture | Better fares, better passengers |
+| Spare pole, spare paddle | A trouble you never get |
+| **The whistle** | Can save your life in the fog bank (say: a free hand there, or the fog's pile cut short), and a place in the queue at the lock |
+
+### Stats: the boat and the crew
+
+Every purchase and hire changes a number, so both need a few, kept as data
+(one table each, like the snags):
+
+- **The Best Intentions:** coal bunker (how much she carries), speed up and
+  down, berths (how many passengers), deck space (how much cargo: a full hold
+  is a full hand of snags), comfort (galley, hammocks: the morning strength
+  bonus), equipment (whistle, spares, lanterns).
+- **Each crew member:** strength per day (buttons made each morning), what
+  they fix (the engineer the boiler, Lars the pole, Willie fatigue and broken
+  hearts), wage, appetite (Lars eats for two), and their play style at the
+  deck game. Temporary hands (a second fireman, a pilot) have the same, plus
+  a day rate.
 
 ## The grand steamers
 
@@ -880,11 +960,29 @@ Robert E. Lee (also a famous steamboat, of the 1870 race against the
 
 ## Next steps
 
-1. A **character pass**: every captain's name, title, description and voice,
-   with the story in mind (who they are, what they want, what they say).
-2. Fill in the landings: who is there, what they want, the format.
-3. Story mode itself: encounters built on what the tutorial already uses
-   (arranged hands, scripts by trigger, snags that outlive a game).
+**The first stretch to build: days 1 and 2** (the handover, the harbour
+master, the Sandbar, the Tri-Cities evening, the coal yard, a deck game);
+Kitty's table and the climb after. What it needs:
+
+1. **The voyage state,** above any single game: the day and the place, the
+   purse, the strength and the coal, who's aboard (crew, passengers), the
+   boat's upgrades, the story's flags. Saved.
+2. **The stats,** as data: the boat, the crew, the snags (temper, fixer,
+   address), the upgrades. One table each, read generically.
+3. **The morning:** the council and the trader, kept to a short list at
+   first (buy coal, hire a hand, a few goods, cast off).
+4. **A status strip:** day, place, purse, strength, coal.
+5. **The engine pieces:** the obstacle seat with one-sided settling, the
+   troubles, hands that cost hours, volunteers, the deck game (buttons,
+   fixers).
+6. **New people:** the harbour master, the coal yard foreman, the
+   Tri-Cities regulars; the crew as players at the deck game.
+7. **The scripts** for days 1 and 2: every line of every encounter.
+8. **Starting numbers** (purse, strength per hand, coal prices, the Sandbar's
+   pile): guesses until played, so in one place, easy to change.
+
+Still to do alongside: a **character pass** (every name, description and
+voice with the story in mind).
 
 ## Backlog
 
