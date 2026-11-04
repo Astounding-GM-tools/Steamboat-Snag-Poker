@@ -6,6 +6,7 @@
  */
 import type { EncounterDef, Step, StoryDef } from '../engine';
 import { TROUBLE } from '../engine';
+import type { Script } from './script';
 
 /** The evening's game aboard: crew and lantern, for buttons. */
 const deckGame: EncounterDef = { id: 'deck', stake: 'strength', rivals: 'crew', goal: { type: 'evening' }, hands: 3 };
@@ -29,32 +30,15 @@ const sandbar: EncounterDef = {
 const day1: Step[] = [
   {
     type: 'caption',
-    title: 'Steamboat to St. Louis',
-    lines: [
-      { text: 'Muscatine, Iowa. Spring, 1904.' },
-      { text: 'The ice is off the river, and the first boats of the year are stirring.' },
-      { text: 'Steamboat Bill has landed a Big Snag: a horseless carriage, to be fetched from Dubuque and delivered to the World’s Fair in St. Louis by opening day.' },
-    ],
+    lines: [{ text: 'Muscatine, on the Mississippi.' }, { text: 'The first day of spring, which is what they call the day the ice goes out.' }],
   },
   {
-    type: 'caption',
-    lines: [
-      { who: 'steamboatBill', text: 'Family calls, and family comes first. I’m needed ashore.' },
-      { who: 'steamboatBill', text: 'You’re the captain now. Just stay away from those whiskey-swilling river gamblers and their Snag Poker!' },
-      { who: 'willie', text: 'Aye aye, Captain!' },
-    ],
+    type: 'encounter',
+    // A few friendly hands on deck, for nothing: the talk is the point (RIVER_TALK.bill).
+    encounter: { id: 'bill', stake: 'purse', rivals: [{ id: 'steamboatBill', ai: 'stubborn', money: 50 }], goal: { type: 'evening' }, hands: 3, rules: { pot: false } },
+    solved: [],
   },
   { type: 'dawn' },
-  {
-    type: 'council',
-    advice: [
-      { who: 'gus', text: 'She’ll burn two loads to the Tri-Cities, Captain. More if we’re held up.' },
-      { who: 'willie', text: 'Sand’s been shifting above town, they say. A spare pole wouldn’t hurt.' },
-      { who: 'lars', text: 'Hm.' },
-    ],
-    trader: ['coal', 'food', 'sparePole', 'hammocks'],
-    coal: 2,
-  },
   {
     type: 'caption',
     lines: [
@@ -173,5 +157,47 @@ export const RIVER: StoryDef = {
   stuckNight: [{ type: 'caption', lines: [{ text: 'Supper on deck, and the lantern lit.' }] }, deckLines],
 };
 
-/** Father leaves the new captain this much, and the bunker as it is. */
+/** Bill leaves the new captain this much, and the bunker as it is. */
 export const RIVER_START = { purse: 40, coal: 2 };
+
+const said = (text: string | string[]) => ({ size: 'scene' as const, who: 'steamboatBill', text });
+const you = (text: string) => ({ size: 'scene' as const, who: 'you', text });
+
+/**
+ * What's said at the table, by encounter and hand. The talk goes in before the
+ * deal and on the Flop: a hand folded early would never reach the later streets.
+ */
+export const RIVER_TALK: Record<string, Script> = {
+  bill: {
+    rounds: [
+      {
+        deal: [
+          { ...said('I’ve landed a big job. A horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis. It has to be there the day the Fair opens.'), replies: [{ label: 'That’s good, isn’t it?' }] },
+          { ...said('Good money. And the worst timing of my life.'), replies: [{ label: 'Why?' }] },
+        ],
+        flop: [
+          { ...said('Because you’re the captain now.'), replies: [{ label: 'Me? Why not Gus?' }] },
+          said('Gus only cares about his engine. He’d stay in port all day cleaning it if he could.'),
+        ],
+      },
+      {
+        flop: [
+          you('Lars, then. He’s a grown man, and stronger than anyone.'),
+          { ...said(['Lars doesn’t speak the language. We’re not even sure that’s his name.', 'And he’s a hopeless Snag player.']), replies: [{ label: 'What’s Snag got to do with it?' }] },
+          said(['Everything. Poker is what makes the river run.', 'Every decision on the river is made over a hand of cards. Just as we’re doing now.']),
+        ],
+      },
+      {
+        deal: [
+          you('Willie, then. He’s a great player, and everyone likes him.'),
+          said('Too young, and too eager. Maybe in a few seasons. For now, it’s your turn.'),
+        ],
+        flop: [
+          { ...said('My wife’s taken ill. She needs me here, and so do the little ones.'), replies: [{ label: 'Can’t they come with us?' }] },
+          said(['The river’s no place for little’uns, and she needs the doctor’s care.', 'This is how it must be. I’ve made my decision.']),
+        ],
+        verdict: [said(['Here. It’s all I can spare. Mind the boat.', 'And stay away from those whiskey-swilling gamblers on the grand steamers.'])],
+      },
+    ],
+  },
+};

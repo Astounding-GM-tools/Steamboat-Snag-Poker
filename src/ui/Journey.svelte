@@ -21,7 +21,8 @@
     type StoryLine,
   } from '../engine';
   import { t } from '../i18n';
-  import { RIVER, RIVER_START } from '../story/river';
+  import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
+  import { roundScript } from '../story/script';
   import Table, { type TableView } from './Table.svelte';
   import { name, snagTitle } from './format';
   import { loadJourney, saveJourney } from './storage';
@@ -81,7 +82,11 @@
     journey = playEncounter(journey, action);
   }
   function next() {
-    if (enc && !enc.outcome && enc.session.phase !== 'hand') journey = handDone(journey, RIVER);
+    if (!enc || enc.outcome || enc.session.phase === 'hand') return;
+    const after = handDone(journey, RIVER);
+    // Nothing to read after it (all said at the table): straight on.
+    const lines = step?.type === 'encounter' ? (after.encounter?.outcome === 'solved' ? step.solved : (step.failed ?? step.solved)) : [];
+    journey = after.encounter?.outcome && !lines.length ? leaveEncounter(after, RIVER) : after;
   }
   function onwards() {
     if (!step) return;
@@ -111,7 +116,7 @@
     <div class="dock"><button onclick={onmenu}>{t('river.backToTitle')}</button></div>
   </div>
 {:else if playing && view}
-  <Table table={view} onplay={play} onnext={next} {onmenu} />
+  <Table table={view} onplay={play} onnext={next} {onmenu} script={roundScript(RIVER_TALK[enc!.def.id], enc!.session.hand)} />
 {:else}
   <div class="page">
     <!-- Where the boat stands: the day, the place, the purse, the crew's strength, the coal. -->

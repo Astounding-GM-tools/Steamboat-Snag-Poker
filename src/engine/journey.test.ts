@@ -17,6 +17,7 @@ import {
   proceed,
   turnIn,
   type JourneyState,
+  type StoryDef,
 } from './journey';
 import { Rng } from './rng';
 import { newSession, nextSessionHand, submit, type TableSession } from './session';
@@ -47,28 +48,31 @@ function autopilot(seed: number, guard = 3000): JourneyState[] {
 }
 
 describe('the voyage', () => {
-  it('opens with the story, then the morning: the crew make their strength, and are paid', () => {
+  it('opens on the river, then a hand with Bill', () => {
     let s = newJourney(1, RIVER, RIVER_START);
     expect(currentStep(s, RIVER)?.type).toBe('caption');
-    s = proceed(proceed(s, RIVER), RIVER);
-    expect(currentStep(s, RIVER)?.type).toBe('council');
-    expect(s.strength).toBe(18);
-    expect(s.purse).toBe(RIVER_START.purse - 6);
+    s = proceed(s, RIVER);
+    expect(s.encounter?.def.id).toBe('bill');
+    expect(s.encounter?.session.round?.potMode).toBe(false);
   });
 
-  it('sells at the council what the landing has, and casts off only with the coal for the day', () => {
-    let s = newJourney(1, RIVER, RIVER_START);
-    s = proceed(proceed(s, RIVER), RIVER);
-    expect(canBuy(s, RIVER, 'whistle')).toBe(false);
-    s = buy(s, RIVER, 'hammocks');
+  it('makes the crew\'s strength at dawn, sells at the council what the landing has, and casts off only with the coal for the day', () => {
+    const story: StoryDef = {
+      days: [{ day: 1, place: 'muscatine', steps: [{ type: 'dawn' }, { type: 'council', advice: [], trader: ['coal', 'hammocks'], coal: 2 }, { type: 'caption', lines: [] }] }],
+      stuckNight: [],
+    };
+    let s = newJourney(1, story, RIVER_START);
+    expect(s.strength).toBe(18);
+    expect(s.purse).toBe(RIVER_START.purse - 6);
+    expect(canBuy(s, story, 'whistle')).toBe(false);
+    s = buy(s, story, 'hammocks');
     expect(s.strength).toBe(21);
-    expect(canBuy(s, RIVER, 'hammocks')).toBe(false);
+    expect(canBuy(s, story, 'hammocks')).toBe(false);
     s = { ...s, coal: 1 };
-    expect(canCastOff(s, RIVER)).toBe(false);
-    s = buy(s, RIVER, 'coal');
-    expect(canCastOff(s, RIVER)).toBe(true);
-    s = proceed(castOff(s, RIVER), RIVER);
-    expect(s.encounter?.def.id).toBe('harbourMaster');
+    expect(canCastOff(s, story)).toBe(false);
+    s = buy(s, story, 'coal');
+    expect(canCastOff(s, story)).toBe(true);
+    expect(currentStep(castOff(s, story), story)?.type).toBe('caption');
   });
 
   it('plays days one and two through, whatever the cards, and survives a trip through JSON at every step', () => {

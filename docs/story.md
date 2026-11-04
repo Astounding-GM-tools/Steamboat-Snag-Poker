@@ -19,6 +19,8 @@ has characters and story galore that always end in a match-three puzzle. On
 our river, Snag Poker is simply how things are settled: by harbour masters,
 miners, inspectors and rival captains alike. Camp, played straight.
 
+**A storytale, on screen.** The game never gives a date or a year: it's the age of steam, and it begins on the first day of spring, which is what they call the day the ice goes out. The deadline is the day the World's Fair opens in St. Louis. Anyone curious can work out the year from that; the fable is better without it. The dates in these notes are background, for us.
+
 **A 1927 cartoon about the spring of 1904.** The look is the mid-1920s; the
 story is set in April 1904. That's no contradiction: it's a cartoon made in
 1927 looking back on the good old days of steamboats and straw boaters, the
@@ -93,7 +95,7 @@ on a new device Morag asks *"Have we met, Captain?"*, and the buttons answer
 ## The story
 
 **Muscatine.** The old captain, **Steamboat Bill** (everyone aboard calls him
-Father; the player is no relation, just his trusted deckhand), has just landed a Big Snag: deliver a horseless carriage to the World's
+Captain Bill; the player is no relation, just his trusted mate), has just landed a big job: deliver a horseless carriage to the World's
 Fair in St. Louis. That is how fin-de-siècle logistics work. The carriage
 waits upriver in Dubuque: a short run up to fetch it, and then it is all
 downriver, an easy passage.
@@ -108,7 +110,7 @@ won't clear the boat unless you beat him at Snag; the captains ahead in the
 queue at the bridge works will trade their place for a hand; the mail bag goes
 with whoever wins it. Coal moves the boat, but Snag Poker moves the river.
 
-So the young captain breaks the promise to Father at the first landing, and
+So the young captain breaks the promise to Bill at the first landing, and
 Morag's ("You should NEVER play for money!") soon after, and keeps breaking
 them all the way to St. Louis.
 
@@ -460,7 +462,7 @@ changes something (the risk is that the way back feels like padding).
 
 *Upriver:*
 
-1. **Muscatine.** Father ashore; Morag's lessons begin. The harbour master
+1. **Muscatine.** Bill ashore; Morag's lessons begin. The harbour master
    won't clear the boat unless you beat him.
 2. **The Tri-Cities** (Davenport, Rock Island, Moline). In spring 1904 nobody
    agrees how many cities they are: Gilbert has only just renamed itself
@@ -573,7 +575,7 @@ prologue, not day one.
 
 | Day | Stretch | The day | The evening |
 |---|---|---|---|
-| 1 | Muscatine, up to the Tri-Cities | The exposition and the handover: Father goes ashore, and the new captain must beat **the harbour master** to clear the boat. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
+| 1 | Muscatine, up to the Tri-Cities | The exposition and the handover, over a few hands with Bill: he goes ashore, and the new captain must beat **the harbour master** to clear the boat. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
 | 2 | The Tri-Cities | The coal yard on strike: no coal, no climb | The foreman's game: lose an appropriate amount |
 | 3 | The Rock Island Rapids, up | Kitty's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon: **Kitty, Finlay and Gaylord** at the table. Gaylord offers **the loan** either way (he has a stash, and likes the captain's style); if he finishes first or second, all the more |
 | 4 | LeClaire to Clinton | **The Ice**: a High Rollers table of floes | Clinton, the sawmill town: a game on deck |
@@ -647,7 +649,7 @@ another thing, below).
 - **Every leg has a price.** Coal, mostly: a dock will always sell it, at a
   premium. Also pilots, lock fees, harbour dues. To go on, you need the sum;
   the encounter that unlocks the next stretch has a stake you must afford.
-- **Where the money comes from:** Father's starting cash in Muscatine; the
+- **Where the money comes from:** Bill's starting cash in Muscatine; the
   **advance on Pretty Patty** in Dubuque; and until then, winnings, snag
   resolutions, odd jobs and small freight.
 - **Side jobs:** play someone for the privilege of a well-paying job (a load
@@ -800,14 +802,14 @@ master, pilot and engineer; on a boat this small the master is often the
 pilot too, but the engineer is always his own man. Everyone else doubles up.
 Names and personalities below are first drafts.
 
-- **The captain: the player.** The deckhand made captain, and the clerk as
+- **The captain: the player.** Unnamed, young, and nobody else aboard: not Willie, but Bill's mate, made captain, and the clerk as
   well: the books, the purse, the freight bills are all his. No pilot's
   licence and no time to get one; the cartoon doesn't fuss, except where the
   river does: the rapids want a real pilot (Kitty).
 - **Willie, deck hand and galley boy.** The narrator and the player's helper
   (roster.md): tips, captions, his reckoning on each captain. Lines, loading,
   and the crew's supper, which is mostly beans.
-- **Steamboat Bill, "Father".** The old captain, ashore with family. May turn
+- **Steamboat Bill, "Captain Bill".** The old captain, ashore: his wife has taken ill, and there are little ones to care for. May turn
   up again down the river.
 - **The engineer: Augustus "Gus" Klemm.** From Davenport's Germans (a large
   community then). Meticulous, oil to the elbows, talks to the engine (who has
