@@ -55,7 +55,7 @@
   }
 
   /** The table as last shown: one on its way out may still be finishing an animation, and reads it. */
-  let lastView: TableView | null = null;
+  const last: { view: TableView | null } = { view: null };
   const view = $derived.by((): TableView | null => {
     if (!enc || enc.outcome) return null;
     const s = enc.session;
@@ -64,7 +64,7 @@
     // Everyone else across the top, in seat order from the one after yours.
     const from = me >= 0 ? me : 0;
     const others = Array.from({ length: n - 1 }, (_, k) => (from + 1 + k) % n);
-    return (lastView = {
+    return (last.view = {
       round: s.round!,
       config: s.config,
       hand: s.hand,
@@ -133,7 +133,7 @@
   {#key `${journey.day}:${journey.step}:${journey.pending.length}`}
     <!-- Running aground: the whole picture lurches as the table comes up. -->
     <div class:jolt={step?.type === 'encounter' && step.jolt}>
-      <Table table={view ?? lastView!} onplay={play} onnext={next} {onmenu} script={roundScript(talkFor(), enc!.session.hand)} ontalk={talked} />
+      <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={roundScript(talkFor(), enc!.session.hand)} ontalk={talked} />
     </div>
   {/key}
 {:else}
