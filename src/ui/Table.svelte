@@ -25,7 +25,7 @@
   import DeckSnags from './DeckSnags.svelte';
   import HowTo from './HowTo.svelte';
   import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
-  import { cardLabel, jokerList, name, tagName } from './format';
+  import { called, cardLabel, jokerList, name, tagName } from './format';
   import { flight } from './flight.svelte';
   import { rankLabel, winnerOf } from '../engine';
   import type { RoundScript, Trigger } from '../story/script';
@@ -507,7 +507,7 @@
   function talkOver() {
     if (view === 'verdict' && verdictSaid === table.hand) onnext();
   }
-  const speakerName = (who: string) => (who === 'you' ? t('character.captain.you') : who === 'willie' ? t('willie.name') : name(who));
+  const speakerName = (who: string) => (who === 'you' ? t('character.captain.you') : who === 'willie' ? t('willie.name') : called(who));
   const lineMs = $derived(line ? autoMs(line) : null);
   // A line that closes by itself: the countdown runs on the speaker's portrait, and the table keeps the time.
   $effect(() => {

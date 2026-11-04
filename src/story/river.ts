@@ -6,7 +6,8 @@
  */
 import type { EncounterDef, Rival, Step, StoryDef } from '../engine';
 import { DOCK_FEE, TROUBLE } from '../engine';
-import type { Script } from './script';
+import type { SpeechLine } from '../ui/Speech.svelte';
+import type { RoundScript, Script } from './script';
 
 /** The evening's game aboard: crew and lantern, for buttons. */
 const deckGame: EncounterDef = { id: 'deck', stake: 'strength', rivals: 'crew', goal: { type: 'evening' }, hands: 3 };
@@ -62,21 +63,21 @@ const day1: Step[] = [
     effects: { settle: { snag: DOCK_FEE, amount: DOCK_FEE_AMOUNT } },
   },
   {
-    type: 'caption',
-    lines: [
-      { text: 'Two hours above Muscatine…' },
-      { who: 'willie', text: 'Sandbar, Captain! Dead ahead!' },
-      { who: 'sandbar', text: 'Going somewhere?' },
-    ],
+    type: 'encounter',
+    // Under way, Willie talking (RIVER_TALK.underway), and then not.
+    encounter: { id: 'underway', stake: 'purse', rivals: [{ id: 'willie', ai: 'loose', money: 50 }], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
+    solved: [],
+    choices: { aground: {} },
   },
   {
     type: 'encounter',
     encounter: sandbar,
-    solved: [{ text: 'The Best Intentions floats free. The sand drifts off downstream, to make a sandbar somewhere else.' }],
-    failed: [{ text: 'Night falls with the Best Intentions still aground.' }],
+    jolt: true,
+    solved: [],
+    failed: [],
     stuck: true,
     relent: [
-      { text: 'A packet boat comes thrashing down the river, and her captain throws you a line.' },
+      { text: 'Towards noon a packet boat comes thrashing down the river, and her captain throws you a line.' },
       { who: 'willie', text: 'She’s off, Captain! We’re floating!' },
     ],
   },
@@ -173,6 +174,24 @@ const said = (text: string | string[]) => ({ size: 'scene' as const, who: 'steam
 const master = (text: string) => ({ size: 'scene' as const, who: 'harbourMaster', text });
 const you = (text: string) => ({ size: 'scene' as const, who: 'you', text });
 
+/** How a day against the Sandbar ends, whichever hand it comes on: `first`, then these for the rest of its eight hands. */
+function sandbarTalk(first: RoundScript[]): Script {
+  const ends: SpeechLine[] = [
+    { size: 'scene', who: 'willie', when: 'wonAll', text: 'She’s off, Captain! We’re floating!' },
+    { size: 'scene', who: 'gus', when: 'lostAll', text: 'That’s all they have, Captain. There’s not another shove in them today.' },
+  ];
+  const dusk: SpeechLine[] = [
+    { size: 'scene', who: 'willie', when: 'won', text: 'That’s the light gone, Captain. She won’t move tonight.' },
+    { size: 'scene', who: 'willie', when: 'lost', text: 'That’s the light gone, Captain. She won’t move tonight.' },
+  ];
+  return {
+    rounds: Array.from({ length: 8 }, (_, k) => ({
+      ...first[k],
+      verdict: [...(first[k]?.verdict ?? []), ...ends, ...(k === 5 || k === 7 ? dusk : [])],
+    })),
+  };
+}
+
 /**
  * What's said at the table, by encounter and hand. The talk goes in before the
  * deal and on the Flop: a hand folded early would never reach the later streets.
@@ -244,6 +263,34 @@ export const RIVER_TALK: Record<string, Script> = {
       },
     ],
   },
+  underway: {
+    rounds: [
+      {
+        deal: [
+          {
+            size: 'scene',
+            who: 'willie',
+            text: ['First boat up the river this year, Captain, and not a soul ahead of us!', 'Clear water to the Tri-Cities, Mr. Klemm says, and not a single sn—'],
+            replies: [{ label: 'Single what?', effect: 'aground', end: true }],
+          },
+        ],
+      },
+    ],
+  },
+  sandbar: sandbarTalk([
+    {
+      deal: [{ size: 'scene', who: 'sandbar', text: 'Going somewhere?' }],
+      flop: [
+        { size: 'scene', who: 'willie', text: 'Aground, Captain! Stuck fast!' },
+        { size: 'scene', who: 'gus', text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'] },
+      ],
+      verdict: [
+        { size: 'scene', who: 'gus', when: 'won', text: 'That’s our own sweat back, no more. But the sand’s gone with the current.' },
+        { size: 'scene', who: 'sandbar', when: 'lost', text: 'Thank you. I’ll keep that.' },
+      ],
+    },
+  ]),
+  'sandbar:2': sandbarTalk([{ deal: [{ size: 'scene', who: 'sandbar', text: 'Sleep well?' }] }]),
   harbourMaster: {
     rounds: [
       {},

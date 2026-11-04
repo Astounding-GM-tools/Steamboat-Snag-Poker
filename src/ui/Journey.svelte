@@ -25,7 +25,7 @@
   import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
   import { roundScript } from '../story/script';
   import Table, { type TableView } from './Table.svelte';
-  import { name, snagTitle } from './format';
+  import { called, snagTitle } from './format';
   import { loadJourney, saveJourney } from './storage';
 
   /**
@@ -51,11 +51,11 @@
   function speaker(line: StoryLine): string | null {
     if (!line.who) return null;
     if (line.who === 'you') return t('character.captain.you');
-    const key = `character.${line.who}.called`;
-    const called = t(key);
-    return called === key ? name(line.who) : called;
+    return called(line.who);
   }
 
+  /** The table as last shown: one on its way out may still be finishing an animation, and reads it. */
+  let lastView: TableView | null = null;
   const view = $derived.by((): TableView | null => {
     if (!enc || enc.outcome) return null;
     const s = enc.session;
@@ -64,7 +64,7 @@
     // Everyone else across the top, in seat order from the one after yours.
     const from = me >= 0 ? me : 0;
     const others = Array.from({ length: n - 1 }, (_, k) => (from + 1 + k) % n);
-    return {
+    return (lastView = {
       round: s.round!,
       config: s.config,
       hand: s.hand,
@@ -76,7 +76,8 @@
       phase: s.phase,
       currency: enc.def.stake === 'strength' ? 'buttons' : undefined,
       label: t('river.day', { day: journey.day + journey.nights }),
-    };
+      ending: s.phase === 'over' ? (s.seats[0].out ? 'lostAll' : 'wonAll') : undefined,
+    });
   });
 
   function play(action: Action | null) {
@@ -89,6 +90,13 @@
     const lines = step?.type === 'encounter' ? (after.encounter?.outcome === 'solved' ? step.solved : (step.failed ?? step.solved)) : [];
     journey = after.encounter?.outcome && !lines.length ? leaveEncounter(after, RIVER) : after;
   }
+  /** The encounter's talk: its own for a second try (`sandbar:2`), if it has one. */
+  function talkFor() {
+    const id = enc!.def.id;
+    const attempt = step?.type === 'encounter' ? (step.attempt ?? 1) : 1;
+    return RIVER_TALK[`${id}:${attempt}`] ?? RIVER_TALK[id];
+  }
+
   /** A reply at the table that decides what happens next. */
   function talked(effect: string) {
     if (step?.type === 'encounter' && step.choices?.[effect]) journey = choose(journey, RIVER, effect);
@@ -123,7 +131,10 @@
 {:else if playing && view}
   <!-- Encounters may follow one another with nothing between: each sits down at a table of its own. -->
   {#key `${journey.day}:${journey.step}:${journey.pending.length}`}
-    <Table table={view} onplay={play} onnext={next} {onmenu} script={roundScript(RIVER_TALK[enc!.def.id], enc!.session.hand)} ontalk={talked} />
+    <!-- Running aground: the whole picture lurches as the table comes up. -->
+    <div class:jolt={step?.type === 'encounter' && step.jolt}>
+      <Table table={view ?? lastView!} onplay={play} onnext={next} {onmenu} script={roundScript(talkFor(), enc!.session.hand)} ontalk={talked} />
+    </div>
   {/key}
 {:else}
   <div class="page">
@@ -184,6 +195,29 @@
 {/if}
 
 <style>
+  .jolt {
+    animation: jolt 0.55s ease-out;
+  }
+  @keyframes jolt {
+    0% {
+      transform: translate(0, 0) rotate(0);
+    }
+    12% {
+      transform: translate(-14px, 9px) rotate(-1.6deg);
+    }
+    30% {
+      transform: translate(10px, -6px) rotate(1.1deg);
+    }
+    50% {
+      transform: translate(-6px, 3px) rotate(-0.6deg);
+    }
+    72% {
+      transform: translate(3px, -1px) rotate(0.3deg);
+    }
+    100% {
+      transform: none;
+    }
+  }
   .page {
     min-height: 100svh;
     display: grid;

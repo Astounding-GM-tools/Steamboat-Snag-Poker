@@ -176,8 +176,7 @@ describe('the dock fee', () => {
     const paid = choose(s, RIVER, 'pay');
     expect(paid.purse).toBe(13);
     expect(paid.snags).toEqual([]);
-    expect(paid.encounter).toBeNull();
-    expect(currentStep(paid, RIVER)?.type).toBe('caption');
+    expect(paid.encounter?.def.id).toBe('underway');
   });
 
   it('can be played for: five hands, with the bill in your hand', () => {

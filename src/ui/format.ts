@@ -33,6 +33,13 @@ export function name(id: string): string {
   return t(`character.${id}.name`);
 }
 
+/** What someone's called aboard, in talk: Gus, not Augustus Klemm. */
+export function called(id: string): string {
+  const key = `character.${id}.called`;
+  const word = t(key);
+  return word === key ? name(id) : word;
+}
+
 /** A captain's nickname ("Whiteknuckle"), or null if they go by their name. */
 export function nickname(id: string): string | null {
   const key = `character.${id}.nick`;

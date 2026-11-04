@@ -106,6 +106,8 @@ export type Step =
        * these lines, and it counts as solved. Nobody stays stuck for good.
        */
       relent?: StoryLine[];
+      /** It hits you: the picture lurches as the table comes up. */
+      jolt?: boolean;
       /** Which try this is (the first, or again after a night stuck). */
       attempt?: number;
       /** What a reply in the talk can decide, by its effect (see `choose`): the encounter ends there. */
@@ -334,7 +336,7 @@ export const ODD_JOB = { below: 6, pays: 10 };
 
 function seat(state: JourneyState, def: EncounterDef) {
   const rng = new Rng(state.rngState);
-  const oddJob = def.stake === 'purse' && state.purse < ODD_JOB.below ? ODD_JOB.pays : 0;
+  const oddJob = def.stake === 'purse' && def.rules?.pot !== false && state.purse < ODD_JOB.below ? ODD_JOB.pays : 0;
   state.purse += oddJob;
   const seed = rng.int(2 ** 31);
   // At the deck game everyone finds a button or two, however hard the day.
