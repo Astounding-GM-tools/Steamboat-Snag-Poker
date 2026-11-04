@@ -484,7 +484,12 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
   }
   if (enc.outcome === 'failed' && step.stuck) {
     // The step stays where it is: the night, then the morning, then at it again (with a full day's hands).
-    const again: Step = { ...step, attempt: attempt + 1, encounter: { ...step.encounter, hands: Math.max(step.encounter.hands, 8) } };
+    // What's left of the obstacle is what you face: yesterday's digging counts, and it still has whatever snags it kept.
+    const rivals = step.encounter.rivals === 'crew' ? 'crew' : step.encounter.rivals.map((r) => {
+      const seat = enc.session.seats.find((p) => p.id === r.id);
+      return r.obstacle && seat ? { ...r, money: seat.money, jokers: seat.jokers.map((j) => j.index) } : r;
+    });
+    const again: Step = { ...step, attempt: attempt + 1, encounter: { ...step.encounter, rivals, hands: Math.max(step.encounter.hands, 8) } };
     state.pending = [...story.stuckNight, { type: 'dawn' }, again, ...state.pending.slice(1)];
     if (!prev.pending.length) state.step++;
     state.nights++;

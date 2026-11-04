@@ -18,13 +18,15 @@ const deckLines: Step = {
   solved: [{ text: 'The lantern gutters. Lars is asleep at the table.' }],
 };
 
-const SANDBAR_PILE = 14;
+/** Big enough, and late enough in the day, that the boat usually spends the night on it. */
+const SANDBAR_PILE = 20;
+const SANDBAR_HANDS = 4;
 const sandbar: EncounterDef = {
   id: 'sandbar',
   stake: 'strength',
   rivals: [{ id: 'sandbar', ai: 'stubborn', money: SANDBAR_PILE, jokers: [TROUBLE.brokenPole, TROUBLE.brokenPaddle, TROUBLE.twistedAxle], obstacle: true }],
   goal: { type: 'clear' },
-  hands: 6,
+  hands: SANDBAR_HANDS,
   // The river plays dear from the first hand: an ante of 2, then 3 (as if three hands were already past).
   rules: { jokerForfeit: 0, antePast: -3 },
 };
@@ -317,7 +319,7 @@ export const RIVER_TALK: Record<string, Talk> = {
       },
     ],
   },
-  sandbar: sandbarTalk(6, [
+  sandbar: sandbarTalk(SANDBAR_HANDS, [
     {
       deal: [bar('Going somewhere?'), bar('Welcome to the sandbar. Today’s specials are the Broken Paddle and the Twisted Axle. You must try them.')],
       flop: [
@@ -332,7 +334,7 @@ export const RIVER_TALK: Record<string, Talk> = {
     {},
     { deal: [{ ...bar('Let’s see if you can muddle through another round.'), replies: [{ label: 'Deal' }] }, bar('Shore thing!')] },
   ]),
-  'sandbar:2': sandbarTalk(8, [{ deal: [bar('Sleep well? The usual?')] }]),
+  'sandbar:2': sandbarTalk(8, [{ deal: [bar('Well, it’s past noon somewhere. Can I get you the usual, Captain?')] }]),
   harbourMaster: {
     rounds: [
       {},

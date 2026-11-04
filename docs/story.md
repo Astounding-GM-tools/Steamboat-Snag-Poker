@@ -1006,11 +1006,13 @@ Built as listed below, with these simplifications for now:
 - No passengers, odd jobs beyond a stake when nearly broke, or wages owed.
 - Upkeep and forfeits for snags are a dollar each in the story (the League's
   are four and five); an obstacle forfeits nothing for its troubles.
-- The Sandbar: a pile of 14, an ante of 2 from the first hand (3 from the
-  fourth), six hands, the stubborn style, holding a Broken Pole, a Broken
-  Paddle and a Twisted Axle. Simulated against a careful player with the
-  crew's 18: cleared a little over half the time, in a median three hands,
-  at a cost of some ten strength, with most fights ending in a trouble.
+- The Sandbar: a pile of 20, an ante of 2 from the first hand (3 from the
+  fourth), four hands (it's late by then), the stubborn style, holding a
+  Broken Pole, a Broken Paddle and a Twisted Axle. The boat is meant to
+  spend the night: simulated against a careful player with the crew's 18,
+  it's cleared one time in four on the first day. The next morning you face
+  what's left of it, with eight hands and fresh strength, and clear it about
+  half the time; otherwise a packet tows you off.
 - **The Sandbar keeps bar.** It presents as a barman (*"Today's specials are
   the Broken Paddle and the Twisted Axle"*), and its quips go with its pile:
   chipper while whole, gloomy once half gone, every other hand, in asides.

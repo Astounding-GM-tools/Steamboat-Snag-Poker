@@ -222,6 +222,19 @@ describe('the Sandbar keeps bar', () => {
 });
 
 describe('nobody stays stuck', () => {
+  it('faces what\'s left of the obstacle the next day', () => {
+    const story: StoryDef = {
+      days: [{ day: 1, place: 'muscatine', steps: [{ type: 'dawn' }, { type: 'encounter', stuck: true, solved: [], encounter: { id: 'sandbar', stake: 'strength', rivals: [{ id: 'sandbar', ai: 'stubborn', money: 20, obstacle: true }], goal: { type: 'clear' }, hands: 4 } }] }],
+      stuckNight: [{ type: 'caption', lines: [] }],
+    };
+    const s = structuredClone(newJourney(1, story, RIVER_START));
+    s.encounter!.session.seats[1].money = 7;
+    s.encounter!.outcome = 'failed';
+    const next = proceed(leaveEncounter(s, story), story);
+    expect(next.encounter?.session.seats[1].money).toBe(7);
+    expect(next.encounter?.def.hands).toBe(8);
+  });
+
   it('relents the second time an encounter is failed: on, as if solved, with its effects', () => {
     // A captain who plays nothing at all on the River: every showdown lost.
     let s = newJourney(2, RIVER, RIVER_START);
