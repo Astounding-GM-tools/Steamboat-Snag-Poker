@@ -4,7 +4,7 @@ Status: **playable from start to finish**: **Tutorial** on the title screen
 (always there, and on How to play) (decks and lines in
 `src/story/tutorial.ts`; in development, `tutorialButtons()` in the console
 jumps to the knockout). Chapter one of the story, and canon: the
-deckhand meets Morag, who is looking for her husband, and learns
+First Mate meets Morag, who is looking for her husband, and learns
 Snag Poker from the one person on the river who disapproves of it. See
 [story.md](story.md) for the caption system and the story around it.
 
@@ -14,9 +14,9 @@ Snag Poker from the one person on the river who disapproves of it. See
   between hands they can be **scenes** (any length within reason); once cards
   are on the table they are **asides** over her cards (about 65 characters,
   two lines), so your hand and the board stay in view.
-- **The deckhand speaks on the buttons:** short questions (*Lout?*, *Flop?*,
+- **The First Mate speaks on the buttons:** short questions (*Lout?*, *Flop?*,
   *Ducks?*) that she answers at length. Two replies with the same outcome are
-  fine. A line of the deckhand's own (**You:**) is a caption with your
+  fine. A line of the First Mate's own (**You:**) is a caption with your
   portrait in the corner.
 - **"You must"** marks a line that waits for a move at the table: only that
   move lights the button, and making it closes the line.
@@ -58,7 +58,7 @@ showdown goes straight to the verdict.
    **Who?**
 2. *"Finlay by name, good‑for‑nothing by nature. / Always sneaking
    off to play Snag Poker."* → **Snag?** / **Poker?** (read left to right,
-   the deckhand spells out the name of the game)
+   the First Mate spells out the name of the game)
 3. *"A vile game! / Fit for drunkards, and liars… / … do you not know it?"*
    (broken off mid-tirade, by concern for a child deprived of the game she
    detests) → **No, ma'am**
@@ -103,7 +103,7 @@ No word of what might come: the ducks arrive as luck, not prophecy.
 17. *"There you go: the mighty aces brought low by a flock of ducks."* →
     **Ducks??** (the second time: exasperated)
 18. *"Deuces, or Ducks, when they come in pairs. / Because they look a bit
-    like ducks, swimming on the river."* → **Aces, then?** (the deckhand
+    like ducks, swimming on the river."* → **Aces, then?** (the First Mate
     can't ask about Bullets, a word not yet learnt)
 19. *"A pair of aces are Bullets, and so on. / Knowing how ducks can beat
     bullets is the same as knowing when to fold and when to call."* →
@@ -220,8 +220,8 @@ keeps them (even a captain who goes broke). Her last word reads both:
 
 | | You have all the buttons | She has all the buttons |
 |---|---|---|
-| **She holds your Respect** | *"Cleaned out by a deckhand. / And I do hold a grudging respect for you, it seems. Well done."* | *"You are out of buttons. / But I do find myself holding a grudging respect for you."* |
-| **You still hold it** | *"Cleaned out by a deckhand. / Yet your snag remains with you."* | *"You are out of buttons. / And your snag remains with you."* (draft) |
+| **She holds your Respect** | *"Cleaned out by a First Mate. / And I do hold a grudging respect for you, it seems. Well done."* | *"You are out of buttons. / But I do find myself holding a grudging respect for you."* |
+| **You still hold it** | *"Cleaned out by a First Mate. / Yet your snag remains with you."* | *"You are out of buttons. / And your snag remains with you."* (draft) |
 
 Then, if you are left holding her Oath: *"Now you know what Snag Poker is. / Do
 you swear never to play this game for money?"* → **I swear** / **Yes. I

@@ -4,7 +4,7 @@ import type { Script } from './script';
 import { handsDeal, handsRound } from './hands';
 
 /**
- * Morag's lessons: the deckhand meets Morag and learns Snag Poker
+ * Morag's lessons: the First Mate meets Morag and learns Snag Poker
  * from the one person on the river who disapproves of it. The script and its
  * reasoning are in docs/tutorial.md; this is the playable copy.
  */
@@ -147,7 +147,7 @@ const AFTER: SpeechLine[] = [
     holding: [{ snag: RESPECT, by: 'them' }],
     size: 'scene',
     who: M,
-    text: ['Cleaned out by a deckhand.', 'And I do hold a grudging respect for you, it seems. Well done.'],
+    text: ['Cleaned out by a First Mate.', 'And I do hold a grudging respect for you, it seems. Well done.'],
     replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
   },
   {
@@ -155,7 +155,7 @@ const AFTER: SpeechLine[] = [
     holding: [{ snag: RESPECT, by: 'you' }],
     size: 'scene',
     who: M,
-    text: ['Cleaned out by a deckhand.', 'Yet your snag remains with you.'],
+    text: ['Cleaned out by a First Mate.', 'Yet your snag remains with you.'],
     replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
   },
   {
@@ -230,7 +230,7 @@ export const tutorialScript: Script = {
           who: M,
           // Non-breaking hyphens: good‑for‑nothing stays in one piece.
           text: ['Finlay by name, good‑for‑nothing by nature.', 'Always sneaking off to play Snag Poker.'],
-          // Read left to right, the deckhand spells out the name of the game.
+          // Read left to right, the First Mate spells out the name of the game.
           replies: [{ label: 'Snag?' }, { label: 'Poker?' }],
         },
         {

@@ -172,31 +172,39 @@ export const RIVER_TALK: Record<string, Script> = {
     rounds: [
       {
         deal: [
-          { ...said('I’ve landed a big job. A horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis. It has to be there the day the Fair opens.'), replies: [{ label: 'That’s good, isn’t it?' }] },
+          { ...said('I’ve landed a big job. A horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis. It has to be there the day the Fair opens.'), replies: [{ label: 'Good?' }] },
+          you('That’s good news, isn’t it, Captain?'),
           { ...said('Good money. And the worst timing of my life.'), replies: [{ label: 'Why?' }] },
         ],
         flop: [
-          { ...said('Because you’re the captain now.'), replies: [{ label: 'Me? Why not Gus?' }] },
+          { ...said('Because you’re the captain now.'), replies: [{ label: 'Me?' }] },
+          you('Me? I’m only the first mate.'),
+          { ...said('That’s what a first mate is for.'), replies: [{ label: 'Gus?' }] },
+          you('Why not Mr. Klemm? No one knows the ship better.'),
           said('Gus only cares about his engine. He’d stay in port all day cleaning it if he could.'),
         ],
       },
       {
         flop: [
+          { ...said('Any other bright ideas?'), replies: [{ label: 'Lars?' }] },
           you('Lars, then. He’s a grown man, and stronger than anyone.'),
-          { ...said(['Lars doesn’t speak the language. We’re not even sure that’s his name.', 'And he’s a hopeless Snag player.']), replies: [{ label: 'What’s Snag got to do with it?' }] },
+          { ...said(['Lars doesn’t speak the language. We’re not even sure that’s his name.', 'And he’s a hopeless Snag player.']), replies: [{ label: 'Snag?' }] },
+          you('What has Snag got to do with captaining?'),
           said(['Everything. Poker is what makes the river run.', 'Every decision on the river is made over a hand of cards. Just as we’re doing now.']),
         ],
       },
       {
         deal: [
+          { ...said('Well?'), replies: [{ label: 'Willie?' }] },
           you('Willie, then. He’s a great player, and everyone likes him.'),
           said('Too young, and too eager. Maybe in a few seasons. For now, it’s your turn.'),
         ],
         flop: [
-          { ...said('My wife’s taken ill. She needs me here, and so do the little ones.'), replies: [{ label: 'Can’t they come with us?' }] },
+          { ...said('My wife’s taken ill. She needs me here, and so do the little ones.'), replies: [{ label: 'Bring them?' }] },
+          you('Can’t they come with us, on the river?'),
           said(['The river’s no place for little’uns, and she needs the doctor’s care.', 'This is how it must be. I’ve made my decision.']),
         ],
-        verdict: [said(['Here. It’s all I can spare. Mind the boat.', 'And stay away from those whiskey-swilling gamblers on the grand steamers.'])],
+        verdict: [said(['Here. It’s all I can spare.', 'Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers.'])],
       },
     ],
   },

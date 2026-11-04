@@ -95,13 +95,13 @@ on a new device Morag asks *"Have we met, Captain?"*, and the buttons answer
 ## The story
 
 **Muscatine.** The old captain, **Steamboat Bill** (everyone aboard calls him
-Captain Bill; the player is no relation, just his trusted mate), has just landed a big job: deliver a horseless carriage to the World's
+Captain Bill; the player is no relation, just his trusted First Mate), has just landed a big job: deliver a horseless carriage to the World's
 Fair in St. Louis. That is how fin-de-siècle logistics work. The carriage
 waits upriver in Dubuque: a short run up to fetch it, and then it is all
 downriver, an easy passage.
 
 Then family calls him ashore (someone to tend to; between cargo and family,
-family wins). The deckhand, the player, is made captain: *"You're the captain
+family wins). The First Mate, the player, is made captain: *"You're the captain
 now. Just stay away from those whiskey-swilling river gamblers and their Snag
 Poker!"*
 
@@ -348,6 +348,12 @@ A gate (the rapids, the lock) must be solved to pass. What "solved" means is
 the encounter's own: usually winning, sometimes not (see the coal miners).
 
 ## The caption system
+
+**The player speaks in a word.** As in Morag's lessons, your answers on the
+buttons are short (*Gus?*, *Snag?*, *Willie?*), and tapping one spells it
+out in a caption (*"Why not Mr. Klemm? No one knows the ship better."*). The
+button stays quick to read; the caption gives the player a voice. Written
+out only where it adds something: a plain *Why?* is enough as it is.
 
 **Sizes** (built): an **aside** over the speaker's cards, play going on
 underneath; a **scene** from their cards down to the board; the **full**
@@ -802,7 +808,7 @@ master, pilot and engineer; on a boat this small the master is often the
 pilot too, but the engineer is always his own man. Everyone else doubles up.
 Names and personalities below are first drafts.
 
-- **The captain: the player.** Unnamed, young, and nobody else aboard: not Willie, but Bill's mate, made captain, and the clerk as
+- **The captain: the player.** Unnamed, young, and nobody else aboard: not Willie, but Bill's First Mate, made captain in the first scene, and the clerk as
   well: the books, the purse, the freight bills are all his. No pilot's
   licence and no time to get one; the cartoon doesn't fuss, except where the
   river does: the rapids want a real pilot (Kitty).
