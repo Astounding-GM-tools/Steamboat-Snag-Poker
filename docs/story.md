@@ -725,7 +725,8 @@ different from the landing tables:
   tomorrow a button or two.
 - **The feel:** lantern light after supper, Lars singing, coffee not whiskey,
   warm lines, no "you lose" verdict. When the buttons run out the game simply
-  ends: *"Lars is asleep at the table."*
+  ends, and each evening closes on a line of its own, in turn: the wick
+  gutters, the moon is out as Lars sings, a frog complains about the weather.
 
 ### The morning council and the trader
 
@@ -850,8 +851,10 @@ Names and personalities below are first drafts.
   man with a gasoline motor crated on deck: he scorns Pretty Patty in public
   and sneaks out at night to look at her.
 - **The fireman: Lars Brekke.** Norwegian, enormous, nearly silent; eats
-  enough for two and shovels enough for three. Sings while he works (a
-  caption of musical notes; the tune is a folk song nobody else knows).
+  enough for two and shovels enough for three. He speaks in musical notes:
+  Scandinavian is sing-song to everyone aboard, and nobody understands him
+  anyway. After a week or so he has a few simple words (*"Sjekk"*,
+  *"Fåld"*).
 - **The second fireman, hired by the stretch.** For the hard going (up the
   rapids, against a spring flood), the captain takes on a second fireman at
   the landing: an expense, priced by the stretch. Some of them are the

@@ -17,12 +17,14 @@ export interface Script {
   later?: RoundScript;
 }
 
-/** What talk can turn on, hand by hand: the obstacle's pile, a seed for the day, and who took on what this hand and fixed it. */
+/** What talk can turn on, hand by hand: the obstacle's pile, a seed for the day, who took on what this hand and fixed it, and the day. */
 export interface TalkContext {
   hand: number;
   pile: number;
   seed: number;
   fixed: { id: string; snag: number }[];
+  /** The day of the voyage. */
+  day: number;
 }
 
 /** An encounter's talk: set lines hand by hand, or worked out as the hand stands. */

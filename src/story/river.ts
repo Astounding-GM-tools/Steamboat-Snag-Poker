@@ -16,7 +16,16 @@ const deckGame: EncounterDef = { id: 'deck', stake: 'strength', rivals: 'crew', 
 const deckLines: Step = {
   type: 'encounter',
   encounter: deckGame,
-  solved: [{ text: 'The lantern gutters. Lars is asleep at the table.' }],
+  solved: [],
+  // How an evening ends: one a day, in turn.
+  closers: [
+    [{ text: 'The wick burns low and gutters.' }],
+    [{ text: 'The kerosene is in short supply.' }],
+    [{ text: 'The moon is out and very pretty tonight. After cards, you watch it for a while as Lars sings.' }],
+    [{ text: 'The river speaks to you, of faraway places it has visited and soon will visit again.' }],
+    [{ text: 'The lantern goes out. You hear a frog complaining about the weather.' }],
+    [{ text: 'It’s a rainy night, and the roof has a leak. Should fix that in the morning.' }],
+  ],
 };
 
 /** Big enough, and late enough in the day, that the boat usually spends the night on it. */
@@ -126,7 +135,7 @@ const day2: Step[] = [
     advice: [
       { who: 'willie', text: 'The foreman plays cards of an evening, Captain. A friendly game, for the strike fund.' },
       { who: 'gus', text: 'Strike fund’s thin, they say. Thin as gruel.' },
-      { who: 'lars', text: 'Hm. Hm-hm.' },
+      { who: 'lars', text: '♪ ♫ ♪' },
     ],
     trader: ['food', 'sparePole', 'hammocks'],
     coal: 0,
@@ -228,29 +237,38 @@ function sandbarTalk(hands: number, opening: RoundScript[]): Talk {
 
 const crew = (who: string, text: string): SpeechLine => ({ size: 'aside', who, text });
 
+/**
+ * Lars sings: the language is beyond him, and his own is half a tune anyway,
+ * so he speaks in musical notes. After a week or so he has a word or two.
+ */
+const A_WEEK = 7;
+const larsSays = (day: number, tune: string, word: string) => (day > A_WEEK ? word : tune);
+
 /** Round the lantern, after supper. */
-const DECK_QUIPS = [
+const deckQuips = (day: number) => [
   crew('willie', 'Real son of a beach, that sandbar.'),
   crew('gus', 'Old Hildegard doesn’t care for sand, Captain. Not one bit.'),
   crew('willie', 'Beans again tomorrow, Captain! Good beans.'),
-  crew('lars', 'Hm.'),
+  crew('lars', larsSays(day, '♪ ♪ ♫', 'Sjekk.')),
   crew('gus', 'She’s a good boat. Don’t tell her I said so.'),
   crew('willie', 'I think he liked us, Captain. Sandy.'),
+  crew('lars', larsSays(day, '♫ ♪ ♫ ♪', 'Fåld.')),
 ];
 
 /** How each hand aboard takes on what they fix. */
-const FIXING: Record<string, (snag: string) => string> = {
+const FIXING: Record<string, (snag: string, day: number) => string> = {
   gus: (snag) => `I think I can fix ${snag}, Captain.`,
-  lars: (snag) => `Hm. ${snag.replace(/^t/, 'T')}. Hm-hm. Ja.`,
+  lars: (_, day) => larsSays(day, '♪ ♫ ♫ ♪', 'Ja. Fiks.'),
   willie: () => 'Leave that one with me, Captain!',
 };
 
 /** The deck game: someone says something on each Flop, and whoever takes on a trouble they can fix says so. */
-function deckTalk({ hand, seed, fixed }: TalkContext): RoundScript {
+function deckTalk({ hand, seed, fixed, day }: TalkContext): RoundScript {
+  const quips = deckQuips(day);
   return {
     ...(hand === 1 ? { deal: [{ size: 'scene', who: 'gus', text: 'Anything of mine that’s broken, Captain, send it my way.' } as SpeechLine] } : {}),
-    flop: [new Rng(seed).shuffle(DECK_QUIPS)[hand % DECK_QUIPS.length]],
-    verdict: fixed.map(({ id, snag }) => ({ size: 'scene' as const, who: id, text: FIXING[id]?.(t(`joker.${snag}`)) ?? 'Leave it with me, Captain.' })),
+    flop: [new Rng(seed).shuffle(quips)[hand % quips.length]],
+    verdict: fixed.map(({ id, snag }) => ({ size: 'scene' as const, who: id, text: FIXING[id]?.(t(`joker.${snag}`), day) ?? 'Leave it with me, Captain.' })),
   };
 }
 

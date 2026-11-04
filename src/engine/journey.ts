@@ -108,6 +108,8 @@ export type Step =
       relent?: StoryLine[];
       /** It hits you: the picture lurches as the table comes up. */
       jolt?: boolean;
+      /** In place of `solved`: closing lines taken in turn, a different set each day (the evenings' endings). */
+      closers?: StoryLine[][];
       /** Which try this is (the first, or again after a night stuck). */
       attempt?: number;
       /** What a reply in the talk can decide, by its effect (see `choose`): the encounter ends there. */
@@ -451,6 +453,12 @@ function finish(state: JourneyState, _story: StoryDef, outcome: 'solved' | 'fail
   else state.snags = mine.jokers;
   e.outcome = outcome;
   return state;
+}
+
+/** What's read after an encounter (nothing: straight on). */
+export function closingLines(state: JourneyState, step: Extract<Step, { type: 'encounter' }>, outcome: 'solved' | 'failed'): StoryLine[] {
+  if (outcome === 'failed') return step.failed ?? step.solved;
+  return step.closers ? step.closers[state.mornings % step.closers.length] : step.solved;
 }
 
 /** A reply at the table decided it: the encounter ends here, and on. */

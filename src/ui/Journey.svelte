@@ -8,6 +8,7 @@
     canCastOff,
     castOff,
     choose,
+    closingLines,
     currentStep,
     handDone,
     leaveEncounter,
@@ -87,8 +88,8 @@
     if (!enc || enc.outcome || enc.session.phase === 'hand') return;
     const after = handDone(journey, RIVER);
     // Nothing to read after it (all said at the table): straight on.
-    const lines = step?.type === 'encounter' ? (after.encounter?.outcome === 'solved' ? step.solved : (step.failed ?? step.solved)) : [];
-    journey = after.encounter?.outcome && !lines.length ? leaveEncounter(after, RIVER) : after;
+    const outcome = after.encounter?.outcome;
+    journey = outcome && step?.type === 'encounter' && !closingLines(after, step, outcome).length ? leaveEncounter(after, RIVER) : after;
   }
   /** The encounter's talk: its own for a second try (`sandbar:2`), if it has one. */
   function talkNow() {
@@ -99,7 +100,7 @@
     const s = enc!.session;
     const obstacle = s.seats.findIndex((p) => p.obstacle);
     const fixed = s.round?.result ? (s.settled?.absorbed ?? []).map((a) => ({ id: s.seats[s.seated[a.seat]].id, snag: a.snag })) : [];
-    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, seed: journey.rngState, fixed });
+    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, seed: journey.rngState, fixed, day: journey.day + journey.nights });
   }
 
   /** A reply at the table that decides what happens next. */
@@ -176,7 +177,7 @@
         </ul>
         {#if !canCastOff(journey, RIVER)}<p class="warn">{t('river.needCoal', { n: step.coal })}</p>{/if}
       {:else if step.type === 'encounter' && enc?.outcome}
-        {@const lines = enc.outcome === 'solved' ? step.solved : (step.failed ?? step.solved)}
+        {@const lines = closingLines(journey, step, enc.outcome)}
         {#if enc.oddJob}<p class="note">{t('river.oddJob', { n: enc.oddJob })}</p>{/if}
         {#each lines as line}
           {@const who = speaker(line)}
@@ -304,7 +305,7 @@
     color: var(--grey);
     font-size: 0.9rem;
   }
-  .panel .carried {
+  .panel p.carried {
     margin-top: 1.1rem;
     text-align: left;
   }

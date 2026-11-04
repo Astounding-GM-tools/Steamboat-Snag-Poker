@@ -9,6 +9,7 @@ import {
   canCastOff,
   castOff,
   choose,
+  closingLines,
   currentStep,
   handDone,
   leaveEncounter,
@@ -204,7 +205,7 @@ describe('the dock fee', () => {
 });
 
 describe('table talk', () => {
-  const context = { hand: 1, pile: 20, seed: 9, fixed: [] as { id: string; snag: number }[] };
+  const context = { hand: 1, pile: 20, seed: 9, day: 2, fixed: [] as { id: string; snag: number }[] };
   const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
   const deck = RIVER_TALK.deck as (c: typeof context) => RoundScript;
 
@@ -219,6 +220,22 @@ describe('table talk', () => {
     expect(lines[0].who).toBe('gus');
     expect(lines[0].text).toContain('Broken Paddle');
     expect(deck(context).verdict).toEqual([]);
+  });
+
+  it('has Lars sing until he has a week of words', () => {
+    const fixing = (day: number) => deck({ ...context, day, fixed: [{ id: 'lars', snag: TROUBLE.brokenPole }] }).verdict![0].text;
+    expect(fixing(2)).toContain('♪');
+    expect(fixing(9)).toBe('Ja. Fiks.');
+  });
+});
+
+describe('evenings', () => {
+  it('end differently from one day to the next', () => {
+    const step = RIVER.stuckNight.find((x) => x.type === 'encounter');
+    if (step?.type !== 'encounter') throw new Error('No deck game');
+    const on = (mornings: number) => closingLines({ ...newJourney(1, RIVER, RIVER_START), mornings }, step, 'solved')[0].text;
+    expect(on(1)).not.toBe(on(2));
+    expect(on(1)).toBe(on(1 + step.closers!.length));
   });
 });
 
