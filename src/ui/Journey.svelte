@@ -91,10 +91,14 @@
     journey = after.encounter?.outcome && !lines.length ? leaveEncounter(after, RIVER) : after;
   }
   /** The encounter's talk: its own for a second try (`sandbar:2`), if it has one. */
-  function talkFor() {
+  function talkNow() {
     const id = enc!.def.id;
     const attempt = step?.type === 'encounter' ? (step.attempt ?? 1) : 1;
-    return RIVER_TALK[`${id}:${attempt}`] ?? RIVER_TALK[id];
+    const talk = RIVER_TALK[`${id}:${attempt}`] ?? RIVER_TALK[id];
+    if (typeof talk !== 'function') return roundScript(talk, enc!.session.hand);
+    const s = enc!.session;
+    const obstacle = s.seats.findIndex((p) => p.obstacle);
+    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, pileAtDeal: enc!.start[seatOf(s, obstacle)] ?? 0, seed: journey.rngState });
   }
 
   /** A reply at the table that decides what happens next. */
@@ -133,7 +137,7 @@
   {#key `${journey.day}:${journey.step}:${journey.pending.length}`}
     <!-- Running aground: the whole picture lurches as the table comes up. -->
     <div class:jolt={step?.type === 'encounter' && step.jolt}>
-      <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={roundScript(talkFor(), enc!.session.hand)} ontalk={talked} />
+      <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} />
     </div>
   {/key}
 {:else}

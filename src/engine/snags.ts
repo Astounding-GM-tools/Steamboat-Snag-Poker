@@ -52,7 +52,7 @@ export const SNAGS: SnagDef[] = [
   { index: 13, kind: 'duty' }, // the Solemn Oath
   // Troubles: what the river leaves behind, to be fixed.
   { index: 14, kind: 'trouble', fixer: 'lars' }, // the Broken Pole
-  { index: 15, kind: 'trouble', fixer: 'gus' }, // the Twisted Shaft
+  { index: 15, kind: 'trouble', fixer: 'gus' }, // the Twisted Axle
   { index: 16, kind: 'trouble', fixer: 'lars' }, // the Broken Paddle
   { index: 17, kind: 'trouble', fixer: 'gus' }, // the Busted Boiler
   { index: 18, kind: 'trouble', fixer: 'willie' }, // Fatigue
@@ -61,7 +61,7 @@ export const SNAGS: SnagDef[] = [
   { index: 20, kind: 'duty' }, // the Dock Fee
 ];
 
-export const TROUBLE = { brokenPole: 14, twistedShaft: 15, brokenPaddle: 16, bustedBoiler: 17, fatigue: 18, brokenHeart: 19 } as const;
+export const TROUBLE = { brokenPole: 14, twistedAxle: 15, brokenPaddle: 16, bustedBoiler: 17, fatigue: 18, brokenHeart: 19 } as const;
 
 export const DOCK_FEE = 20;
 

@@ -214,7 +214,7 @@ has to lose for you to win: it's you against the river.
 - **Snags go one way.** The Sandbar cares nothing for your In-Laws or the
   Mail Run: it's an obstacle to your duties, not a place to leave them. You
   can't play snags against an obstacle; it can play its own on you. It starts
-  with a chunk of sand and a few troubles (a Twisted Shaft, a Broken Paddle),
+  with a chunk of sand and a few troubles (a Twisted Axle, a Broken Paddle),
   and when it wins a showdown they're yours, to be fixed later. Coming off
   clean is the best ending; carrying a Broken Paddle to the next landing is
   the usual one.
@@ -251,7 +251,7 @@ plays the stubborn style (stands pat, never gives up). What's new:
    untouched.
 2. **Snags go one way:** your snags can't be played in this encounter (a
    check on which moves are legal).
-3. **Troubles:** a new set of snags (Twisted Shaft, Broken Paddle, Busted
+3. **Troubles:** a new set of snags (Twisted Axle, Broken Paddle, Busted
    Boiler, Fatigue, Soggy Lumber…), their upkeep the cost of the repair
    until it's done.
 4. **The ending:** won when its pile is gone; stuck when your purse or the
@@ -1006,11 +1006,14 @@ Built as listed below, with these simplifications for now:
 - No passengers, odd jobs beyond a stake when nearly broke, or wages owed.
 - Upkeep and forfeits for snags are a dollar each in the story (the League's
   are four and five); an obstacle forfeits nothing for its troubles.
-- The Sandbar: a pile of 12, an ante of 2 from the first hand (3 from the
-  fourth), six hands, the stubborn style, holding a Broken Pole and a
-  Twisted Shaft. Simulated against a careful player with the crew's 18:
-  cleared about two times in three, in a median four hands, at a cost of
-  some nine strength.
+- The Sandbar: a pile of 14, an ante of 2 from the first hand (3 from the
+  fourth), six hands, the stubborn style, holding a Broken Pole, a Broken
+  Paddle and a Twisted Axle. Simulated against a careful player with the
+  crew's 18: cleared a little over half the time, in a median three hands,
+  at a cost of some ten strength, with most fights ending in a trouble.
+- **The Sandbar keeps bar.** It presents as a barman (*"Today's specials are
+  the Broken Paddle and the Twisted Axle"*), and its quips go with its pile:
+  chipper while whole, gloomy once half gone, every other hand, in asides.
 - **Nobody stays stuck.** Failed once, an encounter that can strand you
   (the Sandbar, the foreman's game) means a night aboard and another try;
   failed twice, the river relents (a passing packet throws you a line, the

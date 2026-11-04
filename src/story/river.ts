@@ -5,9 +5,9 @@
  * yard on day two.
  */
 import type { EncounterDef, Rival, Step, StoryDef } from '../engine';
-import { DOCK_FEE, TROUBLE } from '../engine';
+import { DOCK_FEE, Rng, TROUBLE } from '../engine';
 import type { SpeechLine } from '../ui/Speech.svelte';
-import type { RoundScript, Script } from './script';
+import type { RoundScript, Talk, TalkContext } from './script';
 
 /** The evening's game aboard: crew and lantern, for buttons. */
 const deckGame: EncounterDef = { id: 'deck', stake: 'strength', rivals: 'crew', goal: { type: 'evening' }, hands: 3 };
@@ -18,10 +18,11 @@ const deckLines: Step = {
   solved: [{ text: 'The lantern gutters. Lars is asleep at the table.' }],
 };
 
+const SANDBAR_PILE = 14;
 const sandbar: EncounterDef = {
   id: 'sandbar',
   stake: 'strength',
-  rivals: [{ id: 'sandbar', ai: 'stubborn', money: 12, jokers: [TROUBLE.brokenPole, TROUBLE.twistedShaft], obstacle: true }],
+  rivals: [{ id: 'sandbar', ai: 'stubborn', money: SANDBAR_PILE, jokers: [TROUBLE.brokenPole, TROUBLE.brokenPaddle, TROUBLE.twistedAxle], obstacle: true }],
   goal: { type: 'clear' },
   hands: 6,
   // The river plays dear from the first hand: an ante of 2, then 3 (as if three hands were already past).
@@ -174,21 +175,60 @@ const said = (text: string | string[]) => ({ size: 'scene' as const, who: 'steam
 const master = (text: string) => ({ size: 'scene' as const, who: 'harbourMaster', text });
 const you = (text: string) => ({ size: 'scene' as const, who: 'you', text });
 
-/** How a day against the Sandbar ends, whichever hand it comes on: `first`, then these for the rest of its eight hands. */
-function sandbarTalk(first: RoundScript[]): Script {
-  const ends: SpeechLine[] = [
-    { size: 'scene', who: 'willie', when: 'wonAll', text: 'She’s off, Captain! We’re floating!' },
-    { size: 'scene', who: 'gus', when: 'lostAll', text: 'That’s all they have, Captain. There’s not another shove in them today.' },
-  ];
-  const dusk: SpeechLine[] = [
-    { size: 'scene', who: 'willie', when: 'won', text: 'That’s the light gone, Captain. She won’t move tonight.' },
-    { size: 'scene', who: 'willie', when: 'lost', text: 'That’s the light gone, Captain. She won’t move tonight.' },
-  ];
-  return {
-    rounds: Array.from({ length: 8 }, (_, k) => ({
-      ...first[k],
-      verdict: [...(first[k]?.verdict ?? []), ...ends, ...(k === 5 || k === 7 ? dusk : [])],
-    })),
+const bar = (text: string | string[]): SpeechLine => ({ size: 'scene', who: 'sandbar', text });
+const quip = (text: string): SpeechLine => ({ size: 'aside', who: 'sandbar', text });
+
+/** The Sandbar keeps bar. Its mood goes with its pile: chipper while it's whole, gloomy once it's half gone. */
+const QUIPS = {
+  chipper: [
+    'Hoho! There’s more where that came from!',
+    'Stay a while… stay forever!',
+    'You’re in deep now. Well. Shallow.',
+    'All the time in the world, Captain. I’m what they measure it in.',
+    'A steam freighter drifts into a sandbar… stop me if you’ve heard it.',
+    'You’re right, I AM a son of a beach!',
+    'First one’s on the river.',
+    'Can you dig your way out of this?',
+  ],
+  middling: ['I was a mountain once. I can wait.', 'Come out to the river, they said. It’ll be fun, they said.', 'Another round?'],
+  gloomy: [
+    'I can’t sand it any more!',
+    'Everything I built, I built on sand.',
+    'I’m losing my grip. My grit. Either.',
+    'Eroded. That’s the word for it.',
+    'Washed up, at my age.',
+    'Go on, then. Everyone drifts away in the end.',
+  ],
+};
+const mood = (pile: number) => QUIPS[pile >= SANDBAR_PILE ? 'chipper' : pile * 2 < SANDBAR_PILE ? 'gloomy' : 'middling'];
+
+/**
+ * A day against the Sandbar: `opening`, hand by hand, then a quip every other
+ * hand in its mood of the moment (shuffled by the day, so none comes twice
+ * running), and however the day ends, on whichever hand it comes.
+ */
+function sandbarTalk(hands: number, opening: RoundScript[]): Talk {
+  const dusk: SpeechLine[] = [bar('Last call, Captain.'), { size: 'scene', who: 'willie', text: 'That’s the light gone. She won’t move tonight.' }];
+  return ({ hand, pile, pileAtDeal, seed }: TalkContext): RoundScript => {
+    const scene = opening[hand - 1] ?? {};
+    const say = (at: number) => new Rng(seed).shuffle(mood(at))[hand % mood(at).length];
+    const talkOnFlop = hand % 2 === 0 && !scene.flop;
+    const talkAfter = hand % 2 === 1 && hand > 1 && hand < hands && pile > 0;
+    return {
+      ...scene,
+      ...(talkOnFlop ? { flop: [quip(say(pileAtDeal))] } : {}),
+      // Stood pat: it says so, twice in a day at most.
+      ...(hand === 1 ? { pat: [quip('Going to sand pat, Captain?')] } : hand === 4 ? { pat: [quip('Sand pat again? You’ll fit right in.')] } : {}),
+      verdict: [
+        ...(scene.verdict ?? []),
+        ...(talkAfter ? [{ ...quip(say(pile)), when: 'won' as const }, { ...quip(say(pile)), when: 'lost' as const }] : []),
+        { ...bar('I’ll drift off downstream now… Catch you later, Captain!'), when: 'wonAll' },
+        { size: 'scene', who: 'willie', when: 'wonAll', text: 'She’s off, Captain! We’re floating!' },
+        { ...bar('You’ve had enough. Pity you can’t leave.'), when: 'lostAll' },
+        { size: 'scene', who: 'gus', when: 'lostAll', text: 'That’s all they have, Captain. There’s not another shove in them today.' },
+        ...(hand === hands ? dusk.flatMap((l) => [{ ...l, when: 'won' as const }, { ...l, when: 'lost' as const }]) : []),
+      ],
+    };
   };
 }
 
@@ -196,7 +236,7 @@ function sandbarTalk(first: RoundScript[]): Script {
  * What's said at the table, by encounter and hand. The talk goes in before the
  * deal and on the Flop: a hand folded early would never reach the later streets.
  */
-export const RIVER_TALK: Record<string, Script> = {
+export const RIVER_TALK: Record<string, Talk> = {
   bill: {
     rounds: [
       {
@@ -277,20 +317,22 @@ export const RIVER_TALK: Record<string, Script> = {
       },
     ],
   },
-  sandbar: sandbarTalk([
+  sandbar: sandbarTalk(6, [
     {
-      deal: [{ size: 'scene', who: 'sandbar', text: 'Going somewhere?' }],
+      deal: [bar('Going somewhere?'), bar('Welcome to the sandbar. Today’s specials are the Broken Paddle and the Twisted Axle. You must try them.')],
       flop: [
         { size: 'scene', who: 'willie', text: 'Aground, Captain! Stuck fast!' },
         { size: 'scene', who: 'gus', text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'] },
       ],
       verdict: [
         { size: 'scene', who: 'gus', when: 'won', text: 'That’s our own sweat back, no more. But the sand’s gone with the current.' },
-        { size: 'scene', who: 'sandbar', when: 'lost', text: 'Thank you. I’ll keep that.' },
+        { ...bar('I’ll start you a tab.'), when: 'lost' },
       ],
     },
+    {},
+    { deal: [{ ...bar('Let’s see if you can muddle through another round.'), replies: [{ label: 'Deal' }] }, bar('Shore thing!')] },
   ]),
-  'sandbar:2': sandbarTalk([{ deal: [{ size: 'scene', who: 'sandbar', text: 'Sleep well?' }] }]),
+  'sandbar:2': sandbarTalk(8, [{ deal: [bar('Sleep well? The usual?')] }]),
   harbourMaster: {
     rounds: [
       {},

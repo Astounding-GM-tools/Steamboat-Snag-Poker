@@ -3,9 +3,10 @@ import type { SpeechLine } from '../ui/Speech.svelte';
 /**
  * When a round's lines are spoken: before the deal (the deal waits for them),
  * as each street is dealt (`river` is when hands are made), and after the
- * verdict, when you move on from it (the showdown stays in view until then).
+ * verdict, when you move on from it (the showdown stays in view until then);
+ * and `pat`, as you stand pat.
  */
-export type Trigger = 'deal' | 'flop' | 'turn' | 'river' | 'verdict';
+export type Trigger = 'deal' | 'flop' | 'turn' | 'river' | 'verdict' | 'pat';
 
 /** A round's conversation, by trigger. Each fires once. */
 export type RoundScript = Partial<Record<Trigger, SpeechLine[]>>;
@@ -15,6 +16,17 @@ export interface Script {
   rounds: RoundScript[];
   later?: RoundScript;
 }
+
+/** What talk can turn on, hand by hand: how the obstacle stands (its pile at the deal, and now), and a seed for the day. */
+export interface TalkContext {
+  hand: number;
+  pile: number;
+  pileAtDeal: number;
+  seed: number;
+}
+
+/** An encounter's talk: set lines hand by hand, or worked out as the hand stands. */
+export type Talk = Script | ((context: TalkContext) => RoundScript);
 
 /** The lines for a round of a story. */
 export function roundScript(script: Script | undefined, month: number): RoundScript | undefined {

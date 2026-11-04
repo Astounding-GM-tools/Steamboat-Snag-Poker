@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { RIVER, RIVER_START } from '../story/river';
+import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
+import type { RoundScript } from '../story/script';
+import type { SpeechLine } from '../ui/Speech.svelte';
 import { chooseAction, viewFor } from './ai';
 import { jokerCard } from './cards';
 import {
@@ -199,6 +201,23 @@ describe('the dock fee', () => {
     expect(end(true).purse).toBe(0);
     expect(end(true).snags).toEqual([]);
     expect(end(false).purse).toBe(30);
+  });
+});
+
+describe('the Sandbar keeps bar', () => {
+  const talk = RIVER_TALK.sandbar as (c: { hand: number; pile: number; pileAtDeal: number; seed: number }) => RoundScript;
+  const said = (lines?: SpeechLine[]) => String(lines?.[0]?.text);
+
+  it('speaks by the size of its pile', () => {
+    const chipper = said(talk({ hand: 2, pile: 20, pileAtDeal: 20, seed: 1 }).flop);
+    const gloomy = said(talk({ hand: 2, pile: 2, pileAtDeal: 2, seed: 1 }).flop);
+    expect(chipper).not.toBe(gloomy);
+  });
+
+  it('never quips over the opening, or twice in a row on the same lines', () => {
+    expect(talk({ hand: 1, pile: 14, pileAtDeal: 14, seed: 1 }).flop).toHaveLength(2);
+    const seen = [2, 4, 6].map((hand) => said(talk({ hand, pile: 20, pileAtDeal: 20, seed: 9 }).flop));
+    expect(new Set(seen).size).toBe(3);
   });
 });
 

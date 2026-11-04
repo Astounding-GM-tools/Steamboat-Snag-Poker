@@ -200,6 +200,7 @@
     before = round;
     const river = composing;
     onplay(action);
+    if (action?.type === 'draw' && !action.cardIds.length) fire('pat');
     tapped = [];
     laid = false;
     // Whoever runs the game has played the street: the table now shows its outcome.
