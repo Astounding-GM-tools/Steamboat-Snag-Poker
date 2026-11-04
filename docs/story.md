@@ -178,12 +178,14 @@ differently:
   are handed *Yellow-belly* for free. It goes when you pass it on, like any
   snag.
 
-**Three kinds of snag in the story,** all played the same way at the table
+**The kinds of snag in the story,** all played the same way at the table
 (win a showdown with a snag played, and the weakest hand takes it):
 
 1. **Cargo and duty:** the mail, the eggs, Patty. Delivered, or handed on.
 2. **Reputation:** Yellow-belly. Lived down, by passing it on.
-3. **Troubles:** what the river leaves behind (a Broken Pole, Mud in the
+3. **Bills** are duties with a price: whoever holds the Dock Fee when the
+   game ends pays it (a snag you can pawn on the very man you owe).
+4. **Troubles:** what the river leaves behind (a Broken Pole, Mud in the
    Boiler, a Lost Day, a Sprained Back). Each costs upkeep (coal, wages,
    time) until shed. Shedding them is the evening's guile: in cartoon logic,
    whoever loses to you agrees to fix your boiler or lend you a pole.
@@ -468,8 +470,8 @@ changes something (the risk is that the way back feels like padding).
 
 *Upriver:*
 
-1. **Muscatine.** Bill ashore; Morag's lessons begin. The harbour master
-   won't clear the boat unless you beat him.
+1. **Muscatine.** Bill ashore; the Dock Fee, paid or played for with the
+   harbour master.
 2. **The Tri-Cities** (Davenport, Rock Island, Moline). In spring 1904 nobody
    agrees how many cities they are: Gilbert has only just renamed itself
    **Bettendorf** (1903, after the brothers whose wagon works it lured from
@@ -581,7 +583,7 @@ prologue, not day one.
 
 | Day | Stretch | The day | The evening |
 |---|---|---|---|
-| 1 | Muscatine, up to the Tri-Cities | The exposition and the handover, over a few hands with Bill: he goes ashore, and the new captain must beat **the harbour master** to clear the boat. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
+| 1 | Muscatine, up to the Tri-Cities | The exposition and the handover, over a few hands with Bill: he goes ashore, and leaves the new captain the winter's **Dock Fee**, the first snag, with exactly the money to pay it ($37). At **the harbour master's**: *Pay* (the purse is empty), or *Snag*: five hands, and whoever holds the bill after that settles it. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
 | 2 | The Tri-Cities | The coal yard on strike: no coal, no climb | The foreman's game: lose an appropriate amount |
 | 3 | The Rock Island Rapids, up | Kitty's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon: **Kitty, Finlay and Gaylord** at the table. Gaylord offers **the loan** either way (he has a stash, and likes the captain's style); if he finishes first or second, all the more |
 | 4 | LeClaire to Clinton | **The Ice**: a High Rollers table of floes | Clinton, the sawmill town: a game on deck |

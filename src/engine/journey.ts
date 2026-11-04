@@ -65,6 +65,16 @@ export interface Effects {
   coal?: number;
   purse?: number;
   flag?: string;
+  /** A snag handed to you. */
+  snag?: number;
+  /** A bill settled: if you hold this snag, you pay (as far as the purse goes) and it's gone. */
+  settle?: { snag: number; amount: number };
+}
+
+/** An answer in the talk at the table that decides what happens: these effects, and this many of the steps ahead skipped. */
+export interface Choice {
+  effects?: Effects;
+  skip?: number;
 }
 
 export type Step =
@@ -98,6 +108,8 @@ export type Step =
       relent?: StoryLine[];
       /** Which try this is (the first, or again after a night stuck). */
       attempt?: number;
+      /** What a reply in the talk can decide, by its effect (see `choose`): the encounter ends there. */
+      choices?: Record<string, Choice>;
     };
 
 export interface DayDef {
@@ -228,7 +240,8 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
     state.strength = morningStrength(state);
     state.tomorrow = 0;
     state.mornings++;
-    state.purse = Math.max(0, state.purse - state.crew.reduce((a, id) => a + (CREW[id]?.wage ?? 0), 0));
+    // The first morning's wages were settled by the captain before you.
+    if (state.mornings > 1) state.purse = Math.max(0, state.purse - state.crew.reduce((a, id) => a + (CREW[id]?.wage ?? 0), 0));
     return advance(state, story);
   }
   if (step.type === 'travel') {
@@ -245,6 +258,15 @@ function applyEffects(state: JourneyState, effects: Effects | undefined) {
   if (effects.coal) state.coal = Math.min(BOAT.bunker, state.coal + effects.coal);
   if (effects.purse) state.purse = Math.max(0, state.purse + effects.purse);
   if (effects.flag && !state.flags.includes(effects.flag)) state.flags.push(effects.flag);
+  if (effects.snag !== undefined) state.snags.push(jokerCard(effects.snag));
+  if (effects.settle) {
+    const { snag, amount } = effects.settle;
+    const k = state.snags.findIndex((j) => j.index === snag);
+    if (k >= 0) {
+      state.snags.splice(k, 1);
+      state.purse = Math.max(0, state.purse - amount);
+    }
+  }
 }
 
 /** A caption read: on. */
@@ -426,6 +448,21 @@ function finish(state: JourneyState, _story: StoryDef, outcome: 'solved' | 'fail
   else state.snags = mine.jokers;
   e.outcome = outcome;
   return state;
+}
+
+/** A reply at the table decided it: the encounter ends here, and on. */
+export function choose(prev: JourneyState, story: StoryDef, key: string): JourneyState {
+  const step = currentStep(prev, story);
+  const choice = step?.type === 'encounter' ? step.choices?.[key] : undefined;
+  if (!choice) throw new Error(`No such choice: ${key}`);
+  const state = clone(prev);
+  state.encounter = null;
+  applyEffects(state, choice.effects);
+  for (let k = 0; k < (choice.skip ?? 0); k++) {
+    if (state.pending.length) state.pending.shift();
+    else state.step++;
+  }
+  return advance(state, story);
 }
 
 /** The encounter's lines read: on (or, stuck, into the night aboard and at it again in the morning). */

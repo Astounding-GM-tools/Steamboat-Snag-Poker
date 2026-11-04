@@ -7,6 +7,7 @@
     canBuy,
     canCastOff,
     castOff,
+    choose,
     currentStep,
     handDone,
     leaveEncounter,
@@ -88,6 +89,10 @@
     const lines = step?.type === 'encounter' ? (after.encounter?.outcome === 'solved' ? step.solved : (step.failed ?? step.solved)) : [];
     journey = after.encounter?.outcome && !lines.length ? leaveEncounter(after, RIVER) : after;
   }
+  /** A reply at the table that decides what happens next. */
+  function talked(effect: string) {
+    if (step?.type === 'encounter' && step.choices?.[effect]) journey = choose(journey, RIVER, effect);
+  }
   function onwards() {
     if (!step) return;
     if (step.type === 'caption') journey = proceed(journey, RIVER);
@@ -116,7 +121,10 @@
     <div class="dock"><button onclick={onmenu}>{t('river.backToTitle')}</button></div>
   </div>
 {:else if playing && view}
-  <Table table={view} onplay={play} onnext={next} {onmenu} script={roundScript(RIVER_TALK[enc!.def.id], enc!.session.hand)} />
+  <!-- Encounters may follow one another with nothing between: each sits down at a table of its own. -->
+  {#key `${journey.day}:${journey.step}:${journey.pending.length}`}
+    <Table table={view} onplay={play} onnext={next} {onmenu} script={roundScript(RIVER_TALK[enc!.def.id], enc!.session.hand)} ontalk={talked} />
+  {/key}
 {:else}
   <div class="page">
     <!-- Where the boat stands: the day, the place, the purse, the crew's strength, the coal. -->

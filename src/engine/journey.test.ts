@@ -7,6 +7,7 @@ import {
   canBuy,
   canCastOff,
   castOff,
+  choose,
   currentStep,
   handDone,
   leaveEncounter,
@@ -21,7 +22,7 @@ import {
 } from './journey';
 import { Rng } from './rng';
 import { newSession, nextSessionHand, submit, type TableSession } from './session';
-import { coveredHands } from './snags';
+import { DOCK_FEE, coveredHands } from './snags';
 
 /** Plays the voyage as a careful captain would, buying a little at each council; returns every state passed through. */
 function autopilot(seed: number, guard = 3000): JourneyState[] {
@@ -63,7 +64,8 @@ describe('the voyage', () => {
     };
     let s = newJourney(1, story, RIVER_START);
     expect(s.strength).toBe(18);
-    expect(s.purse).toBe(RIVER_START.purse - 6);
+    // The first morning's wages are already paid.
+    expect(s.purse).toBe(RIVER_START.purse);
     expect(canBuy(s, story, 'whistle')).toBe(false);
     s = buy(s, story, 'hammocks');
     expect(s.strength).toBe(21);
@@ -150,6 +152,54 @@ describe('snag tempers', () => {
     expect(coveredHands([inLaws, mule], 8, 1)).toEqual([1, 6, 7, 8]);
     expect(coveredHands([mail], 8, 1)).toEqual([]);
     expect(coveredHands([jokerCard(10)], 8, 4)).toEqual([4]);
+  });
+});
+
+describe('the dock fee', () => {
+  /** On to the harbour master's talk: Bill's hands played out, the fee in hand. */
+  function atTheHarbour(): JourneyState {
+    let s = proceed(newJourney(1, RIVER, RIVER_START), RIVER);
+    const rng = new Rng(1);
+    while (s.encounter?.def.id === 'bill') {
+      const e = s.encounter;
+      if (e.outcome) s = leaveEncounter(s, RIVER);
+      else if (e.session.phase === 'hand') s = playEncounter(s, chooseAction('careful', viewFor(e.session.round!, mySeatAt(e), e.session.config), e.session.config, rng));
+      else s = handDone(s, RIVER);
+    }
+    return s;
+  }
+
+  it('is handed over by Bill, and paying it empties the purse and skips the game', () => {
+    const s = atTheHarbour();
+    expect(s.encounter?.def.id).toBe('harbourTalk');
+    expect(s.snags.map((j) => j.index)).toEqual([DOCK_FEE]);
+    const paid = choose(s, RIVER, 'pay');
+    expect(paid.purse).toBe(0);
+    expect(paid.snags).toEqual([]);
+    expect(paid.encounter).toBeNull();
+    expect(currentStep(paid, RIVER)?.type).toBe('caption');
+  });
+
+  it('can be played for: five hands, with the bill in your hand', () => {
+    const s = choose(atTheHarbour(), RIVER, 'snag');
+    expect(s.encounter?.def.id).toBe('harbourMaster');
+    expect(s.encounter?.def.hands).toBe(5);
+    expect(s.encounter?.session.round?.potMode).toBe(true);
+    expect(s.encounter?.session.seats[0].jokers.map((j) => j.index)).toEqual([DOCK_FEE]);
+  });
+
+  it('is settled by whoever holds it after the game', () => {
+    const s = choose(atTheHarbour(), RIVER, 'snag');
+    const end = (holding: boolean): JourneyState => {
+      const e = structuredClone(s);
+      e.encounter!.outcome = 'solved';
+      e.purse = 30;
+      e.snags = holding ? [jokerCard(DOCK_FEE)] : [];
+      return leaveEncounter(e, RIVER);
+    };
+    expect(end(true).purse).toBe(0);
+    expect(end(true).snags).toEqual([]);
+    expect(end(false).purse).toBe(30);
   });
 });
 

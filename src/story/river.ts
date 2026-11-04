@@ -4,8 +4,8 @@
  * the harbour master and the Sandbar on day one, the Tri-Cities and the coal
  * yard on day two.
  */
-import type { EncounterDef, Step, StoryDef } from '../engine';
-import { TROUBLE } from '../engine';
+import type { EncounterDef, Rival, Step, StoryDef } from '../engine';
+import { DOCK_FEE, TROUBLE } from '../engine';
 import type { Script } from './script';
 
 /** The evening's game aboard: crew and lantern, for buttons. */
@@ -27,6 +27,10 @@ const sandbar: EncounterDef = {
   rules: { jokerForfeit: 0, antePast: -3 },
 };
 
+/** The winter's mooring, and what Bill leaves you to pay it with. */
+const DOCK_FEE_AMOUNT = 37;
+const harbourMaster: Rival = { id: 'harbourMaster', ai: 'stubborn', money: 40 };
+
 const day1: Step[] = [
   {
     type: 'caption',
@@ -37,20 +41,25 @@ const day1: Step[] = [
     // A few friendly hands on deck, for nothing: the talk is the point (RIVER_TALK.bill).
     encounter: { id: 'bill', stake: 'purse', rivals: [{ id: 'steamboatBill', ai: 'stubborn', money: 50 }], goal: { type: 'evening' }, hands: 3, rules: { pot: false } },
     solved: [],
+    effects: { snag: DOCK_FEE },
   },
   { type: 'dawn' },
   {
-    type: 'caption',
-    lines: [
-      { who: 'harbourMaster', text: 'Not so fast, Captain. Harbour dues.' },
-      { who: 'harbourMaster', text: 'Or try your luck: beat me at Snag, just the once, and you sail free.' },
-    ],
+    type: 'encounter',
+    // Only talk (RIVER_TALK.harbourTalk): nothing's staked or dealt until it's agreed.
+    encounter: { id: 'harbourTalk', stake: 'purse', rivals: [harbourMaster], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
+    solved: [],
+    choices: {
+      pay: { effects: { settle: { snag: DOCK_FEE, amount: DOCK_FEE_AMOUNT } }, skip: 1 },
+      snag: {},
+    },
   },
   {
     type: 'encounter',
-    encounter: { id: 'harbourMaster', stake: 'purse', rivals: [{ id: 'harbourMaster', ai: 'stubborn', money: 30 }], goal: { type: 'winPot' }, hands: 12 },
-    solved: [{ who: 'harbourMaster', text: 'Hmph. Cleared. Mind the sand above town.' }],
-    failed: [{ who: 'harbourMaster', text: 'Cleaned out at the harbour? Go on, then. And don’t come back broke.' }],
+    encounter: { id: 'harbourMaster', stake: 'purse', rivals: [harbourMaster], goal: { type: 'evening' }, hands: 5 },
+    solved: [],
+    // Whoever holds the bill after five hands settles it.
+    effects: { settle: { snag: DOCK_FEE, amount: DOCK_FEE_AMOUNT } },
   },
   {
     type: 'caption',
@@ -157,10 +166,11 @@ export const RIVER: StoryDef = {
   stuckNight: [{ type: 'caption', lines: [{ text: 'Supper on deck, and the lantern lit.' }] }, deckLines],
 };
 
-/** Bill leaves the new captain this much, and the bunker as it is. */
-export const RIVER_START = { purse: 40, coal: 2 };
+/** Bill leaves the new captain the dock fee and not a dollar more, and the bunker as it is. */
+export const RIVER_START = { purse: DOCK_FEE_AMOUNT, coal: 2 };
 
 const said = (text: string | string[]) => ({ size: 'scene' as const, who: 'steamboatBill', text });
+const master = (text: string) => ({ size: 'scene' as const, who: 'harbourMaster', text });
 const you = (text: string) => ({ size: 'scene' as const, who: 'you', text });
 
 /**
@@ -204,7 +214,47 @@ export const RIVER_TALK: Record<string, Script> = {
           you('Can’t they come with us, on the river?'),
           said(['The river’s no place for little’uns, and she needs the doctor’s care.', 'This is how it must be. I’ve made my decision.']),
         ],
-        verdict: [said(['Here. It’s all I can spare.', 'Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers.'])],
+        verdict: [
+          said(['Here. The dock fee for the winter, and the money to settle it. That’s your first job.', 'Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers.']),
+        ],
+      },
+    ],
+  },
+  harbourTalk: {
+    rounds: [
+      {
+        deal: [
+          {
+            ...master('Here to pay your dock fee, I suppose? Thirty-seven dollars. A good deal of money.'),
+            replies: [
+              { label: 'Pay', effect: 'pay', end: true },
+              { label: 'Snag', go: 'snag' },
+            ],
+          },
+          {
+            ...master('Hrmpf. River code, can’t refuse that. But only five rounds, and whoever holds the bill after that settles it. Agreed?'),
+            id: 'snag',
+            branch: true,
+            replies: [
+              { label: 'No. I pay', effect: 'pay', end: true },
+              { label: 'Deal', effect: 'snag', end: true },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  harbourMaster: {
+    rounds: [
+      {},
+      {},
+      {},
+      {},
+      {
+        verdict: [
+          { ...master('Thirty-seven dollars, Captain. Pleasure doing business.'), holding: [{ snag: DOCK_FEE, by: 'you' }] },
+          { ...master('Hrmpf. Mine to settle, then. Off with you.'), holding: [{ snag: DOCK_FEE, by: 'them' }] },
+        ],
       },
     ],
   },

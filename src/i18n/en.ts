@@ -400,6 +400,7 @@ export const en = {
   'joker.17': 'the Busted Boiler',
   'joker.18': 'Fatigue',
   'joker.19': 'the Broken Heart',
+  'joker.20': 'the Dock Fee',
 
 
 } as const;
