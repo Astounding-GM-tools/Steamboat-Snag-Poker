@@ -183,7 +183,7 @@
       <MonthEnd {game} onpause={pause} onagain={() => start()} />
     {/if}
   {:else}
-    <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} ontutorial={startTutorial} onstory={() => (river = { fresh: !riverSaved })} storySaved={riverSaved} />
+    <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} ontutorial={startTutorial} onstory={(afresh) => (river = { fresh: afresh || !riverSaved })} storySaved={riverSaved} />
   {/if}
 </div>
 <CardZoom />

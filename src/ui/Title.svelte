@@ -11,8 +11,8 @@
     oncontinue: () => void;
     /** Morag's lessons. */
     ontutorial: () => void;
-    /** The story (its first days). */
-    onstory: () => void;
+    /** The story (its first days): the one in progress, or with `afresh`, a new one. */
+    onstory: (afresh?: boolean) => void;
     /** A story voyage is in progress. */
     storySaved: boolean;
   }
@@ -191,7 +191,9 @@
              voyage to pick up, else League. (Story will come in above League.) -->
         <div class="menu">
           <button class="ghost" onclick={ontutorial}>{t('title.tutorial')}</button>
-          <button class="ghost" onclick={onstory}>{storySaved ? t('title.storyContinue') : t('title.story')}</button>
+          <!-- In development only: throw the story in progress away (the dev server, your phone on it too). -->
+          {#if import.meta.env.DEV && storySaved}<button class="ghost" onclick={() => onstory(true)}>Restart Story (dev)</button>{/if}
+          <button class="ghost" onclick={() => onstory()}>{storySaved ? t('title.storyContinue') : t('title.story')}</button>
           {#if savedMonth}
             <button class="ghost" onclick={newVoyage}>{t('title.league')}</button>
             <button onclick={oncontinue}>{t('title.continue')}</button>
