@@ -1013,9 +1013,13 @@ Built as listed below, with these simplifications for now:
   it's cleared one time in four on the first day. The next morning you face
   what's left of it, with eight hands and fresh strength, and clear it about
   half the time; otherwise a packet tows you off.
-- **The Sandbar keeps bar.** It presents as a barman (*"Today's specials are
-  the Broken Paddle and the Twisted Axle"*), and its quips go with its pile:
-  chipper while whole, gloomy once half gone, every other hand, in asides.
+- **Sandy keeps bar.** The Sandbar presents as a barman (*"Today's specials
+  are the Broken Paddle and the Twisted Axle"*) and is always chipper: wash
+  him away and he only drifts off somewhere else. A quip every other hand, in
+  asides.
+- **The deck game talks too:** someone says something on each Flop (*"Real
+  son of a beach, that sandbar"*), and whoever takes on a trouble they fix
+  says so (*"I think I can fix the Broken Paddle, Captain"*).
 - **Nobody stays stuck.** Failed once, an encounter that can strand you
   (the Sandbar, the foreman's game) means a night aboard and another try;
   failed twice, the river relents (a passing packet throws you a line, the

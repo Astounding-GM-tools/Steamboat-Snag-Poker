@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
 import type { RoundScript } from '../story/script';
-import type { SpeechLine } from '../ui/Speech.svelte';
 import { chooseAction, viewFor } from './ai';
 import { jokerCard } from './cards';
 import {
@@ -24,7 +23,7 @@ import {
 } from './journey';
 import { Rng } from './rng';
 import { newSession, nextSessionHand, submit, type TableSession } from './session';
-import { DOCK_FEE, coveredHands } from './snags';
+import { DOCK_FEE, TROUBLE, coveredHands } from './snags';
 
 /** Plays the voyage as a careful captain would, buying a little at each council; returns every state passed through. */
 function autopilot(seed: number, guard = 3000): JourneyState[] {
@@ -204,20 +203,22 @@ describe('the dock fee', () => {
   });
 });
 
-describe('the Sandbar keeps bar', () => {
-  const talk = RIVER_TALK.sandbar as (c: { hand: number; pile: number; pileAtDeal: number; seed: number }) => RoundScript;
-  const said = (lines?: SpeechLine[]) => String(lines?.[0]?.text);
+describe('table talk', () => {
+  const context = { hand: 1, pile: 20, seed: 9, fixed: [] as { id: string; snag: number }[] };
+  const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
+  const deck = RIVER_TALK.deck as (c: typeof context) => RoundScript;
 
-  it('speaks by the size of its pile', () => {
-    const chipper = said(talk({ hand: 2, pile: 20, pileAtDeal: 20, seed: 1 }).flop);
-    const gloomy = said(talk({ hand: 2, pile: 2, pileAtDeal: 2, seed: 1 }).flop);
-    expect(chipper).not.toBe(gloomy);
+  it('never quips over the opening, or the same line twice in a day', () => {
+    expect(sandy(context).flop).toHaveLength(2);
+    const seen = [2, 4].map((hand) => String(sandy({ ...context, hand }).flop?.[0].text));
+    expect(new Set(seen).size).toBe(2);
   });
 
-  it('never quips over the opening, or twice in a row on the same lines', () => {
-    expect(talk({ hand: 1, pile: 14, pileAtDeal: 14, seed: 1 }).flop).toHaveLength(2);
-    const seen = [2, 4, 6].map((hand) => said(talk({ hand, pile: 20, pileAtDeal: 20, seed: 9 }).flop));
-    expect(new Set(seen).size).toBe(3);
+  it('has whoever takes on a trouble say so at the deck game', () => {
+    const lines = deck({ ...context, fixed: [{ id: 'gus', snag: TROUBLE.brokenPaddle }] }).verdict!;
+    expect(lines[0].who).toBe('gus');
+    expect(lines[0].text).toContain('Broken Paddle');
+    expect(deck(context).verdict).toEqual([]);
   });
 });
 

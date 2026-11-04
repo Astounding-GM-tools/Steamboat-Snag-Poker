@@ -98,7 +98,8 @@
     if (typeof talk !== 'function') return roundScript(talk, enc!.session.hand);
     const s = enc!.session;
     const obstacle = s.seats.findIndex((p) => p.obstacle);
-    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, pileAtDeal: enc!.start[seatOf(s, obstacle)] ?? 0, seed: journey.rngState });
+    const fixed = s.round?.result ? (s.settled?.absorbed ?? []).map((a) => ({ id: s.seats[s.seated[a.seat]].id, snag: a.snag })) : [];
+    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, seed: journey.rngState, fixed });
   }
 
   /** A reply at the table that decides what happens next. */
