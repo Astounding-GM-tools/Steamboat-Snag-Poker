@@ -6,9 +6,10 @@
   import LeagueTable from './LeagueTable.svelte';
   import PassAndPlay from './PassAndPlay.svelte';
   import HighRollersTable from './HighRollersTable.svelte';
+  import Journey from './Journey.svelte';
   import MonthEnd from './MonthEnd.svelte';
   import Title from './Title.svelte';
-  import { loadBest, loadGame, recordResult, saveGame } from './storage';
+  import { loadBest, loadGame, loadJourney, recordResult, saveGame } from './storage';
   import { giveButtons, newTutorial, rematch, skipToButtons, skipToHands, tutorialScript, TUTORIAL } from '../story/tutorial';
   import { roundScript, type Script } from '../story/script';
 
@@ -61,6 +62,13 @@
   }
   /** In development, the High Rollers table on its own (highRollers() in the console; highRollers(40) seats everyone with $40, quicker to an ending; highRollers(40, 2) with two rivals). */
   let highRollers = $state<{ purse?: number; rivals?: number } | null>(null);
+  /** The story: playing it (`fresh`: a new voyage, not the one saved). */
+  let river = $state<{ fresh: boolean } | null>(null);
+  let riverSaved = $state(!!loadJourney());
+  function leaveRiver() {
+    river = null;
+    riverSaved = !!loadJourney();
+  }
   /** In development, pass-and-play on this device (passAndPlay(2) in the console: two people; passAndPlay(2, 1) and an AI). */
   let passPlay = $state<SessionPlayer[] | null>(null);
   function devTable({ purse, rivals }: { purse?: number; rivals?: number }) {
@@ -86,6 +94,8 @@
       ];
     };
     w.finaleSoon = finaleSoon;
+    // The story from its start (river() in the console; river(false) picks up the one saved).
+    w.river = (fresh = true) => (river = { fresh });
     // A story's full table: you and n rivals at the first crossing (a story, so never saved; fullTable(2) in the console).
     w.fullTable = (n = 2) => {
       const drawn = new Rng(Date.now() >>> 0).shuffle(ROSTER.filter((c) => !c.follows && c.tier !== 'rascal')).slice(0, 5);
@@ -158,7 +168,9 @@
 
 <div class="film">
   <div class="flicker" aria-hidden="true"></div>
-  {#if passPlay}
+  {#if river}
+    {#key river}<Journey fresh={river.fresh} onmenu={leaveRiver} />{/key}
+  {:else if passPlay}
     <PassAndPlay players={passPlay} onmenu={() => (passPlay = null)} />
   {:else if highRollers}
     {#key highRollers}<HighRollersTable onmenu={() => (highRollers = null)} setup={devTable(highRollers)} />{/key}
@@ -171,7 +183,7 @@
       <MonthEnd {game} onpause={pause} onagain={() => start()} />
     {/if}
   {:else}
-    <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} ontutorial={startTutorial} />
+    <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} ontutorial={startTutorial} onstory={() => (river = { fresh: !riverSaved })} storySaved={riverSaved} />
   {/if}
 </div>
 <CardZoom />

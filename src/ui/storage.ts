@@ -1,4 +1,4 @@
-import type { GameState } from '../engine';
+import type { GameState, JourneyState } from '../engine';
 
 export interface Best {
   /** Tournaments won. */
@@ -69,6 +69,28 @@ export function saveGame(game: GameState | null) {
   try {
     if (game && game.phase !== 'gameOver' && game.phase !== 'victory' && game.phase !== 'finished') localStorage.setItem(SAVE_KEY, JSON.stringify(game));
     else localStorage.removeItem(SAVE_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+/** The story's voyage in progress, saved after every move (its own key: it never takes the League's place). */
+const JOURNEY_KEY = 'wwr.river.v1';
+
+export function loadJourney(): JourneyState | null {
+  try {
+    const raw = localStorage.getItem(JOURNEY_KEY);
+    const journey = raw ? (JSON.parse(raw) as JourneyState) : null;
+    return journey && !journey.done ? journey : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveJourney(journey: JourneyState | null) {
+  try {
+    if (journey && !journey.done) localStorage.setItem(JOURNEY_KEY, JSON.stringify(journey));
+    else localStorage.removeItem(JOURNEY_KEY);
   } catch {
     /* storage unavailable */
   }

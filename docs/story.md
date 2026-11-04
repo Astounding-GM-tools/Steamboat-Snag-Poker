@@ -960,9 +960,29 @@ Robert E. Lee (also a famous steamboat, of the 1870 race against the
 
 ## Next steps
 
-**The first stretch to build: days 1 and 2** (the handover, the harbour
-master, the Sandbar, the Tri-Cities evening, the coal yard, a deck game);
-Kitty's table and the climb after. What it needs:
+**The first stretch is built: days 1 and 2** (the handover, the harbour
+master, the Sandbar, the Tri-Cities evening, the coal yard, a deck game),
+from the title as *Story (first days)*. See design.md, "Story mode", for how.
+Built as listed below, with these simplifications for now:
+
+- No table talk inside encounters yet: lines come before and after, on title
+  cards. (The foreman's hint, *"Folding again, Cap'n?"*, wants it.)
+- The obstacle's pile is drawn as buttons, not sand; nothing drifts away.
+- Turning in early from the deck game is in the engine, not on screen.
+- No passengers, odd jobs beyond a stake when nearly broke, or wages owed.
+- Upkeep and forfeits for snags are a dollar each in the story (the League's
+  are four and five); an obstacle forfeits nothing for its troubles.
+- The Sandbar: a pile of 12, an ante of 2 from the first hand (3 from the
+  fourth), six hands, the stubborn style, holding a Broken Pole and a
+  Twisted Shaft. Simulated against a careful player with the crew's 18:
+  cleared about two times in three, in a median four hands, at a cost of
+  some nine strength.
+- **Nobody stays stuck.** Failed once, an encounter that can strand you
+  (the Sandbar, the foreman's game) means a night aboard and another try;
+  failed twice, the river relents (a passing packet throws you a line, the
+  foreman gives in) and it counts as solved.
+
+Next: Kitty's table and the climb (day 3). The list as it was:
 
 1. **The voyage state,** above any single game: the day and the place, the
    purse, the strength and the coal, who's aboard (crew, passengers), the

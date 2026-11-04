@@ -7,6 +7,16 @@
  * captain is left with money. Plain, serializable data, and every function
  * pure (it clones what it's given), so whoever holds the session can store
  * it, send it, or show each person only their own seat.
+ *
+ * The story seats three kinds of seat beside the usual (all generic: what a
+ * snag or a crew member is comes from snags.ts and boat.ts):
+ * - **an obstacle** (the Sandbar): its purse is the obstacle. Against it,
+ *   nobody else takes more from a pot than they put in: win, and you get your
+ *   own back while its share drifts away; lose, and it gains what you lost.
+ * - **cover**: the hands in which a seat's losses are given back (the
+ *   volunteers among its snags).
+ * - **fixes**: snags a seat absorbs when they come to it (a crew member who
+ *   fixes them): taken, and gone.
  */
 import { chooseAction, viewFor } from './ai';
 import { jokerCard, type JokerCard } from './cards';
@@ -24,6 +34,12 @@ export interface SessionSeat {
   jokers: JokerCard[];
   /** Out of money: off the table. */
   out: boolean;
+  /** An obstacle, not a player: see above. */
+  obstacle?: boolean;
+  /** Hands (1, 2, 3…) in which this seat's losses are given back. */
+  cover?: number[];
+  /** Snag indices this seat fixes: absorbed when they come to it. */
+  fixes?: number[];
 }
 
 export interface TableSession {
@@ -42,6 +58,8 @@ export interface TableSession {
   pending: (Action | null)[];
   /** 'hand' while it's played, 'handEnd' when it's done, 'over' when one captain is left with money. */
   phase: 'hand' | 'handEnd' | 'over';
+  /** What the last hand's end did beyond the pot: losses given back (seats at its table), snags absorbed. */
+  settled?: { covered: number[]; absorbed: { seat: number; snag: number }[] };
 }
 
 const clone = <T>(x: T): T => structuredClone(x);
@@ -50,6 +68,11 @@ export interface SessionPlayer {
   id: string;
   ai?: AiId | null;
   money?: number;
+  /** Snags they sit down with. */
+  jokers?: JokerCard[];
+  obstacle?: boolean;
+  cover?: number[];
+  fixes?: number[];
 }
 
 /** A new table: the players in their seats, everyone with the same purse unless given one, and the first hand dealt. */
@@ -60,7 +83,16 @@ export function newSession(seed: number, players: SessionPlayer[], config: Rules
     config: clone(config),
     rngState: rng.state,
     hand: startHand,
-    seats: players.map((p) => ({ id: p.id, ai: p.ai ?? null, money: p.money ?? config.startMoney, jokers: [], out: false })),
+    seats: players.map((p) => ({
+      id: p.id,
+      ai: p.ai ?? null,
+      money: p.money ?? config.startMoney,
+      jokers: p.jokers?.slice() ?? [],
+      out: false,
+      ...(p.obstacle ? { obstacle: true } : {}),
+      ...(p.cover ? { cover: p.cover } : {}),
+      ...(p.fixes ? { fixes: p.fixes } : {}),
+    })),
     button: rng.int(players.length),
     pool: Array.from({ length: config.totalJokers }, (_, i) => jokerCard(i)),
     seated: [],
@@ -111,6 +143,17 @@ export function submit(prev: TableSession, seat: number, action: Action): TableS
   const session = clone(prev);
   session.pending[seat] = action;
   if (waitingFor(session).length) return session;
+  return resolve(session);
+}
+
+/** Nobody's move is owed (no person in the hand: they folded, or are out of money): the AIs play the street. */
+export function playOn(prev: TableSession): TableSession {
+  if (prev.phase !== 'hand' || waitingFor(prev).length) throw new Error('Not the AIs\' street to play');
+  return resolve(clone(prev));
+}
+
+/** The street resolves: the people's moves as collected, the AIs' chosen now. */
+function resolve(session: TableSession): TableSession {
   const rng = new Rng(session.rngState);
   const round = session.round!;
   const moving = movers(round);
@@ -129,11 +172,32 @@ export function submit(prev: TableSession, seat: number, action: Action): TableS
 function settle(session: TableSession) {
   const round = session.round!;
   const res = round.result!;
+  const at = (k: number) => session.seats[session.seated[k]];
+  const covered: number[] = [];
+  const absorbed: { seat: number; snag: number }[] = [];
+  const obstacle = round.seats.findIndex((_, k) => at(k).obstacle);
+  if (obstacle >= 0) {
+    // Against an obstacle nobody comes out ahead: a pot won gives back only what you put in.
+    round.seats.forEach((_, k) => {
+      if (k === obstacle) return;
+      res.share[k] = Math.min(res.share[k], round.bets[k] + res.forfeit[k]);
+      // A loss in a covered hand is given back, and the obstacle gains nothing by it.
+      const lost = round.bets[k] + res.forfeit[k] - res.share[k];
+      if (lost > 0 && at(k).cover?.includes(session.hand)) {
+        res.share[k] += lost;
+        res.share[obstacle] = Math.max(0, res.share[obstacle] - lost);
+        covered.push(k);
+      }
+    });
+  }
   round.seats.forEach((seat, k) => {
-    const p = session.seats[session.seated[k]];
+    const p = at(k);
     p.money += res.share[k] - round.bets[k] - res.forfeit[k];
-    p.jokers = seat.jokers;
+    const fixes = p.fixes ?? [];
+    for (const j of seat.jokers) if (fixes.includes(j.index)) absorbed.push({ seat: k, snag: j.index });
+    p.jokers = seat.jokers.filter((j) => !fixes.includes(j.index));
   });
+  session.settled = { covered, absorbed };
   session.pool.push(...res.returnedToPool);
   for (const p of session.seats) if (!p.out && p.money <= 0) p.out = true;
   session.phase = session.seats.filter((p) => !p.out).length <= 1 ? 'over' : 'handEnd';

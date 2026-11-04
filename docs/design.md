@@ -437,14 +437,30 @@ as a fallback. Dropping is final.
   pieces in their variants (an opponent's seat at a third, half and all of
   the table; your cards; the board and the pot; the buttons; snag fans) at a
   phone's width, updating as you save. Development only: not in the build.
-- **Snags are defined in one place.** Today a snag card is only an index
+- **Snags are defined in one place.** A snag card is only an index
   (`jokerCard(i)` in `cards.ts`), named by `joker.<i>` in the dictionary.
   Story mode gives snags a nature: a kind (person, animal, object, duty,
   trouble), a temper (the hands of the day it volunteers in, against an
-  obstacle), a fixer, an address, an upkeep. All of that goes on the snag's
-  own definition, one table for the set (say `snags.ts`), and the engine
-  reads it from there, generically: no `if (snag is the mule)` anywhere in
-  the code. A new snag is a new row.
+  obstacle), a fixer, an address. All of that is the snag's own row in
+  `snags.ts`, and the engine reads it from there, generically: no
+  `if (snag is the mule)` anywhere in the code. A new snag is a new row.
+  Indices 0–11 are the League's snags, 12–13 the lessons' (Grudging
+  Respect, the Solemn Oath), 14 on the troubles.
+- **Story mode** (Steamboat to St. Louis, docs/story.md). `journey.ts` is the
+  voyage: day, place, purse (coins), the crew's strength (buttons, made each
+  morning), coal, crew, upgrades, snags carried, flags; it plays a story's
+  days step by step, generically. A step is a caption, the morning council
+  (advice, the trader, casting off with the day's coal), a dawn or a run up
+  the river (they play themselves), or an encounter: a `session.ts` table
+  with a goal (take a pot, clear the obstacle, play to trips, lose an
+  amount, the evening's game) and a number of hands. The session knows three
+  story seats, all generic: an **obstacle** (nobody comes out ahead against
+  it), **cover** (hands in which a seat's losses are given back: the
+  volunteers among its snags) and **fixes** (snags a crew member absorbs).
+  The content is `src/story/river.ts`; the numbers (crew, boat, goods) are
+  `boat.ts`. The screen is `Journey.svelte`: a title card for captions, the
+  council, `Table.svelte` for encounters. Saved under its own key; `river()`
+  in the development console starts it afresh.
 - **Saving:** localStorage for now.
 - **Tests:** Vitest on the engine.
 

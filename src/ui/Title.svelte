@@ -11,8 +11,12 @@
     oncontinue: () => void;
     /** Morag's lessons. */
     ontutorial: () => void;
+    /** The story (its first days). */
+    onstory: () => void;
+    /** A story voyage is in progress. */
+    storySaved: boolean;
   }
-  let { savedMonth, onstart, oncontinue, ontutorial }: Props = $props();
+  let { savedMonth, onstart, oncontinue, ontutorial, onstory, storySaved }: Props = $props();
   let showHowTo = $state(false);
   let showOptions = $state(false);
   /** How many taglines the language file has (title.tagline.0 … n-1); one is picked per visit. */
@@ -187,6 +191,7 @@
              voyage to pick up, else League. (Story will come in above League.) -->
         <div class="menu">
           <button class="ghost" onclick={ontutorial}>{t('title.tutorial')}</button>
+          <button class="ghost" onclick={onstory}>{storySaved ? t('title.storyContinue') : t('title.story')}</button>
           {#if savedMonth}
             <button class="ghost" onclick={newVoyage}>{t('title.league')}</button>
             <button onclick={oncontinue}>{t('title.continue')}</button>

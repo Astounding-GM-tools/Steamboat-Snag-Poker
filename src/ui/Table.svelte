@@ -330,9 +330,12 @@
 
   /** The showdown, by itself: each hand in turn (yours you know: just its name), a breath between, then the verdict. */
   async function showdown() {
+    const hand = table.hand;
     coins.begin();
     try {
       for (let i = 0; i < revealOrder.length; i++) {
+        // Tapped ahead (Next through the hands, then past the verdict): this showdown is done with.
+        if (view !== 'reveal' || table.hand !== hand) break;
         revealed = i;
         await turnOver(revealOrder[i]);
         await pause(STEP_MS);
@@ -340,6 +343,8 @@
     } finally {
       coins.end();
     }
+    // Only if it's still this hand's showdown: a quick tap may already have moved on to the next hand.
+    if (view !== 'reveal' || table.hand !== hand) return;
     noteSnags();
     view = 'verdict';
   }
