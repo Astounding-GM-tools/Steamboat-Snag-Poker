@@ -220,8 +220,11 @@ keeps them (even a captain who goes broke). Her last word reads both:
 
 | | You have all the buttons | She has all the buttons |
 |---|---|---|
-| **She holds your Respect** | *"Cleaned out by a First Mate. / And I do hold a grudging respect for you, it seems. Well done."* | *"You are out of buttons. / But I do find myself holding a grudging respect for you."* |
-| **You still hold it** | *"Cleaned out by a First Mate. / Yet your snag remains with you."* | *"You are out of buttons. / And your snag remains with you."* (draft) |
+| **She holds your Respect** | *"Cleaned out by a deckhand. / And I do hold a grudging respect for you, it seems. Well done."* | *"You are out of buttons. / But I do find myself holding a grudging respect for you."* |
+| **You still hold it** | *"Cleaned out by a deckhand. / Yet your snag remains with you."* | *"You are out of buttons. / And your snag remains with you."* (draft) |
+
+If you've cleaned her out you may talk back: **Deckhand?** → *"First mate,
+actually."* → *"I stand corrected. / Cleaned out all the same."*
 
 Then, if you are left holding her Oath: *"Now you know what Snag Poker is. / Do
 you swear never to play this game for money?"* → **I swear** / **Yes. I

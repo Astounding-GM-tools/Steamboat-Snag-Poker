@@ -147,16 +147,16 @@ const AFTER: SpeechLine[] = [
     holding: [{ snag: RESPECT, by: 'them' }],
     size: 'scene',
     who: M,
-    text: ['Cleaned out by a First Mate.', 'And I do hold a grudging respect for you, it seems. Well done.'],
-    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
+    text: ['Cleaned out by a deckhand.', 'And I do hold a grudging respect for you, it seems. Well done.'],
+    replies: [{ label: 'Deckhand?', go: 'mate' }, { label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
   },
   {
     when: 'wonAll',
     holding: [{ snag: RESPECT, by: 'you' }],
     size: 'scene',
     who: M,
-    text: ['Cleaned out by a First Mate.', 'Yet your snag remains with you.'],
-    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
+    text: ['Cleaned out by a deckhand.', 'Yet your snag remains with you.'],
+    replies: [{ label: 'Deckhand?', go: 'mate' }, { label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
   },
   {
     when: 'lostAll',
@@ -173,6 +173,15 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['You are out of buttons.', 'And your snag remains with you.'],
+    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
+  },
+  // A little talking back.
+  { id: 'mate', branch: true, size: 'scene', who: 'you', text: 'First mate, actually.' },
+  {
+    branch: true,
+    size: 'scene',
+    who: M,
+    text: ['I stand corrected.', 'Cleaned out all the same.'],
     replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
   },
   {
