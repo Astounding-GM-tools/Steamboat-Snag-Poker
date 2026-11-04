@@ -166,8 +166,8 @@ export const RIVER: StoryDef = {
   stuckNight: [{ type: 'caption', lines: [{ text: 'Supper on deck, and the lantern lit.' }] }, deckLines],
 };
 
-/** Bill leaves the new captain the dock fee and not a dollar more, and the bunker as it is. */
-export const RIVER_START = { purse: DOCK_FEE_AMOUNT, coal: 2 };
+/** Bill leaves the new captain the dock fee and a little over for food and coal, and the bunker as it is. */
+export const RIVER_START = { purse: 50, coal: 2 };
 
 const said = (text: string | string[]) => ({ size: 'scene' as const, who: 'steamboatBill', text });
 const master = (text: string) => ({ size: 'scene' as const, who: 'harbourMaster', text });
@@ -215,7 +215,7 @@ export const RIVER_TALK: Record<string, Script> = {
           said(['The river’s no place for little’uns, and she needs the doctor’s care.', 'This is how it must be. I’ve made my decision.']),
         ],
         verdict: [
-          said(['Here. The dock fee for the winter, and the money to settle it. That’s your first job.', 'Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers.']),
+          said(['Here. The dock fee for the winter, and fifty dollars. Enough to settle it, with a little over for food and coal. Past that, you’ll find your own cargo.', 'Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers.']),
         ],
       },
     ],

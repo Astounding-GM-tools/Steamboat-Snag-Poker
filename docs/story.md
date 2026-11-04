@@ -583,7 +583,7 @@ prologue, not day one.
 
 | Day | Stretch | The day | The evening |
 |---|---|---|---|
-| 1 | Muscatine, up to the Tri-Cities | The exposition and the handover, over a few hands with Bill: he goes ashore, and leaves the new captain the winter's **Dock Fee**, the first snag, with exactly the money to pay it ($37). At **the harbour master's**: *Pay* (the purse is empty), or *Snag*: five hands, and whoever holds the bill after that settles it. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
+| 1 | Muscatine, up to the Tri-Cities | The exposition and the handover, over a few hands with Bill: he goes ashore, and leaves the new captain the winter's **Dock Fee**, the first snag, with $50: enough to settle it ($37), and a little over for food and coal; past that, you find your own cargo. At **the harbour master's**: *Pay*, or *Snag*: five hands, and whoever holds the bill after that settles it. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
 | 2 | The Tri-Cities | The coal yard on strike: no coal, no climb | The foreman's game: lose an appropriate amount |
 | 3 | The Rock Island Rapids, up | Kitty's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon: **Kitty, Finlay and Gaylord** at the table. Gaylord offers **the loan** either way (he has a stash, and likes the captain's style); if he finishes first or second, all the more |
 | 4 | LeClaire to Clinton | **The Ice**: a High Rollers table of floes | Clinton, the sawmill town: a game on deck |
@@ -687,6 +687,30 @@ The two meet through the boat:
 - **Strength into purse:** odd jobs at a landing, the crew's work for pay.
 - **Coal stays in the purse:** the cost of each stretch, bought in the
   morning; without enough of it you don't cast off.
+
+### Trade: north and south of the rapids
+
+The rapids split the river's economy, and the winter has cut the upper river
+off, so whoever comes through first in spring can sell at a premium. Any boat
+can pay cash for goods at one landing and sell them at another, a few sacks
+or crates at a time, on deck space shared with cargo and passengers.
+
+- **Bought below, sold above:** cotton, bourbon, corn, molasses, sugar,
+  tobacco: dear up north after a long winter.
+- **Bought above, sold below:** woven cloth, flour and grain, beer, nails,
+  machine parts, lumber: cheap at the source.
+- **Muscatine's own:** pearl buttons.
+- **The catch: it binds up cash.** Money in crates can't pay for coal, a
+  pilot or a seat at a table. A hold full of bourbon and an empty purse at
+  the foot of the rapids is a very good story.
+- **Carried freight is different:** a job pays you to carry someone else's
+  goods, risks nothing and pays less. Trade is your own money on your own
+  judgment.
+
+Each landing's prices are a table, like the trader's goods; a stretch's
+prices fall as more boats get through, so being early pays. (By 1904 the
+railroads carried most of this; the fable lets the river keep it. The
+goods are from general knowledge, to verify as landings are written.)
 
 ### The deck games
 

@@ -169,12 +169,12 @@ describe('the dock fee', () => {
     return s;
   }
 
-  it('is handed over by Bill, and paying it empties the purse and skips the game', () => {
+  it('is handed over by Bill, and paying it takes most of the purse and skips the game', () => {
     const s = atTheHarbour();
     expect(s.encounter?.def.id).toBe('harbourTalk');
     expect(s.snags.map((j) => j.index)).toEqual([DOCK_FEE]);
     const paid = choose(s, RIVER, 'pay');
-    expect(paid.purse).toBe(0);
+    expect(paid.purse).toBe(13);
     expect(paid.snags).toEqual([]);
     expect(paid.encounter).toBeNull();
     expect(currentStep(paid, RIVER)?.type).toBe('caption');
