@@ -423,7 +423,8 @@ export function handDone(prev: JourneyState, story: StoryDef): JourneyState {
     const trips = !!top && CATEGORIES.indexOf(top.category) >= CATEGORIES.indexOf('threeOfAKind');
     outcome = trips || lastHand || over ? 'solved' : null;
   } else if (goal.type === 'lose') outcome = e.lostAtShowdown >= goal.min || mine.out ? 'solved' : lastHand ? 'failed' : null;
-  else outcome = lastHand || over ? 'solved' : null;
+  // The evening's game ends with your buttons: nobody's left watching from the rail.
+  else outcome = lastHand || over || mine.out ? 'solved' : null;
   if (!outcome && over) outcome = mine.out ? 'failed' : 'solved';
   if (outcome) return finish(state, story, outcome);
   e.session = nextSessionHand(s);
