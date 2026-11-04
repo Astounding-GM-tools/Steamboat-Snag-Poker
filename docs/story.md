@@ -271,15 +271,15 @@ without a drag.
 Story snags aren't only passed on: many have somewhere they belong, and
 getting them there resolves them for good.
 
-**Troubles have a fixer.** Bestow the Busted Boiler on the engineer and it's
-absorbed: he fixes it. The Broken Pole goes to Lars; Fatigue and the Broken
-Heart both go to Willie, whose good nature is indomitable. So the night's game aboard, crew
-and passengers round a lantern (stranded on a bar, or moored at a landing
-with no saloon), is a different game from the landing's: a ceremony of
-resilience and community. Not taking money off strangers, but getting the
-right trouble to the right pair of hands. (The puzzle: a snag goes to the
-weakest hand, so the engineer must be the weakest when you win with the
-boiler played; a friendly crew might play to take what's theirs.)
+**Troubles have a fixer.** The deck game aboard, crew and passengers round a
+lantern (stranded on a bar, or moored at a landing with no saloon), is a
+different game from the landing's: a ceremony of resilience and community.
+It doesn't matter who gets a snag, or who wins the hand: lay a trouble on the
+table and it leaves you. Whoever takes it comments, they talk over who's the
+better match (*"That's one for Gus, Captain"*), and pass it among themselves.
+By morning it's fixed and gone. The Busted Boiler and Twisted Axle end up
+with Gus, the Broken Pole and Paddle with Lars, Fatigue and the Broken Heart
+with Willie, whose good nature is indomitable.
 
 **Cargo and passengers have an address.** The Mail Run goes to a town; the
 In-Laws are going somewhere; the Runaway Mule belongs in Podunk Junction.

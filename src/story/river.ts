@@ -5,13 +5,13 @@
  * yard on day two.
  */
 import type { EncounterDef, Rival, Step, StoryDef } from '../engine';
-import { DOCK_FEE, Rng, TROUBLE } from '../engine';
+import { DOCK_FEE, Rng, TROUBLE, snagDef } from '../engine';
 import { t } from '../i18n';
 import type { SpeechLine } from '../ui/Speech.svelte';
 import type { RoundScript, Talk, TalkContext } from './script';
 
 /** The evening's game aboard: crew and lantern, for buttons. */
-const deckGame: EncounterDef = { id: 'deck', stake: 'strength', rivals: 'crew', goal: { type: 'evening' }, hands: 3 };
+const deckGame: EncounterDef = { id: 'deck', stake: 'strength', rivals: 'crew', goal: { type: 'evening' }, hands: 3, rules: { drainPerJoker: 0, jokerForfeit: 0 } };
 
 const deckLines: Step = {
   type: 'encounter',
@@ -235,6 +235,7 @@ function sandbarTalk(hands: number, opening: RoundScript[]): Talk {
   };
 }
 
+const called = (id: string) => t(`character.${id}.called`);
 const crew = (who: string, text: string): SpeechLine => ({ size: 'aside', who, text });
 
 /**
@@ -262,13 +263,28 @@ const FIXING: Record<string, (snag: string, day: number) => string> = {
   willie: () => 'Leave that one with me, Captain!',
 };
 
-/** The deck game: someone says something on each Flop, and whoever takes on a trouble they can fix says so. */
+/** And how they hand on what's better fixed by someone else. */
+const PASSING: Record<string, (snag: string, fixer: string, day: number) => string> = {
+  gus: (snag, fixer) => `${snag}? Not my trade. ${fixer}?`,
+  lars: (_, __, day) => larsSays(day, '♪ ♪ ?', 'Nei.'),
+  willie: (snag, fixer) => `${snag}? That’s one for ${fixer}, Captain.`,
+  fireman: (_, fixer) => `Union says that’s ${fixer}’s job.`,
+};
+const capital = (s: string) => s[0].toUpperCase() + s.slice(1);
+
+/** The deck game: someone says something on each Flop, and whatever you lay down, they sort out among themselves. */
 function deckTalk({ hand, seed, fixed, day }: TalkContext): RoundScript {
   const quips = deckQuips(day);
   return {
-    ...(hand === 1 ? { deal: [{ size: 'scene', who: 'gus', text: 'Anything of mine that’s broken, Captain, send it my way.' } as SpeechLine] } : {}),
+    ...(hand === 1 ? { deal: [{ size: 'scene', who: 'gus', text: 'Anything broken, Captain, lay it on the table. We’ll see to it.' } as SpeechLine] } : {}),
     flop: [new Rng(seed).shuffle(quips)[hand % quips.length]],
-    verdict: fixed.map(({ id, snag }) => ({ size: 'scene' as const, who: id, text: FIXING[id]?.(t(`joker.${snag}`), day) ?? 'Leave it with me, Captain.' })),
+    verdict: fixed.flatMap(({ id, snag }): SpeechLine[] => {
+      const name = t(`joker.${snag}`);
+      const fixer = snagDef(snag).fixer ?? id;
+      const fixing: SpeechLine = { size: 'scene', who: fixer, text: FIXING[fixer]?.(name, day) ?? 'Leave it with me, Captain.' };
+      if (fixer === id) return [fixing];
+      return [{ size: 'scene', who: id, text: PASSING[id]?.(capital(name), called(fixer), day) ?? 'Not mine, Captain.' }, fixing];
+    }),
   };
 }
 

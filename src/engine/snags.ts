@@ -27,7 +27,7 @@ export interface SnagDef {
    * drawn each day. Missing: it never helps.
    */
   helps?: { from: number; to: number } | 'random';
-  /** The crew member who fixes it: bestowed on them at the deck game, it's absorbed (gone). */
+  /** The crew member who fixes it: handed to anyone at the deck game, it ends up with them, and it's gone. */
   fixer?: string;
   /** Where it belongs: stopping there resolves it. */
   address?: string;
@@ -69,10 +69,8 @@ export function snagDef(index: number): SnagDef {
   return SNAGS[index] ?? { index, kind: 'object' };
 }
 
-/** The snags a crew member fixes (their indices). */
-export function fixedBy(crewId: string): number[] {
-  return SNAGS.filter((s) => s.fixer === crewId).map((s) => s.index);
-}
+/** Every trouble (by index). Handed to anyone in the crew, it gets to whoever fixes it. */
+export const TROUBLES = SNAGS.filter((s) => s.kind === 'trouble').map((s) => s.index);
 
 /** Does this snag volunteer in this hand of the day? (`random`: the hand drawn for it today.) */
 export function helpsIn(snag: JokerCard, hand: number, randomHand: number): boolean {

@@ -17,7 +17,7 @@ import { CATEGORIES } from './evaluate';
 import { Rng } from './rng';
 import type { Action } from './round';
 import { newSession, nextSessionHand, playOn, seatOf, submit, waitingFor, type TableSession } from './session';
-import { coveredHands, fixedBy, snagDef } from './snags';
+import { TROUBLES, coveredHands, snagDef } from './snags';
 
 /** A line said in a caption: by someone (a character's id, `willie`, `you`), or the intertitle's own words (no `who`). */
 export interface StoryLine {
@@ -348,10 +348,16 @@ function seat(state: JourneyState, def: EncounterDef) {
   const obstacle = def.rivals !== 'crew' && def.rivals.some((r) => r.obstacle);
   const jokers = obstacle ? [] : def.rivals === 'crew' ? troubles : state.snags;
   const randomHand = 1 + rng.int(def.hands);
-  const me = { id: PLAYER_ID, money, jokers, ...(obstacle ? { cover: coveredHands(state.snags, def.hands, randomHand) } : {}) };
+  const me = {
+    id: PLAYER_ID,
+    money,
+    jokers,
+    ...(obstacle ? { cover: coveredHands(state.snags, def.hands, randomHand) } : {}),
+    ...(def.rivals === 'crew' ? { unhands: true } : {}),
+  };
   const rivals =
     def.rivals === 'crew'
-      ? state.crew.map((id) => ({ id, ai: CREW[id].ai, money: Math.ceil(CREW[id].strength / 2), fixes: fixedBy(id) }))
+      ? state.crew.map((id) => ({ id, ai: CREW[id].ai, money: Math.ceil(CREW[id].strength / 2), fixes: TROUBLES }))
       : def.rivals.map((r) => ({
           id: r.id,
           ai: r.ai,

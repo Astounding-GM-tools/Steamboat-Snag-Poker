@@ -21,6 +21,7 @@ import {
   turnIn,
   type JourneyState,
   type StoryDef,
+  STORY_CONFIG,
 } from './journey';
 import { Rng } from './rng';
 import { newSession, nextSessionHand, submit, type TableSession } from './session';
@@ -145,6 +146,23 @@ describe('a table with an obstacle', () => {
   });
 });
 
+describe('the deck game', () => {
+  it('takes every snag you play, win or lose', () => {
+    const config = { ...STORY_CONFIG, drainPerJoker: 0, jokerForfeit: 0 };
+    for (let g = 0; g < 10; g++) {
+      let s = newSession(g, [{ id: 'captain', money: 20, unhands: true, jokers: [jokerCard(14), jokerCard(17)] }, { id: 'gus', ai: 'careful', money: 20, fixes: [14, 17] }], config);
+      while (s.phase === 'hand') {
+        const round = s.round!;
+        const me = s.seated.indexOf(0);
+        const hand = round.seats[me].hand.map((c) => c.id);
+        s = submit(s, me, round.street === 2 ? { type: 'compose', cardIds: hand.slice(0, 2), jokers: 2 } : { type: 'draw', cardIds: [] });
+      }
+      expect(s.seats[0].jokers).toEqual([]);
+      expect(s.settled!.absorbed.map((a) => a.snag).sort()).toEqual([14, 17]);
+    }
+  });
+});
+
 describe('snag tempers', () => {
   it('covers the hands each volunteer works', () => {
     const mule = jokerCard(7);
@@ -220,6 +238,12 @@ describe('table talk', () => {
     expect(lines[0].who).toBe('gus');
     expect(lines[0].text).toContain('Broken Paddle');
     expect(deck(context).verdict).toEqual([]);
+  });
+
+  it('has whoever takes a trouble that isn\'t theirs hand it to whoever fixes it', () => {
+    const lines = deck({ ...context, fixed: [{ id: 'willie', snag: TROUBLE.twistedAxle }] }).verdict!;
+    expect(lines.map((l) => l.who)).toEqual(['willie', 'gus']);
+    expect(lines[0].text).toContain('Gus');
   });
 
   it('has Lars sing until he has a week of words', () => {

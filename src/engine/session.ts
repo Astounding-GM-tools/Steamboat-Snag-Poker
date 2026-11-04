@@ -17,9 +17,11 @@
  *   volunteers among its snags).
  * - **fixes**: snags a seat absorbs when they come to it (a crew member who
  *   fixes them): taken, and gone.
+ * - **unhands**: at a friendly table, the snags this seat plays leave it win
+ *   or lose: someone else at the table takes them.
  */
 import { chooseAction, viewFor } from './ai';
-import { jokerCard, type JokerCard } from './cards';
+import { isJoker, jokerCard, type JokerCard } from './cards';
 import type { AiId } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { Rng } from './rng';
@@ -40,6 +42,8 @@ export interface SessionSeat {
   cover?: number[];
   /** Snag indices this seat fixes: absorbed when they come to it. */
   fixes?: number[];
+  /** The snags it plays go, win or lose: see above. */
+  unhands?: boolean;
 }
 
 export interface TableSession {
@@ -73,6 +77,7 @@ export interface SessionPlayer {
   obstacle?: boolean;
   cover?: number[];
   fixes?: number[];
+  unhands?: boolean;
 }
 
 /** A new table: the players in their seats, everyone with the same purse unless given one, and the first hand dealt. */
@@ -92,6 +97,7 @@ export function newSession(seed: number, players: SessionPlayer[], config: Rules
       ...(p.obstacle ? { obstacle: true } : {}),
       ...(p.cover ? { cover: p.cover } : {}),
       ...(p.fixes ? { fixes: p.fixes } : {}),
+      ...(p.unhands ? { unhands: true } : {}),
     })),
     button: rng.int(players.length),
     pool: Array.from({ length: config.totalJokers }, (_, i) => jokerCard(i)),
@@ -196,6 +202,13 @@ function settle(session: TableSession) {
     const fixes = p.fixes ?? [];
     for (const j of seat.jokers) if (fixes.includes(j.index)) absorbed.push({ seat: k, snag: j.index });
     p.jokers = seat.jokers.filter((j) => !fixes.includes(j.index));
+    if (p.unhands) {
+      // Whatever it played and still has, whoever's turn it is takes.
+      const played = seat.played.filter(isJoker).map((j) => j.id);
+      const others = round.seats.map((_, s) => s).filter((s) => s !== k);
+      for (const j of p.jokers.filter((x) => played.includes(x.id))) absorbed.push({ seat: others[session.hand % others.length], snag: j.index });
+      p.jokers = p.jokers.filter((x) => !played.includes(x.id));
+    }
   });
   session.settled = { covered, absorbed };
   session.pool.push(...res.returnedToPool);
