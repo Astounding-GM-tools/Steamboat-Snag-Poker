@@ -48,6 +48,8 @@ export interface Rival {
   /** Snags they sit down with (indices). */
   jokers?: number[];
   obstacle?: boolean;
+  /** An obstacle that can only be worn down: it gains nothing from what you lose. */
+  steady?: boolean;
   /** Takes any snag that comes their way off your hands (striking miners have the time). */
   obliging?: boolean;
 }
@@ -61,6 +63,8 @@ export interface EncounterDef {
   goal: Goal;
   /** Hands at most (the day's hours, against an obstacle). */
   hands: number;
+  /** One push: it burns a load of coal, and the crew come to it fresh. */
+  push?: boolean;
   /** Who else may be here, by the day of the voyage (they keep to their calendar, whatever you do). */
   guests?: { rival: Rival; from?: number; to?: number }[];
   /** Finish this table ahead of this rival, and this flag goes up. */
@@ -143,6 +147,8 @@ export type Step =
       jolt?: boolean;
       /** In place of `solved`: closing lines taken in turn, a different set each day (the evenings' endings). */
       closers?: StoryLine[][];
+      /** Failing it, push again while the coal lasts; when it's gone, these steps, and all the rest are off. */
+      sweptBack?: Step[];
       /** Failing it, this many of the steps ahead are passed by (a tournament lost is a day done). */
       failSkip?: number;
       /** Which try this is (the first, or again after a night stuck). */
@@ -552,6 +558,10 @@ function drawTables(state: JourneyState, step: Extract<Step, { type: 'draw' }>) 
 export const ODD_JOB = { below: 6, pays: 10 };
 
 function seat(state: JourneyState, def: EncounterDef) {
+  if (def.push) {
+    state.coal = Math.max(0, state.coal - 1);
+    state.strength = morningStrength(state);
+  }
   const rng = new Rng(state.rngState);
   const oddJob = def.stake === 'purse' && !def.proxy && def.rules?.pot !== false && state.purse < (def.entry ?? ODD_JOB.below) ? ODD_JOB.pays : 0;
   state.purse += oddJob - (def.proxy ? 0 : (def.entry ?? 0));
@@ -581,6 +591,7 @@ function seat(state: JourneyState, def: EncounterDef) {
           money: r.money,
           jokers: (r.jokers ?? []).filter((i) => !spared(state).includes(i)).map(jokerCard),
           ...(r.obstacle ? { obstacle: true } : {}),
+          ...(r.steady ? { steady: true } : {}),
           ...(r.obliging ? { fixes: SNAGS.map((j) => j.index).filter((i) => !r.jokers?.includes(i)) } : {}),
         }));
   const session = newSession(seed, [me, ...rivals, ...guests, ...joined], { ...STORY_CONFIG, ...def.rules });
@@ -742,6 +753,10 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
   state.encounter = null;
   state.flags = state.flags.includes(`met:${enc.def.id}`) ? state.flags : [...state.flags, `met:${enc.def.id}`];
   const attempt = step.attempt ?? 1;
+  if (enc.outcome === 'failed' && step.sweptBack) {
+    state.pending = state.coal > 0 ? [{ ...step, attempt: attempt + 1 }, ...state.pending.slice(1)] : clone(step.sweptBack);
+    return arrive(state, story);
+  }
   if (enc.outcome === 'failed' && step.stuck) {
     // The step stays where it is: the night, then the morning, then at it again (with a full day's hands).
     // What's left of the obstacle is what you face: yesterday's digging counts, and it still has whatever snags it kept.

@@ -13,6 +13,7 @@
  * - **an obstacle** (the Sandbar): its purse is the obstacle. Against it,
  *   nobody else takes more from a pot than they put in: win, and you get your
  *   own back while its share drifts away; lose, and it gains what you lost.
+ *   A `steady` obstacle gains nothing: what you lose goes down the river.
  * - **cover**: the hands in which a seat's losses are given back (the
  *   volunteers among its snags).
  * - **fixes**: snags a seat absorbs when they come to it (a crew member who
@@ -38,6 +39,7 @@ export interface SessionSeat {
   out: boolean;
   /** An obstacle, not a player: see above. */
   obstacle?: boolean;
+  steady?: boolean;
   /** Hands (1, 2, 3…) in which this seat's losses are given back. */
   cover?: number[];
   /** Snag indices this seat fixes: absorbed when they come to it. */
@@ -75,6 +77,7 @@ export interface SessionPlayer {
   /** Snags they sit down with. */
   jokers?: JokerCard[];
   obstacle?: boolean;
+  steady?: boolean;
   cover?: number[];
   fixes?: number[];
   unhands?: boolean;
@@ -95,6 +98,7 @@ export function newSession(seed: number, players: SessionPlayer[], config: Rules
       jokers: p.jokers?.slice() ?? [],
       out: false,
       ...(p.obstacle ? { obstacle: true } : {}),
+      ...(p.steady ? { steady: true } : {}),
       ...(p.cover ? { cover: p.cover } : {}),
       ...(p.fixes ? { fixes: p.fixes } : {}),
       ...(p.unhands ? { unhands: true } : {}),
@@ -195,6 +199,7 @@ function settle(session: TableSession) {
         covered.push(k);
       }
     });
+    if (at(obstacle).steady) res.share[obstacle] = Math.min(res.share[obstacle], round.bets[obstacle]);
   }
   round.seats.forEach((seat, k) => {
     const p = at(k);

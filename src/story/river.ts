@@ -114,7 +114,8 @@ const MORNING_ENTRY = 5;
 const NOON_ENTRY = 10;
 /** A table goes on till one has it all; this is only so it can't go on for ever. */
 const TOURNAMENT_HANDS = 40;
-const RAPIDS_HANDS = 8;
+/** A push goes on till one side has nothing left; this is only so it can't go on for ever. */
+const CLIMB_HANDS = 60;
 
 /** Gaylord's week at the Pilot Games, on the voyage's calendar, whatever you do (docs/story.md). */
 const GAYLORD_FIRST_HIRE = 3;
@@ -131,6 +132,30 @@ const BEAT_GAYLORD = 'beatGaylord';
 const beatsGaylord = { rival: 'gaylord', flag: BEAT_GAYLORD };
 
 const DOCKING_FEE = 3;
+
+/** Out of coal on the rapids: back where you started, and the queue again. */
+const sweptBack: Step[] = [
+  { type: 'caption', lines: [{ text: 'The bunker’s empty. The river takes the Best Intentions, and hands her back at Davenport.' }, { who: 'ellie', text: 'Nobody gets it every time, Captain. Same time tomorrow.' }] },
+  { type: 'nightfall' },
+];
+
+/** A stage of the climb: as many pushes as the coal allows, the crew fresh for each, and it can only be worn down. */
+const stage = (id: string, strength: number, jokers: number[]): Step => ({
+  type: 'encounter',
+  encounter: {
+    id,
+    stake: 'strength',
+    rivals: [{ id, ai: 'stubborn', money: strength, jokers, obstacle: true, steady: true }],
+    goal: { type: 'clear' },
+    hands: CLIMB_HANDS,
+    push: true,
+    rules: { jokerForfeit: 0, drainPerJoker: 0 },
+  },
+  jolt: true,
+  solved: [],
+  failed: [],
+  sweptBack,
+});
 const BREAKFAST_COST = 4;
 const BREAKFAST_STRENGTH = 4;
 const DAYTIME: Slot[] = ['morning', 'afternoon'];
@@ -153,7 +178,7 @@ const tournament: Step[] = [
     },
     solved: [],
     failed: [],
-    failSkip: 4,
+    failSkip: 7,
   },
   {
     type: 'encounter',
@@ -170,24 +195,13 @@ const tournament: Step[] = [
     },
     solved: [{ who: 'ellie', text: 'That’s you, Captain. Get your hat.' }],
     failed: [{ who: 'ellie', text: 'Not today, Captain. Same time tomorrow.' }],
-    failSkip: 3,
+    failSkip: 6,
   },
-  {
-    type: 'encounter',
-    encounter: {
-      id: 'rapids',
-      stake: 'strength',
-      rivals: [{ id: 'rapids', ai: 'careful', money: 14, jokers: [TROUBLE.bustedBoiler, TROUBLE.fatigue], obstacle: true }],
-      goal: { type: 'clear' },
-      hands: RAPIDS_HANDS,
-      rules: { jokerForfeit: 0 },
-    },
-    jolt: true,
-    solved: [],
-    failed: [],
-    stuck: true,
-  },
-  { type: 'travel', coal: 3, to: 'leClaire' },
+  stage('molineChain', 15, [TROUBLE.bustedBoiler]),
+  stage('campbellsChain', 30, [TROUBLE.bustedBoiler, TROUBLE.fatigue, TROUBLE.brokenPaddle]),
+  { type: 'caption', lines: [{ text: 'Hampton. Deep water close in to the shore, and the only breath you’ll get.' }, { who: 'ellie', text: 'St. Louis chain, Cabin chain, Sycamore, Smith’s. They don’t stop, Captain, so don’t you.' }] },
+  stage('longReach', 60, [TROUBLE.bustedBoiler, TROUBLE.fatigue, TROUBLE.brokenPaddle, TROUBLE.twistedAxle, TROUBLE.brokenPole, TROUBLE.brokenHeart]),
+  { type: 'travel', coal: 0, to: 'leClaire' },
   { type: 'leave' },
   { type: 'nightfall' },
 ];
@@ -604,24 +618,38 @@ function depotTalk({ hand, lost, foldedOut, fixed, met, seed }: TalkContext): Ro
   };
 }
 
-/** The climb: Kitty at the wheel, and the river doing its best. */
-const RAPIDS_LINES = ['Mind the step.', 'Rock Island. The clue’s in the name.', 'Fourteen miles of this. Thirteen, if you’re quick.', 'I take a little off every boat. It’s nothing personal.'];
-function rapidsTalk({ hand, seed }: TalkContext): RoundScript {
-  const dark = say('ellie', 'Too dark for the ledges. We’ll lie up here.');
-  return {
-    ...(hand === 1
-      ? {
-          deal: [say('ellie', 'Mr. Klemm, every pound of steam you have. Captain, do as I say and nothing else.')],
-          flop: [say('gus', 'She’ll burn coal like a furnace, Captain. And it’s all on the crew.')],
-        }
-      : hand % 2 === 0
-        ? { flop: [{ size: 'aside', who: 'rapids', text: new Rng(seed).shuffle(RAPIDS_LINES)[hand % RAPIDS_LINES.length] }] }
-        : {}),
-    verdict: [
-      { ...say('ellie', 'That’s the top. You can breathe, Captain.'), when: 'wonAll' },
-      { ...say('gus', 'She has nothing left, Captain. We’ll lie up at the ledge tonight.'), when: 'lostAll' },
-      ...(hand === RAPIDS_HANDS ? [{ ...dark, when: 'won' as const }, { ...dark, when: 'lost' as const }] : []),
-    ],
+/** The climb: Ellie calling the marks, the chains named for what they sank, and nobody joking. */
+const climbLines = (): Record<string, { first: SpeechLine[]; marks: string[]; cleared: string }> => ({
+  molineChain: {
+    first: [say('ellie', 'Mr. Klemm, every pound of steam you have. Captain, do as I say and nothing else.'), say('gus', 'Every push burns a load, Captain. We’ve six. There’s no more where they came from.')],
+    marks: ['Jackstaff on the white house. Hold her there.', 'That’s Brazil Rock. She was a good boat, the Brazil.', 'Mason’s Rock to port. Don’t look at it.', 'Duck Creek chain. The War Eagle sat here a week.'],
+    cleared: 'That’s the Moline chain, Captain. That was the easy one.',
+  },
+  campbellsChain: {
+    first: [say('ellie', 'Campbell’s chain. The Danube, the Louisville, the Little Eagle. Standing wave off the head of the island.')],
+    marks: ['Take the wave on the bow. On the bow!', 'Hold her. Hold her. Now.', 'The Danube’s down there, somewhere.', 'Next mark’s the church. If you can see it.'],
+    cleared: 'Campbell’s is behind us. Tell your man to breathe.',
+  },
+  longReach: {
+    first: [say('ellie', 'Get a line ashore to the ring. Capstan, every hand. We’ll haul her up if we can’t steam her.')],
+    marks: ['St. Louis chain. She was the heaviest loss on the river.', 'Cabin chain! Mind the Mary C.!', 'Sycamore. Limestone. It doesn’t give.', 'Smith’s. Nearly. Don’t you dare.'],
+    cleared: 'That’s the top. That’s LeClaire. You can breathe, Captain.',
+  },
+});
+
+function climbTalk(id: string) {
+  return ({ hand, seed, attempt, coal }: TalkContext): RoundScript => {
+    const { first, marks, cleared } = climbLines()[id];
+    const mark = new Rng(seed + attempt).shuffle(marks)[hand % marks.length];
+    const spent = coal > 0 ? `That’s a load gone, Captain. ${coal} left.` : 'That’s the last of the coal, Captain.';
+    return {
+      ...(hand === 1 && attempt === 1 ? { deal: first } : {}),
+      ...(hand % 2 === 0 ? { flop: [{ size: 'aside' as const, who: 'ellie', text: mark }] } : {}),
+      verdict: [
+        { ...say('ellie', cleared), when: 'wonAll' },
+        { ...say('gus', spent), when: 'lostAll' },
+      ],
+    };
   };
 }
 
@@ -800,7 +828,9 @@ export const RIVER_TALK: Record<string, Talk> = {
   noon: noonTalk,
   hired: hiredTalk,
   breakfast: breakfastTalk,
-  rapids: rapidsTalk,
+  molineChain: climbTalk('molineChain'),
+  campbellsChain: climbTalk('campbellsChain'),
+  longReach: climbTalk('longReach'),
   deckIntel: (context: TalkContext): RoundScript => ({
     ...deckTalk(context),
     ...(context.hand === 1

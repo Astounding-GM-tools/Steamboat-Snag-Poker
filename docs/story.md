@@ -552,13 +552,14 @@ stretch on the river. Pilots steered by lining up the jackstaff on shore marks,
 held a set distance, then turned for the next mark, all the way to LeClaire.
 Pilots worked from Davenport and Rock Island as well as LeClaire.
 
-**The climb: three stages, six loads.** Bunker full; one attempt at an obstacle
-burns one load. Three obstacles, so you may fail three times, and everything
-hangs on the last. Run out, and you're swept back to Davenport: days lost, the
-queue again, scavenging for supplies. Not every player will get past the rapids,
-and that's all right. Stages by the real river: the Moline chain, Campbell's
-chain, and the long last stretch (St. Louis, Cabin, Sycamore, Smith's), with the
-day's flavour on top: a standing wave, a line to a capstan.
+**The climb: three stages, six loads.** Each push at a stage burns a load of
+coal, and the crew come to it with their full strength. Stages can only be worn
+down: what you lose goes down the river, so preparation counts. The Moline Chain
+(15, one snag), Campbell's Chain (30, three), and after Hampton's breather the
+Long Reach (60, six). Fail, and push again while the coal lasts; out of coal, you're
+swept back to Davenport: days lost, the queue again, scavenging for supplies. Not
+every player will get past the rapids, and that's all right. Simulated for a
+careful captain, through in six loads: strength 18, 22%; 26, 34%; 34, 58%; 44, 84%.
 
 **The Tri-Cities are the hub.** The queue is at **Davenport**, at the foot of
 the rapids, and the whole area is a place to live a while: losing money to

@@ -28,6 +28,7 @@ import {
   setRehire,
   type Slot,
   type JourneyState,
+  type Step,
   type StoryDef,
   STORY_CONFIG,
 } from './journey';
@@ -97,8 +98,6 @@ describe('the voyage', () => {
       const last = states.at(-1)!;
       expect(last.done, `seed ${seed}: nights ${last.nights} day ${last.day}, step ${last.step}, ${currentStep(last, RIVER)?.type} ${last.encounter?.def.id} hand ${last.encounter?.session.hand}, pending ${last.pending.length}`).toBe(true);
       for (const s of states.filter((_, k) => k % 50 === 0)) expect(JSON.parse(JSON.stringify(s))).toEqual(s);
-      // The coal came from the foreman (the bunker never empties for good).
-      expect(last.coal).toBeGreaterThan(0);
     }
   });
 
@@ -434,6 +433,43 @@ describe('hired hands', () => {
     s = buy(s, story, 'cook');
     // Her 2 buttons, and 2 more for each of the other three.
     expect(s.strength).toBe(18 + 2 + 6);
+  });
+});
+
+describe('the climb', () => {
+  const stage = { type: 'encounter', solved: [], failed: [], sweptBack: [{ type: 'caption', lines: [{ text: 'Swept back.' }] }, { type: 'nightfall' }], encounter: { id: 'molineChain', stake: 'strength', push: true, rivals: [{ id: 'molineChain', ai: 'stubborn', money: 15, obstacle: true, steady: true }], goal: { type: 'clear' }, hands: 60 } } as Step;
+  const hub = { type: 'hub', hub: 'x' } as Step;
+  const story: StoryDef = { days: [{ day: 1, place: 'davenport', steps: [{ type: 'dawn' }, stage, { type: 'caption', lines: [{ text: 'At the top.' }] }, hub] }], stuckNight: [], hubs: { x: { options: [], advice: () => null } } };
+
+  it('burns a load a push, with the crew fresh each time, until the coal is gone', () => {
+    let s = newJourney(1, story, { purse: 50, coal: 3 });
+    expect(s.coal).toBe(2);
+    expect(s.encounter?.session.seats[0].money).toBe(18);
+    for (const left of [1, 0]) {
+      const failed = structuredClone(s);
+      failed.encounter!.outcome = 'failed';
+      s = leaveEncounter(failed, story);
+      expect(s.coal).toBe(left);
+      expect(s.strength).toBe(18);
+      expect(s.encounter?.session.seats[1].money).toBe(15);
+    }
+    const last = structuredClone(s);
+    last.encounter!.outcome = 'failed';
+    s = leaveEncounter(last, story);
+    expect(currentStep(s, story)).toMatchObject({ type: 'caption', lines: [{ text: 'Swept back.' }] });
+    s = proceed(s, story);
+    expect(s.time).toBe('evening');
+  });
+
+  it('can only be worn down', () => {
+    const rng = new Rng(4);
+    let s = newSession(5, [{ id: 'captain', money: 40 }, { id: 'stage', ai: 'stubborn', money: 15, obstacle: true, steady: true }], STORY_CONFIG);
+    for (let h = 0; h < 6 && s.phase !== 'over'; h++) {
+      const before = s.seats[1].money;
+      while (s.phase === 'hand') s = submit(s, s.seated.indexOf(0), chooseAction('careful', viewFor(s.round!, s.seated.indexOf(0), s.config), s.config, rng));
+      expect(s.seats[1].money).toBeLessThanOrEqual(before);
+      if (s.phase === 'handEnd') s = nextSessionHand(s);
+    }
   });
 });
 
