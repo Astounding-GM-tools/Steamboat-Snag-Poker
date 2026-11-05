@@ -538,6 +538,28 @@ the 1920s, Lock and Dam 15 drowned the rapids by 1934, and 13 and 14 date from
 the 1930s, so today's map no longer shows them (the rough water at Fulton
 is something else). So a boat bound upriver waits at the foot, and LeClaire is where it arrives.
 
+**The chains, going up** (W. Blair's *On the River*, 1932, an old rapids man's
+list). From the bridge draw at Davenport north to LeClaire: the Lower chain and
+Stubbs eddy; the **Moline chain** and Brazil Rock (after the steamer *Brazil*);
+the **Duck Creek chain** and Mason's Rock (the *A. G. Mason*, 1856); Winnebago
+Island (the *Silas Wright*); **Campbell's chain** (the *Danube*, the *Louisville*,
+the *Little Eagle*); Hampton, where deep water comes closest to shore; the **St.
+Louis chain** and **Cabin chain**, nearly continuous (the *St. Louis* was one of
+the river's heaviest losses; the *Mary C.*, 1856); **Sycamore**, a limestone
+ledge (the *Emerald*, the *Envoy*, the *J. K. Graves*, 1894); then **Smith's
+chains** and the **Upper chain**: with St. Louis and Cabin, the longest and hardest
+stretch on the river. Pilots steered by lining up the jackstaff on shore marks,
+held a set distance, then turned for the next mark, all the way to LeClaire.
+Pilots worked from Davenport and Rock Island as well as LeClaire.
+
+**The climb: three stages, six loads.** Bunker full; one attempt at an obstacle
+burns one load. Three obstacles, so you may fail three times, and everything
+hangs on the last. Run out, and you're swept back to Davenport: days lost, the
+queue again, scavenging for supplies. Not every player will get past the rapids,
+and that's all right. Stages by the real river: the Moline chain, Campbell's
+chain, and the long last stretch (St. Louis, Cabin, Sycamore, Smith's), with the
+day's flavour on top: a standing wave, a line to a capstan.
+
 **The Tri-Cities are the hub.** The queue is at **Davenport**, at the foot of
 the rapids, and the whole area is a place to live a while: losing money to
 the miners at Rock Island, selling coal at a profit while it's short, ferrying
