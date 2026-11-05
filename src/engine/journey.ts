@@ -17,7 +17,7 @@ import { CATEGORIES } from './evaluate';
 import { Rng } from './rng';
 import type { Action, RoundResult, RoundState } from './round';
 import { newSession, nextSessionHand, playOn, seatOf, submit, waitingFor, type TableSession } from './session';
-import { TROUBLES, coveredHands, snagDef } from './snags';
+import { SNAGS, TROUBLES, coveredHands, snagDef } from './snags';
 
 /** A line said in a caption: by someone (a character's id, `willie`, `you`), or the intertitle's own words (no `who`). */
 export interface StoryLine {
@@ -47,6 +47,8 @@ export interface Rival {
   /** Snags they sit down with (indices). */
   jokers?: number[];
   obstacle?: boolean;
+  /** Takes any snag that comes their way off your hands (striking miners have the time). */
+  obliging?: boolean;
 }
 
 export interface EncounterDef {
@@ -73,6 +75,8 @@ export interface Effects {
   flag?: string;
   /** A snag handed to you. */
   snag?: number;
+  /** A flag taken down. */
+  clear?: string;
   /** A bill settled: if you hold this snag, you pay (as far as the purse goes) and it's gone. */
   settle?: { snag: number; amount: number };
 }
@@ -96,6 +100,14 @@ export type Step =
       /** What leaving the council is called (default: casting off). */
       leave?: string;
     }
+  /** Evening comes (the options at a hub go by the time of day). */
+  | { type: 'nightfall' }
+  /** A place with things to do: its options (`StoryDef.hubs`) are offered, and we come back here after each. */
+  | { type: 'hub'; hub: string }
+  /** On from the hub: whatever was going on there is done with. */
+  | { type: 'leave' }
+  /** An afternoon's work (`StoryDef.jobs`, taken in turn). */
+  | { type: 'job' }
   /** The day's draw: tables of `entrants`, yours filled first; the others are played out unseen, and we meet whoever won. */
   | { type: 'draw'; entrants: { id: string; ai: AiId }[]; tableSize: number; finalists: number }
   /** Under way: it burns the coal, and you arrive. */
@@ -109,22 +121,37 @@ export type Step =
       effects?: Effects;
       /** Failing an obstacle: stuck for the night (the deck game aboard), and at it again in the morning. */
       stuck?: boolean;
-      /**
-       * Failing it a second time, the river relents (a passing boat tows you off, the foreman gives in):
-       * these lines, and it counts as solved. Nobody stays stuck for good.
-       */
-      relent?: StoryLine[];
       /** It hits you: the picture lurches as the table comes up. */
       jolt?: boolean;
       /** In place of `solved`: closing lines taken in turn, a different set each day (the evenings' endings). */
       closers?: StoryLine[][];
-      /** Failing it, the day's done: an afternoon's work, an evening aboard, and the whole day again tomorrow. */
-      again?: boolean;
+      /** Failing it, this many of the steps ahead are passed by (a tournament lost is a day done). */
+      failSkip?: number;
       /** Which try this is (the first, or again after a night stuck). */
       attempt?: number;
       /** What a reply in the talk can decide, by its effect (see `choose`): the encounter ends there. */
       choices?: Record<string, Choice>;
     };
+
+/** Something to do at a hub. */
+export interface HubOption {
+  id: string;
+  /** When it can be done (the default: any time). */
+  time?: 'morning' | 'evening';
+  /** What it costs to do at all. */
+  cost?: number;
+  /** Only with this flag up. */
+  flag?: string;
+  /** Only with this much coal aboard. */
+  coal?: number;
+  steps: Step[];
+}
+
+export interface Hub {
+  options: HubOption[];
+  /** How the place looks just now. */
+  scene: (state: JourneyState) => string[];
+}
 
 export interface DayDef {
   day: number;
@@ -137,8 +164,9 @@ export interface StoryDef {
   days: DayDef[];
   /** The deck game aboard, played when you're stuck for the night. */
   stuckNight: Step[];
-  /** What the afternoon's work can be, when a day comes to nothing: taken in turn. */
+  /** What an afternoon's work can be: taken in turn. */
   jobs?: { text: string; pays: number }[];
+  hubs?: Record<string, Hub>;
 }
 
 export interface Encounter {
@@ -160,7 +188,11 @@ export interface Encounter {
 }
 
 export interface JourneyState {
+  /** The voyage's own seed: what's said can be drawn from it without repeating. */
+  seed: number;
   rngState: number;
+  /** The time of day, for a hub's options. */
+  time: 'morning' | 'evening';
   day: number;
   place: string;
   /** Where we are in the day: its steps, then whatever was slipped in before them (`pending`, first first). */
@@ -203,6 +235,8 @@ export const PLAYER_ID = 'captain';
 
 export function newJourney(seed: number, story: StoryDef, start: { purse: number; coal: number }): JourneyState {
   const state: JourneyState = {
+    seed: seed >>> 0,
+    time: 'morning',
     rngState: new Rng(seed >>> 0).state,
     day: story.days[0].day,
     place: story.days[0].place,
@@ -262,10 +296,24 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
     state.crew = state.crew.filter((id) => !CREW[id]?.temporary);
     state.strength = morningStrength(state);
     state.tomorrow = 0;
+    state.time = 'morning';
     state.mornings++;
     // The first morning's wages were settled by the captain before you.
     if (state.mornings > 1) state.purse = Math.max(0, state.purse - state.crew.reduce((a, id) => a + (CREW[id]?.wage ?? 0), 0));
     return advance(state, story);
+  }
+  if (step.type === 'nightfall') {
+    state.time = 'evening';
+    return advance(state, story);
+  }
+  if (step.type === 'leave') {
+    state.pending = [];
+    return advance(state, story);
+  }
+  if (step.type === 'job') {
+    const job = story.jobs?.[state.mornings % story.jobs.length];
+    state.pending[0] = { type: 'caption', lines: [{ text: job?.text ?? '' }], effects: { purse: job?.pays ?? 0, clear: 'jobFound' } };
+    return state;
   }
   if (step.type === 'draw') {
     drawTables(state, step);
@@ -285,6 +333,7 @@ function applyEffects(state: JourneyState, effects: Effects | undefined) {
   if (effects.coal) state.coal = Math.min(BOAT.bunker, state.coal + effects.coal);
   if (effects.purse) state.purse = Math.max(0, state.purse + effects.purse);
   if (effects.flag && !state.flags.includes(effects.flag)) state.flags.push(effects.flag);
+  if (effects.clear) state.flags = state.flags.filter((f) => f !== effects.clear);
   if (effects.snag !== undefined) state.snags.push(jokerCard(effects.snag));
   if (effects.settle) {
     const { snag, amount } = effects.settle;
@@ -303,6 +352,25 @@ export function proceed(prev: JourneyState, story: StoryDef): JourneyState {
   const state = clone(prev);
   applyEffects(state, step.effects);
   return advance(state, story);
+}
+
+/** The hub we're at, and whether each of its options can be taken now: the time's right, and you can pay for it (`shown`: it's on the list at all). */
+export function hubOptions(state: JourneyState, story: StoryDef): { option: HubOption; open: boolean }[] {
+  const step = currentStep(state, story);
+  if (step?.type !== 'hub') return [];
+  return (story.hubs?.[step.hub].options ?? [])
+    .filter((option) => (!option.time || option.time === state.time) && (!option.flag || state.flags.includes(option.flag)))
+    .map((option) => ({ option, open: state.purse >= (option.cost ?? 0) && state.coal >= (option.coal ?? 0) }));
+}
+
+/** One of the hub's options taken: its steps, then back here. */
+export function goTo(prev: JourneyState, story: StoryDef, id: string): JourneyState {
+  const choice = hubOptions(prev, story).find((o) => o.option.id === id);
+  if (!choice?.open) throw new Error(`Can't go to ${id}`);
+  const state = clone(prev);
+  state.purse -= choice.option.cost ?? 0;
+  state.pending = clone(choice.option.steps);
+  return arrive(state, story);
 }
 
 /** Can this be bought now (at this council, affordable, room for it, not already had)? */
@@ -408,6 +476,7 @@ function seat(state: JourneyState, def: EncounterDef) {
           money: r.money,
           jokers: (r.jokers ?? []).filter((i) => !spared(state).includes(i)).map(jokerCard),
           ...(r.obstacle ? { obstacle: true } : {}),
+          ...(r.obliging ? { fixes: SNAGS.map((j) => j.index).filter((i) => !r.jokers?.includes(i)) } : {}),
         }));
   const session = newSession(seed, [me, ...rivals, ...joined], { ...STORY_CONFIG, ...def.rules });
   state.rngState = rng.state;
@@ -554,23 +623,7 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
   const state = clone(prev);
   state.encounter = null;
   state.flags = state.flags.includes(`met:${enc.def.id}`) ? state.flags : [...state.flags, `met:${enc.def.id}`];
-  if (enc.outcome === 'failed' && step.again) {
-    // The day comes to nothing: an afternoon's work, an evening aboard, and from the top tomorrow.
-    const job = story.jobs?.[state.mornings % story.jobs.length];
-    const work: Step[] = job ? [{ type: 'caption', lines: [{ text: job.text }], effects: { purse: job.pays } }] : [];
-    state.pending = [...work, ...story.stuckNight];
-    state.step = 0;
-    state.nights++;
-    return arrive(state, story);
-  }
   const attempt = step.attempt ?? 1;
-  if (enc.outcome === 'failed' && step.stuck && step.relent && attempt >= 2) {
-    // The second time, the river relents: its lines on a card of their own, then on as if solved.
-    applyEffects(state, step.effects);
-    state.pending = [{ type: 'caption', lines: step.relent }, ...state.pending.slice(1)];
-    if (!prev.pending.length) state.step++;
-    return arrive(state, story);
-  }
   if (enc.outcome === 'failed' && step.stuck) {
     // The step stays where it is: the night, then the morning, then at it again (with a full day's hands).
     // What's left of the obstacle is what you face: yesterday's digging counts, and it still has whatever snags it kept.
@@ -585,5 +638,6 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
     return arrive(state, story);
   }
   if (enc.outcome === 'solved') applyEffects(state, step.effects);
+  else for (let k = 0; k < (step.failSkip ?? 0); k++) state.pending.shift();
   return advance(state, story);
 }

@@ -587,6 +587,20 @@ passage to St. Louis, and plays you for the fare.
 **Finlay** is a Tri-Cities background carouser: bet-crazy, enthusiastic, not
 very good.
 
+**A hub lists what you can do there,** by the time of day. The Tri-Cities: in
+the evening, *anchor downstream* (free: Willie wades ashore for work and
+gossip) or *dock at Bettendorf* (a fee, the saloon's high rollers); in the
+morning, *the Pilot Tournament* (all day; once you've heard of it), *the coal
+depot*, *odd jobs* (if Willie found any); any time, *the chandler*.
+
+**The depot, friendly.** *"Been a while! Ain't seen The Best Intentions since
+last summer. Where's Bill?"* No bad feelings and no giveaways: a game to pass
+the time, with the union's strike chest on the table. Win or lose they're
+delighted, and bankrupting them changes nothing (the union sends more). They
+hand out Pamphlet Distribution and the Strike Support Button, and take on any
+snag you play them: they've got the time. Lose enough, and some sacks have
+fallen off the heap by your boat.
+
 **The council, reworked.** One paragraph of advice, not everyone in turn
 (Lars's notes take up the screen). The strategic choices live here: odd jobs,
 see the gambler, a short freight job Willie has found, Gus on purchases and
@@ -1096,10 +1110,9 @@ Built as listed below, with these simplifications for now:
 - **The deck game talks too:** someone says something on each Flop (*"Real
   son of a beach, that sandbar"*), and whoever takes on a trouble they fix
   says so (*"I think I can fix the Broken Paddle, Captain"*).
-- **Nobody stays stuck.** Failed once, an encounter that can strand you
-  (the Sandbar, the foreman's game) means a night aboard and another try;
-  failed twice, the river relents (a passing packet throws you a line, the
-  foreman gives in) and it counts as solved.
+- **Nobody pulls you off.** Fail against an obstacle and it's a night aboard
+  and another try, for as long as it takes. River life can be punishing; and
+  Sandy doesn't repeat himself from one morning to the next.
 
 Next: Gaylord at the final, the council's list of things to do, The Best Intentions page. The list as it was:
 

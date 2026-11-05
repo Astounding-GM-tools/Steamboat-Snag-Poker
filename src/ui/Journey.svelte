@@ -10,7 +10,9 @@
     choose,
     closingLines,
     currentStep,
+    goTo,
     handDone,
+    hubOptions,
     leaveEncounter,
     lostAtThisShowdown,
     mySeatAt,
@@ -27,6 +29,7 @@
   import { t } from '../i18n';
   import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
   import { roundScript } from '../story/script';
+  import BoatScene from './BoatScene.svelte';
   import Table, { type TableView } from './Table.svelte';
   import { called, snagTitle } from './format';
   import { loadJourney, saveJourney } from './storage';
@@ -78,7 +81,7 @@
       money: s.seated.map((i) => s.seats[i].money),
       phase: s.phase,
       currency: enc.def.stake === 'strength' ? 'buttons' : undefined,
-      label: t('river.day', { day: journey.day + journey.nights }),
+      label: t('river.day', { day: journey.mornings }),
       ...(s.seats.some((p) => p.obstacle) ? { winLine: t('river.heldGround') } : {}),
       ending: s.phase === 'over' ? (s.seats[0].out ? 'lostAll' : 'wonAll') : undefined,
     });
@@ -94,19 +97,30 @@
     const outcome = after.encounter?.outcome;
     journey = outcome && step?.type === 'encounter' && !closingLines(after, step, outcome).length ? leaveEncounter(after, RIVER) : after;
   }
-  /** The encounter's talk: its own for a second try (`sandbar:2`), if it has one. */
+  /** What's said at this table, as the hand stands. */
   function talkNow() {
     const id = enc!.def.id;
-    const attempt = step?.type === 'encounter' ? (step.attempt ?? 1) : 1;
-    const talk = RIVER_TALK[`${id}:${attempt}`] ?? RIVER_TALK[id];
+    const talk = RIVER_TALK[id];
+    if (!talk) return undefined;
     if (typeof talk !== 'function') return roundScript(talk, enc!.session.hand);
     const s = enc!.session;
     const obstacle = s.seats.findIndex((p) => p.obstacle);
     const round = s.round;
     const res = round?.result;
     const me = mySeatAt(enc!);
-    const fixed = s.round?.result ? (s.settled?.absorbed ?? []).map((a) => ({ id: s.seats[s.seated[a.seat]].id, snag: a.snag })) : [];
-    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, seed: journey.rngState, fixed, day: journey.day + journey.nights, trips: res ? wonWithTrips(res) : false, lost: enc!.lostAtShowdown + (round ? lostAtThisShowdown(round, me) : 0), foldedOut: !!res?.byFolds && !!round?.seats[me]?.folded, met: journey.flags.includes(`met:${id}`) });
+    const fixed = res ? (s.settled?.absorbed ?? []).map((a) => ({ id: s.seats[s.seated[a.seat]].id, snag: a.snag })) : [];
+    return talk({
+      hand: s.hand,
+      pile: s.seats[obstacle]?.money ?? 0,
+      seed: journey.seed,
+      fixed,
+      day: journey.mornings,
+      trips: res ? wonWithTrips(res) : false,
+      lost: enc!.lostAtShowdown + (round ? lostAtThisShowdown(round, me) : 0),
+      foldedOut: !!res?.byFolds && !!round?.seats[me]?.folded,
+      met: journey.flags.includes(`met:${id}`),
+      attempt: step?.type === 'encounter' ? (step.attempt ?? 1) : 1,
+    });
   }
 
   /** A reply at the table that decides what happens next. */
@@ -152,14 +166,28 @@
   <div class="page">
     <!-- Where the boat stands: the day, the place, the purse, the crew's strength, the coal. -->
     <div class="status" class:unseen={!journey.mornings}>
-      <span class="day">{t('river.day', { day: journey.day + journey.nights })} · {t(`place.${journey.place}`)}</span>
+      <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)}</span>
       <span>{t('river.purse')} ${journey.purse}</span>
       <span>{t('river.strength')} {journey.strength}</span>
       <span>{t('river.coal')} {t('river.coalLoads', { n: journey.coal, max: BOAT.bunker })}</span>
     </div>
 
+    {#if step.type === 'hub' || step.type === 'caption'}
+      <div class="boat"><BoatScene /></div>
+    {/if}
+
     <div class="panel intertitle">
-      {#if step.type === 'caption'}
+      {#if step.type === 'hub'}
+        {#each RIVER.hubs?.[step.hub].scene(journey) ?? [] as line}<p>{line}</p>{/each}
+        <ul class="trader">
+          {#each hubOptions(journey, RIVER) as { option, open } (option.id)}
+            <li>
+              <span class="item"><strong>{t(`hub.${option.id}.name`)}</strong><small>{!open && option.coal ? t('river.needsCoal') : t(`hub.${option.id}.desc`)}</small></span>
+              <button class="ghost" disabled={!open} onclick={() => (journey = goTo(journey, RIVER, option.id))}>{option.cost ? `$${option.cost}` : t('river.go')}</button>
+            </li>
+          {/each}
+        </ul>
+      {:else if step.type === 'caption'}
         {#if step.title}<h2>{step.title}</h2>{/if}
         {#each step.lines as line}
           {@const who = speaker(line)}
@@ -199,9 +227,11 @@
 
     <div class="dock">
       <button class="ghost" onclick={onmenu}>{t('river.menu')}</button>
-      <button disabled={step.type === 'council' && !canCastOff(journey, RIVER)} onclick={onwards}>
-        {step.type === 'council' ? (step.leave ?? t('river.castOff')) : t('river.continue')}
-      </button>
+      {#if step.type !== 'hub'}
+        <button disabled={step.type === 'council' && !canCastOff(journey, RIVER)} onclick={onwards}>
+          {step.type === 'council' ? (step.leave ?? t('river.castOff')) : t('river.continue')}
+        </button>
+      {/if}
     </div>
   </div>
 {/if}
@@ -233,7 +263,7 @@
   .page {
     min-height: 100svh;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    align-content: space-between;
     gap: 1rem;
     max-width: 480px;
     margin: 0 auto;
@@ -247,6 +277,11 @@
     gap: 0.3rem 1rem;
     font-size: 0.85rem;
     color: var(--grey);
+  }
+  .boat {
+    max-width: 280px;
+    width: 100%;
+    margin: 0 auto;
   }
   /* Before the first morning there's nothing to show yet; the row keeps its room. */
   .status.unseen {

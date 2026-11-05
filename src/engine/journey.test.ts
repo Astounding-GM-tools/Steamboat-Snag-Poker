@@ -19,6 +19,8 @@ import {
   playEncounter,
   proceed,
   turnIn,
+  goTo,
+  hubOptions,
   type JourneyState,
   type StoryDef,
   STORY_CONFIG,
@@ -27,7 +29,7 @@ import { Rng } from './rng';
 import { newSession, nextSessionHand, submit, type TableSession } from './session';
 import { DOCK_FEE, TROUBLE, coveredHands } from './snags';
 
-/** Plays the voyage as a careful captain would, buying a little at each council; returns every state passed through. */
+/** Plays the voyage as a careful captain would; returns every state passed through. */
 function autopilot(seed: number, guard = 40000): JourneyState[] {
   let s = newJourney(seed, RIVER, RIVER_START);
   const seen = [s];
@@ -35,12 +37,14 @@ function autopilot(seed: number, guard = 40000): JourneyState[] {
   for (let i = 0; i < guard && !s.done; i++) {
     const step = currentStep(s, RIVER)!;
     if (step.type === 'caption') s = proceed(s, RIVER);
-    else if (step.type === 'council') {
-      for (const item of ['sparePole', 'coal', 'coal']) if (canBuy(s, RIVER, item)) s = buy(s, RIVER, item);
-      s = castOff(s, RIVER);
+    else if (step.type === 'council') s = castOff(s, RIVER);
+    else if (step.type === 'hub') {
+      const can = (id: string) => hubOptions(s, RIVER).some((o) => o.option.id === id && o.open);
+      s = goTo(s, RIVER, s.time === 'evening' ? 'anchor' : can('tournament') ? 'tournament' : s.coal < 3 ? 'depot' : 'jobs');
     } else if (step.type === 'encounter') {
       const e = s.encounter!;
       if (e.outcome) s = leaveEncounter(s, RIVER);
+      else if (step.choices) s = choose(s, RIVER, Object.keys(step.choices).at(-1)!);
       else if (e.session.phase === 'hand') {
         const me = mySeatAt(e);
         s = playEncounter(s, myMoveOwed(s) ? chooseAction('careful', viewFor(e.session.round!, me, e.session.config), e.session.config, rng) : null);
@@ -230,7 +234,7 @@ describe('the dock fee', () => {
 });
 
 describe('table talk', () => {
-  const context = { hand: 1, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: false, fixed: [] as { id: string; snag: number }[] };
+  const context = { hand: 1, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: false, attempt: 1, fixed: [] as { id: string; snag: number }[] };
   const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
   const deck = RIVER_TALK.deck as (c: typeof context) => RoundScript;
 
@@ -254,10 +258,12 @@ describe('table talk', () => {
   });
 
   it('has the foreman never say what he wants, until he has it', () => {
-    const foreman = RIVER_TALK.foreman as (c: typeof context) => RoundScript;
-    expect(String(foreman({ ...context, hand: 3, lost: 4 }).verdict?.[0].text)).not.toContain('sacks');
-    expect(String(foreman({ ...context, hand: 3, lost: 13 }).verdict?.[0].text)).toContain('sacks');
-    expect(String(foreman({ ...context, hand: 3, foldedOut: true }).verdict?.[0].text)).toContain('Folding');
+    const depot = RIVER_TALK.depot as (c: typeof context) => RoundScript;
+    const said = (c: Partial<typeof context>) => depot({ ...context, hand: 3, ...c }).verdict!.map((l) => String(l.text)).join(' ');
+    expect(said({ lost: 4 })).not.toContain('sacks have fallen');
+    expect(said({ lost: 13 })).toContain('sacks have fallen');
+    expect(said({ foldedOut: true })).toContain('Folding');
+    expect(said({ fixed: [{ id: 'rourke', snag: DOCK_FEE }] })).toContain('nothing better to do');
   });
 
   it('has Lars sing until he has a week of words', () => {
@@ -276,7 +282,7 @@ describe('the pilot\'s tournament', () => {
         steps: [
           { type: 'dawn' },
           { type: 'draw', entrants: ['konrad', 'nemo', 'walrus', 'lenny', 'ignatz', 'eliza', 'maxMoritz', 'tripp'].map((id) => ({ id, ai: 'careful' as const })), tableSize: 3, finalists: 2 },
-          { type: 'encounter', again: true, solved: [], failed: [], encounter: { id: 'noon', stake: 'purse', rivals: [{ id: 'ellie', ai: 'careful', money: 10 }], joined: 'finalists', entry: 10, goal: { type: 'lastStanding', host: 'ellie' }, hands: 40 } },
+          { type: 'encounter', stuck: true, solved: [], failed: [], encounter: { id: 'noon', stake: 'purse', rivals: [{ id: 'ellie', ai: 'careful', money: 10 }], joined: 'finalists', entry: 10, goal: { type: 'lastStanding', host: 'ellie' }, hands: 40 } },
           { type: 'caption', lines: [] },
         ],
       },
@@ -318,25 +324,63 @@ describe('the pilot\'s tournament', () => {
     expect(lost.encounter?.outcome).toBe('failed');
   });
 
-  it('gives a lost day to work and an evening, then starts it over', () => {
-    let s = finishFailed();
-    expect(currentStep(s, story)?.type).toBe('caption');
-    const purse = s.purse;
-    s = proceed(s, story);
-    expect(s.purse).toBe(purse + 16);
-    s = proceed(s, story);
-    expect(s.encounter?.def.id).toBe('noon');
-    expect(s.nights).toBe(1);
-    expect(s.flags).toContain('met:noon');
-    function finishFailed() {
-      return leaveEncounter(finish(newJourney(3, story, RIVER_START).finalists[0].id), story);
-    }
-  });
-
   it('lets a spare replace what\'s broken', () => {
     const story: StoryDef = { days: [{ day: 1, place: 'triCities', steps: [{ type: 'council', advice: [], trader: ['sparePole'], coal: 0 }, { type: 'caption', lines: [] }] }], stuckNight: [] };
     const s = { ...newJourney(1, story, RIVER_START), snags: [jokerCard(TROUBLE.brokenPole)] };
     expect(buy(s, story, 'sparePole').snags).toEqual([]);
+  });
+});
+
+describe('the Tri-Cities', () => {
+  const at = (time: 'morning' | 'evening', flags: string[] = []) => {
+    const s = newJourney(1, RIVER, RIVER_START);
+    return { ...s, step: RIVER.days[0].steps.findIndex((x) => x.type === 'hub'), encounter: null, time, flags };
+  };
+  const ids = (s: JourneyState) => hubOptions(s, RIVER).map((o) => o.option.id);
+
+  it('offers what the time of day allows, and what you know about', () => {
+    expect(ids(at('evening'))).toEqual(['anchor', 'bettendorf', 'chandler']);
+    expect(ids(at('morning'))).toEqual(['depot', 'chandler']);
+    expect(ids(at('morning', ['met:deckIntel', 'jobFound']))).toEqual(['tournament', 'depot', 'jobs', 'chandler']);
+  });
+
+  it('won\'t have you at the tournament without the coal for the climb', () => {
+    const s = { ...at('morning', ['met:deckIntel']), coal: 1 };
+    expect(hubOptions(s, RIVER).find((o) => o.option.id === 'tournament')?.open).toBe(false);
+    expect(() => goTo(s, RIVER, 'tournament')).toThrow();
+  });
+
+  it('comes back to the hub after an option, the day moved on', () => {
+    let s = goTo(at('morning', ['jobFound']), RIVER, 'jobs');
+    const purse = s.purse;
+    s = proceed(s, RIVER);
+    expect(s.purse).toBeGreaterThan(purse);
+    expect(currentStep(s, RIVER)?.type).toBe('hub');
+    expect(s.time).toBe('evening');
+    expect(s.flags).not.toContain('jobFound');
+  });
+
+  it('lets you walk away from the depot and stay where you were', () => {
+    let s = goTo(at('morning'), RIVER, 'depot');
+    expect(s.encounter?.def.id).toBe('depotTalk');
+    s = choose(s, RIVER, 'leave');
+    expect(currentStep(s, RIVER)?.type).toBe('hub');
+    expect(s.time).toBe('morning');
+  });
+});
+
+describe('Sandy', () => {
+  const context = { hand: 2, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: true, attempt: 1, fixed: [] as { id: string; snag: number }[] };
+  const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
+
+  it('doesn\'t repeat itself from one day to the next', () => {
+    const said = [1, 2, 3].flatMap((attempt) => [2, 4, 6, 8].map((hand) => String(sandy({ ...context, attempt, hand }).flop?.[0].text)));
+    expect(new Set(said).size).toBe(said.length);
+  });
+
+  it('opens each morning differently', () => {
+    const open = [2, 3, 4].map((attempt) => String(sandy({ ...context, hand: 1, attempt }).deal?.[0].text));
+    expect(new Set(open).size).toBe(3);
   });
 });
 
@@ -364,26 +408,18 @@ describe('nobody stays stuck', () => {
     expect(next.encounter?.def.hands).toBe(8);
   });
 
-  it('relents the second time an encounter is failed: on, as if solved, with its effects', () => {
-    // A captain who plays nothing at all on the River: every showdown lost.
-    let s = newJourney(2, RIVER, RIVER_START);
-    let relented = false;
-    for (let i = 0; i < 3000 && s.day < 3; i++) {
-      const step = currentStep(s, RIVER)!;
-      if (step.type === 'caption') {
-        if (step.lines.some((l) => l.text.includes('throws you a line'))) relented = true;
-        s = proceed(s, RIVER);
-      } else if (step.type === 'council') s = castOff(canCastOff(s, RIVER) ? s : { ...s, coal: 6 }, RIVER);
-      else if (step.type === 'encounter') {
-        const e = s.encounter!;
-        if (e.outcome) s = leaveEncounter(s, RIVER);
-        else if (e.session.phase === 'hand') {
-          const round = e.session.round!;
-          s = playEncounter(s, myMoveOwed(s) ? (round.street === 2 ? { type: 'compose', cardIds: [], jokers: 0 } : { type: 'draw', cardIds: [] }) : null);
-        } else s = handDone(s, RIVER);
-      }
+  it('never pulls you off: a day stuck is a night aboard and another try, for as long as it takes', () => {
+    const story: StoryDef = {
+      days: [{ day: 1, place: 'muscatine', steps: [{ type: 'dawn' }, { type: 'encounter', stuck: true, solved: [], encounter: { id: 'sandbar', stake: 'strength', rivals: [{ id: 'sandbar', ai: 'stubborn', money: 20, obstacle: true }], goal: { type: 'clear' }, hands: 4 } }] }],
+      stuckNight: [{ type: 'caption', lines: [] }],
+    };
+    let s = newJourney(1, story, RIVER_START);
+    for (let k = 1; k <= 4; k++) {
+      const failed = structuredClone(s);
+      failed.encounter!.outcome = 'failed';
+      s = proceed(leaveEncounter(failed, story), story);
+      expect(s.encounter?.def.id).toBe('sandbar');
+      expect(s.mornings).toBe(k + 1);
     }
-    expect(s.day).toBe(3);
-    expect(relented).toBe(true);
   });
 });

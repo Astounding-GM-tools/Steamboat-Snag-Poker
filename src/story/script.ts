@@ -33,6 +33,8 @@ export interface TalkContext {
   foldedOut: boolean;
   /** You've been at this encounter before (the queue, day after day). */
   met: boolean;
+  /** Which try at it this is (mornings on the bar). */
+  attempt: number;
 }
 
 /** An encounter's talk: set lines hand by hand, or worked out as the hand stands. */

@@ -2,11 +2,11 @@
  * Steamboat to St. Louis: the voyage's days, as steps (src/engine/journey.ts
  * plays them; docs/story.md says why). So far the first stretch: Muscatine,
  * the harbour master and the Sandbar on day one, the Tri-Cities and the coal
- * yard on day two, the queue for the pilot at Davenport from day three, up the
- * rapids to LeClaire.
+ * yard, the queue for the pilot at Davenport (the Tri-Cities are a hub: a list
+ * of things to do, morning and evening), up the rapids to LeClaire.
  */
-import type { EncounterDef, Rival, Step, StoryDef } from '../engine';
-import { DOCK_FEE, Rng, TROUBLE, snagDef } from '../engine';
+import type { EncounterDef, Hub, Rival, Step, StoryDef } from '../engine';
+import { DOCK_FEE, PAMPHLETS, Rng, STRIKE_BUTTON, TROUBLE, snagDef } from '../engine';
 import { t } from '../i18n';
 import type { SpeechLine } from '../ui/Speech.svelte';
 import type { RoundScript, Talk, TalkContext } from './script';
@@ -47,7 +47,7 @@ const DOCK_FEE_AMOUNT = 37;
 const harbourMaster: Rival = { id: 'harbourMaster', ai: 'stubborn', money: 40 };
 
 const TRI_CITIES_HANDS = 6;
-const FOREMAN_HANDS = 10;
+const FOREMAN_HANDS = 8;
 /** Lost at showdowns: what the strike fund needs before the coal turns up. */
 const FOREMAN_LOSS = 12;
 
@@ -95,66 +95,10 @@ const day1: Step[] = [
     solved: [],
     failed: [],
     stuck: true,
-    relent: [
-      { text: 'Towards noon a packet boat comes thrashing down the river, and her captain throws you a line.' },
-      { who: 'willie', text: 'She’s off, Captain! We’re floating!' },
-    ],
   },
   { type: 'travel', coal: 2, to: 'triCities' },
-  {
-    type: 'encounter',
-    encounter: {
-      id: 'triCities',
-      stake: 'purse',
-      rivals: [
-        { id: 'tripp', ai: 'careful', money: 30 },
-        { id: 'odds', ai: 'loose', money: 30 },
-        { id: 'finlay', ai: 'loose', money: 30 },
-      ],
-      goal: { type: 'trips' },
-      hands: TRI_CITIES_HANDS,
-    },
-    solved: [],
-  },
-];
-
-const day2: Step[] = [
-  { type: 'dawn' },
-  {
-    type: 'encounter',
-    // Only talk (RIVER_TALK.yard): the coal yard in the morning.
-    encounter: { id: 'yard', stake: 'purse', rivals: [{ id: 'foreman', ai: 'careful', money: 25 }], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
-    solved: [],
-    choices: { on: {} },
-  },
-  {
-    type: 'council',
-    advice: [
-      { who: 'willie', text: 'The foreman plays cards of an evening, Captain. A friendly game, for the strike fund.' },
-      { who: 'gus', text: 'Strike fund’s thin, they say. Thin as gruel.' },
-      { who: 'lars', text: '♪ ♫ ♪' },
-    ],
-    trader: ['food', 'sparePole', 'hammocks'],
-    coal: 0,
-    leave: 'To the coal yard',
-  },
-  {
-    type: 'encounter',
-    encounter: {
-      id: 'foreman',
-      stake: 'purse',
-      rivals: [{ id: 'foreman', ai: 'careful', money: 25 }],
-      goal: { type: 'lose', min: FOREMAN_LOSS, max: 25 },
-      hands: FOREMAN_HANDS,
-    },
-    solved: [],
-    failed: [],
-    effects: { coal: 4 },
-    stuck: true,
-    relent: [{ who: 'foreman', text: 'Ah, take the coal, Captain. You’ll lose it back to us some other night.' }],
-  },
-  { type: 'caption', lines: [{ text: 'Back aboard, after supper.' }] },
-  { ...deckLines, encounter: { ...deckGame, id: 'deckIntel' } } as Step,
+  { type: 'nightfall' },
+  { type: 'hub', hub: 'triCities' },
 ];
 
 const ENTRANTS = [
@@ -172,16 +116,10 @@ const NOON_ENTRY = 10;
 const TOURNAMENT_HANDS = 40;
 const RAPIDS_HANDS = 8;
 
-/** The queue at Davenport: the same day over, until you've won it. */
-const day3: Step[] = [
-  { type: 'dawn' },
-  {
-    type: 'council',
-    advice: [{ who: 'gus', text: 'Three loads for the climb, Captain, and I’d not argue with four. And a second shovel wouldn’t hurt, if it comes to that.' }],
-    trader: ['coal', 'food', 'fireman', 'sparePole'],
-    coal: 3,
-    leave: 'To the queue',
-  },
+const DOCKING_FEE = 3;
+
+/** The Pilot Tournament, at Davenport. Lost at either table, the day's done. */
+const tournament: Step[] = [
   { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2 },
   {
     type: 'encounter',
@@ -196,8 +134,8 @@ const day3: Step[] = [
       rules: { drainPerJoker: 0, jokerForfeit: 0 },
     },
     solved: [],
-    failed: [{ who: 'willie', text: 'There’s always tomorrow, Captain. I found us something for the afternoon.' }],
-    again: true,
+    failed: [],
+    failSkip: 4,
   },
   {
     type: 'encounter',
@@ -213,7 +151,7 @@ const day3: Step[] = [
     },
     solved: [{ who: 'ellie', text: 'That’s you, Captain. Get your hat.' }],
     failed: [{ who: 'ellie', text: 'Not today, Captain. Same time tomorrow.' }],
-    again: true,
+    failSkip: 3,
   },
   {
     type: 'encounter',
@@ -229,20 +167,107 @@ const day3: Step[] = [
     solved: [],
     failed: [],
     stuck: true,
-    relent: [{ who: 'ellie', text: 'There’s a chute by the Illinois bank, if you don’t mind losing some paint.' }],
   },
   { type: 'travel', coal: 3, to: 'leClaire' },
-  { type: 'caption', title: 'To be continued', lines: [] },
+  { type: 'leave' },
+  { type: 'nightfall' },
 ];
+
+/** The coal depot at Rock Island: friendly, and on strike. */
+const depot: Step[] = [
+  {
+    type: 'encounter',
+    // Only talk (RIVER_TALK.depotTalk): nothing's staked or dealt until it's agreed.
+    encounter: { id: 'depotTalk', stake: 'purse', rivals: [{ id: 'foreman', ai: 'careful', money: 25 }], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
+    solved: [],
+    choices: { leave: { skip: 2 }, snag: {} },
+  },
+  {
+    type: 'encounter',
+    encounter: {
+      id: 'depot',
+      stake: 'purse',
+      rivals: [
+        { id: 'foreman', ai: 'careful', money: 30, jokers: [PAMPHLETS], obliging: true },
+        { id: 'rourke', ai: 'loose', money: 30, jokers: [STRIKE_BUTTON], obliging: true },
+      ],
+      goal: { type: 'lose', min: FOREMAN_LOSS, max: 25 },
+      hands: FOREMAN_HANDS,
+    },
+    solved: [],
+    failed: [],
+    effects: { coal: 4 },
+  },
+  { type: 'nightfall' },
+];
+
+const triCities: Hub = {
+  scene: (state) => {
+    if (state.time === 'morning') return ['Morning at the Tri-Cities. Davenport, Rock Island, Moline. And Bettendorf, if you ask in Bettendorf.'];
+    if (state.flags.includes('met:deckIntel')) return ['Evening at the Tri-Cities. The lamps come on along the levee.'];
+    return [`Late in the afternoon${state.mornings > 1 ? ', days behind,' : ''} you arrive at the Tri-Cities.`, ...(state.purse < DOCKING_FEE ? ['Funds are low.'] : [])];
+  },
+  options: [
+    {
+      id: 'anchor',
+      time: 'evening',
+      steps: [
+        { type: 'caption', lines: [{ text: 'You anchor downstream of the dock, where it’s free. Willie wades ashore, looking for work and gossip.' }], effects: { flag: 'jobFound' } },
+        { ...deckLines, encounter: { ...deckGame, id: 'deckIntel' } } as Step,
+        { type: 'dawn' },
+      ],
+    },
+    {
+      id: 'bettendorf',
+      time: 'evening',
+      cost: DOCKING_FEE,
+      steps: [
+        {
+          type: 'encounter',
+          encounter: {
+            id: 'triCities',
+            stake: 'purse',
+            rivals: [
+              { id: 'tripp', ai: 'careful', money: 30 },
+              { id: 'odds', ai: 'loose', money: 30 },
+              { id: 'finlay', ai: 'loose', money: 30 },
+            ],
+            goal: { type: 'trips' },
+            hands: TRI_CITIES_HANDS,
+          },
+          solved: [],
+        },
+        { type: 'dawn' },
+      ],
+    },
+    { id: 'tournament', time: 'morning', flag: 'met:deckIntel', coal: 3, steps: tournament },
+    { id: 'depot', time: 'morning', steps: depot },
+    { id: 'jobs', time: 'morning', flag: 'jobFound', steps: [{ type: 'job' }, { type: 'nightfall' }] },
+    {
+      id: 'chandler',
+      steps: [
+        {
+          type: 'council',
+          advice: [{ who: 'gus', text: 'Three loads for the climb, Captain, and I’d not argue with four. And a second shovel wouldn’t hurt, if it comes to that.' }],
+          trader: ['food', 'fireman', 'sparePole', 'hammocks'],
+          coal: 0,
+          leave: 'Back',
+        },
+      ],
+    },
+  ],
+};
+
+const day2: Step[] = [{ type: 'caption', title: 'To be continued', lines: [] }];
 
 export const RIVER: StoryDef = {
   days: [
     { day: 1, place: 'muscatine', steps: day1 },
-    { day: 2, place: 'triCities', steps: day2 },
-    { day: 3, place: 'davenport', steps: day3 },
+    { day: 2, place: 'leClaire', steps: day2 },
   ],
   stuckNight: [{ type: 'caption', lines: [{ text: 'Supper on deck, and the lantern lit.' }] }, deckLines],
-  // A day in the Tri-Cities that came to nothing still has an afternoon in it.
+  hubs: { triCities },
+  // Willie's finds, in the Tri-Cities.
   jobs: [
     { text: 'You ferry a herd of cattle across the river, and spend the evening cleaning up the manure.', pays: 16 },
     { text: 'You carry a load of pearl buttons to Moline. Somebody pays you in buttons, and then, after a discussion, in dollars.', pays: 16 },
@@ -275,39 +300,87 @@ const QUIPS = [
   'I was a mountain once. I can wait.',
   'Come out to the river, they said. It’ll be fun, they said.',
   'I can’t sand it any more!',
+  'I’ll start you a tab.',
+  'Happy hour’s every hour. Slow hour, too.',
+  'What’s your poison? We’ve got silt, grit and more silt.',
+  'I’d offer you a stool, but you’re sitting on me.',
+  'You’re shoaling a lot of promise, Captain.',
+  'Nothing personal. It’s just bedrock.',
+  'I’m a very grounded person.',
+  'Some say I’m shallow. They’re right.',
+  'Don’t look so down. That’s my job.',
+  'Lovely hull. Mind if I keep it?',
+  'I hear the Fair’s very nice. Tell me all about it, some year.',
+  'I’ve got grit, Captain. You’ve got to admire that.',
+  'Silt you down, make yourself at home.',
+  'Every grain a regular.',
+  'You can’t rush a good sediment.',
+  'It’s a fine bank. Very low interest.',
+  'I never forget a face. I do wear them down.',
+  'Tell your engineer I said hello. I’m in his boiler.',
+  'That’s a shore thing, that is.',
+  'I’ll have you know I’m a pillar of the riverbed.',
+  'Bar’s open. Bar’s always open. That’s rather the trouble.',
 ];
 
+/** Each new morning on the bar opens differently. */
+const MORNINGS = [
+  'Well, it’s past noon somewhere. Can I get you the usual, Captain?',
+  'Back at the bar? Regulars drink free. It’s nothing, but it’s free.',
+  'Another morning! I’m naming a stool after you.',
+  'Your table’s still here. So am I.',
+  'Sleep well? You look well rested. You look stuck.',
+  'They’re starting to talk, Captain. You, me, every morning.',
+];
+
+/** Before the third hand: a dare, with Deal on the button. */
+const DARES = ['Let’s see if you can muddle through another round.', 'Care to dredge up another hand?', 'Fancy your chances? I fancy your boat.', 'One more for the road. There isn’t one.'];
+
 /**
- * A day against the Sandbar: `opening`, hand by hand, then a quip every other
- * hand (shuffled by the day, so none comes twice), and however the day ends,
- * on whichever hand it comes.
+ * A day against Sandy: the opening, then a quip every other hand, drawn from
+ * one shuffle of the voyage so none comes round again until they all have, and
+ * however the day ends, on whichever hand it comes.
  */
-function sandbarTalk(hands: number, opening: RoundScript[]): Talk {
+function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundScript {
+  const hands = attempt > 1 ? 8 : SANDBAR_HANDS;
+  const first = attempt === 1;
+  const quips = new Rng(seed).shuffle(QUIPS);
+  const said = quips[((attempt - 1) * 8 + hand) % quips.length];
   const dusk: SpeechLine[] = [bar('Last call, Captain.'), { size: 'scene', who: 'willie', text: 'That’s the light gone. She won’t move tonight.' }];
-  return ({ hand, pile, seed }: TalkContext): RoundScript => {
-    const scene = opening[hand - 1] ?? {};
-    const said = new Rng(seed).shuffle(QUIPS)[hand % QUIPS.length];
-    const talkOnFlop = hand % 2 === 0 && !scene.flop;
-    const talkAfter = hand % 2 === 1 && hand > 1 && hand < hands && pile > 0;
-    return {
-      ...scene,
-      ...(talkOnFlop ? { flop: [quip(said)] } : {}),
-      // Stood pat: it says so, twice in a day at most.
-      ...(hand === 1 ? { pat: [quip('Going to sand pat, Captain?')] } : hand === 4 ? { pat: [quip('Sand pat again? You’ll fit right in.')] } : {}),
-      verdict: [
-        ...(scene.verdict ?? []),
-        ...(talkAfter ? [{ ...quip(said), when: 'won' as const }, { ...quip(said), when: 'lost' as const }] : []),
-        { ...bar('I’ll drift off downstream now… Catch you later, Captain!'), when: 'wonAll' },
-        { size: 'scene', who: 'willie', when: 'wonAll', text: 'She’s off, Captain! We’re floating!' },
-        { ...bar('You’ve had enough. Pity you can’t leave.'), when: 'lostAll' },
-        { size: 'scene', who: 'gus', when: 'lostAll', text: 'That’s all they have, Captain. There’s not another shove in them today.' },
-        ...(hand === hands ? dusk.flatMap((l) => [{ ...l, when: 'won' as const }, { ...l, when: 'lost' as const }]) : []),
-      ],
-    };
+  const opening: RoundScript = first
+    ? {
+        deal: [bar('Going somewhere?'), bar('Welcome to the sandbar. Call me Sandy. Today’s specials are the Broken Paddle and the Twisted Axle. You must try them.')],
+        flop: [
+          { size: 'scene', who: 'willie', text: 'Aground, Captain! Stuck fast!' },
+          { size: 'scene', who: 'gus', text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'] },
+        ],
+      }
+    : { deal: [bar(MORNINGS[(attempt - 2) % MORNINGS.length])] };
+  const scene: RoundScript = hand === 1 ? opening : hand === 3 ? { deal: [{ ...bar(DARES[(attempt - 1) % DARES.length]), replies: [{ label: 'Deal' }] }, bar('Shore thing!')] } : {};
+  const talkOnFlop = hand % 2 === 0;
+  const talkAfter = hand % 2 === 1 && hand > 1 && hand < hands && pile > 0;
+  return {
+    ...scene,
+    ...(talkOnFlop ? { flop: [quip(said)] } : {}),
+    // Stood pat: it says so, twice in a day at most.
+    ...(hand === 1 ? { pat: [quip(first ? 'Going to sand pat, Captain?' : 'Sand pat again? You’ll fit right in.')] } : hand === 4 ? { pat: [quip(first ? 'Sand pat again? You’ll fit right in.' : 'You’re getting the hang of this. Do nothing. Nothing moves here.')] } : {}),
+    verdict: [
+      ...(hand === 1 && first
+        ? [
+            { size: 'scene' as const, who: 'gus', when: 'won' as const, text: 'That’s our own sweat back, no more. But the sand’s gone with the current.' },
+            { ...bar('Your first one’s on the house. So’s your boat.'), when: 'lost' as const },
+          ]
+        : []),
+      ...(talkAfter ? [{ ...quip(said), when: 'won' as const }, { ...quip(said), when: 'lost' as const }] : []),
+      { ...bar('I’ll drift off downstream now… Catch you later, Captain!'), when: 'wonAll' },
+      { size: 'scene', who: 'willie', when: 'wonAll', text: 'She’s off, Captain! We’re floating!' },
+      { ...bar('You’ve had enough. Pity you can’t leave.'), when: 'lostAll' },
+      { size: 'scene', who: 'gus', when: 'lostAll', text: 'That’s all they have, Captain. There’s not another shove in them today.' },
+      ...(hand === hands ? dusk.flatMap((l) => [{ ...l, when: 'won' as const }, { ...l, when: 'lost' as const }]) : []),
+    ],
   };
 }
 
-const called = (id: string) => t(`character.${id}.called`);
 /** The queue at Davenport. */
 function morningTalk({ met }: TalkContext): RoundScript {
   return met ? {} : { deal: [say('willie', 'Five dollars in, Captain. Last one with money goes to the saloon at noon.')] };
@@ -345,21 +418,37 @@ function triCitiesTalk({ hand, seed, trips }: TalkContext): RoundScript {
   };
 }
 
-/** The foreman never says what he wants. The lads' mood says it for him. */
-function foremanTalk({ hand, lost, foldedOut }: TalkContext): RoundScript {
+/** What the strike chest hears, hand by hand. Nobody says what it's for. */
+const CHEST_UP = ['More for the strike chest! That should last us another day or two.', 'That’s the week’s bread, that is. Much obliged, Captain.', 'The chest thanks you, Captain.', 'Don’t tell the union. It’d only want a receipt.'];
+const CHEST_DOWN = ['Plenty more where that came from. The union sends it up by the sack.', 'Take it, take it. It’s only the strike chest.', 'Easy come, Captain. Tuesday’s post brings more.'];
+const RIVER_LIFE = [
+  { who: 'foreman', text: 'Twenty years I’ve shovelled that heap. Never played so many cards.' },
+  { who: 'rourke', text: 'I’ve picketed that gate since Monday. Very peaceful gate.' },
+  { who: 'foreman', text: 'Bill still cheat at patience?' },
+  { who: 'rourke', text: 'Coal’s dear upriver, I hear. Dearer, if there isn’t any.' },
+];
+const FOLDED = 'Folding again, Cap’n? You wouldn’t be… letting us win?';
+
+/** A friendly game with the strike chest on the table. The foreman never says what he wants, and the coal turns up all the same. */
+function depotTalk({ hand, lost, foldedOut, fixed, met, seed }: TalkContext): RoundScript {
   const paid = lost >= FOREMAN_LOSS;
+  const chat = new Rng(seed).shuffle(RIVER_LIFE)[hand % RIVER_LIFE.length];
+  const sorted = fixed.map(({ id, snag }): SpeechLine => ({ size: 'scene', who: id, text: `I’ll sort out ${t(`joker.${snag}`)}, Captain. Got nothing better to do.` }));
   return {
-    ...(hand === 1 ? { deal: [say('foreman', 'A friendly game, Captain? For the strike fund, mind. Times are hard.')] } : {}),
-    verdict: paid
-      ? [say('foreman', 'Hard luck, Captain. Take a few sacks for your boiler. No hard feelings.')]
-      : hand === FOREMAN_HANDS
-        ? [say('foreman', 'You’ve a hard heart for a young fellow, Captain. Come back tomorrow.')]
-        : foldedOut
-          ? [{ size: 'aside', who: 'foreman', text: 'Folding again, Cap’n? You wouldn’t be… letting us win?' }]
-          : [
-              { size: 'aside', who: 'foreman', when: 'won', text: 'That’s the strike fund’s supper you’re taking, Captain.' },
-              { size: 'aside', who: 'foreman', when: 'lost', text: 'The lads appreciate it, Captain. Hard luck.' },
-            ],
+    ...(hand % 2 === 0 ? { flop: [{ size: 'aside' as const, ...chat }] } : {}),
+    verdict: [
+      ...sorted,
+      ...(paid
+        ? [say('foreman', 'Funny thing, Captain. Some sacks have fallen off the heap, down by your boat. Nobody’s counted those.')]
+        : hand === FOREMAN_HANDS
+          ? [say('foreman', met ? 'Good game, Captain. Any time. We’re not going anywhere.' : 'Good game, Captain. Come by any time. We’re not going anywhere.')]
+          : foldedOut
+            ? [{ size: 'aside' as const, who: 'foreman', text: FOLDED }]
+            : [
+                { size: 'aside' as const, who: 'rourke', when: 'lost' as const, text: new Rng(seed + hand).pick(CHEST_UP) },
+                { size: 'aside' as const, who: 'foreman', when: 'won' as const, text: new Rng(seed + hand).pick(CHEST_DOWN) },
+              ]),
+    ],
   };
 }
 
@@ -384,6 +473,7 @@ function rapidsTalk({ hand, seed }: TalkContext): RoundScript {
   };
 }
 
+const called = (id: string) => t(`character.${id}.called`);
 const crew = (who: string, text: string): SpeechLine => ({ size: 'aside', who, text });
 
 /**
@@ -521,34 +611,39 @@ export const RIVER_TALK: Record<string, Talk> = {
       },
     ],
   },
-  sandbar: sandbarTalk(SANDBAR_HANDS, [
-    {
-      deal: [bar('Going somewhere?'), bar('Welcome to the sandbar. Call me Sandy. Today’s specials are the Broken Paddle and the Twisted Axle. You must try them.')],
-      flop: [
-        { size: 'scene', who: 'willie', text: 'Aground, Captain! Stuck fast!' },
-        { size: 'scene', who: 'gus', text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'] },
-      ],
-      verdict: [
-        { size: 'scene', who: 'gus', when: 'won', text: 'That’s our own sweat back, no more. But the sand’s gone with the current.' },
-        { ...bar('I’ll start you a tab.'), when: 'lost' },
-      ],
-    },
-    {},
-    { deal: [{ ...bar('Let’s see if you can muddle through another round.'), replies: [{ label: 'Deal' }] }, bar('Shore thing!')] },
-  ]),
+  sandbar: sandbarTalk,
   deck: deckTalk,
   triCities: triCitiesTalk,
-  yard: {
-    rounds: [
-      {
-        deal: [
-          say('foreman', 'We’re out, Captain. On strike. Not a lump leaves this yard.'),
-          { ...say('gus', 'We’ll not climb the rapids on what’s in the bunker.'), replies: [{ label: 'Right', effect: 'on', end: true }] },
+  depotTalk: (({ met }: TalkContext): RoundScript => ({
+    deal: met
+      ? [
+          {
+            ...say('foreman', 'Back again, Captain? Still no coal. Still on strike. Still got cards.'),
+            replies: [
+              { label: 'Leave', effect: 'leave', end: true },
+              { label: 'Snag?', effect: 'snag', end: true },
+            ],
+          },
+        ]
+      : [
+          { ...say('foreman', 'Been a while! Ain’t seen The Best Intentions since last summer. Where’s Bill?'), replies: [{ label: 'Family' }] },
+          you('Family business.'),
+          {
+            ...say('foreman', 'Left you in charge, did he? Wise man. Alas, ain’t got no coal to sell you. Strike’s on, see.'),
+            replies: [
+              { label: 'Leave', effect: 'leave', end: true },
+              { label: 'Snag?', go: 'friendly' },
+            ],
+          },
+          {
+            ...say('foreman', 'Can’t say no to a friendly game to pass the time, right, fellas? Nothing much else to do around here, with this striking business.'),
+            id: 'friendly',
+            branch: true,
+            replies: [{ label: 'Deal', effect: 'snag', end: true }],
+          },
         ],
-      },
-    ],
-  },
-  foreman: foremanTalk,
+  })) as Talk,
+  depot: depotTalk,
   morning: morningTalk,
   noon: noonTalk,
   rapids: rapidsTalk,

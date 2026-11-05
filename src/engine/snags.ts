@@ -59,11 +59,15 @@ export const SNAGS: SnagDef[] = [
   { index: 19, kind: 'trouble', fixer: 'willie' }, // the Broken Heart
   // Bills and the like: the story's own duties.
   { index: 20, kind: 'duty' }, // the Dock Fee
+  { index: 21, kind: 'duty' }, // Pamphlet Distribution
+  { index: 22, kind: 'duty' }, // the Strike Support Button
 ];
 
 export const TROUBLE = { brokenPole: 14, twistedAxle: 15, brokenPaddle: 16, bustedBoiler: 17, fatigue: 18, brokenHeart: 19 } as const;
 
 export const DOCK_FEE = 20;
+export const PAMPHLETS = 21;
+export const STRIKE_BUTTON = 22;
 
 export function snagDef(index: number): SnagDef {
   return SNAGS[index] ?? { index, kind: 'object' };
