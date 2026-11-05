@@ -241,7 +241,7 @@ const triCities: Hub = {
           type: 'council',
           title: 'hub.mercantile.name',
           advice: [{ who: 'gus', text: 'A second shovel wouldn’t hurt for the climb, if it comes to that.' }],
-          trader: ['coal', 'sellCoal', 'food', 'fireman', 'sparePole', 'hammocks'],
+          trader: ['coal', 'sellCoal', 'food', 'fireman', 'hammocks'],
           coal: 0,
           leave: 'Done',
         },

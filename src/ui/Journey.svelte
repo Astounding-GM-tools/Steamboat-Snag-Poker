@@ -31,6 +31,7 @@
   import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
   import { roundScript } from '../story/script';
   import BoatScene from './BoatScene.svelte';
+  import Speech, { autoMs, type SpeechLine } from './Speech.svelte';
   import Table, { type TableView } from './Table.svelte';
   import { called, snagTitle } from './format';
   import { loadJourney, saveJourney } from './storage';
@@ -86,6 +87,26 @@
       ...(s.seats.some((p) => p.obstacle) ? { winLine: t('river.heldGround') } : {}),
       ending: s.phase === 'over' ? (s.seats[0].out ? 'lostAll' : 'wonAll') : undefined,
     });
+  });
+
+  /** What's on a crew member's mind on this screen. */
+  const advice = $derived.by((): StoryLine | null => {
+    if (step?.type === 'hub') return RIVER.hubs?.[step.hub].advice(journey) ?? null;
+    return step?.type === 'council' ? (step.advice[0] ?? null) : null;
+  });
+  const adviceWords = $derived(advice?.who ? `${advice.who}|${advice.text}` : null);
+  let popped = $state<SpeechLine | null>(null);
+  // It pops in when there's something new to say, and closes by itself.
+  $effect(() => {
+    if (!adviceWords) {
+      popped = null;
+      return;
+    }
+    const [who, text] = adviceWords.split('|');
+    const line = { size: 'aside' as const, who, text };
+    popped = line;
+    const timer = setTimeout(() => (popped = null), autoMs(line) ?? 0);
+    return () => clearTimeout(timer);
   });
 
   function play(action: Action | null) {
@@ -173,14 +194,16 @@
       <span>{t('river.coal')} {t('river.coalLoads', { n: journey.coal, max: BOAT.bunker })}</span>
     </div>
 
-    {#if step.type === 'hub' || step.type === 'caption'}
-      <div class="boat"><BoatScene /></div>
+    {#if step.type === 'hub' || step.type === 'council' || step.type === 'caption'}
+      <div class="scene">
+        <div class="boat"><BoatScene /></div>
+        <!-- A word from the crew pops in over her, and goes by itself (or at a tap). -->
+        {#if popped}<Speech line={popped} name={called(popped.who)} opponent={false} top={24} bottom={24} onnext={() => (popped = null)} />{/if}
+      </div>
     {/if}
 
     <div class="panel intertitle">
       {#if step.type === 'hub'}
-        {@const said = RIVER.hubs?.[step.hub].advice(journey)}
-        {#if said}<p class="said"><span class="who">{speaker(said)}:</span>{' '}{said.text}</p>{/if}
         <ul class="trader">
           {#each hubOptions(journey, RIVER) as { option, open } (option.id)}
             <li>
@@ -197,9 +220,6 @@
         {/each}
       {:else if step.type === 'council'}
         <h2>{t(step.title ?? 'river.council')}</h2>
-        {#each step.advice as line}
-          <p class="said"><span class="who">{speaker(line)}:</span>{' '}{line.text}</p>
-        {/each}
         <ul class="trader">
           {#each step.trader as id}
             {@const item = ITEMS[id]}
@@ -282,6 +302,9 @@
     gap: 0.3rem 1rem;
     font-size: 0.85rem;
     color: var(--grey);
+  }
+  .scene {
+    position: relative;
   }
   .boat {
     --boat-width: 100%;
