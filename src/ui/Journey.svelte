@@ -8,6 +8,7 @@
     canCastOff,
     castOff,
     choose,
+    closeMenu,
     closingLines,
     currentStep,
     goTo,
@@ -166,7 +167,7 @@
   <div class="page">
     <!-- Where the boat stands: the day, the place, the purse, the crew's strength, the coal. -->
     <div class="status" class:unseen={!journey.mornings}>
-      <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)}</span>
+      <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
       <span>{t('river.purse')} ${journey.purse}</span>
       <span>{t('river.strength')} {journey.strength}</span>
       <span>{t('river.coal')} {t('river.coalLoads', { n: journey.coal, max: BOAT.bunker })}</span>
@@ -226,7 +227,11 @@
     </div>
 
     <div class="dock">
-      <button class="ghost" onclick={onmenu}>{t('river.menu')}</button>
+      {#if journey.submenu}
+        <button class="ghost" onclick={() => (journey = closeMenu(journey))}>{t('river.back')}</button>
+      {:else}
+        <button class="ghost" onclick={onmenu}>{t('river.menu')}</button>
+      {/if}
       {#if step.type !== 'hub'}
         <button disabled={step.type === 'council' && !canCastOff(journey, RIVER)} onclick={onwards}>
           {step.type === 'council' ? (step.leave ?? t('river.castOff')) : t('river.continue')}

@@ -2,7 +2,7 @@
  * In development: jump straight to a scene (the list on the title), with a
  * plausible boat, instead of playing there.
  */
-import { DOCK_FEE, goTo, jokerCard, jumpTo, newJourney, type HubOption, type JourneyState, type Step } from '../engine';
+import { DOCK_FEE, goTo, jokerCard, jumpTo, newJourney, type HubOption, type JourneyState, type Slot, type Step } from '../engine';
 import { RIVER, RIVER_START } from './river';
 
 const start = () => ({ ...newJourney(Date.now() >>> 0, RIVER, RIVER_START), mornings: 1, strength: 18 });
@@ -11,7 +11,7 @@ const dayOne = (id: string): Step[] => {
   return steps.slice(steps.findIndex((s) => s.type === 'encounter' && s.encounter.id === id));
 };
 const hubIndex = RIVER.days[0].steps.findIndex((s) => s.type === 'hub');
-const hub = (time: 'morning' | 'evening', flags: string[] = [], coal = 2): JourneyState => ({ ...start(), step: hubIndex, pending: [], encounter: null, place: 'triCities', time, flags, coal, purse: 30, mornings: 3 });
+const hub = (time: Slot, flags: string[] = [], coal = 2): JourneyState => ({ ...start(), step: hubIndex, pending: [], encounter: null, place: 'triCities', time, flags, coal, purse: 30, mornings: 3 });
 const option = (id: string): HubOption => RIVER.hubs!.triCities.options.find((o) => o.id === id)!;
 /** The Tournament from a later table (the steps before it passed by, the draw kept). */
 const tournament = (skip: number): JourneyState => {

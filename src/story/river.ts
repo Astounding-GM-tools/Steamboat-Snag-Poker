@@ -5,7 +5,7 @@
  * yard, the queue for the pilot at Davenport (the Tri-Cities are a hub: a list
  * of things to do, morning and evening), up the rapids to LeClaire.
  */
-import type { EncounterDef, Hub, HubOption, Rival, Step, StoryDef } from '../engine';
+import type { EncounterDef, Hub, HubOption, Rival, Slot, Step, StoryDef } from '../engine';
 import { DOCK_FEE, PAMPHLETS, Rng, STRIKE_BUTTON, TROUBLE, snagDef } from '../engine';
 import { t } from '../i18n';
 import type { SpeechLine } from '../ui/Speech.svelte';
@@ -117,6 +117,7 @@ const TOURNAMENT_HANDS = 40;
 const RAPIDS_HANDS = 8;
 
 const DOCKING_FEE = 3;
+const DAYTIME: Slot[] = ['morning', 'afternoon'];
 const CLIMB_COAL = 6;
 
 /** The Pilot Tournament, at Davenport. Lost at either table, the day's done. */
@@ -199,20 +200,21 @@ const depot: Step[] = [
     failed: [],
     effects: { coal: 6 },
   },
-  { type: 'nightfall' },
+  { type: 'slot' },
 ];
 
-/** A day's work Willie found: it fills the day, and pays. */
-const job = (id: string, text: string, pays: number, coal = 0): HubOption => ({
+/** A job: it fills the slot, burns its coal and pays. */
+const job = (id: string, text: string, pays: number, flag?: string): HubOption => ({
   id: `job:${id}`,
-  time: 'morning',
-  flag: 'jobFound',
-  coal,
-  steps: [{ type: 'caption', lines: [{ text }], effects: { purse: pays, coal: -coal, clear: 'jobFound' } }, { type: 'nightfall' }],
+  times: DAYTIME,
+  coal: 1,
+  ...(flag ? { flag } : {}),
+  steps: [{ type: 'caption', lines: [{ text }], effects: { purse: pays, coal: -1, ...(flag ? { clear: flag } : {}) } }, { type: 'slot' }],
 });
 
 const triCities: Hub = {
   advice: (state) => {
+    if (state.submenu === 'jobs') return { who: 'willie', text: 'At these coal prices the mail doesn’t pay, Captain. It doesn’t pay at all.' };
     const troubled = state.snags.find((j) => snagDef(j.index).kind === 'trouble');
     if (troubled && state.time === 'evening') return { who: 'gus', text: `${capital(t(`joker.${troubled.index}`))} wants seeing to, Captain. A night at anchor would do it.` };
     if (state.purse < MORNING_ENTRY) return { who: 'willie', text: 'We’re near broke, Captain. I could wade ashore and ask around.' };
@@ -223,7 +225,7 @@ const triCities: Hub = {
   options: [
     {
       id: 'anchor',
-      time: 'evening',
+      times: ['evening'],
       steps: [
         { type: 'caption', lines: [{ text: 'You anchor downstream of the dock, where it’s free. Willie wades ashore, looking for work and gossip.' }], effects: { flag: 'jobFound' } },
         { ...deckLines, encounter: { ...deckGame, id: 'deckIntel' } } as Step,
@@ -231,9 +233,25 @@ const triCities: Hub = {
       ],
     },
     {
-      id: 'bettendorf',
-      time: 'evening',
+      id: 'mercantile',
+      times: DAYTIME,
       cost: DOCKING_FEE,
+      steps: [
+        {
+          type: 'council',
+          title: 'hub.mercantile.name',
+          advice: [{ who: 'gus', text: 'A second shovel wouldn’t hurt for the climb, if it comes to that.' }],
+          trader: ['coal', 'sellCoal', 'food', 'fireman', 'sparePole', 'hammocks'],
+          coal: 0,
+          leave: 'Done',
+        },
+        { type: 'slot' },
+      ],
+    },
+    { id: 'depot', times: DAYTIME, steps: depot },
+    {
+      id: 'bettendorf',
+      times: ['evening'],
       steps: [
         {
           type: 'encounter',
@@ -250,31 +268,21 @@ const triCities: Hub = {
           },
           solved: [],
         },
+        { type: 'caption', lines: [{ text: 'The crew stayed aboard, playing among themselves and listening to Lars sing.' }] },
         { type: 'dawn' },
       ],
     },
+    { id: 'tournament', times: ['morning'], flag: 'met:deckIntel', coal: CLIMB_COAL, steps: tournament },
     {
-      id: 'chandler',
-      steps: [
-        {
-          type: 'council',
-          title: 'hub.chandler.name',
-          advice: [{ who: 'gus', text: 'A second shovel wouldn’t hurt for the climb, if it comes to that.' }],
-          trader: ['food', 'fireman', 'sparePole', 'hammocks'],
-          coal: 0,
-          leave: 'Back',
-        },
+      id: 'jobs',
+      times: DAYTIME,
+      steps: [],
+      menu: [
+        job('timber', 'You herd timber off the bridge piers all day. It’s bigger than the boat.', 10, 'jobFound'),
+        job('cattle', 'You ferry a herd of cattle across the river, and spend the evening cleaning up the manure.', 14, 'jobFound'),
+        job('mail', 'You run the mail to Moline and back, and Gus counts every shovel.', 9),
       ],
     },
-    {
-      id: 'mercantile',
-      steps: [{ type: 'council', title: 'hub.mercantile.name', advice: [], trader: ['sellCoal'], coal: 0, leave: 'Back' }],
-    },
-    { id: 'depot', time: 'morning', steps: depot },
-    { id: 'tournament', time: 'morning', flag: 'met:deckIntel', coal: CLIMB_COAL, steps: tournament },
-    job('timber', 'You herd timber off the bridge piers all day. It’s bigger than the boat.', 7),
-    job('cattle', 'You ferry a herd of cattle across the river, and spend the evening cleaning up the manure.', 12),
-    job('mail', 'You run the mail to Moline and back, and Gus counts every shovel.', 5, 1),
   ],
 };
 

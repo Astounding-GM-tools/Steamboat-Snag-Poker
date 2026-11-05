@@ -61,8 +61,8 @@ export interface ItemDef {
 }
 
 export const ITEMS: Record<string, ItemDef> = {
-  coal: { id: 'coal', price: 5, effect: { coal: 1 } },
-  /** Sold, not bought: coal's short while the strike's on. */
+  /** Black-market prices, while the strike's on. */
+  coal: { id: 'coal', price: 10, effect: { coal: 1 } },
   sellCoal: { id: 'sellCoal', price: -8, effect: { coal: -1 } },
   food: { id: 'food', price: 4, effect: { tomorrow: 4 } },
   hammocks: { id: 'hammocks', price: 12, effect: { comfort: 3 }, once: true },

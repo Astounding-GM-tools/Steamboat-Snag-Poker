@@ -21,6 +21,8 @@ import {
   turnIn,
   goTo,
   hubOptions,
+  closeMenu,
+  type Slot,
   type JourneyState,
   type StoryDef,
   STORY_CONFIG,
@@ -331,16 +333,16 @@ describe('the pilot\'s tournament', () => {
 });
 
 describe('the Tri-Cities', () => {
-  const at = (time: 'morning' | 'evening', flags: string[] = []) => {
+  const at = (time: Slot, flags: string[] = []) => {
     const s = newJourney(1, RIVER, RIVER_START);
     return { ...s, step: RIVER.days[0].steps.findIndex((x) => x.type === 'hub'), encounter: null, time, flags };
   };
   const ids = (s: JourneyState) => hubOptions(s, RIVER).map((o) => o.option.id);
 
   it('offers what the time of day allows, and what you know about', () => {
-    expect(ids(at('evening'))).toEqual(['anchor', 'bettendorf', 'chandler', 'mercantile']);
-    expect(ids(at('morning'))).toEqual(['chandler', 'mercantile', 'depot']);
-    expect(ids(at('morning', ['met:deckIntel', 'jobFound']))).toEqual(['chandler', 'mercantile', 'depot', 'tournament', 'job:timber', 'job:cattle', 'job:mail']);
+    expect(ids(at('evening'))).toEqual(['anchor', 'bettendorf']);
+    expect(ids(at('afternoon', ['met:deckIntel']))).toEqual(['mercantile', 'depot', 'jobs']);
+    expect(ids(at('morning', ['met:deckIntel']))).toEqual(['mercantile', 'depot', 'tournament', 'jobs']);
   });
 
   it('won\'t have you at the tournament without the coal for the climb', () => {
@@ -349,14 +351,24 @@ describe('the Tri-Cities', () => {
     expect(() => goTo(s, RIVER, 'tournament')).toThrow();
   });
 
-  it('comes back to the hub after an option, the day moved on', () => {
-    let s = goTo(at('morning', ['jobFound']), RIVER, 'job:cattle');
+  it('opens the jobs for free, and a job fills the slot and burns its coal', () => {
+    const open = goTo({ ...at('morning', ['jobFound']), coal: 3 }, RIVER, 'jobs');
+    expect(open.time).toBe('morning');
+    expect(ids(open)).toEqual(['job:timber', 'job:cattle', 'job:mail']);
+    let s = goTo(open, RIVER, 'job:cattle');
     const purse = s.purse;
     s = proceed(s, RIVER);
-    expect(s.purse).toBeGreaterThan(purse);
-    expect(currentStep(s, RIVER)?.type).toBe('hub');
-    expect(s.time).toBe('evening');
+    expect(s.purse).toBe(purse + 14);
+    expect(s.coal).toBe(2);
+    expect(s.time).toBe('afternoon');
     expect(s.flags).not.toContain('jobFound');
+    expect(currentStep(s, RIVER)?.type).toBe('hub');
+  });
+
+  it('always has the mail, and no job without coal', () => {
+    const s = goTo({ ...at('morning'), coal: 0 }, RIVER, 'jobs');
+    expect(hubOptions(s, RIVER).map((o) => [o.option.id, o.open])).toEqual([['job:mail', false]]);
+    expect(closeMenu(s).submenu).toBeNull();
   });
 
   it('lets you walk away from the depot and stay where you were', () => {

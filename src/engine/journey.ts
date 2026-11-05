@@ -102,8 +102,10 @@ export type Step =
       /** What leaving the council is called (default: casting off). */
       leave?: string;
     }
-  /** Evening comes (the options at a hub go by the time of day). */
+  /** Evening comes, whatever slot it was (a day spent). */
   | { type: 'nightfall' }
+  /** That took the slot: on to the next. */
+  | { type: 'slot' }
   /** A place with things to do: its options (`StoryDef.hubs`) are offered, and we come back here after each. */
   | { type: 'hub'; hub: string }
   /** On from the hub: whatever was going on there is done with. */
@@ -133,11 +135,16 @@ export type Step =
       choices?: Record<string, Choice>;
     };
 
+/** The day's three slots: everything at a landing fills one. */
+export type Slot = 'morning' | 'afternoon' | 'evening';
+
 /** Something to do at a hub. */
 export interface HubOption {
   id: string;
   /** When it can be done (the default: any time). */
-  time?: 'morning' | 'evening';
+  times?: Slot[];
+  /** It opens a list of its own, free to look at. */
+  menu?: HubOption[];
   /** What it costs to do at all. */
   cost?: number;
   /** Only with this flag up. */
@@ -189,8 +196,10 @@ export interface JourneyState {
   /** The voyage's own seed: what's said can be drawn from it without repeating. */
   seed: number;
   rngState: number;
-  /** The time of day, for a hub's options. */
-  time: 'morning' | 'evening';
+  /** The slot of the day, for a hub's options. */
+  time: Slot;
+  /** A hub's option with a list of its own, open. */
+  submenu: string | null;
   day: number;
   place: string;
   /** Where we are in the day: its steps, then whatever was slipped in before them (`pending`, first first). */
@@ -235,6 +244,7 @@ export function newJourney(seed: number, story: StoryDef, start: { purse: number
   const state: JourneyState = {
     seed: seed >>> 0,
     time: 'morning',
+    submenu: null,
     rngState: new Rng(seed >>> 0).state,
     day: story.days[0].day,
     place: story.days[0].place,
@@ -304,6 +314,10 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
     state.time = 'evening';
     return advance(state, story);
   }
+  if (step.type === 'slot') {
+    state.time = state.time === 'morning' ? 'afternoon' : 'evening';
+    return advance(state, story);
+  }
   if (step.type === 'leave') {
     state.pending = [];
     return advance(state, story);
@@ -351,8 +365,10 @@ export function proceed(prev: JourneyState, story: StoryDef): JourneyState {
 export function hubOptions(state: JourneyState, story: StoryDef): { option: HubOption; open: boolean }[] {
   const step = currentStep(state, story);
   if (step?.type !== 'hub') return [];
-  return (story.hubs?.[step.hub].options ?? [])
-    .filter((option) => (!option.time || option.time === state.time) && (!option.flag || state.flags.includes(option.flag)))
+  const top = story.hubs?.[step.hub].options ?? [];
+  const list = (state.submenu && top.find((o) => o.id === state.submenu)?.menu) || top;
+  return list
+    .filter((option) => (!option.times || option.times.includes(state.time)) && (!option.flag || state.flags.includes(option.flag)))
     .map((option) => ({ option, open: state.purse >= (option.cost ?? 0) && state.coal >= (option.coal ?? 0) }));
 }
 
@@ -369,9 +385,19 @@ export function goTo(prev: JourneyState, story: StoryDef, id: string): JourneySt
   const choice = hubOptions(prev, story).find((o) => o.option.id === id);
   if (!choice?.open) throw new Error(`Can't go to ${id}`);
   const state = clone(prev);
+  if (choice.option.menu) {
+    state.submenu = id;
+    return state;
+  }
+  state.submenu = null;
   state.purse -= choice.option.cost ?? 0;
   state.pending = clone(choice.option.steps);
   return arrive(state, story);
+}
+
+/** Out of a hub's list, back to the main one. */
+export function closeMenu(prev: JourneyState): JourneyState {
+  return { ...prev, submenu: null };
 }
 
 /** Can this be bought now (at this council, affordable, room for it, not already had)? */

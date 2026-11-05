@@ -592,9 +592,24 @@ the status line, a word from Gus or Willie, and a list. Each entry opens a
 similar menu or starts a game (or a greeting before one). Cities have many
 entries, small landings one or two. There's always a free anchorage: downstream
 going up, upstream coming down. The Tri-Cities: anchor downstream, Bettendorf
-Saloon, Chandler, Mercantile dock, Coal Depot (fill bunker), Davenport Pilot
-Games (mornings, after Willie's intel, 6 coal), and jobs if Willie found any,
-each priced: timber herding +$7, cattle freight +$12, the mail run -1 coal +$5.
+Saloon, Moline Mercantile (the docking fee: chandler, market halls, dock
+hands), Rock Island Coal Depot, Davenport Pilot Games (mornings, after Willie's
+intel, 6 coal), Odd Jobs (a list of its own, free to open).
+
+**Three slots a day:** morning, afternoon, evening. Everything fills one: the
+depot, the mercantile, a job. The Pilot Games are mornings only and fill the
+day. The evening is the deck game at anchor, or Bettendorf instead (the crew
+stay aboard, playing among themselves and listening to Lars sing).
+
+**Coal, and what nobody tells the player.** Coal is dear on the black market
+($10 to buy, $8 to sell), so a job that burns a load pays next to nothing: the
+free market adjusts, and the US Mail doesn't, so mail always sits undelivered.
+But a full bunker from the depot costs what you lost there, about $2 a load. So
+the mail pays after all, for anyone with a friend at the depot; and better
+still, lose at the depot, sell on the black market, and repeat, as the days tick
+by. Nobody says so. Willie only remarks that at these prices it doesn't pay.
+Spring is eternal here: no pressure but the day count. Antes go by the table,
+not the day, so waiting never makes the game dearer.
 
 **The depot, friendly.** *"Been a while! Ain't seen The Best Intentions since
 last summer. Where's Bill?"* No bad feelings and no giveaways: a game to pass
