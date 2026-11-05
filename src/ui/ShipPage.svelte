@@ -1,19 +1,22 @@
 <script lang="ts">
-  import { BOAT, CREW, crewButtons, morningStrength, snagDef, type BoatParts, type JourneyState } from '../engine';
+  import { BOAT, CREW, STATIONS, morningStrength, snagDef, type BoatParts, type JourneyState, type Station } from '../engine';
   import { t } from '../i18n';
   import { called, snagTitle } from './format';
 
   /**
    * The Best Intentions: the state of the boat. Her coal, her crew and what
-   * they make, the hands on hire (and whether to keep them), what wants
+   * who stands where, the hands on hire (and whether to keep them), what wants
    * repairing, and her own features, each rated 0 to 2.
    */
-  let { journey, onrehire, onclose }: { journey: JourneyState; onrehire: (id: string, on: boolean) => void; onclose: () => void } = $props();
+  let {
+    journey,
+    onrehire,
+    onstation,
+    onclose,
+  }: { journey: JourneyState; onrehire: (id: string, on: boolean) => void; onstation: (id: string, station: Station) => void; onclose: () => void } = $props();
 
   const parts = Object.keys(BOAT.parts) as (keyof BoatParts)[];
-  const skills = ['strength', 'cook', 'know'] as const;
   const repairs = $derived(journey.snags.filter((j) => snagDef(j.index).kind === 'trouble'));
-  const own = $derived(journey.crew.filter((id) => !CREW[id]?.temporary));
   const pips = (tier: number) => '●'.repeat(tier) + '○'.repeat(2 - tier);
 </script>
 
@@ -30,17 +33,23 @@
   <p class="note">{t('ship.strengthNote')}</p>
 
   <h3>{t('ship.crew')}</h3>
+  <p class="note">{t('ship.bridge')}</p>
   <table>
-    <thead><tr><th></th>{#each skills as skill}<th>{t(`ship.skill.${skill}`)}</th>{/each}</tr></thead>
+    <thead><tr><th></th>{#each STATIONS as station}<th>{t(`ship.station.${station}`)}</th>{/each}</tr></thead>
     <tbody>
       {#each journey.crew as id}
         <tr>
-          <td>{called(id)}{' '}<small>({crewButtons(id)})</small></td>
-          {#each skills as skill}<td class="pips">{pips(CREW[id].skills[skill])}</td>{/each}
+          <td>{called(id)}</td>
+          {#each STATIONS as station}
+            <td>
+              <button class="post" class:here={journey.stations[id] === station} aria-pressed={journey.stations[id] === station} onclick={() => onstation(id, station)}>{pips(CREW[id].ratings[station])}</button>
+            </td>
+          {/each}
         </tr>
       {/each}
     </tbody>
   </table>
+  <p class="note">{t('ship.tomorrow')}</p>
 
   <h3>{t('ship.hires')}</h3>
   {#each journey.hires as hire (hire.id)}
@@ -142,6 +151,20 @@
   }
   .pips {
     letter-spacing: 0.1em;
+  }
+  /* A station: the hand's rating there, boxed where they stand. */
+  .post {
+    font: inherit;
+    letter-spacing: 0.08em;
+    color: var(--grey);
+    background: none;
+    border: 1px solid transparent;
+    outline: none;
+    padding: 0.1em 0.3em;
+  }
+  .post.here {
+    color: var(--ink);
+    background: var(--paper);
   }
   .hire {
     display: flex;

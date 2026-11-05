@@ -23,12 +23,14 @@ import {
   hubOptions,
   closeMenu,
   deckCrew,
+  setStation,
   setRehire,
   type Slot,
   type JourneyState,
   type StoryDef,
   STORY_CONFIG,
 } from './journey';
+import { BOAT, shipStrength } from './boat';
 import { Rng } from './rng';
 import { newSession, nextSessionHand, submit, type TableSession } from './session';
 import { DOCK_FEE, TROUBLE, coveredHands } from './snags';
@@ -431,6 +433,33 @@ describe('hired hands', () => {
     s = buy(s, story, 'cook');
     // Her 2 buttons, and 2 more for each of the other three.
     expect(s.strength).toBe(18 + 2 + 6);
+  });
+});
+
+describe('stations', () => {
+  const crew = ['gus', 'lars', 'willie'];
+  const home = { gus: 'engine', lars: 'furnace', willie: 'galley' } as const;
+  const parts = BOAT.parts;
+
+  it('makes the crew\'s strength from who stands where', () => {
+    expect(shipStrength(crew, home, parts)).toBe(18);
+    // A better engine doubles Gus's work.
+    expect(shipStrength(crew, home, { ...parts, engine: 2 })).toBe(24);
+    // Willie in the engine room halves it; Gus at the deck adds nothing.
+    expect(shipStrength(crew, { gus: 'deck', lars: 'furnace', willie: 'engine' }, parts)).toBe(15);
+    // Lars can't run an engine.
+    expect(shipStrength(crew, { gus: 'furnace', lars: 'engine', willie: 'galley' }, parts)).toBe(9);
+  });
+
+  it('feeds everyone else as well as the best cook in the galley, once there\'s a kitchen', () => {
+    expect(shipStrength(crew, home, { ...parts, kitchen: 1 })).toBe(20);
+  });
+
+  it('takes effect the next morning', () => {
+    const story: StoryDef = { days: [{ day: 1, place: 'muscatine', steps: [{ type: 'dawn' }, { type: 'caption', lines: [] }, { type: 'dawn' }, { type: 'caption', lines: [] }] }], stuckNight: [] };
+    const s = setStation(newJourney(1, story, RIVER_START), 'gus', 'deck');
+    expect(s.strength).toBe(18);
+    expect(proceed(s, story).strength).toBe(12);
   });
 });
 

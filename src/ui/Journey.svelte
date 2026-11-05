@@ -21,6 +21,7 @@
     playEncounter,
     proceed,
     setRehire,
+    setStation,
     seatOf,
     snagDef,
     wonWithTrips,
@@ -190,7 +191,7 @@
 {:else}
   <div class="page">
     <!-- Where the boat stands: the day, the place, the purse, the crew's strength, the coal. -->
-    {#if shipOpen}<ShipPage {journey} onrehire={(id, on) => (journey = setRehire(journey, id, on))} onclose={() => (shipOpen = false)} />{/if}
+    {#if shipOpen}<ShipPage {journey} onrehire={(id, on) => (journey = setRehire(journey, id, on))} onstation={(id, station) => (journey = setStation(journey, id, station))} onclose={() => (shipOpen = false)} />{/if}
     <div class="status" class:unseen={!journey.mornings}>
       <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
       <span>{t('river.purse')} ${journey.purse}</span>

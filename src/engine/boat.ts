@@ -10,10 +10,16 @@ import { TROUBLE } from './snags';
 /** Everything on the boat is rated 0, 1 or 2: none, some, the best. */
 export type Rating = 0 | 1 | 2;
 
+/** Where a hand can stand. The bridge is the Captain's, and needs nobody else. */
+export const STATIONS = ['furnace', 'engine', 'galley', 'deck'] as const;
+export type Station = (typeof STATIONS)[number];
+
 export interface CrewDef {
   id: string;
-  /** Strength: buttons made each morning. Cook: what supper does for everyone else. Know: the river (no effect yet). */
-  skills: { strength: Rating; cook: Rating; know: Rating };
+  /** How good they are at each station. */
+  ratings: Record<Station, Rating>;
+  /** Where they go unless told otherwise. */
+  home: Station;
   /** Paid each morning; a hire, for each two days. */
   wage: number;
   /** How they play at the deck game. */
@@ -23,11 +29,11 @@ export interface CrewDef {
 }
 
 export const CREW: Record<string, CrewDef> = {
-  gus: { id: 'gus', skills: { strength: 1, cook: 0, know: 2 }, wage: 3, ai: 'careful' },
-  lars: { id: 'lars', skills: { strength: 2, cook: 0, know: 0 }, wage: 2, ai: 'stubborn' },
-  willie: { id: 'willie', skills: { strength: 1, cook: 1, know: 1 }, wage: 1, ai: 'loose' },
-  fireman: { id: 'fireman', skills: { strength: 2, cook: 0, know: 0 }, wage: 4, ai: 'defeatist', temporary: true },
-  pfund: { id: 'pfund', skills: { strength: 0, cook: 2, know: 1 }, wage: 6, ai: 'careful', temporary: true },
+  gus: { id: 'gus', ratings: { furnace: 1, engine: 2, galley: 0, deck: 1 }, home: 'engine', wage: 3, ai: 'careful' },
+  lars: { id: 'lars', ratings: { furnace: 2, engine: 0, galley: 0, deck: 1 }, home: 'furnace', wage: 2, ai: 'stubborn' },
+  willie: { id: 'willie', ratings: { furnace: 1, engine: 1, galley: 1, deck: 2 }, home: 'galley', wage: 1, ai: 'loose' },
+  fireman: { id: 'fireman', ratings: { furnace: 2, engine: 0, galley: 0, deck: 1 }, home: 'furnace', wage: 4, ai: 'defeatist', temporary: true },
+  pfund: { id: 'pfund', ratings: { furnace: 0, engine: 0, galley: 2, deck: 1 }, home: 'galley', wage: 6, ai: 'careful', temporary: true },
 };
 
 /** Who's aboard when the voyage begins. */
@@ -35,6 +41,7 @@ export const STARTING_CREW = ['gus', 'lars', 'willie'];
 
 /** The vessel's own features, rated like the crew. */
 export interface BoatParts {
+  boiler: Rating;
   engine: Rating;
   kitchen: Rating;
   rooms: Rating;
@@ -42,28 +49,38 @@ export interface BoatParts {
   paddles: Rating;
 }
 
+/** What each station works. */
+export const STATION_PART: Record<Station, keyof BoatParts> = { furnace: 'boiler', engine: 'engine', galley: 'kitchen', deck: 'rooms' };
+
 export const BOAT = {
   /** Loads of coal she carries at most. */
   bunker: 6,
   /** Strength added every morning (hammocks). */
   comfort: 0,
-  parts: { engine: 1, kitchen: 0, rooms: 0, rudder: 1, paddles: 1 } as BoatParts,
+  parts: { boiler: 1, engine: 1, kitchen: 0, rooms: 0, rudder: 1, paddles: 1 } as BoatParts,
 };
 
 /** A hire lasts the day they sign on and the next. */
 export const HIRE_DAYS = 2;
 
-/** The buttons someone makes each morning. */
-export const crewButtons = (id: string) => 2 + 3 * (CREW[id]?.skills.strength ?? 0);
+/** What a hand makes just by being aboard, and what a point of asset × rating adds at the furnace or the engine. */
+const ABOARD = 2;
+const WORKING = 3;
 
-/** Eating well: a proper cook, with a kitchen to work in, puts this on everyone else. */
-const FED_WELL = 2;
+/** Who stands where: each hand's station. */
+export type Stations = Record<string, Station>;
 
-/** What the crew make between them each morning. */
-export function shipStrength(crew: string[], parts: BoatParts): number {
-  const cook = crew.find((id) => CREW[id]?.skills.cook === 2);
-  const fed = cook && parts.kitchen >= 1 ? FED_WELL * (crew.length - 1) : 0;
-  return crew.reduce((a, id) => a + crewButtons(id), 0) + fed;
+/** What the hand at this station adds to the crew's strength each morning (the galley's is for each of the others). */
+export function stationOutput(id: string, station: Station, parts: BoatParts): number {
+  const rate = (CREW[id]?.ratings[station] ?? 0) * parts[STATION_PART[station]];
+  return station === 'furnace' || station === 'engine' ? rate * WORKING : station === 'galley' ? rate : 0;
+}
+
+/** What the crew make between them each morning: the furnace and the engine add up; the galley feeds everyone else, as well as its best cook. */
+export function shipStrength(crew: string[], stations: Stations, parts: BoatParts): number {
+  const working = crew.filter((id) => stations[id] === 'furnace' || stations[id] === 'engine');
+  const fed = Math.max(0, ...crew.filter((id) => stations[id] === 'galley').map((id) => stationOutput(id, 'galley', parts)));
+  return crew.length * ABOARD + working.reduce((a, id) => a + stationOutput(id, stations[id], parts), 0) + fed * (crew.length - 1);
 }
 
 /** What an item does once bought. */
