@@ -35,7 +35,7 @@
     <tbody>
       {#each journey.crew as id}
         <tr>
-          <td>{called(id)}<small> {crewButtons(id)}</small></td>
+          <td>{called(id)}{' '}<small>({crewButtons(id)})</small></td>
           {#each skills as skill}<td class="pips">{pips(CREW[id].skills[skill])}</td>{/each}
         </tr>
       {/each}
@@ -148,6 +148,9 @@
     justify-content: space-between;
     gap: 0.5rem;
     font-size: 0.92rem;
+  }
+  input {
+    accent-color: var(--paper);
   }
   ul {
     margin: 0;
