@@ -524,7 +524,7 @@ const SHOPTALK = {
 function hiredTalk({ hand, seed }: TalkContext): RoundScript {
   const pick = (lines: string[], k: number) => ({ size: 'aside' as const, who: 'gaylord', text: new Rng(seed + hand + k).pick(lines) });
   return {
-    ...(hand === 1 ? { deal: [say('ellie', 'A captain who can’t be bothered to play his own seat. Lovely.')] } : {}),
+    ...(hand === 1 ? { deal: [say('gaylord', 'Here to watch and learn, I see. Well, wish me luck.'), say('ellie', 'A captain who can’t be bothered to play his own seat. Lovely.')] } : {}),
     flop: [pick(SHOPTALK.flop, 1)],
     turn: [pick(SHOPTALK.turn, 2)],
     river: [pick(SHOPTALK.river, 3)],
