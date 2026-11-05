@@ -123,6 +123,9 @@ const GAYLORD_LAST_DAY = 8;
 const GAYLORD_LEAVES = 21;
 const GAYLORD_FEE = 10;
 const LOAN = 50;
+const OWES_GAYLORD = 'owesGaylord';
+/** He despises anyone who won't play their own seat, and that means his clients: no loan for them. */
+const NO_LOAN = 'hiredGaylord';
 
 /** He has a stash, and he likes your style. Double back when you next meet. */
 const loanTalk: Step = {
@@ -130,7 +133,7 @@ const loanTalk: Step = {
   encounter: { id: 'loan', stake: 'purse', rivals: [{ id: 'gaylord', ai: 'gambler', money: 40 }], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
   solved: [],
   choices: {
-    take: { effects: { purse: LOAN, flag: 'owesGaylord' } },
+    take: { effects: { purse: LOAN, flag: OWES_GAYLORD } },
     decline: {},
   },
 };
@@ -173,7 +176,7 @@ const tournament: Step[] = [
     solved: [{ who: 'ellie', text: 'That’s you, Captain. Get your hat.' }],
     failed: [{ who: 'ellie', text: 'Not today, Captain. Same time tomorrow.' }],
     failSkip: 3,
-    beatenBy: { id: 'gaylord', unless: 'owesGaylord', steps: [loanTalk] },
+    beatenBy: { id: 'gaylord', unless: [OWES_GAYLORD, NO_LOAN], steps: [loanTalk] },
   },
   {
     type: 'encounter',
@@ -202,8 +205,9 @@ const hiredGaylord: Step[] = [
     type: 'caption',
     lines: [
       { who: 'gaylord', text: 'Ten dollars covers my breakfast, my stay and the entry. I take the noon entry out of the winnings, and I keep the rest.' },
-      { who: 'gaylord', text: 'You, Captain, get a boat up the rapids. Watch and learn.' },
+      { who: 'gaylord', text: 'You, Captain, get a boat up the rapids. Watch and learn. Don’t ask me for a loan: I don’t lend to clients. A man ought to lose his own money.' },
     ],
+    effects: { flag: NO_LOAN },
   },
   { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2 },
   { ...noonStep, beatenBy: undefined, encounter: { ...noonStep.encounter, id: 'hired', proxy: 'gambler' } },
@@ -316,14 +320,14 @@ const triCities: Hub = {
       id: 'gaylord',
       times: ['morning'],
       flag: 'met:deckIntel',
-      notFlag: 'owesGaylord',
+      notFlag: [OWES_GAYLORD],
       from: GAYLORD_FIRST_HIRE,
       to: GAYLORD_LAST_HIRE,
       cost: GAYLORD_FEE,
       coal: CLIMB_COAL,
       steps: hiredGaylord,
     },
-    { id: 'loan', notFlag: 'owesGaylord', from: GAYLORD_LAST_HIRE + 1, to: GAYLORD_LEAVES, steps: [loanTalk] },
+    { id: 'loan', notFlag: [OWES_GAYLORD, NO_LOAN], from: GAYLORD_LAST_HIRE + 1, to: GAYLORD_LEAVES, steps: [loanTalk] },
     {
       id: 'jobs',
       times: DAYTIME,

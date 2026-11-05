@@ -139,8 +139,8 @@ export type Step =
       jolt?: boolean;
       /** In place of `solved`: closing lines taken in turn, a different set each day (the evenings' endings). */
       closers?: StoryLine[][];
-      /** Beaten at it by this one: these steps come next (unless the flag's up). */
-      beatenBy?: { id: string; unless?: string; steps: Step[] };
+      /** Beaten at it by this one: these steps come next (unless any of the flags is up). */
+      beatenBy?: { id: string; unless?: string[]; steps: Step[] };
       /** Failing it, this many of the steps ahead are passed by (a tournament lost is a day done). */
       failSkip?: number;
       /** Which try this is (the first, or again after a night stuck). */
@@ -163,8 +163,8 @@ export interface HubOption {
   cost?: number;
   /** Only with this flag up. */
   flag?: string;
-  /** Not with this flag up. */
-  notFlag?: string;
+  /** Not with any of these flags up. */
+  notFlag?: string[];
   /** Only from this day of the voyage, and until this one. */
   from?: number;
   to?: number;
@@ -400,7 +400,7 @@ export function hubOptions(state: JourneyState, story: StoryDef): { option: HubO
       (option) =>
         (!option.times || option.times.includes(state.time)) &&
         (!option.flag || state.flags.includes(option.flag)) &&
-        (!option.notFlag || !state.flags.includes(option.notFlag)) &&
+        !option.notFlag?.some((f) => state.flags.includes(f)) &&
         state.mornings >= (option.from ?? 0) &&
         state.mornings <= (option.to ?? Infinity),
     )
@@ -753,7 +753,7 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
   else {
     for (let k = 0; k < (step.failSkip ?? 0); k++) state.pending.splice(1, 1);
     const by = step.beatenBy;
-    if (by && enc.session.seats.find((p) => !p.out)?.id === by.id && !(by.unless && state.flags.includes(by.unless))) state.pending.splice(1, 0, ...by.steps);
+    if (by && enc.session.seats.find((p) => !p.out)?.id === by.id && !by.unless?.some((f) => state.flags.includes(f))) state.pending.splice(1, 0, ...by.steps);
   }
   return advance(state, story);
 }

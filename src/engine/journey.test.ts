@@ -481,6 +481,12 @@ describe('Gaylord\'s week', () => {
     expect(s.purse).toBe(50);
   });
 
+  it('won\'t lend to a client', () => {
+    const hired = proceed(goTo(at(4), RIVER, 'gaylord'), RIVER);
+    expect(hired.flags).toContain('hiredGaylord');
+    expect(ids({ ...at(7), flags: hired.flags })).not.toContain('loan');
+  });
+
   it('offers the loan when he beats you at the final', () => {
     const step = hubOptions(at(4), RIVER).find((o) => o.option.id === 'tournament')!.option.steps[2];
     expect(step.type === 'encounter' && step.beatenBy?.id).toBe('gaylord');
