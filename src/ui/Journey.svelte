@@ -178,12 +178,13 @@
 
     <div class="panel intertitle">
       {#if step.type === 'hub'}
-        {#each RIVER.hubs?.[step.hub].scene(journey) ?? [] as line}<p>{line}</p>{/each}
+        {@const said = RIVER.hubs?.[step.hub].advice(journey)}
+        {#if said}<p class="said"><span class="who">{speaker(said)}:</span>{' '}{said.text}</p>{/if}
         <ul class="trader">
           {#each hubOptions(journey, RIVER) as { option, open } (option.id)}
             <li>
-              <span class="item"><strong>{t(`hub.${option.id}.name`)}</strong><small>{!open && option.coal ? t('river.needsCoal') : t(`hub.${option.id}.desc`)}</small></span>
-              <button class="ghost" disabled={!open} onclick={() => (journey = goTo(journey, RIVER, option.id))}>{option.cost ? `$${option.cost}` : t('river.go')}</button>
+              <span class="item"><strong>{t(`hub.${option.id}.name`)}</strong><small>{t(`hub.${option.id}.desc`, { n: journey.coal, max: BOAT.bunker })}</small></span>
+              <button class="ghost" disabled={!open} onclick={() => (journey = goTo(journey, RIVER, option.id))}>{option.cost ? `$${option.cost}` : !open && option.coal ? t('river.needsCoal', { n: option.coal }) : t('river.go')}</button>
             </li>
           {/each}
         </ul>
@@ -194,18 +195,17 @@
           <p class:said={!!who}>{#if who}<span class="who">{who}:</span>{' '}{/if}{line.text}</p>
         {/each}
       {:else if step.type === 'council'}
-        <h2>{t('river.council')}</h2>
+        <h2>{t(step.title ?? 'river.council')}</h2>
         {#each step.advice as line}
           <p class="said"><span class="who">{speaker(line)}:</span>{' '}{line.text}</p>
         {/each}
-        <h3>{t('river.trader')}</h3>
         <ul class="trader">
           {#each step.trader as id}
             {@const item = ITEMS[id]}
             {@const owned = item.once && journey.upgrades.includes(id)}
             <li>
               <span class="item"><strong>{t(`item.${id}.name`)}</strong><small>{t(`item.${id}.desc`)}</small></span>
-              <button class="ghost" disabled={!canBuy(journey, RIVER, id)} onclick={() => purchase(id)}>{owned ? t('river.owned') : `$${item.price}`}</button>
+              <button class="ghost" disabled={!canBuy(journey, RIVER, id)} onclick={() => purchase(id)}>{owned ? t('river.owned') : item.price < 0 ? `+$${-item.price}` : `$${item.price}`}</button>
             </li>
           {/each}
         </ul>
@@ -279,6 +279,7 @@
     color: var(--grey);
   }
   .boat {
+    --boat-width: 100%;
     max-width: 280px;
     width: 100%;
     margin: 0 auto;
@@ -301,11 +302,6 @@
   }
   .panel h2 {
     text-align: center;
-  }
-  .panel h3 {
-    font-family: var(--title-font);
-    font-weight: normal;
-    margin: 1.2rem 0 0.4rem;
   }
   .panel p {
     margin: 0 0 0.7rem;

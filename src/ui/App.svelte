@@ -9,7 +9,8 @@
   import Journey from './Journey.svelte';
   import MonthEnd from './MonthEnd.svelte';
   import Title from './Title.svelte';
-  import { loadBest, loadGame, loadJourney, recordResult, saveGame } from './storage';
+  import { loadBest, loadGame, loadJourney, recordResult, saveGame, saveJourney } from './storage';
+  import { SCENES } from '../story/dev';
   import { giveButtons, newTutorial, rematch, skipToButtons, skipToHands, tutorialScript, TUTORIAL } from '../story/tutorial';
   import { roundScript, type Script } from '../story/script';
 
@@ -65,6 +66,11 @@
   /** The story: playing it (`fresh`: a new voyage, not the one saved). */
   let river = $state<{ fresh: boolean } | null>(null);
   let riverSaved = $state(!!loadJourney());
+  /** In development: straight to a scene of the story (it replaces the one saved). */
+  function jump(scene: number) {
+    saveJourney(SCENES[scene].state());
+    river = { fresh: false };
+  }
   function leaveRiver() {
     river = null;
     riverSaved = !!loadJourney();
@@ -183,7 +189,7 @@
       <MonthEnd {game} onpause={pause} onagain={() => start()} />
     {/if}
   {:else}
-    <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} ontutorial={startTutorial} onstory={(afresh) => (river = { fresh: afresh || !riverSaved })} storySaved={riverSaved} />
+    <Title savedMonth={saved?.month ?? null} onstart={() => start()} oncontinue={resume} ontutorial={startTutorial} onstory={(afresh) => (river = { fresh: afresh || !riverSaved })} storySaved={riverSaved} scenes={import.meta.env.DEV ? SCENES.map((s) => s.label) : []} onscene={jump} />
   {/if}
 </div>
 <CardZoom />

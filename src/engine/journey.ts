@@ -97,6 +97,8 @@ export type Step =
       advice: StoryLine[];
       trader: string[];
       coal: number;
+      /** Its heading, as a menu opened from a hub (the default: the morning council). */
+      title?: string;
       /** What leaving the council is called (default: casting off). */
       leave?: string;
     }
@@ -106,8 +108,6 @@ export type Step =
   | { type: 'hub'; hub: string }
   /** On from the hub: whatever was going on there is done with. */
   | { type: 'leave' }
-  /** An afternoon's work (`StoryDef.jobs`, taken in turn). */
-  | { type: 'job' }
   /** The day's draw: tables of `entrants`, yours filled first; the others are played out unseen, and we meet whoever won. */
   | { type: 'draw'; entrants: { id: string; ai: AiId }[]; tableSize: number; finalists: number }
   /** Under way: it burns the coal, and you arrive. */
@@ -149,8 +149,8 @@ export interface HubOption {
 
 export interface Hub {
   options: HubOption[];
-  /** How the place looks just now. */
-  scene: (state: JourneyState) => string[];
+  /** Someone aboard says what's on their mind. */
+  advice: (state: JourneyState) => StoryLine | null;
 }
 
 export interface DayDef {
@@ -164,8 +164,6 @@ export interface StoryDef {
   days: DayDef[];
   /** The deck game aboard, played when you're stuck for the night. */
   stuckNight: Step[];
-  /** What an afternoon's work can be: taken in turn. */
-  jobs?: { text: string; pays: number }[];
   hubs?: Record<string, Hub>;
 }
 
@@ -310,11 +308,6 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
     state.pending = [];
     return advance(state, story);
   }
-  if (step.type === 'job') {
-    const job = story.jobs?.[state.mornings % story.jobs.length];
-    state.pending[0] = { type: 'caption', lines: [{ text: job?.text ?? '' }], effects: { purse: job?.pays ?? 0, clear: 'jobFound' } };
-    return state;
-  }
   if (step.type === 'draw') {
     drawTables(state, step);
     return advance(state, story);
@@ -330,7 +323,7 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
 
 function applyEffects(state: JourneyState, effects: Effects | undefined) {
   if (!effects) return;
-  if (effects.coal) state.coal = Math.min(BOAT.bunker, state.coal + effects.coal);
+  if (effects.coal) state.coal = Math.max(0, Math.min(BOAT.bunker, state.coal + effects.coal));
   if (effects.purse) state.purse = Math.max(0, state.purse + effects.purse);
   if (effects.flag && !state.flags.includes(effects.flag)) state.flags.push(effects.flag);
   if (effects.clear) state.flags = state.flags.filter((f) => f !== effects.clear);
@@ -363,6 +356,14 @@ export function hubOptions(state: JourneyState, story: StoryDef): { option: HubO
     .map((option) => ({ option, open: state.purse >= (option.cost ?? 0) && state.coal >= (option.coal ?? 0) }));
 }
 
+/** In development: straight to these steps, whatever's going on (the scene list on the title). */
+export function jumpTo(prev: JourneyState, story: StoryDef, steps: Step[]): JourneyState {
+  const state = clone(prev);
+  state.encounter = null;
+  state.pending = clone(steps);
+  return arrive(state, story);
+}
+
 /** One of the hub's options taken: its steps, then back here. */
 export function goTo(prev: JourneyState, story: StoryDef, id: string): JourneyState {
   const choice = hubOptions(prev, story).find((o) => o.option.id === id);
@@ -379,7 +380,7 @@ export function canBuy(state: JourneyState, story: StoryDef, itemId: string): bo
   const item = ITEMS[itemId];
   if (step?.type !== 'council' || !item || !step.trader.includes(itemId) || state.purse < item.price) return false;
   if (item.once && state.upgrades.includes(itemId)) return false;
-  if (item.effect.coal && state.coal >= BOAT.bunker) return false;
+  if (item.effect.coal && (state.coal + item.effect.coal > BOAT.bunker || state.coal + item.effect.coal < 0)) return false;
   if (item.effect.hire && state.crew.includes(item.effect.hire)) return false;
   return true;
 }
@@ -391,7 +392,7 @@ export function buy(prev: JourneyState, story: StoryDef, itemId: string): Journe
   const e = item.effect;
   state.purse -= item.price;
   if (item.once) state.upgrades.push(itemId);
-  if (e.coal) state.coal = Math.min(BOAT.bunker, state.coal + e.coal);
+  if (e.coal) state.coal += e.coal;
   if (e.comfort) {
     state.comfort += e.comfort;
     state.strength += e.comfort;

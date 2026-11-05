@@ -587,11 +587,14 @@ passage to St. Louis, and plays you for the fare.
 **Finlay** is a Tri-Cities background carouser: bet-crazy, enthusiastic, not
 very good.
 
-**A hub lists what you can do there,** by the time of day. The Tri-Cities: in
-the evening, *anchor downstream* (free: Willie wades ashore for work and
-gossip) or *dock at Bettendorf* (a fee, the saloon's high rollers); in the
-morning, *the Pilot Tournament* (all day; once you've heard of it), *the coal
-depot*, *odd jobs* (if Willie found any); any time, *the chandler*.
+**The docking menu.** Every place you arrive at is the same screen: the boat,
+the status line, a word from Gus or Willie, and a list. Each entry opens a
+similar menu or starts a game (or a greeting before one). Cities have many
+entries, small landings one or two. There's always a free anchorage: downstream
+going up, upstream coming down. The Tri-Cities: anchor downstream, Bettendorf
+Saloon, Chandler, Mercantile dock, Coal Depot (fill bunker), Davenport Pilot
+Games (mornings, after Willie's intel, 6 coal), and jobs if Willie found any,
+each priced: timber herding +$7, cattle freight +$12, the mail run -1 coal +$5.
 
 **The depot, friendly.** *"Been a while! Ain't seen The Best Intentions since
 last summer. Where's Bill?"* No bad feelings and no giveaways: a game to pass

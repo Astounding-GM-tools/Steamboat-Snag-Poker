@@ -131,7 +131,7 @@
 
 <style>
   .boat {
-    width: min(380px, 84vw);
+    width: var(--boat-width, min(380px, 84vw));
     margin: 0 auto;
     display: block;
     overflow: visible;

@@ -40,7 +40,7 @@ function autopilot(seed: number, guard = 40000): JourneyState[] {
     else if (step.type === 'council') s = castOff(s, RIVER);
     else if (step.type === 'hub') {
       const can = (id: string) => hubOptions(s, RIVER).some((o) => o.option.id === id && o.open);
-      s = goTo(s, RIVER, s.time === 'evening' ? 'anchor' : can('tournament') ? 'tournament' : s.coal < 3 ? 'depot' : 'jobs');
+      s = goTo(s, RIVER, s.time === 'evening' ? 'anchor' : can('tournament') ? 'tournament' : 'depot');
     } else if (step.type === 'encounter') {
       const e = s.encounter!;
       if (e.outcome) s = leaveEncounter(s, RIVER);
@@ -288,7 +288,6 @@ describe('the pilot\'s tournament', () => {
       },
     ],
     stuckNight: [{ type: 'caption', lines: [{ text: 'Supper.' }] }],
-    jobs: [{ text: 'Cattle.', pays: 16 }],
   };
   it('takes the entry, seats the morning\'s winners, and pays the table to whoever\'s left', () => {
     const s = newJourney(3, story, RIVER_START);
@@ -339,19 +338,19 @@ describe('the Tri-Cities', () => {
   const ids = (s: JourneyState) => hubOptions(s, RIVER).map((o) => o.option.id);
 
   it('offers what the time of day allows, and what you know about', () => {
-    expect(ids(at('evening'))).toEqual(['anchor', 'bettendorf', 'chandler']);
-    expect(ids(at('morning'))).toEqual(['depot', 'chandler']);
-    expect(ids(at('morning', ['met:deckIntel', 'jobFound']))).toEqual(['tournament', 'depot', 'jobs', 'chandler']);
+    expect(ids(at('evening'))).toEqual(['anchor', 'bettendorf', 'chandler', 'mercantile']);
+    expect(ids(at('morning'))).toEqual(['chandler', 'mercantile', 'depot']);
+    expect(ids(at('morning', ['met:deckIntel', 'jobFound']))).toEqual(['chandler', 'mercantile', 'depot', 'tournament', 'job:timber', 'job:cattle', 'job:mail']);
   });
 
   it('won\'t have you at the tournament without the coal for the climb', () => {
-    const s = { ...at('morning', ['met:deckIntel']), coal: 1 };
+    const s = { ...at('morning', ['met:deckIntel']), coal: 5 };
     expect(hubOptions(s, RIVER).find((o) => o.option.id === 'tournament')?.open).toBe(false);
     expect(() => goTo(s, RIVER, 'tournament')).toThrow();
   });
 
   it('comes back to the hub after an option, the day moved on', () => {
-    let s = goTo(at('morning', ['jobFound']), RIVER, 'jobs');
+    let s = goTo(at('morning', ['jobFound']), RIVER, 'job:cattle');
     const purse = s.purse;
     s = proceed(s, RIVER);
     expect(s.purse).toBeGreaterThan(purse);

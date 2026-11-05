@@ -16,8 +16,11 @@
     onstory: (afresh?: boolean) => void;
     /** A story voyage is in progress. */
     storySaved: boolean;
+    /** In development: scenes of the story to jump to. */
+    scenes: string[];
+    onscene: (scene: number) => void;
   }
-  let { savedMonth, onstart, oncontinue, ontutorial, onstory, storySaved }: Props = $props();
+  let { savedMonth, onstart, oncontinue, ontutorial, onstory, storySaved, scenes, onscene }: Props = $props();
   let showHowTo = $state(false);
   let showOptions = $state(false);
   /** How many taglines the language file has (title.tagline.0 … n-1); one is picked per visit. */
@@ -67,6 +70,12 @@
              voyage to pick up, else League. (Story will come in above League.) -->
         <div class="menu">
           <button class="ghost" onclick={ontutorial}>{t('title.tutorial')}</button>
+          {#if scenes.length}
+            <select class="scenes" onchange={(e) => onscene(Number(e.currentTarget.value))}>
+              <option selected disabled>Jump to scene (dev)</option>
+              {#each scenes as label, i}<option value={i}>{label}</option>{/each}
+            </select>
+          {/if}
           <!-- In development only: throw the story in progress away (the dev server, your phone on it too). -->
           {#if import.meta.env.DEV && storySaved}<button class="ghost" onclick={() => onstory(true)}>Restart Story (dev)</button>{/if}
           <button class="ghost" onclick={() => onstory()}>{storySaved ? t('title.storyContinue') : t('title.story')}</button>
@@ -168,6 +177,13 @@
       padding-left: 0.5em;
       padding-right: 0.5em;
     }
+  }
+  .scenes {
+    font: inherit;
+    padding: 0.4em;
+    background: var(--ink);
+    color: var(--paper);
+    border: 1px solid var(--paper);
   }
   .tagline {
     font-style: italic;

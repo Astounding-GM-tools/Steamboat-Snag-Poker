@@ -5,7 +5,7 @@
  * yard, the queue for the pilot at Davenport (the Tri-Cities are a hub: a list
  * of things to do, morning and evening), up the rapids to LeClaire.
  */
-import type { EncounterDef, Hub, Rival, Step, StoryDef } from '../engine';
+import type { EncounterDef, Hub, HubOption, Rival, Step, StoryDef } from '../engine';
 import { DOCK_FEE, PAMPHLETS, Rng, STRIKE_BUTTON, TROUBLE, snagDef } from '../engine';
 import { t } from '../i18n';
 import type { SpeechLine } from '../ui/Speech.svelte';
@@ -117,6 +117,7 @@ const TOURNAMENT_HANDS = 40;
 const RAPIDS_HANDS = 8;
 
 const DOCKING_FEE = 3;
+const CLIMB_COAL = 6;
 
 /** The Pilot Tournament, at Davenport. Lost at either table, the day's done. */
 const tournament: Step[] = [
@@ -196,16 +197,28 @@ const depot: Step[] = [
     },
     solved: [],
     failed: [],
-    effects: { coal: 4 },
+    effects: { coal: 6 },
   },
   { type: 'nightfall' },
 ];
 
+/** A day's work Willie found: it fills the day, and pays. */
+const job = (id: string, text: string, pays: number, coal = 0): HubOption => ({
+  id: `job:${id}`,
+  time: 'morning',
+  flag: 'jobFound',
+  coal,
+  steps: [{ type: 'caption', lines: [{ text }], effects: { purse: pays, coal: -coal, clear: 'jobFound' } }, { type: 'nightfall' }],
+});
+
 const triCities: Hub = {
-  scene: (state) => {
-    if (state.time === 'morning') return ['Morning at the Tri-Cities. Davenport, Rock Island, Moline. And Bettendorf, if you ask in Bettendorf.'];
-    if (state.flags.includes('met:deckIntel')) return ['Evening at the Tri-Cities. The lamps come on along the levee.'];
-    return [`Late in the afternoon${state.mornings > 1 ? ', days behind,' : ''} you arrive at the Tri-Cities.`, ...(state.purse < DOCKING_FEE ? ['Funds are low.'] : [])];
+  advice: (state) => {
+    const troubled = state.snags.find((j) => snagDef(j.index).kind === 'trouble');
+    if (troubled && state.time === 'evening') return { who: 'gus', text: `${capital(t(`joker.${troubled.index}`))} wants seeing to, Captain. A night at anchor would do it.` };
+    if (state.purse < MORNING_ENTRY) return { who: 'willie', text: 'We’re near broke, Captain. I could wade ashore and ask around.' };
+    if (state.flags.includes('met:deckIntel') && state.coal < CLIMB_COAL) return { who: 'gus', text: 'She’ll want a full bunker for the rapids, Captain.' };
+    if (state.time === 'evening') return { who: 'willie', text: 'They’re batty about betting in Bettendorf, Captain. Everyone knows that, up and down the river.' };
+    return null;
   },
   options: [
     {
@@ -240,21 +253,28 @@ const triCities: Hub = {
         { type: 'dawn' },
       ],
     },
-    { id: 'tournament', time: 'morning', flag: 'met:deckIntel', coal: 3, steps: tournament },
-    { id: 'depot', time: 'morning', steps: depot },
-    { id: 'jobs', time: 'morning', flag: 'jobFound', steps: [{ type: 'job' }, { type: 'nightfall' }] },
     {
       id: 'chandler',
       steps: [
         {
           type: 'council',
-          advice: [{ who: 'gus', text: 'Three loads for the climb, Captain, and I’d not argue with four. And a second shovel wouldn’t hurt, if it comes to that.' }],
+          title: 'hub.chandler.name',
+          advice: [{ who: 'gus', text: 'A second shovel wouldn’t hurt for the climb, if it comes to that.' }],
           trader: ['food', 'fireman', 'sparePole', 'hammocks'],
           coal: 0,
           leave: 'Back',
         },
       ],
     },
+    {
+      id: 'mercantile',
+      steps: [{ type: 'council', title: 'hub.mercantile.name', advice: [], trader: ['sellCoal'], coal: 0, leave: 'Back' }],
+    },
+    { id: 'depot', time: 'morning', steps: depot },
+    { id: 'tournament', time: 'morning', flag: 'met:deckIntel', coal: CLIMB_COAL, steps: tournament },
+    job('timber', 'You herd timber off the bridge piers all day. It’s bigger than the boat.', 7),
+    job('cattle', 'You ferry a herd of cattle across the river, and spend the evening cleaning up the manure.', 12),
+    job('mail', 'You run the mail to Moline and back, and Gus counts every shovel.', 5, 1),
   ],
 };
 
@@ -267,14 +287,6 @@ export const RIVER: StoryDef = {
   ],
   stuckNight: [{ type: 'caption', lines: [{ text: 'Supper on deck, and the lantern lit.' }] }, deckLines],
   hubs: { triCities },
-  // Willie's finds, in the Tri-Cities.
-  jobs: [
-    { text: 'You ferry a herd of cattle across the river, and spend the evening cleaning up the manure.', pays: 16 },
-    { text: 'You carry a load of pearl buttons to Moline. Somebody pays you in buttons, and then, after a discussion, in dollars.', pays: 16 },
-    { text: 'You take a wedding party over to Rock Island and bring back most of them.', pays: 18 },
-    { text: 'You haul barrels for a brewer in Davenport. Lars carries two at a time, singing.', pays: 16 },
-    { text: 'You tow a raft of logs clear of the bridge. It’s bigger than the boat.', pays: 18 },
-  ],
 };
 
 /** Bill leaves the new captain the dock fee and a little over for food and coal, and the bunker as it is. */
