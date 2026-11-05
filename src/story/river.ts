@@ -138,7 +138,7 @@ const CLIMB_COAL = 6;
 
 /** The Pilot Tournament, at Davenport. Lost at either table, the day's done. */
 const tournament: Step[] = [
-  { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2, regular: { id: 'gaylord', ai: 'gambler', until: GAYLORD_LAST_DAY } },
+  { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2, regular: { id: 'gaylord', ai: 'gambler', until: GAYLORD_LAST_DAY, engaged: CLIENT } },
   {
     type: 'encounter',
     encounter: {
@@ -192,7 +192,7 @@ const tournament: Step[] = [
   { type: 'nightfall' },
 ];
 
-/** Treating the crew to breakfast at the saloon. And look, there's Gaylord, what a coincidence. He plays your seat for $10 and keeps what he wins; you watch. */
+/** Treating the crew to breakfast at the saloon. And look, there's Gaylord, what a coincidence. He's nearly booked: $10 now, and he plays your seat on the last day of his week, keeping what he wins; you watch. */
 const noonStep = tournament[2] as Extract<Step, { type: 'encounter' }>;
 const hiring: Step[] = [
   { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2 },
@@ -208,11 +208,10 @@ const breakfast: Step[] = [
     solved: [],
     choices: {
       hire: { effects: { purse: -GAYLORD_FEE, flag: CLIENT } },
-      take: { effects: { purse: LOAN, flag: OWES_GAYLORD }, skip: hiring.length },
-      pass: { skip: hiring.length },
+      take: { effects: { purse: LOAN, flag: OWES_GAYLORD } },
+      pass: {},
     },
   },
-  ...hiring,
   { type: 'slot' },
 ];
 
@@ -319,6 +318,7 @@ const triCities: Hub = {
       ],
     },
     { id: 'tournament', times: ['morning'], flag: 'met:deckIntel', coal: CLIMB_COAL, steps: tournament },
+    { id: 'seat', times: ['morning'], flag: CLIENT, from: GAYLORD_LAST_DAY, to: GAYLORD_LAST_DAY, coal: CLIMB_COAL, steps: hiring },
     { id: 'breakfast', times: ['morning'], cost: BREAKFAST_COST, from: GAYLORD_FIRST_HIRE, to: GAYLORD_LEAVES, steps: breakfast },
     {
       id: 'jobs',
@@ -490,15 +490,15 @@ function noonTalk({ met, day }: TalkContext): RoundScript {
 }
 
 /** Over breakfast: he only brings up what he'd offer you. */
-function breakfastTalk({ day, client, flags, purse, coal }: TalkContext): RoundScript {
+function breakfastTalk({ day, client, flags, purse }: TalkContext): RoundScript {
   const pass = { label: 'Good day', effect: 'pass', end: true };
   const owes = flags.includes(OWES_GAYLORD);
-  const canHire = day >= GAYLORD_FIRST_HIRE && day <= GAYLORD_LAST_HIRE && !owes && flags.includes('met:deckIntel') && coal >= CLIMB_COAL && purse >= GAYLORD_FEE;
+  const canHire = day >= GAYLORD_FIRST_HIRE && day <= GAYLORD_LAST_HIRE && !owes && !client && flags.includes('met:deckIntel') && purse >= GAYLORD_FEE;
   if (canHire)
     return {
       deal: [
         {
-          ...say('gaylord', ['I play at Davenport of a noon, Captain, on behalf of those who’d rather not. Ten dollars covers my breakfast, my stay and the entry.', 'I take the noon entry out of the winnings, and I keep the rest. You get a boat up the rapids. Watch and learn.']),
+          ...say('gaylord', ['I play at Davenport of a noon, Captain, on behalf of those who’d rather not. I’m all but booked: I’ve the last day of the week left, and no other.', 'Ten dollars covers my breakfast, my stay and the entry. I take the noon entry out of the winnings, and I keep the rest. You get a boat up the rapids. Watch and learn.']),
           replies: [pass, { label: 'Done', effect: 'hire', end: true }],
         },
       ],

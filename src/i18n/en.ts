@@ -378,6 +378,8 @@ export const en = {
   'hub.job:timber.name': 'Job: Timber herding',
   'hub.breakfast.name': 'Bettendorf Breakfast',
   'hub.breakfast.desc': 'Gaylord Montague is staying at the saloon',
+  'hub.seat.name': 'Davenport Pilot Games',
+  'hub.seat.desc': 'Gaylord plays your seat today',
   'hub.jobs.name': 'Odd Jobs',
   'hub.jobs.desc': 'See what’s going',
   'hub.job:timber.desc': '-1 coal, +$10',

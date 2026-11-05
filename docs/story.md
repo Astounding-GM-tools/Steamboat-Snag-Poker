@@ -586,8 +586,9 @@ week with clients (rich captains of big companies, who could sue).
 *"Gaylord Montague is staying at the saloon"*, and $4 to treat the crew (+4
 strength tomorrow). And look, there's Gaylord, what a coincidence. It's where he
 says whatever he'd say to you. *Ten dollars* covers his breakfast, stay and
-entry; he takes the noon entry out of the winnings and keeps the rest. Hireable
-on days 3 to 5, and not if you owe him. You watch from your own seat, tapping I see, as he talks shop.
+entry; he takes the noon entry out of the winnings and keeps the rest. He's all
+but booked: sign on days 3 to 5 and he plays your seat on day 8, the last of the
+week, so hiring him is no speed run. Not if you owe him. You watch from your own seat, tapping I see, as he talks shop.
 He can be in two places in a slot: the player can't, so it never shows.
 
 **His loan: $50**, double back when you next meet in two weeks, doubled again

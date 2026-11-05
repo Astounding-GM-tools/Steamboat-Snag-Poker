@@ -468,7 +468,7 @@ describe('Gaylord\'s week', () => {
   it('offers to play your seat on days 3 to 5, if you could use it', () => {
     expect(offered({ day: 3 })).toContain('hire');
     expect(offered({ day: 6 })).not.toContain('hire');
-    expect(offered({ coal: 2 })).not.toContain('hire');
+    expect(offered({ client: true })).not.toContain('hire');
     expect(offered({ flags: ['met:deckIntel', 'owesGaylord'] })).not.toContain('hire');
   });
 
@@ -483,10 +483,13 @@ describe('Gaylord\'s week', () => {
     expect(after.time).toBe('afternoon');
   });
 
-  it('plays your seat: you pay at breakfast, he decides, and his winnings are his', () => {
-    let s = choose(breakfast(3), RIVER, 'hire');
-    expect(s.purse).toBe(46);
-    expect(s.flags).toContain('hiredGaylord');
+  it('signs you for the last day of his week: you pay at breakfast, he decides, and his winnings are his', () => {
+    const signed = choose(breakfast(3), RIVER, 'hire');
+    expect(signed.purse).toBe(46);
+    expect(signed.flags).toContain('hiredGaylord');
+    expect(signed.time).toBe('afternoon');
+    expect(ids({ ...signed, time: 'morning', mornings: 7 })).not.toContain('seat');
+    let s = goTo({ ...signed, time: 'morning', mornings: 8 }, RIVER, 'seat');
     expect(s.encounter?.def.proxy).toBe('gambler');
     expect(s.encounter?.session.seats.map((p) => p.id)).not.toContain('gaylord');
     for (let k = 0; k < 400 && !s.encounter?.outcome; k++) {

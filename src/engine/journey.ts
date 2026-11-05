@@ -125,8 +125,8 @@ export type Step =
       entrants: { id: string; ai: AiId }[];
       tableSize: number;
       finalists: number;
-      /** Someone who comes through their table every day until the day given. */
-      regular?: { id: string; ai: AiId; until: number };
+      /** Someone who comes through their table every day until the day given (that last day only if the flag isn't up: they've someone else to play for). */
+      regular?: { id: string; ai: AiId; until: number; engaged?: string };
     }
   /** Under way: it burns the coal, and you arrive. */
   | { type: 'travel'; coal: number; to: string }
@@ -543,7 +543,8 @@ function drawTables(state: JourneyState, step: Extract<Step, { type: 'draw' }>) 
     for (let guard = 0; s.phase !== 'over' && guard < 400; guard++) s = s.phase === 'hand' ? playOn(s) : nextSessionHand(s);
     return table.find((r) => !s.seats.find((p) => p.id === r.id)?.out) ?? table[0];
   });
-  if (step.regular && state.mornings <= step.regular.until) state.finalists[0] = { id: step.regular.id, ai: step.regular.ai };
+  const engaged = step.regular?.engaged && state.mornings === step.regular.until && state.flags.includes(step.regular.engaged);
+  if (step.regular && state.mornings <= step.regular.until && !engaged) state.finalists[0] = { id: step.regular.id, ai: step.regular.ai };
   state.rngState = rng.state;
 }
 
