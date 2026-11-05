@@ -147,6 +147,7 @@
       foldedOut: !!res?.byFolds && !!round?.seats[me]?.folded,
       met: journey.flags.includes(`met:${id}`),
       attempt: step?.type === 'encounter' ? (step.attempt ?? 1) : 1,
+      client: journey.flags.includes('hiredGaylord'),
     });
   }
 

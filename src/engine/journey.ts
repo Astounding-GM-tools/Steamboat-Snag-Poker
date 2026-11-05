@@ -63,6 +63,8 @@ export interface EncounterDef {
   hands: number;
   /** Who else may be here, by the day of the voyage (they keep to their calendar, whatever you do). */
   guests?: { rival: Rival; from?: number; to?: number }[];
+  /** Finish this table ahead of this rival, and this flag goes up. */
+  marks?: { rival: string; flag: string };
   /** Someone else plays your seat, this way; you pay no entry and take no winnings. */
   proxy?: AiId;
   /** A tournament table: this much to sit down (and it's everyone's stack), and the table takes it all. */
@@ -139,8 +141,6 @@ export type Step =
       jolt?: boolean;
       /** In place of `solved`: closing lines taken in turn, a different set each day (the evenings' endings). */
       closers?: StoryLine[][];
-      /** Beaten at it by this one: these steps come next (unless any of the flags is up). */
-      beatenBy?: { id: string; unless?: string[]; steps: Step[] };
       /** Failing it, this many of the steps ahead are passed by (a tournament lost is a day done). */
       failSkip?: number;
       /** Which try this is (the first, or again after a night stuck). */
@@ -695,6 +695,8 @@ function finish(state: JourneyState, _story: StoryDef, outcome: 'solved' | 'fail
     e.outcome = outcome;
     return state;
   }
+  const marked = e.def.marks && e.session.seats.find((p) => p.id === e.def.marks!.rival);
+  if (marked && mine.money > marked.money && !state.flags.includes(e.def.marks!.flag)) state.flags.push(e.def.marks!.flag);
   if (e.def.entry) state.purse += mine.money;
   else if (e.def.stake === 'purse') state.purse = mine.money;
   else state.strength = mine.money;
@@ -752,8 +754,6 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
   if (enc.outcome === 'solved') applyEffects(state, step.effects);
   else {
     for (let k = 0; k < (step.failSkip ?? 0); k++) state.pending.splice(1, 1);
-    const by = step.beatenBy;
-    if (by && enc.session.seats.find((p) => !p.out)?.id === by.id && !by.unless?.some((f) => state.flags.includes(f))) state.pending.splice(1, 0, ...by.steps);
   }
   return advance(state, story);
 }

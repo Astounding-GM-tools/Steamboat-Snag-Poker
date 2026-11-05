@@ -124,8 +124,11 @@ const GAYLORD_LEAVES = 21;
 const GAYLORD_FEE = 10;
 const LOAN = 50;
 const OWES_GAYLORD = 'owesGaylord';
-/** He despises anyone who won't play their own seat, and that means his clients: no loan for them. */
-const NO_LOAN = 'hiredGaylord';
+/** He despises anyone who won't play their own seat, and that means his clients. */
+const CLIENT = 'hiredGaylord';
+/** Finished a table ahead of him: he only lends to people who can play. */
+const BEAT_GAYLORD = 'beatGaylord';
+const beatsGaylord = { rival: 'gaylord', flag: BEAT_GAYLORD };
 
 /** He has a stash, and he likes your style. Double back when you next meet. */
 const loanTalk: Step = {
@@ -169,6 +172,7 @@ const tournament: Step[] = [
       rivals: [{ id: 'ellie', ai: 'swashbuckler', money: NOON_ENTRY }],
       joined: 'finalists',
       entry: NOON_ENTRY,
+      marks: beatsGaylord,
       goal: { type: 'lastStanding', host: 'ellie' },
       hands: TOURNAMENT_HANDS,
       rules: { drainPerJoker: 0, jokerForfeit: 0 },
@@ -176,7 +180,6 @@ const tournament: Step[] = [
     solved: [{ who: 'ellie', text: 'That’s you, Captain. Get your hat.' }],
     failed: [{ who: 'ellie', text: 'Not today, Captain. Same time tomorrow.' }],
     failSkip: 3,
-    beatenBy: { id: 'gaylord', unless: [OWES_GAYLORD, NO_LOAN], steps: [loanTalk] },
   },
   {
     type: 'encounter',
@@ -205,12 +208,12 @@ const hiredGaylord: Step[] = [
     type: 'caption',
     lines: [
       { who: 'gaylord', text: 'Ten dollars covers my breakfast, my stay and the entry. I take the noon entry out of the winnings, and I keep the rest.' },
-      { who: 'gaylord', text: 'You, Captain, get a boat up the rapids. Watch and learn. Don’t ask me for a loan: I don’t lend to clients. A man ought to lose his own money.' },
+      { who: 'gaylord', text: 'You, Captain, get a boat up the rapids. Watch and learn.' },
     ],
-    effects: { flag: NO_LOAN },
+    effects: { flag: CLIENT },
   },
   { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2 },
-  { ...noonStep, beatenBy: undefined, encounter: { ...noonStep.encounter, id: 'hired', proxy: 'gambler' } },
+  { ...noonStep, encounter: { ...noonStep.encounter, id: 'hired', proxy: 'gambler' } },
   ...tournament.slice(3),
 ];
 
@@ -306,6 +309,7 @@ const triCities: Hub = {
               { rival: { id: 'gaylord', ai: 'gambler', money: 60 }, from: GAYLORD_FIRST_HIRE, to: GAYLORD_LEAVES },
               { rival: { id: 'tripp', ai: 'careful', money: 30 }, from: GAYLORD_LEAVES + 1 },
             ],
+            marks: beatsGaylord,
             goal: { type: 'trips' },
             hands: TRI_CITIES_HANDS,
           },
@@ -327,7 +331,7 @@ const triCities: Hub = {
       coal: CLIMB_COAL,
       steps: hiredGaylord,
     },
-    { id: 'loan', notFlag: [OWES_GAYLORD, NO_LOAN], from: GAYLORD_LAST_HIRE + 1, to: GAYLORD_LEAVES, steps: [loanTalk] },
+    { id: 'loan', flag: BEAT_GAYLORD, notFlag: [OWES_GAYLORD, CLIENT], to: GAYLORD_LEAVES, steps: [loanTalk] },
     {
       id: 'jobs',
       times: DAYTIME,
@@ -520,17 +524,21 @@ const ODDS = ['Two to one you swap.', 'Evens the River’s red.', 'Eleven to fou
 
 /** The Tri-Cities: how many cities there are is a matter of opinion, and so is what settles a game. */
 /** Gaylord at the saloon: the week, as it goes, and after. */
-function gaylordAtTheSaloon(day: number): SpeechLine[] {
+function gaylordAtTheSaloon(day: number, client: boolean): SpeechLine[] {
   if (day < GAYLORD_FIRST_HIRE) return [];
+  if (client && day > GAYLORD_LAST_HIRE) return [say('gaylord', 'Still afloat, Captain? Somebody must be playing your hand for you.')];
   if (day <= GAYLORD_LAST_HIRE)
     return [say('gaylord', 'Gaylord Montague, Captain. I play at Davenport of a noon, on behalf of those who’d rather not. You’ll find me at breakfast.')];
   if (day <= GAYLORD_LAST_DAY) return [say('gaylord', 'Bingo, Captain. She said bingo. To me.')];
-  return [say('gaylord', ['You missed a fine week at Davenport. She threatened me with her aunt, you know.', 'A cracking bingoist, I’m told. I shan’t be going back.'])];
+  return [
+    say('gaylord', ['You missed a fine week at Davenport. She threatened me with her aunt, you know.', 'A cracking bingoist, I’m told. I shan’t be going back.']),
+    say('gaylord', ['My clients? Pitiful men, lacking the skill and courage even to lose convincingly at poker. Bah, good riddance.', 'They’ll come back down past here soon enough, and then I will fleece them again, and they deserve it, the parasites.']),
+  ];
 }
 
-function triCitiesTalk({ hand, seed, trips, day, met }: TalkContext): RoundScript {
+function triCitiesTalk({ hand, seed, trips, day, met, client }: TalkContext): RoundScript {
   return {
-    ...(hand === 1 && met ? { deal: gaylordAtTheSaloon(day) } : {}),
+    ...(hand === 1 && met ? { deal: gaylordAtTheSaloon(day, client) } : {}),
     ...(hand === 1 && !met
       ? {
           deal: [
@@ -540,7 +548,7 @@ function triCitiesTalk({ hand, seed, trips, day, met }: TalkContext): RoundScrip
             say('odds', 'Bettendorf! We hold out for four of a kind. Five to one it’s three tonight.'),
             say('tripp', 'Bettendorf is a wagon factory.'),
             say('finlay', 'Sit down, sit down! Finlay. You never saw me, if a small Scotswoman asks.'),
-            ...gaylordAtTheSaloon(day),
+            ...gaylordAtTheSaloon(day, client),
           ],
         }
       : { flop: [{ size: 'aside', who: 'odds', text: new Rng(seed).shuffle(ODDS)[hand % ODDS.length] }] }),

@@ -588,10 +588,12 @@ if you owe him. You watch from your own seat, tapping I see, as he talks shop.
 He can be in two places in a slot: the player can't, so it never shows.
 
 **His loan: $50**, double back when you next meet in two weeks, doubled again
-if the third week begins. Offered any day he beats you at Davenport, and any day
-after day 5 at Bettendorf. Take it and he won't play for you; hire him and he won't lend to you. He despises
-anyone who is bad at poker, or who lacks the conviction even to lose gracefully,
-which means he has a great deal of disdain for his own clients. From about day 7 he
+if the third week begins. He only brings it up with someone who has beaten him
+at a table, any table, and who isn't a client. Otherwise he never mentions it,
+so the player has no reason to know it exists. Take it and he won't play for
+you. He despises anyone bad at poker, or who lacks the conviction even to lose
+gracefully, which means his own clients; past day 8 he says so at the saloon.
+From about day 7 he
 asks after passage to St. Louis, and offers to play you for it; he leaves on a
 cruiser around day 21.
 

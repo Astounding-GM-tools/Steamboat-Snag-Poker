@@ -35,6 +35,8 @@ export interface TalkContext {
   met: boolean;
   /** Which try at it this is (mornings on the bar). */
   attempt: number;
+  /** You've hired Gaylord to play your seat. */
+  client: boolean;
 }
 
 /** An encounter's talk: set lines hand by hand, or worked out as the hand stands. */

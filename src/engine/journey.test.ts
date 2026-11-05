@@ -241,7 +241,7 @@ describe('the dock fee', () => {
 });
 
 describe('table talk', () => {
-  const context = { hand: 1, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: false, attempt: 1, fixed: [] as { id: string; snag: number }[] };
+  const context = { hand: 1, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: false, attempt: 1, client: false, fixed: [] as { id: string; snag: number }[] };
   const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
   const deck = RIVER_TALK.deck as (c: typeof context) => RoundScript;
 
@@ -386,7 +386,7 @@ describe('the Tri-Cities', () => {
 });
 
 describe('Sandy', () => {
-  const context = { hand: 2, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: true, attempt: 1, fixed: [] as { id: string; snag: number }[] };
+  const context = { hand: 2, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: true, attempt: 1, client: false, fixed: [] as { id: string; snag: number }[] };
   const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
 
   it('doesn\'t repeat itself from one day to the next', () => {
@@ -459,10 +459,9 @@ describe('Gaylord\'s week', () => {
     expect(ids(at(3, 'morning', ['met:deckIntel', 'owesGaylord']))).not.toContain('gaylord');
   });
 
-  it('lends from day 6, once', () => {
-    expect(ids(at(5))).not.toContain('loan');
-    expect(ids(at(6))).toContain('loan');
-    const s = goTo(at(7), RIVER, 'loan');
+  it('only brings up a loan with someone who has beaten him, and only once', () => {
+    expect(ids(at(4))).not.toContain('loan');
+    const s = goTo(at(4, 'morning', ['met:deckIntel', 'beatGaylord']), RIVER, 'loan');
     const after = choose(s, RIVER, 'take');
     expect(after.purse).toBe(110);
     expect(ids(after)).not.toContain('loan');
@@ -481,15 +480,30 @@ describe('Gaylord\'s week', () => {
     expect(s.purse).toBe(50);
   });
 
-  it('won\'t lend to a client', () => {
+  it('never mentions a loan to a client, whatever they\'ve done', () => {
     const hired = proceed(goTo(at(4), RIVER, 'gaylord'), RIVER);
     expect(hired.flags).toContain('hiredGaylord');
-    expect(ids({ ...at(7), flags: hired.flags })).not.toContain('loan');
+    expect(ids({ ...at(7), flags: [...hired.flags, 'beatGaylord'] })).not.toContain('loan');
   });
 
-  it('offers the loan when he beats you at the final', () => {
-    const step = hubOptions(at(4), RIVER).find((o) => o.option.id === 'tournament')!.option.steps[2];
-    expect(step.type === 'encounter' && step.beatenBy?.id).toBe('gaylord');
+  it('counts finishing a table ahead of him as beating him', () => {
+    const s = goTo(at(4, 'evening'), RIVER, 'bettendorf');
+    const end = (mine: number, his: number) => {
+      const e = structuredClone(s);
+      const rng = new Rng(1);
+      let g = e;
+      while (g.encounter!.session.phase === 'hand') {
+        const c = g.encounter!;
+        g = playEncounter(g, myMoveOwed(g) ? chooseAction('careful', viewFor(c.session.round!, mySeatAt(c), c.session.config), c.session.config, rng) : null);
+      }
+      g = structuredClone(g);
+      g.encounter!.session.seats[0].money = mine;
+      g.encounter!.session.seats.find((p) => p.id === 'gaylord')!.money = his;
+      g.encounter!.session.hand = 6;
+      return handDone(g, RIVER).flags;
+    };
+    expect(end(70, 40)).toContain('beatGaylord');
+    expect(end(20, 40)).not.toContain('beatGaylord');
   });
 });
 
