@@ -525,6 +525,72 @@ Muscatine (from memory, all to verify):
 Still to place, wherever they fit: **a nosy cargo inspector**; **the mail
 bag** (another captain bound downriver could take it…); **Podunk Junction**.
 
+## The Pilot's Tournament (replaces the waiting table)
+
+**The real rapids.** The Rock Island Rapids ran some 14 miles from **LeClaire
+at the head** down to **Rock Island at the foot**, falling about 20 feet at
+low water, every rock and chain named after a wreck. LeClaire lived by its
+rapids pilots, forty or fifty of them waiting on the bank; the Green Tree
+Hotel at the head was their waiting room. Rapids City sits across from
+LeClaire on the Illinois bank, Port Byron just north of it, Cordova a few
+miles on. The dams came later: the Moline Lock in 1907, the LeClaire canal in
+the 1920s, Lock and Dam 15 drowned the rapids by 1934, and 13 and 14 date from
+the 1930s, so today's map no longer shows them (the rough water at Fulton
+is something else). So a boat bound upriver waits at the foot, or partway up,
+and LeClaire is where it arrives. **Our boat moors partway up, at Hampton**
+(Illinois bank, between Moline and Rapids City; from memory, to verify): a bit
+further on than the Tri-Cities, with the pilot coming down to it.
+
+**The tournament.** The spring thaw: one pilot crazy enough to take boats up
+(she prefers *adventurous*), coming down from Cordova around noon and taking
+one boat up in the afternoon. Boats line up, and Snag picks who goes.
+
+1. **Evening before:** moor; the deck game, where Willie has the lay of the
+   land.
+2. **Morning, $5:** three tables of captains; each winner goes through. Yours
+   is played; the others are simulated, and we simply meet whoever won.
+3. **Noon at the saloon, $10:** the three winners and the pilot, who is upfront
+   about her name and the prize. Win, or be runner-up if she wins. Pots stay
+   under about $40.
+4. Up the rapids, or wait for tomorrow.
+
+**No walkover.** She takes the winner, and that's River Code: stuck here a
+week, then that's a week of poker. Players can leave and practise in the
+League or the tutorial. Losing days pass in odd jobs off screen, enough to
+fund the next entry (*"You ferry a herd of cattle across the river, and spend
+the evening cleaning up the manure."*). After a good while a second pilot
+appears, **Lindy Huffer**, who just takes the highest bidder.
+
+**Gaylord Montague** is how the table gets its cheat. Low stakes, rich pots:
+he's making a killing playing the final on behalf of a captain each day. Not
+for hire, exactly: *you pay my breakfast and my stay ($5) and foot the ante,
+and I keep all winnings.* Grey-area River Code. Hire him and you watch over his
+shoulder, tapping Next as he explains his moves. If he beats you he offers
+breakfast and a one-on-one the next morning, and a **loan of $50**: double
+back next time you meet, in two weeks; doubled again if the third week begins.
+Take his money and he won't play for you. On the day he sends a third boat up,
+the pilot bans him: not in the spirit of the game. He goes down to Bettendorf.
+
+**Bettendorf, coming down.** His presence has changed the game: it's quads
+now, and it runs until a quad or someone's broke. The IOU is a snag that can
+only be played at his table, and he can play it back; a quad ends it. He wants
+passage to St. Louis, and plays you for the fare.
+
+**Finlay** is a Tri-Cities background carouser: bet-crazy, enthusiastic, not
+very good.
+
+**The council, reworked.** One paragraph of advice, not everyone in turn
+(Lars's notes take up the screen). The strategic choices live here: odd jobs,
+see the gambler, a short freight job Willie has found, Gus on purchases and
+repairs.
+
+**The Best Intentions page.** How beaten up she is; passenger rooms
+(Storage, Cabin, Luxury); coal, spares, goods in the hold (sold at any
+landing, at its prices), extra crew. Combined with the settings, opened by the
+gently turning paddle wheel in place of the cogwheel.
+
+**Days gone: X.** The day count, a tribute to *Days Gone*.
+
 ## A day on the river
 
 Taking on cargo, passengers and crew landing by landing makes the voyage a
