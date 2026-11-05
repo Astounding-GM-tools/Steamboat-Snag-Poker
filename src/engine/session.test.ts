@@ -5,7 +5,7 @@ import { newSession, nextSessionHand, submit, waitingFor, type TableSession } fr
 
 const players = [
   { id: 'captain' },
-  { id: 'kitty' },
+  { id: 'ellie' },
   { id: 'walrus', ai: 'shark' as const },
 ];
 

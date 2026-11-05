@@ -31,6 +31,8 @@ export interface TalkContext {
   lost: number;
   /** You folded out of this hand. */
   foldedOut: boolean;
+  /** You've been at this encounter before (the queue, day after day). */
+  met: boolean;
 }
 
 /** An encounter's talk: set lines hand by hand, or worked out as the hand stands. */

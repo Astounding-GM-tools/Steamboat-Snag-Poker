@@ -37,8 +37,8 @@ export type Goal =
   | { type: 'lose'; min: number; max: number }
   /** The evening's game aboard: played till the hands run out, or you turn in. */
   | { type: 'evening' }
-  /** Ahead of everyone at the table but `host` when the hands run out (the pilot takes the winner; if she wins it herself, the runner-up). */
-  | { type: 'ahead'; host: string };
+  /** The last at the table with money; or, if `host` is, the last to go out before her (the pilot takes the winner, or if she wins it herself, the runner-up). */
+  | { type: 'lastStanding'; host?: string };
 
 export interface Rival {
   id: string;
@@ -58,6 +58,10 @@ export interface EncounterDef {
   goal: Goal;
   /** Hands at most (the day's hours, against an obstacle). */
   hands: number;
+  /** A tournament table: this much to sit down (and it's everyone's stack), and the table takes it all. */
+  entry?: number;
+  /** Who else sits down, besides `rivals`: your table in the morning, or the morning's winners at noon. */
+  joined?: 'mates' | 'finalists';
   /** The story's rules, changed for this encounter (an obstacle forfeits nothing for its snags). */
   rules?: Partial<RulesConfig>;
 }
@@ -92,6 +96,8 @@ export type Step =
       /** What leaving the council is called (default: casting off). */
       leave?: string;
     }
+  /** The day's draw: tables of `entrants`, yours filled first; the others are played out unseen, and we meet whoever won. */
+  | { type: 'draw'; entrants: { id: string; ai: AiId }[]; tableSize: number; finalists: number }
   /** Under way: it burns the coal, and you arrive. */
   | { type: 'travel'; coal: number; to: string }
   | {
@@ -112,6 +118,8 @@ export type Step =
       jolt?: boolean;
       /** In place of `solved`: closing lines taken in turn, a different set each day (the evenings' endings). */
       closers?: StoryLine[][];
+      /** Failing it, the day's done: an afternoon's work, an evening aboard, and the whole day again tomorrow. */
+      again?: boolean;
       /** Which try this is (the first, or again after a night stuck). */
       attempt?: number;
       /** What a reply in the talk can decide, by its effect (see `choose`): the encounter ends there. */
@@ -129,6 +137,8 @@ export interface StoryDef {
   days: DayDef[];
   /** The deck game aboard, played when you're stuck for the night. */
   stuckNight: Step[];
+  /** What the afternoon's work can be, when a day comes to nothing: taken in turn. */
+  jobs?: { text: string; pays: number }[];
 }
 
 export interface Encounter {
@@ -141,6 +151,8 @@ export interface Encounter {
   outcome: 'solved' | 'failed' | null;
   /** The table's money and the player's, when each hand began (for the table's coins). */
   start: number[];
+  /** Seats gone from a tournament table, hand by hand (the last of them are the runners-up). */
+  busted: string[][];
   /** You came to it nearly broke, and Willie found an odd job (this much) to stake you. */
   oddJob?: number;
   /** Troubles fixed along the way (snag indices): bestowed on whoever fixes them. */
@@ -168,6 +180,9 @@ export interface JourneyState {
   snags: JokerCard[];
   flags: string[];
   encounter: Encounter | null;
+  /** Today's draw: who's at your table, and who came through the other tables. */
+  mates: { id: string; ai: AiId }[];
+  finalists: { id: string; ai: AiId }[];
   /** Mornings so far (the boat's figures mean something once the first has dawned). */
   mornings: number;
   /** Nights spent stuck along the way (the calendar runs on: the day shown is `day + nights`). */
@@ -203,6 +218,8 @@ export function newJourney(seed: number, story: StoryDef, start: { purse: number
     snags: [],
     flags: [],
     encounter: null,
+    mates: [],
+    finalists: [],
     mornings: 0,
     nights: 0,
     done: false,
@@ -248,6 +265,10 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
     state.mornings++;
     // The first morning's wages were settled by the captain before you.
     if (state.mornings > 1) state.purse = Math.max(0, state.purse - state.crew.reduce((a, id) => a + (CREW[id]?.wage ?? 0), 0));
+    return advance(state, story);
+  }
+  if (step.type === 'draw') {
+    drawTables(state, step);
     return advance(state, story);
   }
   if (step.type === 'travel') {
@@ -340,16 +361,31 @@ function spared(state: JourneyState): number[] {
 /** The least you bring to the deck game. */
 export const DECK_GAME_LEAST = 3;
 
+/** The other tables are played out unseen, for real: AIs against AIs, to the last one with money. */
+function drawTables(state: JourneyState, step: Extract<Step, { type: 'draw' }>) {
+  const rng = new Rng(state.rngState);
+  const entrants = rng.shuffle(step.entrants);
+  state.mates = entrants.slice(0, step.tableSize - 1);
+  const rest = entrants.slice(step.tableSize - 1);
+  state.finalists = Array.from({ length: step.finalists }, (_, k) => {
+    const table = rest.slice(k * step.tableSize, (k + 1) * step.tableSize);
+    let s = newSession(rng.int(2 ** 31), table.map((r) => ({ ...r, money: 5 })), STORY_CONFIG);
+    for (let guard = 0; s.phase !== 'over' && guard < 400; guard++) s = s.phase === 'hand' ? playOn(s) : nextSessionHand(s);
+    return table.find((r) => !s.seats.find((p) => p.id === r.id)?.out) ?? table[0];
+  });
+  state.rngState = rng.state;
+}
+
 /** Never stuck for a stake: come to a table for money with next to none, and there's an odd job to be had. */
 export const ODD_JOB = { below: 6, pays: 10 };
 
 function seat(state: JourneyState, def: EncounterDef) {
   const rng = new Rng(state.rngState);
-  const oddJob = def.stake === 'purse' && def.rules?.pot !== false && state.purse < ODD_JOB.below ? ODD_JOB.pays : 0;
-  state.purse += oddJob;
+  const oddJob = def.stake === 'purse' && def.rules?.pot !== false && state.purse < (def.entry ?? ODD_JOB.below) ? ODD_JOB.pays : 0;
+  state.purse += oddJob - (def.entry ?? 0);
   const seed = rng.int(2 ** 31);
   // At the deck game everyone finds a button or two, however hard the day.
-  const money = def.stake === 'purse' ? state.purse : def.rivals === 'crew' ? Math.max(state.strength, DECK_GAME_LEAST) : state.strength;
+  const money = def.entry ? def.entry : def.stake === 'purse' ? state.purse : def.rivals === 'crew' ? Math.max(state.strength, DECK_GAME_LEAST) : state.strength;
   const troubles = state.snags.filter((j) => snagDef(j.index).kind === 'trouble');
   // Against an obstacle your snags stay aside (it cares nothing for your duties), but the volunteers among them cover their hands.
   const obstacle = def.rivals !== 'crew' && def.rivals.some((r) => r.obstacle);
@@ -362,9 +398,10 @@ function seat(state: JourneyState, def: EncounterDef) {
     ...(obstacle ? { cover: coveredHands(state.snags, def.hands, randomHand) } : {}),
     ...(def.rivals === 'crew' ? { unhands: true } : {}),
   };
+  const joined = (def.joined === 'mates' ? state.mates : def.joined === 'finalists' ? state.finalists : []).map((r) => ({ ...r, money: def.entry ?? 0 }));
   const rivals =
     def.rivals === 'crew'
-      ? state.crew.map((id) => ({ id, ai: CREW[id].ai, money: Math.ceil(CREW[id].strength / 2), fixes: TROUBLES }))
+      ? state.crew.map((id) => ({ id, ai: CREW[id].ai, money: CREW[id].strength * 2, fixes: TROUBLES }))
       : def.rivals.map((r) => ({
           id: r.id,
           ai: r.ai,
@@ -372,7 +409,7 @@ function seat(state: JourneyState, def: EncounterDef) {
           jokers: (r.jokers ?? []).filter((i) => !spared(state).includes(i)).map(jokerCard),
           ...(r.obstacle ? { obstacle: true } : {}),
         }));
-  const session = newSession(seed, [me, ...rivals], { ...STORY_CONFIG, ...def.rules });
+  const session = newSession(seed, [me, ...rivals, ...joined], { ...STORY_CONFIG, ...def.rules });
   state.rngState = rng.state;
   state.encounter = {
     def,
@@ -381,6 +418,7 @@ function seat(state: JourneyState, def: EncounterDef) {
     folds: 0,
     outcome: null,
     fixed: [],
+    busted: [],
     start: session.seated.map((i) => session.seats[i].money),
     ...(oddJob ? { oddJob } : {}),
   };
@@ -442,10 +480,13 @@ export function handDone(prev: JourneyState, story: StoryDef): JourneyState {
   const lastHand = s.hand >= e.def.hands;
   const over = s.phase === 'over';
   let outcome: Encounter['outcome'] = null;
-  if (goal.type === 'ahead') {
-    const others = s.seats.slice(1).filter((p) => p.id !== goal.host);
-    if (mine.out) outcome = 'failed';
-    else if (lastHand || over) outcome = others.every((p) => mine.money >= p.money) ? 'solved' : 'failed';
+  const gone = s.seats.filter((p) => p.out && !e.busted.flat().includes(p.id)).map((p) => p.id);
+  if (gone.length) e.busted.push(gone);
+  if (goal.type === 'lastStanding') {
+    const left = s.seats.find((p) => !p.out);
+    if (over) outcome = left?.id === PLAYER_ID || (left?.id === goal.host && e.busted.at(-1)?.includes(PLAYER_ID)) ? 'solved' : 'failed';
+    // Out of a table with no host, there's nothing left for you to watch.
+    else if (mine.out && !goal.host) outcome = 'failed';
   } else if (goal.type === 'winPot') outcome = won ? 'solved' : mine.out ? 'failed' : null;
   else if (goal.type === 'clear') {
     const pile = s.seats.find((p) => p.obstacle)!;
@@ -473,7 +514,8 @@ export function turnIn(prev: JourneyState, story: StoryDef): JourneyState {
 function finish(state: JourneyState, _story: StoryDef, outcome: 'solved' | 'failed'): JourneyState {
   const e = state.encounter!;
   const mine = e.session.seats[0];
-  if (e.def.stake === 'purse') state.purse = mine.money;
+  if (e.def.entry) state.purse += mine.money;
+  else if (e.def.stake === 'purse') state.purse = mine.money;
   else state.strength = mine.money;
   const obstacle = e.def.rivals !== 'crew' && e.def.rivals.some((r) => r.obstacle);
   if (obstacle) state.snags = [...state.snags, ...mine.jokers];
@@ -511,6 +553,16 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
   if (step?.type !== 'encounter' || !enc?.outcome) throw new Error('No encounter to leave');
   const state = clone(prev);
   state.encounter = null;
+  state.flags = state.flags.includes(`met:${enc.def.id}`) ? state.flags : [...state.flags, `met:${enc.def.id}`];
+  if (enc.outcome === 'failed' && step.again) {
+    // The day comes to nothing: an afternoon's work, an evening aboard, and from the top tomorrow.
+    const job = story.jobs?.[state.mornings % story.jobs.length];
+    const work: Step[] = job ? [{ type: 'caption', lines: [{ text: job.text }], effects: { purse: job.pays } }] : [];
+    state.pending = [...work, ...story.stuckNight];
+    state.step = 0;
+    state.nights++;
+    return arrive(state, story);
+  }
   const attempt = step.attempt ?? 1;
   if (enc.outcome === 'failed' && step.stuck && step.relent && attempt >= 2) {
     // The second time, the river relents: its lines on a card of their own, then on as if solved.

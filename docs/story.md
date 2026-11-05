@@ -407,7 +407,7 @@ screen, no new UI.
   desktop needn't look its best.
 
 **How the player is addressed** is just text, by speaker and mood: Captain,
-Cap'n, Herr Kapitän; Kitty's "Captain of my heart".
+Cap'n, Herr Kapitän; Ellie's "Captain of my heart".
 
 ## Worked exchanges
 
@@ -431,7 +431,7 @@ Cap'n, Herr Kapitän; Kitty's "Captain of my heart".
   player's purse is thin, perhaps a best-of-three to settle it, or, destitute
   himself by then, asking for a loan on the same terms.
 - Not adversarial, not generous either. The same shape serves other stories:
-  promising Morag to look for Finlay, getting caught up in one of Kitty's
+  promising Morag to look for Finlay, getting caught up in one of Ellie's
   schemes, or enlisting Max Moritz against the Walrus and the Inspector.
 
 ## Morag, the Governess
@@ -494,7 +494,7 @@ changes something (the risk is that the way back feels like padding).
    this is where it bites.
 4. **LeClaire and the Rock Island Rapids.** Above the Tri-Cities, some 14
    miles of rock ledges; boats took on a specialist rapids pilot at LeClaire,
-   a town that lived by the trade (from memory, to verify). **Kitty Sawyer**,
+   a town that lived by the trade (from memory, to verify). **Ellie Sawyer**,
    the best pilot on the rapids, picks her clients at Snag Poker: she seats
    the captains waiting to go through at a High Rollers table and plays in it
    herself. She goes with whoever wins, or, if she wins it herself, with the
@@ -517,7 +517,7 @@ Muscatine (from memory, all to verify):
 7. **Keokuk**, where a canal with locks took boats round the Des Moines
    Rapids: **the queue at the lock**, a line of boats, the eggs going off.
 8. **Hannibal**, Mark Twain's boyhood town (an obvious nod, and the cartoon
-   would make the most of it; Kitty Sawyer is already one).
+   would make the most of it; Ellie Sawyer is already one).
 9. **Alton.**
 10. **St. Louis**, under the Eads Bridge. Patty delivered; the Fair; the
     League opens.
@@ -536,10 +536,13 @@ LeClaire on the Illinois bank, Port Byron just north of it, Cordova a few
 miles on. The dams came later: the Moline Lock in 1907, the LeClaire canal in
 the 1920s, Lock and Dam 15 drowned the rapids by 1934, and 13 and 14 date from
 the 1930s, so today's map no longer shows them (the rough water at Fulton
-is something else). So a boat bound upriver waits at the foot, or partway up,
-and LeClaire is where it arrives. **Our boat moors partway up, at Hampton**
-(Illinois bank, between Moline and Rapids City; from memory, to verify): a bit
-further on than the Tri-Cities, with the pilot coming down to it.
+is something else). So a boat bound upriver waits at the foot, and LeClaire is where it arrives.
+
+**The Tri-Cities are the hub.** The queue is at **Davenport**, at the foot of
+the rapids, and the whole area is a place to live a while: losing money to
+the miners at Rock Island, selling coal at a profit while it's short, ferrying
+goods, passengers and livestock across and up and down. You beat the Sandbar
+to get here, so working up funds and skill before going on is no hardship.
 
 **The tournament.** The spring thaw: one pilot crazy enough to take boats up
 (she prefers *adventurous*), coming down from Cordova around noon and taking
@@ -547,11 +550,12 @@ one boat up in the afternoon. Boats line up, and Snag picks who goes.
 
 1. **Evening before:** moor; the deck game, where Willie has the lay of the
    land.
-2. **Morning, $5:** three tables of captains; each winner goes through. Yours
-   is played; the others are simulated, and we simply meet whoever won.
+2. **Morning, $5:** three tables of captains, each to the last one with money;
+   the table takes all the entries. Yours is played; the others are simulated,
+   and we simply meet whoever won. Normal rules: no trips or quads.
 3. **Noon at the saloon, $10:** the three winners and the pilot, who is upfront
-   about her name and the prize. Win, or be runner-up if she wins. Pots stay
-   under about $40.
+   about her name and the prize. Win, or be runner-up if she wins. Four $10
+   entries: the pot never passes $40.
 4. Up the rapids, or wait for tomorrow.
 
 **No walkover.** She takes the winner, and that's River Code: stuck here a
@@ -562,17 +566,21 @@ the evening cleaning up the manure."*). After a good while a second pilot
 appears, **Lindy Huffer**, who just takes the highest bidder.
 
 **Gaylord Montague** is how the table gets its cheat. Low stakes, rich pots:
-he's making a killing playing the final on behalf of a captain each day. Not
-for hire, exactly: *you pay my breakfast and my stay ($5) and foot the ante,
-and I keep all winnings.* Grey-area River Code. Hire him and you watch over his
+he's making a killing playing on behalf of a captain each day. Not for hire,
+exactly: *ten dollars in the morning covers my breakfast, my stay and the
+entry; I take the noon entry out of the winnings, and I keep the rest.*
+Grey-area River Code. Hire him and you watch over his
 shoulder, tapping Next as he explains his moves. If he beats you he offers
 breakfast and a one-on-one the next morning, and a **loan of $50**: double
 back next time you meet, in two weeks; doubled again if the third week begins.
-Take his money and he won't play for you. On the day he sends a third boat up,
+Take his money and he won't play for you. Once he has beaten you three times,
 the pilot bans him: not in the spirit of the game. He goes down to Bettendorf.
 
-**Bettendorf, coming down.** His presence has changed the game: it's quads
-now, and it runs until a quad or someone's broke. The IOU is a snag that can
+**Bettendorf, coming down** (after Dubuque, not on the first visit; until
+then a game there ends on trips). His presence has changed the game: it's quads
+now, and it runs until a quad or someone's broke. It's a grind: few will sit in
+with him now that they've seen how the rule skews the odds, and the Bettendorfers
+are betting on how long until he leaves. The IOU is a snag that can
 only be played at his table, and he can play it back; a quad ends it. He wants
 passage to St. Louis, and plays you for the fare.
 
@@ -627,11 +635,11 @@ stretch, a few jobs and snags to resolve, and a gate to pass.
 
 1. **Muscatine to the Tri-Cities.** Muscatine, the Tri-Cities, the coal
    yard. Visited going up and again coming down.
-   *Gate:* **the Rock Island Rapids**: Kitty Sawyer's table, and coal enough
+   *Gate:* **the Rock Island Rapids**: Ellie Sawyer's table, and coal enough
    to climb.
 2. **Above the rapids: LeClaire to Dubuque.** Patty and the advance on her.
    More to find (Clinton, Bellevue: to look into).
-   *Gate:* the rapids again, going down: Kitty plays for that too.
+   *Gate:* the rapids again, going down: Ellie plays for that too.
 3. **Below Muscatine: Burlington to Keokuk.**
    *Gate:* **the Des Moines Rapids**: the canal at Keokuk, the queue at the
    lock.
@@ -651,12 +659,12 @@ prologue, not day one.
 |---|---|---|---|
 | 1 | Muscatine, up to the Tri-Cities | The exposition and the handover, over a few hands with Bill: he goes ashore, and leaves the new captain the winter's **Dock Fee**, the first snag, with $50: enough to settle it ($37), and a little over for food and coal; past that, you find your own cargo. At **the harbour master's**: *Pay*, or *Snag*: five hands, and whoever holds the bill after that settles it. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
 | 2 | The Tri-Cities | The coal yard on strike: no coal, no climb | The foreman's game: lose an appropriate amount |
-| 3 | The Rock Island Rapids, up | Kitty's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon: **Kitty, Finlay and Gaylord** at the table. Gaylord offers **the loan** either way (he has a stash, and likes the captain's style); if he finishes first or second, all the more |
+| 3 | The Rock Island Rapids, up | Ellie's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon: **Ellie, Finlay and Gaylord** at the table. Gaylord offers **the loan** either way (he has a stash, and likes the captain's style); if he finishes first or second, all the more |
 | 4 | LeClaire to Clinton | **The Ice**: a High Rollers table of floes | Clinton, the sawmill town: a game on deck |
 | 5 | Clinton to Bellevue | A quiet run; a log raft from the pineries going by | Bellevue, a small landing: the night's game aboard, crew and passengers |
 | 6 | Bellevue to Dubuque | **The Fog Bank** in the morning | Dubuque: Pretty Patty and her inventor, the advance; a grand steamer moored |
 | 7 | Dubuque down to Clinton | **A Sawyer** (a sunken tree that bobs: the original snag) | Clinton again, something changed |
-| 8 | Clinton to LeClaire | A short run | LeClaire's saloon: **Morag** is there, but Finlay has gone downriver; **Gaylord** snitches on him, and wants to sign on as a passenger until he can board a grand steamer with a High Rollers table (he plays for his passage). Kitty's table for tomorrow's client down |
+| 8 | Clinton to LeClaire | A short run | LeClaire's saloon: **Morag** is there, but Finlay has gone downriver; **Gaylord** snitches on him, and wants to sign on as a passenger until he can board a grand steamer with a High Rollers table (he plays for his passage). Ellie's table for tomorrow's client down |
 | 9 | The Rapids, down; the Tri-Cities | The descent (few hands, high stakes) | The Tri-Cities, a steamer or the saloon |
 | 10 | Down to Muscatine | **The Sandbar**, a new one: the sand you washed off going up | Muscatine: Finlay and Morag, the next instalment |
 | 11 | Muscatine to Burlington | A quiet run, the St. Louis passengers aboard | Burlington |
@@ -886,7 +894,7 @@ the steamers move, those tables turn up anywhere along the river.
   pot, if he wins he rides for free. At Hannibal the grand steamer comes,
   and he'll need the loan back before he goes aboard. He travels: he can turn
   up at any High Rollers table.
-- **LeClaire: Kitty Sawyer**, the rapids pilot: her High Rollers table going
+- **LeClaire: Ellie Sawyer**, the rapids pilot: her High Rollers table going
   up, and again coming down.
 - **Anywhere a grand steamer moors: Eliza Bathory, "Bone Pale"**, no
   captain: a high roller at the grand steamers' tables, now and then. She plays for sport
@@ -904,7 +912,7 @@ Names and personalities below are first drafts.
 - **The captain: the player.** Unnamed, young, and nobody else aboard: not Willie, but Bill's First Mate, made captain in the first scene, and the clerk as
   well: the books, the purse, the freight bills are all his. No pilot's
   licence and no time to get one; the cartoon doesn't fuss, except where the
-  river does: the rapids want a real pilot (Kitty).
+  river does: the rapids want a real pilot (Ellie).
 - **Willie, deck hand and galley boy.** The narrator and the player's helper
   (roster.md): tips, captions, his reckoning on each captain. Lines, loading,
   and the crew's supper, which is mostly beans.
@@ -1024,7 +1032,7 @@ leave that out.
   (to verify).
 - **The river's mixed families.** Antoine LeClaire, after whom LeClaire is
   named, was of French and Potawatomi descent (from memory). The rapids
-  pilots could come from such families, Kitty Sawyer among them, if it suits
+  pilots could come from such families, Ellie Sawyer among them, if it suits
   her.
 - **Others to place:** Bohemian Czechs (Iowa had them; Dvořák summered in
   Spillville in 1893), Irish, a Chinese American (not a laundry), Jewish
@@ -1063,10 +1071,10 @@ Robert E. Lee (also a famous steamboat, of the 1870 race against the
 
 ## Next steps
 
-**The first stretch is built: days 1 to 3** (the handover, the Dock Fee, the
-Sandbar, the Tri-Cities evening, the coal yard, a deck game, the waiting
-table at the foot of the rapids, the climb, LeClaire's saloon and Gaylord's
-loan), from the title as *Story (first days)*. See design.md, "Story mode", for how.
+**The first stretch is built: days 1 to 3 and on** (the handover, the Dock
+Fee, the Sandbar, the Tri-Cities evening, the coal yard, the queue at Davenport
+day after day, the noon final with Ellie, the climb),
+from the title as *Story (first days)*. See design.md, "Story mode", for how.
 Built as listed below, with these simplifications for now:
 
 - The obstacle's pile is drawn as buttons, not sand; nothing drifts away.
@@ -1093,11 +1101,7 @@ Built as listed below, with these simplifications for now:
   failed twice, the river relents (a passing packet throws you a line, the
   foreman gives in) and it counts as solved.
 
-**Kitty is a stranger until the fifth hand:** at the foot of the rapids she's
-just *Oilskins*, nobody explains her, and she only says who she is when
-the hands run out. Five hands; ahead of everyone but her, you go up.
-
-Next: above the rapids, the Ice (day 4). The list as it was:
+Next: Gaylord at the final, the council's list of things to do, The Best Intentions page. The list as it was:
 
 1. **The voyage state,** above any single game: the day and the place, the
    purse, the strength and the coal, who's aboard (crew, passengers), the

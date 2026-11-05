@@ -6,7 +6,7 @@
 export type AiId =
   | 'bully' // Konrad: grips his biggest cards, never risks a snag
   | 'griefer' // Max & Moritz: not out to win, out to make you lose
-  | 'swashbuckler' // Kitty: chases big hands, loves a last-minute triumph
+  | 'swashbuckler' // Ellie: chases big hands, loves a last-minute triumph
   | 'anarchist' // Ignatz: throw-happy, now and then hurls every snag
   | 'dreamer' // Nemo: half brilliant, half baffling
   | 'loose' // Finlay: quick decisions, bold with snags
@@ -40,7 +40,7 @@ export const ROSTER: CharacterDef[] = [
   // Rascals
   { id: 'konrad', ai: 'bully', tier: 'rascal', startMoney: 45 },
   { id: 'maxMoritz', ai: 'griefer', tier: 'rascal', startMoney: 40 },
-  { id: 'kitty', ai: 'swashbuckler', tier: 'rascal', startMoney: 60 },
+  { id: 'ellie', ai: 'swashbuckler', tier: 'rascal', startMoney: 60 },
   { id: 'ignatz', ai: 'anarchist', tier: 'rascal', startMoney: 45 },
   { id: 'nemo', ai: 'dreamer', tier: 'rascal', startMoney: 50 },
   // Middle

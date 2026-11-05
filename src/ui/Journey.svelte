@@ -106,7 +106,7 @@
     const res = round?.result;
     const me = mySeatAt(enc!);
     const fixed = s.round?.result ? (s.settled?.absorbed ?? []).map((a) => ({ id: s.seats[s.seated[a.seat]].id, snag: a.snag })) : [];
-    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, seed: journey.rngState, fixed, day: journey.day + journey.nights, trips: res ? wonWithTrips(res) : false, lost: enc!.lostAtShowdown + (round ? lostAtThisShowdown(round, me) : 0), foldedOut: !!res?.byFolds && !!round?.seats[me]?.folded });
+    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, seed: journey.rngState, fixed, day: journey.day + journey.nights, trips: res ? wonWithTrips(res) : false, lost: enc!.lostAtShowdown + (round ? lostAtThisShowdown(round, me) : 0), foldedOut: !!res?.byFolds && !!round?.seats[me]?.folded, met: journey.flags.includes(`met:${id}`) });
   }
 
   /** A reply at the table that decides what happens next. */
