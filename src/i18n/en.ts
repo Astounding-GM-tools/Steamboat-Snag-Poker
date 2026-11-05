@@ -397,6 +397,7 @@ export const en = {
   'hub.job:mail.desc': '-1 coal, +$9',
   'river.needsCoal': 'Needs {n} coal',
   'river.heldGround': 'You hold your ground! The sand drifts away.',
+  'river.gainedGround': 'She gains! A little further up.',
   'river.purse': 'Purse',
   'river.strength': 'Strength',
   'river.coal': 'Coal',
