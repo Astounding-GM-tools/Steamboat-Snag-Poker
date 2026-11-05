@@ -148,6 +148,7 @@
   }
   td {
     padding: 0.12rem 0;
+    vertical-align: middle;
   }
   .pips {
     letter-spacing: 0.1em;
