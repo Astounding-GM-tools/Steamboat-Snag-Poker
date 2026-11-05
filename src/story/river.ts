@@ -291,11 +291,11 @@ const job = (id: string, text: string, pays: number, flag?: string): HubOption =
 
 /** What Gus has been saying all along, and Willie's apologies. */
 const NAGS = [
-  { who: 'gus', text: 'We are not ready for the rapids, Captain. She wants an engine overhaul.' },
+  { who: 'gus', text: 'An engine overhaul would double what I can give you on the rapids, Captain.' },
   { who: 'willie', text: 'Beans again, Captain. I’m sorry. I’m no real cook, and there’s no stove.' },
-  { who: 'gus', text: 'One fireman won’t climb the rapids, Captain. I have said so.' },
-  { who: 'gus', text: 'A professional cook would do wonders, Captain. No offence to the boy.' },
-  { who: 'gus', text: 'That boiler has been due since Bill’s father’s day, Captain.' },
+  { who: 'gus', text: 'We can’t climb the rapids with a single fireman, Captain, even one as strong as Lars.' },
+  { who: 'gus', text: 'A real cook and a stove would put strength in every arm aboard, Captain. No offence to the boy.' },
+  { who: 'gus', text: 'We should upgrade the boiler before even thinking about those rapids, Captain.' },
 ];
 
 const triCities: Hub = {
@@ -327,7 +327,7 @@ const triCities: Hub = {
         {
           type: 'council',
           title: 'hub.mercantile.name',
-          advice: [{ who: 'gus', text: 'Twice the work from the same coal, Captain. If you’d only overhaul her.' }],
+          advice: [{ who: 'gus', text: 'An overhaul gets twice the work from the same coal, Captain.' }],
           trader: ['coal', 'sellCoal', 'food', 'fireman', 'hammocks', 'stove', 'cook', 'boilerOverhaul', 'engineOverhaul'],
           coal: 0,
           leave: 'Done',
@@ -687,7 +687,7 @@ function climbTalk(id: string) {
   return ({ hand, seed, attempt, coal, strength }: TalkContext): RoundScript => {
     const warned: SpeechLine[] =
       id === 'molineChain' && strength < READY_STRENGTH
-        ? [{ ...say('gus', 'We are not ready, Captain. I have said so, and I say so now.'), replies: [{ label: 'Full steam' }] }, you('Just give me all she’s got, Mr. Klemm.'), say('gus', 'It does not work like that, Captain.')]
+        ? [{ ...say('gus', 'She hasn’t the strength for this, Captain.'), replies: [{ label: 'Full steam' }] }, you('Just give me all she’s got, Mr. Klemm.'), say('gus', 'It does not work like that, Captain.')]
         : [];
     const { first, marks, cleared } = climbLines()[id];
     const mark = new Rng(seed + attempt).shuffle(marks)[hand % marks.length];

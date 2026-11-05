@@ -563,8 +563,9 @@ player will get past the rapids, and that's all right. The way through is to los
 slowly: antes rise, so whoever lasts takes the biggest bites. Simulated for a
 careful captain, through in six loads: strength 18, 22%; 26, 34%; 34, 58%; 44, 84%.
 
-**It's on the Captain.** Gus has been saying so all along: *"We are not ready for
-the rapids, Captain"*, an engine overhaul, another fireman, a professional cook.
+**It's on the Captain.** Gus states it plainly all along, matter of fact, never
+complaining: *"We can't climb the rapids with a single fireman, Captain, even one as
+strong as Lars."* An engine overhaul, another fireman, a professional cook.
 Willie apologises for the beans. Rumours on the deck: the *Mathilda* came back
 down by evening, cargo lost; the *Terry Belle* is back in the queue. Lenny sings
 it at Bettendorf: *everybody knows the thaw's too strong.* Then, at the foot of the
