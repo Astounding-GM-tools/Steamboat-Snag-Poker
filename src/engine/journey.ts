@@ -12,7 +12,7 @@
 import { type JokerCard, jokerCard } from './cards';
 import type { AiId } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
-import { BOAT, CREW, ITEMS, STARTING_CREW } from './boat';
+import { BOAT, CREW, HIRE_DAYS, ITEMS, STARTING_CREW, crewButtons, shipStrength, type BoatParts } from './boat';
 import { CATEGORIES } from './evaluate';
 import { Rng } from './rng';
 import type { Action, RoundResult, RoundState } from './round';
@@ -212,6 +212,10 @@ export interface JourneyState {
   tomorrow: number;
   coal: number;
   crew: string[];
+  /** Hands hired by the day: days left, and whether to sign them on again. */
+  hires: { id: string; days: number; rehire: boolean }[];
+  /** The boat's own features. */
+  parts: BoatParts;
   /** Upgrades bought (items kept). */
   upgrades: string[];
   comfort: number;
@@ -257,6 +261,8 @@ export function newJourney(seed: number, story: StoryDef, start: { purse: number
     crew: STARTING_CREW.slice(),
     upgrades: [],
     comfort: BOAT.comfort,
+    hires: [],
+    parts: { ...BOAT.parts },
     snags: [],
     flags: [],
     encounter: null,
@@ -278,7 +284,7 @@ export function currentStep(state: JourneyState, story: StoryDef): Step | null {
 
 /** What strength the crew would make this morning. */
 export function morningStrength(state: JourneyState): number {
-  return state.crew.reduce((a, id) => a + (CREW[id]?.strength ?? 0), 0) + state.comfort + state.tomorrow;
+  return shipStrength(state.crew, state.parts) + state.comfort + state.tomorrow;
 }
 
 /** On to the next step (the pending ones first), then through any that play themselves. */
@@ -301,13 +307,13 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
   const step = currentStep(state, story);
   if (!step || state.done) return state;
   if (step.type === 'dawn') {
-    state.crew = state.crew.filter((id) => !CREW[id]?.temporary);
+    tickHires(state);
     state.strength = morningStrength(state);
     state.tomorrow = 0;
     state.time = 'morning';
     state.mornings++;
     // The first morning's wages were settled by the captain before you.
-    if (state.mornings > 1) state.purse = Math.max(0, state.purse - state.crew.reduce((a, id) => a + (CREW[id]?.wage ?? 0), 0));
+    if (state.mornings > 1) state.purse = Math.max(0, state.purse - state.crew.reduce((a, id) => a + (CREW[id]?.temporary ? 0 : (CREW[id]?.wage ?? 0)), 0));
     return advance(state, story);
   }
   if (step.type === 'nightfall') {
@@ -400,6 +406,30 @@ export function closeMenu(prev: JourneyState): JourneyState {
   return { ...prev, submenu: null };
 }
 
+/** A new day: a hire's time runs down; at the end of it they're signed on again if you said so and can pay, or they're gone. */
+function tickHires(state: JourneyState) {
+  for (const hire of state.hires) hire.days--;
+  for (const hire of state.hires.filter((h) => h.days <= 0)) {
+    const wage = CREW[hire.id]?.wage ?? 0;
+    if (hire.rehire && state.purse >= wage) {
+      state.purse -= wage;
+      hire.days = HIRE_DAYS;
+    } else state.crew = state.crew.filter((id) => id !== hire.id);
+  }
+  state.hires = state.hires.filter((h) => h.days > 0);
+}
+
+/** Sign a hire on again when their time is up, or don't. */
+export function setRehire(prev: JourneyState, id: string, rehire: boolean): JourneyState {
+  return { ...prev, hires: prev.hires.map((h) => (h.id === id ? { ...h, rehire } : h)) };
+}
+
+/** Who sits down at the deck game: a hire takes Lars's chair, a second Willie's. */
+export function deckCrew(state: JourneyState): string[] {
+  const out = ['lars', 'willie'].slice(0, state.hires.length);
+  return state.crew.filter((id) => !out.includes(id));
+}
+
 /** Can this be bought now (at this council, affordable, room for it, not already had)? */
 export function canBuy(state: JourneyState, story: StoryDef, itemId: string): boolean {
   const step = currentStep(state, story);
@@ -408,6 +438,7 @@ export function canBuy(state: JourneyState, story: StoryDef, itemId: string): bo
   if (item.once && state.upgrades.includes(itemId)) return false;
   if (item.effect.coal && (state.coal + item.effect.coal > BOAT.bunker || state.coal + item.effect.coal < 0)) return false;
   if (item.effect.hire && state.crew.includes(item.effect.hire)) return false;
+  if (item.effect.needs && state.parts[item.effect.needs.name] < item.effect.needs.tier) return false;
   return true;
 }
 
@@ -429,10 +460,13 @@ export function buy(prev: JourneyState, story: StoryDef, itemId: string): Journe
     const k = state.snags.findIndex((j) => j.index === e.spare);
     if (k >= 0) state.snags.splice(k, 1);
   }
+  const before = shipStrength(state.crew, state.parts);
+  if (e.part) state.parts[e.part.name] = e.part.tier;
   if (e.hire) {
     state.crew.push(e.hire);
-    state.strength += CREW[e.hire]?.strength ?? 0;
+    state.hires.push({ id: e.hire, days: HIRE_DAYS, rehire: true });
   }
+  state.strength += shipStrength(state.crew, state.parts) - before;
   return state;
 }
 
@@ -496,7 +530,7 @@ function seat(state: JourneyState, def: EncounterDef) {
   const joined = (def.joined === 'mates' ? state.mates : def.joined === 'finalists' ? state.finalists : []).map((r) => ({ ...r, money: def.entry ?? 0 }));
   const rivals =
     def.rivals === 'crew'
-      ? state.crew.map((id) => ({ id, ai: CREW[id].ai, money: CREW[id].strength * 2, fixes: TROUBLES }))
+      ? deckCrew(state).map((id) => ({ id, ai: CREW[id].ai, money: crewButtons(id) * 2, fixes: TROUBLES }))
       : def.rivals.map((r) => ({
           id: r.id,
           ai: r.ai,

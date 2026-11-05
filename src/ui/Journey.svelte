@@ -20,6 +20,7 @@
     newJourney,
     playEncounter,
     proceed,
+    setRehire,
     seatOf,
     snagDef,
     wonWithTrips,
@@ -31,6 +32,7 @@
   import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
   import { roundScript } from '../story/script';
   import BoatScene from './BoatScene.svelte';
+  import ShipPage from './ShipPage.svelte';
   import Speech, { autoMs, type SpeechLine } from './Speech.svelte';
   import Table, { type TableView } from './Table.svelte';
   import { called, snagTitle } from './format';
@@ -96,6 +98,7 @@
   });
   const adviceWords = $derived(advice?.who ? `${advice.who}|${advice.text}` : null);
   let popped = $state<SpeechLine | null>(null);
+  let shipOpen = $state(false);
   // It pops in when there's something new to say, and closes by itself.
   $effect(() => {
     if (!adviceWords) {
@@ -187,11 +190,19 @@
 {:else}
   <div class="page">
     <!-- Where the boat stands: the day, the place, the purse, the crew's strength, the coal. -->
+    {#if shipOpen}<ShipPage {journey} onrehire={(id, on) => (journey = setRehire(journey, id, on))} onclose={() => (shipOpen = false)} />{/if}
     <div class="status" class:unseen={!journey.mornings}>
       <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
       <span>{t('river.purse')} ${journey.purse}</span>
       <span>{t('river.strength')} {journey.strength}</span>
       <span>{t('river.coal')} {t('river.coalLoads', { n: journey.coal, max: BOAT.bunker })}</span>
+      <button class="ghost wheel" aria-label={t('ship.open')} onclick={() => (shipOpen = true)}>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="2.5" />
+          {#each [0, 45, 90, 135] as turn}<line x1="12" y1="2" x2="12" y2="22" transform="rotate({turn} 12 12)" />{/each}
+        </svg>
+      </button>
     </div>
 
     {#if step.type === 'hub' || step.type === 'council' || step.type === 'caption'}
@@ -297,6 +308,7 @@
     z-index: 51;
   }
   .status {
+    padding-right: 3rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.3rem 1rem;
@@ -315,6 +327,29 @@
   /* Before the first morning there's nothing to show yet; the row keeps its room. */
   .status.unseen {
     visibility: hidden;
+  }
+  /* The way into The Best Intentions: her paddle wheel, gently turning. */
+  .wheel {
+    position: absolute;
+    top: 0.8rem;
+    right: 1rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0.2rem;
+    border: none;
+  }
+  .wheel svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: var(--paper);
+    stroke-width: 1.3;
+    animation: wheel 9s linear infinite;
+  }
+  @keyframes wheel {
+    to {
+      transform: rotate(360deg);
+    }
   }
   .status .day {
     flex-basis: 100%;

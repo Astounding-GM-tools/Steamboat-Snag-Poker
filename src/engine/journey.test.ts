@@ -22,6 +22,8 @@ import {
   goTo,
   hubOptions,
   closeMenu,
+  deckCrew,
+  setRehire,
   type Slot,
   type JourneyState,
   type StoryDef,
@@ -392,6 +394,43 @@ describe('Sandy', () => {
   it('opens each morning differently', () => {
     const open = [2, 3, 4].map((attempt) => String(sandy({ ...context, hand: 1, attempt }).deal?.[0].text));
     expect(new Set(open).size).toBe(3);
+  });
+});
+
+describe('hired hands', () => {
+  const story: StoryDef = {
+    days: [{ day: 1, place: 'muscatine', steps: [{ type: 'dawn' }, { type: 'council', advice: [], trader: ['fireman', 'stove', 'cook'], coal: 0 }, { type: 'dawn' }, { type: 'dawn' }, { type: 'caption', lines: [] }] }],
+    stuckNight: [],
+  };
+  const start = () => newJourney(1, story, { purse: 100, coal: 2 });
+  const passDays = (s: JourneyState) => castOff(s, story);
+
+  it('lasts the day and the next, then goes, unless re-hired', () => {
+    let s = buy(start(), story, 'fireman');
+    expect(s.strength).toBe(26);
+    expect(deckCrew(s)).toEqual(['gus', 'willie', 'fireman']);
+    s = passDays(setRehire(s, 'fireman', false));
+    expect(s.crew).not.toContain('fireman');
+    expect(s.hires).toEqual([]);
+  });
+
+  it('signs on again by default, for the wage', () => {
+    const s = buy(start(), story, 'fireman');
+    const purse = s.purse;
+    const later = passDays(s);
+    expect(later.crew).toContain('fireman');
+    expect(later.hires[0].days).toBe(2);
+    expect(later.purse).toBe(purse - 4 - 6 * 2);
+  });
+
+  it('wants a kitchen for the cook, who feeds everyone else', () => {
+    let s = start();
+    expect(canBuy(s, story, 'cook')).toBe(false);
+    s = buy(s, story, 'stove');
+    expect(s.parts.kitchen).toBe(1);
+    s = buy(s, story, 'cook');
+    // Her 2 buttons, and 2 more for each of the other three.
+    expect(s.strength).toBe(18 + 2 + 6);
   });
 });
 

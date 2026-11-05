@@ -862,6 +862,22 @@ Upgrades and supplies, first drafts:
 | Spare pole, spare paddle | A trouble you never get |
 | **The whistle** | Can save your life in the fog bank (say: a free hand there, or the fog's pile cut short), and a place in the queue at the lock |
 
+### Skills and hands
+
+Everything aboard is rated on the same three tiers, 0, 1 or 2, crew and vessel
+alike. Crew have **Strength** (buttons made each morning), **Cook** (a proper
+cook with a kitchen gives everyone else +2 strength a day) and **Know** (no
+effect yet). The vessel has engine, kitchen, rooms (Storage, Cabin, Luxury),
+rudder and paddles; only the kitchen does anything so far. **The ship menu**,
+behind the turning paddle wheel, shows it all: bunker, ship's strength, crew,
+hires, repairs, vessel. A hire lasts the day they sign on and the next, then
+renews for their wage if re-hire is ticked (the default) and you can pay. At
+the deck game a hire takes Lars's chair, a second takes Willie's.
+
+**Backlog: snag counters.** A spare aboard meets a specific snag: Sandy sends a
+Broken Pole, Willie says *"No worries! We have a spare!"*, the spare is spent and
+the snag is swatted back. Insurance as a boat upgrade.
+
 ### Stats: the boat and the crew
 
 Every purchase and hire changes a number, so both need a few, kept as data
