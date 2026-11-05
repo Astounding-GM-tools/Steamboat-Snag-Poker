@@ -70,6 +70,8 @@
     aftermath?: string;
     /** Said in place of "You take the pot!" (against an obstacle, there's no pot to take). */
     winLine?: string;
+    /** Someone plays your seat: you only say when to go on, on this button. */
+    proxy?: string;
     /** What the money is: dollars, or in Morag's lessons, buttons. */
     currency?: Currency;
     /** Beside the street's name: which crossing this is. */
@@ -177,7 +179,7 @@
   );
   /** What you have left to put in this hand: a price beyond it is everything, all in. */
   const left = $derived(me >= 0 ? roundLeft(round, me) : 0);
-  const goLabel = $derived(moveLabel({ composing, answering, swaps: tappedCards.length, cost, left, currency: table.currency }));
+  const goLabel = $derived(table.proxy ?? moveLabel({ composing, answering, swaps: tappedCards.length, cost, left, currency: table.currency }));
 
   /** On the River, your hand is laid (Play hand): what's left is to raise, or not (Next). A tap picks it back up. */
   let laid = $state(false);
@@ -1135,7 +1137,7 @@
       <button onclick={() => (laid = true)} data-heavy="true">{goLabel}</button>
     {:else if view === 'choose' && myTurn}
       <!-- A line asking for a move: only that move will do (no folding your way out of a lesson). -->
-      <button class="ghost" onclick={fold} disabled={dealtHand !== table.hand || !canFold(round, me) || (line?.require ? line.require !== 'fold' : !complies)}>{foldLabel}</button>
+      <button class="ghost" onclick={fold} disabled={!!table.proxy || dealtHand !== table.hand || !canFold(round, me) || (line?.require ? line.require !== 'fold' : !complies)}>{foldLabel}</button>
       <button onclick={() => go()} disabled={dealtHand !== table.hand || !complies} data-heavy={composing || answering || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>
     {:else if view === 'replay'}
       <!-- The rivals' turns: Next through them, one by one, or Skip to the end. -->

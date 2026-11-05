@@ -116,13 +116,32 @@ const NOON_ENTRY = 10;
 const TOURNAMENT_HANDS = 40;
 const RAPIDS_HANDS = 8;
 
+/** Gaylord's week at the Pilot Games, on the voyage's calendar, whatever you do (docs/story.md). */
+const GAYLORD_FIRST_HIRE = 3;
+const GAYLORD_LAST_HIRE = 5;
+const GAYLORD_LAST_DAY = 8;
+const GAYLORD_LEAVES = 21;
+const GAYLORD_FEE = 10;
+const LOAN = 50;
+
+/** He has a stash, and he likes your style. Double back when you next meet. */
+const loanTalk: Step = {
+  type: 'encounter',
+  encounter: { id: 'loan', stake: 'purse', rivals: [{ id: 'gaylord', ai: 'gambler', money: 40 }], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
+  solved: [],
+  choices: {
+    take: { effects: { purse: LOAN, flag: 'owesGaylord' } },
+    decline: {},
+  },
+};
+
 const DOCKING_FEE = 3;
 const DAYTIME: Slot[] = ['morning', 'afternoon'];
 const CLIMB_COAL = 6;
 
 /** The Pilot Tournament, at Davenport. Lost at either table, the day's done. */
 const tournament: Step[] = [
-  { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2 },
+  { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2, regular: { id: 'gaylord', ai: 'gambler', until: GAYLORD_LAST_DAY } },
   {
     type: 'encounter',
     encounter: {
@@ -154,6 +173,7 @@ const tournament: Step[] = [
     solved: [{ who: 'ellie', text: 'That’s you, Captain. Get your hat.' }],
     failed: [{ who: 'ellie', text: 'Not today, Captain. Same time tomorrow.' }],
     failSkip: 3,
+    beatenBy: { id: 'gaylord', unless: 'owesGaylord', steps: [loanTalk] },
   },
   {
     type: 'encounter',
@@ -173,6 +193,21 @@ const tournament: Step[] = [
   { type: 'travel', coal: 3, to: 'leClaire' },
   { type: 'leave' },
   { type: 'nightfall' },
+];
+
+/** Ten dollars at breakfast covers everything: he plays your seat at noon, and keeps what he wins. You watch. */
+const noonStep = tournament[2] as Extract<Step, { type: 'encounter' }>;
+const hiredGaylord: Step[] = [
+  {
+    type: 'caption',
+    lines: [
+      { who: 'gaylord', text: 'Ten dollars covers my breakfast, my stay and the entry. I take the noon entry out of the winnings, and I keep the rest.' },
+      { who: 'gaylord', text: 'You, Captain, get a boat up the rapids. Watch and learn.' },
+    ],
+  },
+  { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2 },
+  { ...noonStep, beatenBy: undefined, encounter: { ...noonStep.encounter, id: 'hired', proxy: 'gambler' } },
+  ...tournament.slice(3),
 ];
 
 /** The coal depot at Rock Island: friendly, and on strike. */
@@ -259,9 +294,13 @@ const triCities: Hub = {
             id: 'triCities',
             stake: 'purse',
             rivals: [
-              { id: 'tripp', ai: 'careful', money: 30 },
               { id: 'odds', ai: 'loose', money: 30 },
               { id: 'finlay', ai: 'loose', money: 30 },
+            ],
+            guests: [
+              { rival: { id: 'tripp', ai: 'careful', money: 30 }, to: GAYLORD_FIRST_HIRE - 1 },
+              { rival: { id: 'gaylord', ai: 'gambler', money: 60 }, from: GAYLORD_FIRST_HIRE, to: GAYLORD_LEAVES },
+              { rival: { id: 'tripp', ai: 'careful', money: 30 }, from: GAYLORD_LEAVES + 1 },
             ],
             goal: { type: 'trips' },
             hands: TRI_CITIES_HANDS,
@@ -273,6 +312,18 @@ const triCities: Hub = {
       ],
     },
     { id: 'tournament', times: ['morning'], flag: 'met:deckIntel', coal: CLIMB_COAL, steps: tournament },
+    {
+      id: 'gaylord',
+      times: ['morning'],
+      flag: 'met:deckIntel',
+      notFlag: 'owesGaylord',
+      from: GAYLORD_FIRST_HIRE,
+      to: GAYLORD_LAST_HIRE,
+      cost: GAYLORD_FEE,
+      coal: CLIMB_COAL,
+      steps: hiredGaylord,
+    },
+    { id: 'loan', notFlag: 'owesGaylord', from: GAYLORD_LAST_HIRE + 1, to: GAYLORD_LEAVES, steps: [loanTalk] },
     {
       id: 'jobs',
       times: DAYTIME,
@@ -406,11 +457,55 @@ function morningTalk({ met }: TalkContext): RoundScript {
   return met ? {} : { deal: [say('willie', 'Five dollars in, Captain. Last one with money goes to the saloon at noon.')] };
 }
 
-function noonTalk({ met }: TalkContext): RoundScript {
+/** Ellie and Gaylord's week at the noon table: it goes on whether you're there or not. */
+function quarrel(day: number): SpeechLine[] {
+  if (day <= 3)
+    return [
+      say('ellie', 'You again, Mr. Montague.'),
+      say('gaylord', 'A different captain, Miss Sawyer. I merely sit in his chair.'),
+      say('ellie', 'Where is he, then?'),
+      say('gaylord', 'At breakfast. He has every confidence in me.'),
+    ];
+  if (day === 4)
+    return [
+      say('ellie', 'One more hand of this, Montague, and you’ll be swimming to St. Louis.'),
+      say('gaylord', 'River Code, Miss Sawyer. It’s silent on the matter of representation.'),
+      say('ellie', 'It’s silent on the matter of drowning, too.'),
+    ];
+  if (day === 5)
+    return [
+      say('ellie', 'That’s enough. You’re finished at this table.'),
+      say('gaylord', 'I signed those captains in good faith, Miss Sawyer. Their companies have lawyers.'),
+      say('ellie', 'How many more contracts have you signed?'),
+      say('gaylord', 'Three more.'),
+      say('ellie', ['This week only. Show up with a new client next week and I change the game to Bingo.', 'Code says game. It doesn’t say poker. You a professional bingo player, Gaylord? I’ll bring my auntie down from Cordova. She’s a cracking bingoist.']),
+      say('gaylord', '…This week only.'),
+    ];
+  if (day <= GAYLORD_LAST_DAY)
+    return day === GAYLORD_LAST_DAY
+      ? [say('ellie', 'Last one, Montague.'), say('gaylord', 'And a pleasure, as ever.'), say('ellie', 'I’ve told my auntie to stand down.')]
+      : [say('ellie', `${GAYLORD_LAST_DAY - day + 1} more, Montague.`), say('gaylord', 'I can count, Miss Sawyer. It’s rather the point of me.')];
+  return day <= GAYLORD_LAST_DAY + 2 ? [say('ellie', 'Captains only, today. Just how I like it. Anyone for bingo? No? Good.')] : [];
+}
+
+function noonTalk({ met, day }: TalkContext): RoundScript {
+  const intro = [say('ellie', ['Ellie Sawyer, out of Cordova. I take one boat up the rapids today.', 'Whoever wins this table. Or if I win it myself, the runner-up.']), say('willie', 'They say you’re crazy, taking boats up on the thaw.'), say('ellie', 'I prefer adventurous.')];
+  return { deal: [...(met ? [] : intro), ...quarrel(day)] };
+}
+
+/** Gaylord in your seat, saying what he's about. */
+const SHOPTALK = {
+  flop: ['Never fall in love with a pair, Captain.', 'Note who stands pat. It’s the only honest thing a man does at this table.', 'I don’t play the cards. I play the price of the cards.'],
+  turn: ['Now we see who came to play and who came to pay.', 'A fee to see the River. Cheap, for what it tells me.', 'Patience. It’s the only edge that doesn’t wear down.'],
+  river: ['Lay it down gently. You want them to think you’re sorry.', 'There. Never show more than you must.', 'The best hand is the one they believe.'],
+};
+function hiredTalk({ hand, seed }: TalkContext): RoundScript {
+  const pick = (lines: string[], k: number) => ({ size: 'aside' as const, who: 'gaylord', text: new Rng(seed + hand + k).pick(lines) });
   return {
-    deal: met
-      ? [say('ellie', 'Back again, Captain? One boat. Same as yesterday.')]
-      : [say('ellie', ['Ellie Sawyer, out of Cordova. I take one boat up the rapids today.', 'Whoever wins this table. Or if I win it myself, the runner-up.']), say('willie', 'They say you’re crazy, taking boats up on the thaw.'), say('ellie', 'I prefer adventurous.')],
+    ...(hand === 1 ? { deal: [say('ellie', 'A captain who can’t be bothered to play his own seat. Lovely.')] } : {}),
+    flop: [pick(SHOPTALK.flop, 1)],
+    turn: [pick(SHOPTALK.turn, 2)],
+    river: [pick(SHOPTALK.river, 3)],
   };
 }
 
@@ -420,9 +515,19 @@ const say = (who: string, text: string | string[]): SpeechLine => ({ size: 'scen
 const ODDS = ['Two to one you swap.', 'Evens the River’s red.', 'Eleven to four on rain.', 'Six to four the cat jumps left.', 'Five to one that boat of yours floats.', 'I’ve got a dollar on Finlay. Don’t tell Finlay.'];
 
 /** The Tri-Cities: how many cities there are is a matter of opinion, and so is what settles a game. */
-function triCitiesTalk({ hand, seed, trips }: TalkContext): RoundScript {
+/** Gaylord at the saloon: the week, as it goes, and after. */
+function gaylordAtTheSaloon(day: number): SpeechLine[] {
+  if (day < GAYLORD_FIRST_HIRE) return [];
+  if (day <= GAYLORD_LAST_HIRE)
+    return [say('gaylord', 'Gaylord Montague, Captain. I play at Davenport of a noon, on behalf of those who’d rather not. You’ll find me at breakfast.')];
+  if (day <= GAYLORD_LAST_DAY) return [say('gaylord', 'Bingo, Captain. She said bingo. To me.')];
+  return [say('gaylord', ['You missed a fine week at Davenport. She threatened me with her aunt, you know.', 'A cracking bingoist, I’m told. I shan’t be going back.'])];
+}
+
+function triCitiesTalk({ hand, seed, trips, day, met }: TalkContext): RoundScript {
   return {
-    ...(hand === 1
+    ...(hand === 1 && met ? { deal: gaylordAtTheSaloon(day) } : {}),
+    ...(hand === 1 && !met
       ? {
           deal: [
             say('willie', 'They’re batty about betting here, Captain.'),
@@ -431,6 +536,7 @@ function triCitiesTalk({ hand, seed, trips }: TalkContext): RoundScript {
             say('odds', 'Bettendorf! We hold out for four of a kind. Five to one it’s three tonight.'),
             say('tripp', 'Bettendorf is a wagon factory.'),
             say('finlay', 'Sit down, sit down! Finlay. You never saw me, if a small Scotswoman asks.'),
+            ...gaylordAtTheSaloon(day),
           ],
         }
       : { flop: [{ size: 'aside', who: 'odds', text: new Rng(seed).shuffle(ODDS)[hand % ODDS.length] }] }),
@@ -666,6 +772,22 @@ export const RIVER_TALK: Record<string, Talk> = {
   depot: depotTalk,
   morning: morningTalk,
   noon: noonTalk,
+  hired: hiredTalk,
+  loan: {
+    rounds: [
+      {
+        deal: [
+          {
+            ...say('gaylord', ['Fearless and audacious. I see myself in you, Captain.', `${LOAN} dollars now. Double back when we next meet, shall we say two weeks? It doubles again if the third week begins.`]),
+            replies: [
+              { label: 'No, thanks', effect: 'decline', end: true },
+              { label: 'Done', effect: 'take', end: true },
+            ],
+          },
+        ],
+      },
+    ],
+  },
   rapids: rapidsTalk,
   deckIntel: (context: TalkContext): RoundScript => ({
     ...deckTalk(context),

@@ -23,6 +23,7 @@ import {
   hubOptions,
   closeMenu,
   deckCrew,
+  jumpTo,
   setStation,
   setRehire,
   type Slot,
@@ -433,6 +434,56 @@ describe('hired hands', () => {
     s = buy(s, story, 'cook');
     // Her 2 buttons, and 2 more for each of the other three.
     expect(s.strength).toBe(18 + 2 + 6);
+  });
+});
+
+describe('Gaylord\'s week', () => {
+  const hub = RIVER.days[0].steps.findIndex((x) => x.type === 'hub');
+  const at = (day: number, time: Slot = 'morning', flags = ['met:deckIntel']): JourneyState => ({ ...newJourney(4, RIVER, RIVER_START), step: hub, encounter: null, time, flags, mornings: day, coal: 6, purse: 60 });
+  const ids = (s: JourneyState) => hubOptions(s, RIVER).map((o) => o.option.id);
+
+  it('sits at the final on his own calendar, then doesn\'t', () => {
+    const noon = (day: number) => {
+      const [draw, , ...rest] = hubOptions(at(day), RIVER).find((o) => o.option.id === 'tournament')!.option.steps;
+      return jumpTo(at(day), RIVER, [draw, ...rest]).encounter!.session.seats.map((p) => p.id);
+    };
+    expect(noon(4)).toContain('gaylord');
+    expect(noon(8)).toContain('gaylord');
+    expect(noon(9)).not.toContain('gaylord');
+  });
+
+  it('can be hired on days 3 to 5, unless you owe him', () => {
+    expect(ids(at(3))).toContain('gaylord');
+    expect(ids(at(5))).toContain('gaylord');
+    expect(ids(at(6))).not.toContain('gaylord');
+    expect(ids(at(3, 'morning', ['met:deckIntel', 'owesGaylord']))).not.toContain('gaylord');
+  });
+
+  it('lends from day 6, once', () => {
+    expect(ids(at(5))).not.toContain('loan');
+    expect(ids(at(6))).toContain('loan');
+    const s = goTo(at(7), RIVER, 'loan');
+    const after = choose(s, RIVER, 'take');
+    expect(after.purse).toBe(110);
+    expect(ids(after)).not.toContain('loan');
+  });
+
+  it('plays your seat: you pay at breakfast, he decides, and his winnings are his', () => {
+    let s = proceed(goTo(at(3), RIVER, 'gaylord'), RIVER);
+    expect(s.purse).toBe(50);
+    expect(s.encounter?.def.proxy).toBe('gambler');
+    expect(s.encounter?.session.seats.map((p) => p.id)).not.toContain('gaylord');
+    for (let k = 0; k < 400 && !s.encounter?.outcome; k++) {
+      const e = s.encounter!;
+      if (e.session.phase === 'hand') s = playEncounter(s, myMoveOwed(s) ? { type: 'fold' } : null);
+      else s = handDone(s, RIVER);
+    }
+    expect(s.purse).toBe(50);
+  });
+
+  it('offers the loan when he beats you at the final', () => {
+    const step = hubOptions(at(4), RIVER).find((o) => o.option.id === 'tournament')!.option.steps[2];
+    expect(step.type === 'encounter' && step.beatenBy?.id).toBe('gaylord');
   });
 });
 

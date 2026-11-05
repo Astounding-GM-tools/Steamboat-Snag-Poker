@@ -11,6 +11,7 @@
  */
 import { type JokerCard, jokerCard } from './cards';
 import type { AiId } from './characters';
+import { chooseAction, viewFor } from './ai';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { BOAT, CREW, HIRE_DAYS, ITEMS, STARTING_CREW, shipStrength, type BoatParts, type Station, type Stations } from './boat';
 import { CATEGORIES } from './evaluate';
@@ -60,6 +61,10 @@ export interface EncounterDef {
   goal: Goal;
   /** Hands at most (the day's hours, against an obstacle). */
   hands: number;
+  /** Who else may be here, by the day of the voyage (they keep to their calendar, whatever you do). */
+  guests?: { rival: Rival; from?: number; to?: number }[];
+  /** Someone else plays your seat, this way; you pay no entry and take no winnings. */
+  proxy?: AiId;
   /** A tournament table: this much to sit down (and it's everyone's stack), and the table takes it all. */
   entry?: number;
   /** Who else sits down, besides `rivals`: your table in the morning, or the morning's winners at noon. */
@@ -111,7 +116,14 @@ export type Step =
   /** On from the hub: whatever was going on there is done with. */
   | { type: 'leave' }
   /** The day's draw: tables of `entrants`, yours filled first; the others are played out unseen, and we meet whoever won. */
-  | { type: 'draw'; entrants: { id: string; ai: AiId }[]; tableSize: number; finalists: number }
+  | {
+      type: 'draw';
+      entrants: { id: string; ai: AiId }[];
+      tableSize: number;
+      finalists: number;
+      /** Someone who comes through their table every day until the day given. */
+      regular?: { id: string; ai: AiId; until: number };
+    }
   /** Under way: it burns the coal, and you arrive. */
   | { type: 'travel'; coal: number; to: string }
   | {
@@ -127,6 +139,8 @@ export type Step =
       jolt?: boolean;
       /** In place of `solved`: closing lines taken in turn, a different set each day (the evenings' endings). */
       closers?: StoryLine[][];
+      /** Beaten at it by this one: these steps come next (unless the flag's up). */
+      beatenBy?: { id: string; unless?: string; steps: Step[] };
       /** Failing it, this many of the steps ahead are passed by (a tournament lost is a day done). */
       failSkip?: number;
       /** Which try this is (the first, or again after a night stuck). */
@@ -149,6 +163,11 @@ export interface HubOption {
   cost?: number;
   /** Only with this flag up. */
   flag?: string;
+  /** Not with this flag up. */
+  notFlag?: string;
+  /** Only from this day of the voyage, and until this one. */
+  from?: number;
+  to?: number;
   /** Only with this much coal aboard. */
   coal?: number;
   steps: Step[];
@@ -377,7 +396,14 @@ export function hubOptions(state: JourneyState, story: StoryDef): { option: HubO
   const top = story.hubs?.[step.hub].options ?? [];
   const list = (state.submenu && top.find((o) => o.id === state.submenu)?.menu) || top;
   return list
-    .filter((option) => (!option.times || option.times.includes(state.time)) && (!option.flag || state.flags.includes(option.flag)))
+    .filter(
+      (option) =>
+        (!option.times || option.times.includes(state.time)) &&
+        (!option.flag || state.flags.includes(option.flag)) &&
+        (!option.notFlag || !state.flags.includes(option.notFlag)) &&
+        state.mornings >= (option.from ?? 0) &&
+        state.mornings <= (option.to ?? Infinity),
+    )
     .map((option) => ({ option, open: state.purse >= (option.cost ?? 0) && state.coal >= (option.coal ?? 0) }));
 }
 
@@ -514,6 +540,7 @@ function drawTables(state: JourneyState, step: Extract<Step, { type: 'draw' }>) 
     for (let guard = 0; s.phase !== 'over' && guard < 400; guard++) s = s.phase === 'hand' ? playOn(s) : nextSessionHand(s);
     return table.find((r) => !s.seats.find((p) => p.id === r.id)?.out) ?? table[0];
   });
+  if (step.regular && state.mornings <= step.regular.until) state.finalists[0] = { id: step.regular.id, ai: step.regular.ai };
   state.rngState = rng.state;
 }
 
@@ -522,15 +549,15 @@ export const ODD_JOB = { below: 6, pays: 10 };
 
 function seat(state: JourneyState, def: EncounterDef) {
   const rng = new Rng(state.rngState);
-  const oddJob = def.stake === 'purse' && def.rules?.pot !== false && state.purse < (def.entry ?? ODD_JOB.below) ? ODD_JOB.pays : 0;
-  state.purse += oddJob - (def.entry ?? 0);
+  const oddJob = def.stake === 'purse' && !def.proxy && def.rules?.pot !== false && state.purse < (def.entry ?? ODD_JOB.below) ? ODD_JOB.pays : 0;
+  state.purse += oddJob - (def.proxy ? 0 : (def.entry ?? 0));
   const seed = rng.int(2 ** 31);
   // At the deck game everyone finds a button or two, however hard the day.
   const money = def.entry ? def.entry : def.stake === 'purse' ? state.purse : def.rivals === 'crew' ? Math.max(state.strength, DECK_GAME_LEAST) : state.strength;
   const troubles = state.snags.filter((j) => snagDef(j.index).kind === 'trouble');
   // Against an obstacle your snags stay aside (it cares nothing for your duties), but the volunteers among them cover their hands.
   const obstacle = def.rivals !== 'crew' && def.rivals.some((r) => r.obstacle);
-  const jokers = obstacle ? [] : def.rivals === 'crew' ? troubles : state.snags;
+  const jokers = obstacle || def.proxy ? [] : def.rivals === 'crew' ? troubles : state.snags;
   const randomHand = 1 + rng.int(def.hands);
   const me = {
     id: PLAYER_ID,
@@ -540,6 +567,7 @@ function seat(state: JourneyState, def: EncounterDef) {
     ...(def.rivals === 'crew' ? { unhands: true } : {}),
   };
   const joined = (def.joined === 'mates' ? state.mates : def.joined === 'finalists' ? state.finalists : []).map((r) => ({ ...r, money: def.entry ?? 0 }));
+  const guests = (def.guests ?? []).filter((g) => state.mornings >= (g.from ?? 0) && state.mornings <= (g.to ?? Infinity)).map((g) => g.rival);
   const rivals =
     def.rivals === 'crew'
       ? deckCrew(state).map((id) => ({ id, ai: CREW[id].ai, money: DECK_STACK, fixes: TROUBLES }))
@@ -551,7 +579,7 @@ function seat(state: JourneyState, def: EncounterDef) {
           ...(r.obstacle ? { obstacle: true } : {}),
           ...(r.obliging ? { fixes: SNAGS.map((j) => j.index).filter((i) => !r.jokers?.includes(i)) } : {}),
         }));
-  const session = newSession(seed, [me, ...rivals, ...joined], { ...STORY_CONFIG, ...def.rules });
+  const session = newSession(seed, [me, ...rivals, ...guests, ...joined], { ...STORY_CONFIG, ...def.rules });
   state.rngState = rng.state;
   state.encounter = {
     def,
@@ -579,8 +607,15 @@ export function playEncounter(prev: JourneyState, action: Action | null): Journe
   const e = state.encounter!;
   const me = mySeatAt(e);
   if (action) {
-    if (action.type === 'fold') e.folds++;
-    e.session = submit(e.session, me, action);
+    let move = action;
+    if (e.def.proxy) {
+      // Whoever's in your seat decides: you only said when.
+      const rng = new Rng(state.rngState);
+      move = chooseAction(e.def.proxy, viewFor(e.session.round!, me, e.session.config), e.session.config, rng);
+      state.rngState = rng.state;
+    }
+    if (move.type === 'fold') e.folds++;
+    e.session = submit(e.session, me, move);
   } else if (!waitingFor(e.session).length) e.session = playOn(e.session);
   return state;
 }
@@ -656,6 +691,10 @@ export function turnIn(prev: JourneyState, story: StoryDef): JourneyState {
 function finish(state: JourneyState, _story: StoryDef, outcome: 'solved' | 'failed'): JourneyState {
   const e = state.encounter!;
   const mine = e.session.seats[0];
+  if (e.def.proxy) {
+    e.outcome = outcome;
+    return state;
+  }
   if (e.def.entry) state.purse += mine.money;
   else if (e.def.stake === 'purse') state.purse = mine.money;
   else state.strength = mine.money;
@@ -711,6 +750,10 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
     return arrive(state, story);
   }
   if (enc.outcome === 'solved') applyEffects(state, step.effects);
-  else for (let k = 0; k < (step.failSkip ?? 0); k++) state.pending.shift();
+  else {
+    for (let k = 0; k < (step.failSkip ?? 0); k++) state.pending.splice(1, 1);
+    const by = step.beatenBy;
+    if (by && enc.session.seats.find((p) => !p.out)?.id === by.id && !(by.unless && state.flags.includes(by.unless))) state.pending.splice(1, 0, ...by.steps);
+  }
   return advance(state, story);
 }

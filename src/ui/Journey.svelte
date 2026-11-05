@@ -88,6 +88,7 @@
       currency: enc.def.stake === 'strength' ? 'buttons' : undefined,
       label: t('river.day', { day: journey.mornings }),
       ...(s.seats.some((p) => p.obstacle) ? { winLine: t('river.heldGround') } : {}),
+      ...(enc.def.proxy ? { proxy: t('river.proxy') } : {}),
       ending: s.phase === 'over' ? (s.seats[0].out ? 'lostAll' : 'wonAll') : undefined,
     });
   });

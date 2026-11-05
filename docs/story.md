@@ -565,16 +565,33 @@ fund the next entry (*"You ferry a herd of cattle across the river, and spend
 the evening cleaning up the manure."*). After a good while a second pilot
 appears, **Lindy Huffer**, who just takes the highest bidder.
 
-**Gaylord Montague** is how the table gets its cheat. Low stakes, rich pots:
-he's making a killing playing on behalf of a captain each day. Not for hire,
-exactly: *ten dollars in the morning covers my breakfast, my stay and the
-entry; I take the noon entry out of the winnings, and I keep the rest.*
-Grey-area River Code. Hire him and you watch over his
-shoulder, tapping Next as he explains his moves. If he beats you he offers
-breakfast and a one-on-one the next morning, and a **loan of $50**: double
-back next time you meet, in two weeks; doubled again if the third week begins.
-Take his money and he won't play for you. Once he has beaten you three times,
-the pilot bans him: not in the spirit of the game. He goes down to Bettendorf.
+**The river doesn't wait for you.** Characters keep their own calendar, by Days
+gone, whatever the player does: you walk in on whatever's happening, or hear
+about it later. Nobody is waiting for the Captain.
+
+**Gaylord's week.** Ellie ran the first games on the first day of spring. On day
+2 Gaylord, who heard over in Bettendorf, won on behalf of a client. He fills his
+week with clients (rich captains of big companies, who could sue).
+
+| Day | At the noon table |
+|---|---|
+| 2 | Gaylord wins for a client; Ellie is puzzled |
+| 3 | She's catching on (the earliest a player can be there) |
+| 4 | Threats |
+| 5 | Contracts, lawyers, *"Three more."* The Bingo ultimatum: *"Code says game. It doesn't say poker."* She'll bring her auntie down from Cordova |
+| 6–8 | The contracted days, through gritted teeth |
+| 9 on | Captains only. Gaylord back at Bettendorf, reminiscing |
+
+*Ten dollars at breakfast* covers his breakfast, stay and entry; he takes the noon
+entry out of the winnings and keeps the rest. Hireable on days 3 to 5, and not
+if you owe him. You watch from your own seat, tapping I see, as he talks shop.
+He can be in two places in a slot: the player can't, so it never shows.
+
+**His loan: $50**, double back when you next meet in two weeks, doubled again
+if the third week begins. Offered any day he beats you at Davenport, and any day
+after day 5 at Bettendorf. Take it and he won't play for you. From about day 7 he
+asks after passage to St. Louis, and offers to play you for it; he leaves on a
+cruiser around day 21.
 
 **Bettendorf, coming down** (after Dubuque, not on the first visit; until
 then a game there ends on trips). His presence has changed the game: it's quads
