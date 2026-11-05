@@ -25,6 +25,12 @@ export interface TalkContext {
   fixed: { id: string; snag: number }[];
   /** The day of the voyage. */
   day: number;
+  /** This hand went to three of a kind or better. */
+  trips: boolean;
+  /** Lost at showdowns so far in this encounter, this hand included. */
+  lost: number;
+  /** You folded out of this hand. */
+  foldedOut: boolean;
 }
 
 /** An encounter's talk: set lines hand by hand, or worked out as the hand stands. */

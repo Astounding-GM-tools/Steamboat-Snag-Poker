@@ -223,7 +223,7 @@ describe('the dock fee', () => {
 });
 
 describe('table talk', () => {
-  const context = { hand: 1, pile: 20, seed: 9, day: 2, fixed: [] as { id: string; snag: number }[] };
+  const context = { hand: 1, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, fixed: [] as { id: string; snag: number }[] };
   const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
   const deck = RIVER_TALK.deck as (c: typeof context) => RoundScript;
 
@@ -246,10 +246,47 @@ describe('table talk', () => {
     expect(lines[0].text).toContain('Gus');
   });
 
+  it('has the foreman never say what he wants, until he has it', () => {
+    const foreman = RIVER_TALK.foreman as (c: typeof context) => RoundScript;
+    expect(String(foreman({ ...context, hand: 3, lost: 4 }).verdict?.[0].text)).not.toContain('sacks');
+    expect(String(foreman({ ...context, hand: 3, lost: 13 }).verdict?.[0].text)).toContain('sacks');
+    expect(String(foreman({ ...context, hand: 3, foldedOut: true }).verdict?.[0].text)).toContain('Folding');
+  });
+
   it('has Lars sing until he has a week of words', () => {
     const fixing = (day: number) => deck({ ...context, day, fixed: [{ id: 'lars', snag: TROUBLE.brokenPole }] }).verdict![0].text;
     expect(fixing(2)).toContain('♪');
     expect(fixing(9)).toBe('Ja. Fiks.');
+  });
+});
+
+describe('the rapids', () => {
+  it('needs you ahead of everyone but the pilot', () => {
+    const story: StoryDef = {
+      days: [{ day: 1, place: 'triCities', steps: [{ type: 'dawn' }, { type: 'encounter', solved: [], encounter: { id: 'waiting', stake: 'purse', rivals: [{ id: 'oilskins', ai: 'careful', money: 40 }, { id: 'konrad', ai: 'careful', money: 30 }], goal: { type: 'ahead', host: 'oilskins' }, hands: 1 } }, { type: 'caption', lines: [] }] }],
+      stuckNight: [],
+    };
+    const end = (mine: number, hers: number, his: number) => {
+      let s = newJourney(1, story, RIVER_START);
+      const rng = new Rng(1);
+      while (s.encounter!.session.phase === 'hand') {
+        const c = s.encounter!;
+        s = playEncounter(s, chooseAction('careful', viewFor(c.session.round!, mySeatAt(c), c.session.config), c.session.config, rng));
+      }
+      s = structuredClone(s);
+      s.encounter!.session.seats[0].money = mine;
+      s.encounter!.session.seats[1].money = hers;
+      s.encounter!.session.seats[2].money = his;
+      return handDone(s, story).encounter?.outcome;
+    };
+    expect(end(35, 60, 20)).toBe('solved');
+    expect(end(20, 60, 35)).toBe('failed');
+  });
+
+  it('lets a spare replace what\'s broken', () => {
+    const story: StoryDef = { days: [{ day: 1, place: 'triCities', steps: [{ type: 'council', advice: [], trader: ['sparePole'], coal: 0 }, { type: 'caption', lines: [] }] }], stuckNight: [] };
+    const s = { ...newJourney(1, story, RIVER_START), snags: [jokerCard(TROUBLE.brokenPole)] };
+    expect(buy(s, story, 'sparePole').snags).toEqual([]);
   });
 });
 

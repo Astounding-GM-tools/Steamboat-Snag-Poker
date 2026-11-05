@@ -997,13 +997,12 @@ Robert E. Lee (also a famous steamboat, of the 1870 race against the
 
 ## Next steps
 
-**The first stretch is built: days 1 and 2** (the handover, the harbour
-master, the Sandbar, the Tri-Cities evening, the coal yard, a deck game),
-from the title as *Story (first days)*. See design.md, "Story mode", for how.
+**The first stretch is built: days 1 to 3** (the handover, the Dock Fee, the
+Sandbar, the Tri-Cities evening, the coal yard, a deck game, the waiting
+table at the foot of the rapids, the climb, LeClaire's saloon and Gaylord's
+loan), from the title as *Story (first days)*. See design.md, "Story mode", for how.
 Built as listed below, with these simplifications for now:
 
-- No table talk inside encounters yet: lines come before and after, on title
-  cards. (The foreman's hint, *"Folding again, Cap'n?"*, wants it.)
 - The obstacle's pile is drawn as buttons, not sand; nothing drifts away.
 - Turning in early from the deck game is in the engine, not on screen.
 - No passengers, odd jobs beyond a stake when nearly broke, or wages owed.
@@ -1028,7 +1027,11 @@ Built as listed below, with these simplifications for now:
   failed twice, the river relents (a passing packet throws you a line, the
   foreman gives in) and it counts as solved.
 
-Next: Kitty's table and the climb (day 3). The list as it was:
+**Kitty is a stranger until the fifth hand:** at the foot of the rapids she's
+just *Oilskins*, nobody explains her, and she only says who she is when
+the hands run out. Five hands; ahead of everyone but her, you go up.
+
+Next: above the rapids, the Ice (day 4). The list as it was:
 
 1. **The voyage state,** above any single game: the day and the place, the
    purse, the strength and the coal, who's aboard (crew, passengers), the

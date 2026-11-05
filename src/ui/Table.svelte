@@ -68,6 +68,8 @@
     phase: 'hand' | 'handEnd' | 'over';
     /** Said with the verdict, after who won: who went broke, that the next hand is the last. */
     aftermath?: string;
+    /** Said in place of "You take the pot!" (against an obstacle, there's no pot to take). */
+    winLine?: string;
     /** What the money is: dollars, or in Morag's lessons, buttons. */
     currency?: Currency;
     /** Beside the street's name: which crossing this is. */
@@ -850,7 +852,7 @@
     const res = round.result;
     if (!res) return '';
     // You get your own line ("You take the pot!"), not your name in theirs.
-    const line = (key: string, s: number) => (s === me ? t(`${key}.you`) : t(key, { name: who(s) }));
+    const line = (key: string, s: number) => (s === me ? (table.winLine ?? t(`${key}.you`)) : t(key, { name: who(s) }));
     // You folded and one captain is left: say so (with more still at the table, the rest folded too).
     if (res.byFolds && me >= 0 && round.seats[me].folded && res.winners.length === 1 && round.seats.length === 2) return t('hr.youFolded', { name: who(res.winners[0]) });
     if (res.byFolds) return line('hr.byFolds', res.winners[0]);

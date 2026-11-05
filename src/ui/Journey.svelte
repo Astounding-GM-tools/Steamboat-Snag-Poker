@@ -12,12 +12,14 @@
     currentStep,
     handDone,
     leaveEncounter,
+    lostAtThisShowdown,
     mySeatAt,
     newJourney,
     playEncounter,
     proceed,
     seatOf,
     snagDef,
+    wonWithTrips,
     type Action,
     type JourneyState,
     type StoryLine,
@@ -77,6 +79,7 @@
       phase: s.phase,
       currency: enc.def.stake === 'strength' ? 'buttons' : undefined,
       label: t('river.day', { day: journey.day + journey.nights }),
+      ...(s.seats.some((p) => p.obstacle) ? { winLine: t('river.heldGround') } : {}),
       ending: s.phase === 'over' ? (s.seats[0].out ? 'lostAll' : 'wonAll') : undefined,
     });
   });
@@ -99,8 +102,11 @@
     if (typeof talk !== 'function') return roundScript(talk, enc!.session.hand);
     const s = enc!.session;
     const obstacle = s.seats.findIndex((p) => p.obstacle);
+    const round = s.round;
+    const res = round?.result;
+    const me = mySeatAt(enc!);
     const fixed = s.round?.result ? (s.settled?.absorbed ?? []).map((a) => ({ id: s.seats[s.seated[a.seat]].id, snag: a.snag })) : [];
-    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, seed: journey.rngState, fixed, day: journey.day + journey.nights });
+    return talk({ hand: s.hand, pile: s.seats[obstacle]?.money ?? 0, seed: journey.rngState, fixed, day: journey.day + journey.nights, trips: res ? wonWithTrips(res) : false, lost: enc!.lostAtShowdown + (round ? lostAtThisShowdown(round, me) : 0), foldedOut: !!res?.byFolds && !!round?.seats[me]?.folded });
   }
 
   /** A reply at the table that decides what happens next. */

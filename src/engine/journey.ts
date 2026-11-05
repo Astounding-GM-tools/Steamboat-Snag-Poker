@@ -15,7 +15,7 @@ import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { BOAT, CREW, ITEMS, STARTING_CREW } from './boat';
 import { CATEGORIES } from './evaluate';
 import { Rng } from './rng';
-import type { Action } from './round';
+import type { Action, RoundResult, RoundState } from './round';
 import { newSession, nextSessionHand, playOn, seatOf, submit, waitingFor, type TableSession } from './session';
 import { TROUBLES, coveredHands, snagDef } from './snags';
 
@@ -36,7 +36,9 @@ export type Goal =
   /** Lose between `min` and `max` at showdowns, never by folding (the foreman's game). */
   | { type: 'lose'; min: number; max: number }
   /** The evening's game aboard: played till the hands run out, or you turn in. */
-  | { type: 'evening' };
+  | { type: 'evening' }
+  /** Ahead of everyone at the table but `host` when the hands run out (the pilot takes the winner; if she wins it herself, the runner-up). */
+  | { type: 'ahead'; host: string };
 
 export interface Rival {
   id: string;
@@ -306,6 +308,11 @@ export function buy(prev: JourneyState, story: StoryDef, itemId: string): Journe
     state.strength += e.comfort;
   }
   if (e.tomorrow) state.tomorrow += e.tomorrow;
+  // A spare replaces what's broken, if it is already.
+  if (e.spare !== undefined) {
+    const k = state.snags.findIndex((j) => j.index === e.spare);
+    if (k >= 0) state.snags.splice(k, 1);
+  }
   if (e.hire) {
     state.crew.push(e.hire);
     state.strength += CREW[e.hire]?.strength ?? 0;
@@ -404,6 +411,19 @@ export function myMoveOwed(state: JourneyState): boolean {
   return !!enc && !enc.outcome && waitingFor(enc.session).includes(mySeatAt(enc));
 }
 
+/** The hand went to three of a kind or better. */
+export function wonWithTrips(result: RoundResult): boolean {
+  const top = result.winners.map((w) => result.hands[w]).find(Boolean);
+  return !!top && CATEGORIES.indexOf(top.category) >= CATEGORIES.indexOf('threeOfAKind');
+}
+
+/** What the hand just played costs you at a showdown (folding doesn't count: see the foreman). */
+export function lostAtThisShowdown(round: RoundState, seat: number): number {
+  const res = round.result;
+  if (!res || seat < 0 || res.byFolds || res.winners.includes(seat)) return 0;
+  return round.bets[seat] + res.forfeit[seat] - res.share[seat];
+}
+
 /** After a hand's verdict: the encounter goes on, or it's over (and how). */
 export function handDone(prev: JourneyState, story: StoryDef): JourneyState {
   const enc = prev.encounter;
@@ -417,19 +437,21 @@ export function handDone(prev: JourneyState, story: StoryDef): JourneyState {
   const mine = s.seats[0];
   const won = me >= 0 && res.winners.includes(me);
   e.fixed.push(...(s.settled?.absorbed.map((a) => a.snag) ?? []));
-  if (me >= 0 && !won && !res.byFolds) e.lostAtShowdown += round.bets[me] + res.forfeit[me] - res.share[me];
+  e.lostAtShowdown += lostAtThisShowdown(round, me);
   const goal = e.def.goal;
   const lastHand = s.hand >= e.def.hands;
   const over = s.phase === 'over';
   let outcome: Encounter['outcome'] = null;
-  if (goal.type === 'winPot') outcome = won ? 'solved' : mine.out ? 'failed' : null;
+  if (goal.type === 'ahead') {
+    const others = s.seats.slice(1).filter((p) => p.id !== goal.host);
+    if (mine.out) outcome = 'failed';
+    else if (lastHand || over) outcome = others.every((p) => mine.money >= p.money) ? 'solved' : 'failed';
+  } else if (goal.type === 'winPot') outcome = won ? 'solved' : mine.out ? 'failed' : null;
   else if (goal.type === 'clear') {
     const pile = s.seats.find((p) => p.obstacle)!;
     outcome = pile.money <= 0 ? 'solved' : mine.out || lastHand ? 'failed' : null;
   } else if (goal.type === 'trips') {
-    const top = res.winners.map((w) => res.hands[w]).find(Boolean);
-    const trips = !!top && CATEGORIES.indexOf(top.category) >= CATEGORIES.indexOf('threeOfAKind');
-    outcome = trips || lastHand || over ? 'solved' : null;
+    outcome = wonWithTrips(res) || lastHand || over ? 'solved' : null;
   } else if (goal.type === 'lose') outcome = e.lostAtShowdown >= goal.min || mine.out ? 'solved' : lastHand ? 'failed' : null;
   // The evening's game ends with your buttons: nobody's left watching from the rail.
   else outcome = lastHand || over || mine.out ? 'solved' : null;
