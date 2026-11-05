@@ -556,10 +556,21 @@ Pilots worked from Davenport and Rock Island as well as LeClaire.
 coal, and the crew come to it with their full strength. Stages can only be worn
 down: what you lose goes down the river, so preparation counts. The Moline Chain
 (15, one snag), Campbell's Chain (30, three), and after Hampton's breather the
-Long Reach (60, six). Fail, and push again while the coal lasts; out of coal, you're
-swept back to Davenport: days lost, the queue again, scavenging for supplies. Not
-every player will get past the rapids, and that's all right. Simulated for a
+Long Reach (60, six). After a failed push Gus says how much of it you took, and
+you may **push again** or **turn back** with the coal that's left, to the back of
+the queue. Out of coal, you're swept back to Davenport all the same. Not every
+player will get past the rapids, and that's all right. The way through is to lose
+slowly: antes rise, so whoever lasts takes the biggest bites. Simulated for a
 careful captain, through in six loads: strength 18, 22%; 26, 34%; 34, 58%; 44, 84%.
+
+**It's on the Captain.** Gus has been saying so all along: *"We are not ready for
+the rapids, Captain"*, an engine overhaul, another fireman, a professional cook.
+Willie apologises for the beans. Rumours on the deck: the *Mathilda* came back
+down by evening, cargo lost; the *Terry Belle* is back in the queue. Lenny sings
+it at Bettendorf: *everybody knows the thaw's too strong.* Then, at the foot of the
+rapids, *"Just give me all she's got, Mr. Klemm." "It does not work like that,
+Captain."* The Mercantile sells a boiler and an engine overhaul, each doubling that
+station's work. Below 34 strength, he won't let it drop.
 
 **The Tri-Cities are the hub.** The queue is at **Davenport**, at the foot of
 the rapids, and the whole area is a place to live a while: losing money to

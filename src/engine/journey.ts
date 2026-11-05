@@ -115,6 +115,8 @@ export type Step =
       /** What leaving the council is called (default: casting off). */
       leave?: string;
     }
+  /** A push failed, with coal left: go again, or call it off. */
+  | { type: 'fork'; lines: StoryLine[]; stage: Step; turnedBack: Step[] }
   /** Evening comes, whatever slot it was (a day spent). */
   | { type: 'nightfall' }
   /** That took the slot: on to the next. */
@@ -147,8 +149,10 @@ export type Step =
       jolt?: boolean;
       /** In place of `solved`: closing lines taken in turn, a different set each day (the evenings' endings). */
       closers?: StoryLine[][];
-      /** Failing it, push again while the coal lasts; when it's gone, these steps, and all the rest are off. */
+      /** Failing it, you may push again while the coal lasts; when it's gone, these steps, and all the rest are off. */
       sweptBack?: Step[];
+      /** Calling it off instead: these steps, and all the rest are off. */
+      turnedBack?: Step[];
       /** Failing it, this many of the steps ahead are passed by (a tournament lost is a day done). */
       failSkip?: number;
       /** Which try this is (the first, or again after a night stuck). */
@@ -199,6 +203,8 @@ export interface StoryDef {
   /** The deck game aboard, played when you're stuck for the night. */
   stuckNight: Step[];
   hubs?: Record<string, Hub>;
+  /** What's said after a failed push, by how much of the stage it took (0 to 1). */
+  pushReading?: (taken: number) => StoryLine;
 }
 
 export interface Encounter {
@@ -729,6 +735,24 @@ export function closingLines(state: JourneyState, step: Extract<Step, { type: 'e
   return step.closers ? step.closers[state.mornings % step.closers.length] : step.solved;
 }
 
+/** Go again at the stage. */
+export function pushAgain(prev: JourneyState, story: StoryDef): JourneyState {
+  const step = currentStep(prev, story);
+  if (step?.type !== 'fork') throw new Error('Nothing to push at');
+  const state = clone(prev);
+  state.pending[0] = step.stage;
+  return arrive(state, story);
+}
+
+/** Call it off, with the coal that's left. */
+export function turnBack(prev: JourneyState, story: StoryDef): JourneyState {
+  const step = currentStep(prev, story);
+  if (step?.type !== 'fork') throw new Error('Nothing to turn back from');
+  const state = clone(prev);
+  state.pending = clone(step.turnedBack);
+  return arrive(state, story);
+}
+
 /** A reply at the table decided it: the encounter ends here, and on. */
 export function choose(prev: JourneyState, story: StoryDef, key: string): JourneyState {
   const step = currentStep(prev, story);
@@ -754,7 +778,20 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
   state.flags = state.flags.includes(`met:${enc.def.id}`) ? state.flags : [...state.flags, `met:${enc.def.id}`];
   const attempt = step.attempt ?? 1;
   if (enc.outcome === 'failed' && step.sweptBack) {
-    state.pending = state.coal > 0 ? [{ ...step, attempt: attempt + 1 }, ...state.pending.slice(1)] : clone(step.sweptBack);
+    if (state.coal <= 0) {
+      state.pending = clone(step.sweptBack);
+      return arrive(state, story);
+    }
+    const rival = step.encounter.rivals === 'crew' ? null : step.encounter.rivals.find((r) => r.obstacle);
+    const left = enc.session.seats.find((p) => p.id === rival?.id)?.money ?? 0;
+    const taken = rival ? 1 - left / rival.money : 0;
+    const fork: Step = {
+      type: 'fork',
+      lines: story.pushReading ? [story.pushReading(taken)] : [],
+      stage: { ...step, attempt: attempt + 1 },
+      turnedBack: step.turnedBack ?? step.sweptBack,
+    };
+    state.pending = [fork, ...state.pending.slice(1)];
     return arrive(state, story);
   }
   if (enc.outcome === 'failed' && step.stuck) {

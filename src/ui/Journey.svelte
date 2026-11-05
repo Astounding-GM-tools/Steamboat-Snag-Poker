@@ -19,9 +19,12 @@
     mySeatAt,
     newJourney,
     playEncounter,
+    morningStrength,
     proceed,
+    pushAgain,
     setRehire,
     setStation,
+    turnBack,
     seatOf,
     snagDef,
     wonWithTrips,
@@ -148,6 +151,7 @@
       met: journey.flags.includes(`met:${id}`),
       attempt: step?.type === 'encounter' ? (step.attempt ?? 1) : 1,
       client: journey.flags.includes('hiredGaylord'),
+      strength: morningStrength(journey),
       flags: journey.flags,
       purse: journey.purse,
       coal: journey.coal,
@@ -211,7 +215,7 @@
       </button>
     </div>
 
-    {#if step.type === 'hub' || step.type === 'council' || step.type === 'caption'}
+    {#if step.type === 'hub' || step.type === 'council' || step.type === 'caption' || step.type === 'fork'}
       <div class="scene">
         <div class="boat"><BoatScene /></div>
         <!-- A word from the crew pops in over her, and goes by itself (or at a tap). -->
@@ -229,6 +233,11 @@
             </li>
           {/each}
         </ul>
+      {:else if step.type === 'fork'}
+        {#each step.lines as line}
+          {@const who = speaker(line)}
+          <p class:said={!!who}>{#if who}<span class="who">{who}:</span>{' '}{/if}{line.text}</p>
+        {/each}
       {:else if step.type === 'caption'}
         {#if step.title}<h2>{step.title}</h2>{/if}
         {#each step.lines as line}
@@ -264,12 +273,15 @@
     </div>
 
     <div class="dock">
-      {#if journey.submenu}
+      {#if step.type === 'fork'}
+        <button class="ghost" onclick={() => (journey = turnBack(journey, RIVER))}>{t('river.turnBack')}</button>
+        <button onclick={() => (journey = pushAgain(journey, RIVER))}>{t('river.pushAgain')}</button>
+      {:else if journey.submenu}
         <button class="ghost" onclick={() => (journey = closeMenu(journey))}>{t('river.back')}</button>
       {:else}
         <button class="ghost" onclick={onmenu}>{t('river.menu')}</button>
       {/if}
-      {#if step.type !== 'hub'}
+      {#if step.type !== 'hub' && step.type !== 'fork'}
         <button disabled={step.type === 'council' && !canCastOff(journey, RIVER)} onclick={onwards}>
           {step.type === 'council' ? (step.leave ?? t('river.castOff')) : t('river.continue')}
         </button>

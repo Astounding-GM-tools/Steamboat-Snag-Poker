@@ -6,7 +6,7 @@
  * of things to do, morning and evening), up the rapids to LeClaire.
  */
 import type { EncounterDef, Hub, HubOption, Rival, Slot, Step, StoryDef } from '../engine';
-import { DOCK_FEE, PAMPHLETS, Rng, STRIKE_BUTTON, TROUBLE, snagDef } from '../engine';
+import { DOCK_FEE, PAMPHLETS, Rng, STRIKE_BUTTON, TROUBLE, morningStrength, snagDef } from '../engine';
 import { t } from '../i18n';
 import type { SpeechLine } from '../ui/Speech.svelte';
 import type { RoundScript, Talk, TalkContext } from './script';
@@ -135,9 +135,31 @@ const DOCKING_FEE = 3;
 
 /** Out of coal on the rapids: back where you started, and the queue again. */
 const sweptBack: Step[] = [
-  { type: 'caption', lines: [{ text: 'The bunker’s empty. The river takes the Best Intentions, and hands her back at Davenport.' }, { who: 'ellie', text: 'Nobody gets it every time, Captain. Same time tomorrow.' }] },
+  {
+    type: 'caption',
+    lines: [
+      { text: 'The bunker’s empty. The river takes the Best Intentions, and hands her back at Davenport.' },
+      { who: 'ellie', text: 'Nobody gets it every time, Captain. Same time tomorrow.' },
+      { who: 'gus', text: 'I did say, Captain.' },
+    ],
+  },
   { type: 'nightfall' },
 ];
+
+/** Calling it off: the same way down, with the coal you saved, and no shame in it. */
+const turnedBack: Step[] = [
+  {
+    type: 'caption',
+    lines: [
+      { who: 'ellie', text: 'Good. That’s the first sensible thing anyone’s said on this river. Back of the queue, Captain.' },
+      { who: 'gus', text: 'I did say, Captain.' },
+    ],
+  },
+  { type: 'nightfall' },
+];
+
+/** The strength Gus would call ready. He's been saying so. */
+const READY_STRENGTH = 34;
 
 /** A stage of the climb: as many pushes as the coal allows, the crew fresh for each, and it can only be worn down. */
 const stage = (id: string, strength: number, jokers: number[]): Step => ({
@@ -155,6 +177,7 @@ const stage = (id: string, strength: number, jokers: number[]): Step => ({
   solved: [],
   failed: [],
   sweptBack,
+  turnedBack,
 });
 const BREAKFAST_COST = 4;
 const BREAKFAST_STRENGTH = 4;
@@ -266,9 +289,19 @@ const job = (id: string, text: string, pays: number, flag?: string): HubOption =
   steps: [{ type: 'caption', lines: [{ text }], effects: { purse: pays, coal: -1, ...(flag ? { clear: flag } : {}) } }, { type: 'slot' }],
 });
 
+/** What Gus has been saying all along, and Willie's apologies. */
+const NAGS = [
+  { who: 'gus', text: 'We are not ready for the rapids, Captain. She wants an engine overhaul.' },
+  { who: 'willie', text: 'Beans again, Captain. I’m sorry. I’m no real cook, and there’s no stove.' },
+  { who: 'gus', text: 'One fireman won’t climb the rapids, Captain. I have said so.' },
+  { who: 'gus', text: 'A professional cook would do wonders, Captain. No offence to the boy.' },
+  { who: 'gus', text: 'That boiler has been due since Bill’s father’s day, Captain.' },
+];
+
 const triCities: Hub = {
   advice: (state) => {
     if (state.submenu === 'jobs') return { who: 'willie', text: 'At these coal prices the mail doesn’t pay, Captain. It doesn’t pay at all.' };
+    if (state.flags.includes('met:deckIntel') && morningStrength(state) < READY_STRENGTH) return NAGS[state.mornings % NAGS.length];
     const troubled = state.snags.find((j) => snagDef(j.index).kind === 'trouble');
     if (troubled && state.time === 'evening') return { who: 'gus', text: `${capital(t(`joker.${troubled.index}`))} wants seeing to, Captain. A night at anchor would do it.` };
     if (state.purse < MORNING_ENTRY) return { who: 'willie', text: 'We’re near broke, Captain. I could wade ashore and ask around.' };
@@ -294,8 +327,8 @@ const triCities: Hub = {
         {
           type: 'council',
           title: 'hub.mercantile.name',
-          advice: [{ who: 'gus', text: 'A second shovel wouldn’t hurt for the climb, if it comes to that.' }],
-          trader: ['coal', 'sellCoal', 'food', 'hammocks', 'stove', 'fireman', 'cook'],
+          advice: [{ who: 'gus', text: 'Twice the work from the same coal, Captain. If you’d only overhaul her.' }],
+          trader: ['coal', 'sellCoal', 'food', 'fireman', 'hammocks', 'stove', 'cook', 'boilerOverhaul', 'engineOverhaul'],
           coal: 0,
           leave: 'Done',
         },
@@ -356,6 +389,17 @@ export const RIVER: StoryDef = {
   ],
   stuckNight: [{ type: 'caption', lines: [{ text: 'Supper on deck, and the lantern lit.' }] }, deckLines],
   hubs: { triCities },
+  pushReading: (taken) => ({
+    who: 'gus',
+    text:
+      taken < 0.25
+        ? 'She barely felt that, Captain.'
+        : taken < 0.5
+          ? 'A quarter of her, Captain, and that’s a load gone.'
+          : taken < 0.75
+            ? 'Half of her, Captain. It wasn’t enough.'
+            : 'Nearly, Captain. Another push like that…',
+  }),
 };
 
 /** Bill leaves the new captain the dock fee and a little over for food and coal, and the bunker as it is. */
@@ -579,7 +623,9 @@ function triCitiesTalk({ hand, seed, trips, day, met, client }: TalkContext): Ro
             ...gaylordAtTheSaloon(day, client),
           ],
         }
-      : { flop: [{ size: 'aside', who: 'odds', text: new Rng(seed).shuffle(ODDS)[hand % ODDS.length] }] }),
+      : hand === 3
+        ? { flop: [{ size: 'aside', who: 'lenny', text: '♪ Everybody knows… everybody knows the thaw’s too strong ♪' }] }
+        : { flop: [{ size: 'aside', who: 'odds', text: new Rng(seed).shuffle(ODDS)[hand % ODDS.length] }] }),
     verdict: trips || hand === TRI_CITIES_HANDS ? [say('tripp', 'That settles it. For tonight.')] : [],
   };
 }
@@ -638,12 +684,16 @@ const climbLines = (): Record<string, { first: SpeechLine[]; marks: string[]; cl
 });
 
 function climbTalk(id: string) {
-  return ({ hand, seed, attempt, coal }: TalkContext): RoundScript => {
+  return ({ hand, seed, attempt, coal, strength }: TalkContext): RoundScript => {
+    const warned: SpeechLine[] =
+      id === 'molineChain' && strength < READY_STRENGTH
+        ? [{ ...say('gus', 'We are not ready, Captain. I have said so, and I say so now.'), replies: [{ label: 'Full steam' }] }, you('Just give me all she’s got, Mr. Klemm.'), say('gus', 'It does not work like that, Captain.')]
+        : [];
     const { first, marks, cleared } = climbLines()[id];
     const mark = new Rng(seed + attempt).shuffle(marks)[hand % marks.length];
     const spent = coal > 0 ? `That’s a load gone, Captain. ${coal} left.` : 'That’s the last of the coal, Captain.';
     return {
-      ...(hand === 1 && attempt === 1 ? { deal: first } : {}),
+      ...(hand === 1 && attempt === 1 ? { deal: [...warned, ...first] } : {}),
       ...(hand % 2 === 0 ? { flop: [{ size: 'aside' as const, who: 'ellie', text: mark }] } : {}),
       verdict: [
         { ...say('ellie', cleared), when: 'wonAll' },
@@ -671,6 +721,9 @@ const deckQuips = (day: number) => [
   crew('lars', larsSays(day, '♪ ♪ ♫', 'Sjekk.')),
   crew('gus', 'She’s a good boat. Don’t tell her I said so.'),
   crew('willie', 'I think he liked us, Captain. Sandy.'),
+  crew('willie', 'The Mathilda went up yesterday, Captain. Came back down by evening, all washed up, cargo lost.'),
+  crew('willie', 'The Terry Belle the day before. She’s back in the queue at Davenport.'),
+  crew('gus', 'Too early on the thaw to go up. Everyone says so. I say so.'),
   crew('lars', larsSays(day, '♫ ♪ ♫ ♪', 'Fåld.')),
 ];
 

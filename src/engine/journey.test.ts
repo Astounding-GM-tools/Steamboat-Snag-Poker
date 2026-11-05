@@ -23,6 +23,8 @@ import {
   hubOptions,
   closeMenu,
   deckCrew,
+  pushAgain,
+  turnBack,
   jumpTo,
   setStation,
   setRehire,
@@ -46,6 +48,7 @@ function autopilot(seed: number, guard = 40000): JourneyState[] {
     const step = currentStep(s, RIVER)!;
     if (step.type === 'caption') s = proceed(s, RIVER);
     else if (step.type === 'council') s = castOff(s, RIVER);
+    else if (step.type === 'fork') s = pushAgain(s, RIVER);
     else if (step.type === 'hub') {
       const can = (id: string) => hubOptions(s, RIVER).some((o) => o.option.id === id && o.open);
       s = goTo(s, RIVER, s.time === 'evening' ? 'anchor' : can('tournament') ? 'tournament' : 'depot');
@@ -240,7 +243,7 @@ describe('the dock fee', () => {
 });
 
 describe('table talk', () => {
-  const context = { hand: 1, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: false, attempt: 1, client: false, fixed: [] as { id: string; snag: number }[] };
+  const context = { hand: 1, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: false, attempt: 1, client: false, strength: 18, flags: [] as string[], purse: 30, coal: 6, fixed: [] as { id: string; snag: number }[] };
   const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
   const deck = RIVER_TALK.deck as (c: typeof context) => RoundScript;
 
@@ -441,24 +444,38 @@ describe('the climb', () => {
   const hub = { type: 'hub', hub: 'x' } as Step;
   const story: StoryDef = { days: [{ day: 1, place: 'davenport', steps: [{ type: 'dawn' }, stage, { type: 'caption', lines: [{ text: 'At the top.' }] }, hub] }], stuckNight: [], hubs: { x: { options: [], advice: () => null } } };
 
+  const failPush = (s: JourneyState) => {
+    const failed = structuredClone(s);
+    failed.encounter!.outcome = 'failed';
+    return leaveEncounter(failed, story);
+  };
+
   it('burns a load a push, with the crew fresh each time, until the coal is gone', () => {
     let s = newJourney(1, story, { purse: 50, coal: 3 });
     expect(s.coal).toBe(2);
     expect(s.encounter?.session.seats[0].money).toBe(18);
     for (const left of [1, 0]) {
-      const failed = structuredClone(s);
-      failed.encounter!.outcome = 'failed';
-      s = leaveEncounter(failed, story);
+      s = pushAgain(failPush(s), story);
       expect(s.coal).toBe(left);
-      expect(s.strength).toBe(18);
       expect(s.encounter?.session.seats[1].money).toBe(15);
     }
-    const last = structuredClone(s);
-    last.encounter!.outcome = 'failed';
-    s = leaveEncounter(last, story);
+    s = failPush(s);
     expect(currentStep(s, story)).toMatchObject({ type: 'caption', lines: [{ text: 'Swept back.' }] });
-    s = proceed(s, story);
-    expect(s.time).toBe('evening');
+    expect(proceed(s, story).time).toBe('evening');
+  });
+
+  it('lets you turn back with the coal that\'s left', () => {
+    let s = failPush(newJourney(1, story, { purse: 50, coal: 3 }));
+    expect(currentStep(s, story)?.type).toBe('fork');
+    s = turnBack(s, story);
+    expect(s.coal).toBe(2);
+    expect(currentStep(s, story)).toMatchObject({ type: 'caption', lines: [{ text: 'Swept back.' }] });
+  });
+
+  it('nags until she\'s ready, and an overhaul doubles the work', () => {
+    const s = { ...newJourney(1, RIVER, RIVER_START), step: RIVER.days[0].steps.findIndex((x) => x.type === 'hub'), encounter: null, flags: ['met:deckIntel'], mornings: 2 };
+    expect(RIVER.hubs!.triCities.advice(s)?.who).toBeTruthy();
+    expect(shipStrength(['gus', 'lars', 'willie'], s.stations, { ...BOAT.parts, boiler: 2, engine: 2 })).toBe(30);
   });
 
   it('can only be worn down', () => {

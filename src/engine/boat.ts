@@ -117,6 +117,8 @@ export const ITEMS: Record<string, ItemDef> = {
   hammocks: { id: 'hammocks', price: 12, effect: { comfort: 3 }, once: true },
   sparePole: { id: 'sparePole', price: 6, effect: { spare: TROUBLE.brokenPole }, once: true },
   fireman: { id: 'fireman', price: 4, effect: { hire: 'fireman' } },
+  boilerOverhaul: { id: 'boilerOverhaul', price: 40, effect: { part: { name: 'boiler', tier: 2 } }, once: true },
+  engineOverhaul: { id: 'engineOverhaul', price: 60, effect: { part: { name: 'engine', tier: 2 } }, once: true },
   stove: { id: 'stove', price: 15, effect: { part: { name: 'kitchen', tier: 1 } }, once: true },
   cook: { id: 'cook', price: 6, effect: { hire: 'pfund', needs: { name: 'kitchen', tier: 1 } } },
 };
