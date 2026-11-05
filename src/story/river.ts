@@ -130,18 +130,9 @@ const CLIENT = 'hiredGaylord';
 const BEAT_GAYLORD = 'beatGaylord';
 const beatsGaylord = { rival: 'gaylord', flag: BEAT_GAYLORD };
 
-/** He has a stash, and he likes your style. Double back when you next meet. */
-const loanTalk: Step = {
-  type: 'encounter',
-  encounter: { id: 'loan', stake: 'purse', rivals: [{ id: 'gaylord', ai: 'gambler', money: 40 }], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
-  solved: [],
-  choices: {
-    take: { effects: { purse: LOAN, flag: OWES_GAYLORD } },
-    decline: {},
-  },
-};
-
 const DOCKING_FEE = 3;
+const BREAKFAST_COST = 4;
+const BREAKFAST_STRENGTH = 4;
 const DAYTIME: Slot[] = ['morning', 'afternoon'];
 const CLIMB_COAL = 6;
 
@@ -201,20 +192,28 @@ const tournament: Step[] = [
   { type: 'nightfall' },
 ];
 
-/** Ten dollars at breakfast covers everything: he plays your seat at noon, and keeps what he wins. You watch. */
+/** Treating the crew to breakfast at the saloon. And look, there's Gaylord, what a coincidence. He plays your seat for $10 and keeps what he wins; you watch. */
 const noonStep = tournament[2] as Extract<Step, { type: 'encounter' }>;
-const hiredGaylord: Step[] = [
-  {
-    type: 'caption',
-    lines: [
-      { who: 'gaylord', text: 'Ten dollars covers my breakfast, my stay and the entry. I take the noon entry out of the winnings, and I keep the rest.' },
-      { who: 'gaylord', text: 'You, Captain, get a boat up the rapids. Watch and learn.' },
-    ],
-    effects: { flag: CLIENT },
-  },
+const hiring: Step[] = [
   { type: 'draw', entrants: ENTRANTS, tableSize: 3, finalists: 2 },
   { ...noonStep, encounter: { ...noonStep.encounter, id: 'hired', proxy: 'gambler' } },
   ...tournament.slice(3),
+];
+const breakfast: Step[] = [
+  { type: 'caption', lines: [{ text: 'You treat the crew to breakfast at the Bettendorf saloon. Lars has two.' }], effects: { tomorrow: BREAKFAST_STRENGTH } },
+  {
+    type: 'encounter',
+    // Only talk (RIVER_TALK.breakfast): what he brings up depends on who you are to him.
+    encounter: { id: 'breakfast', stake: 'purse', rivals: [{ id: 'gaylord', ai: 'gambler', money: 40 }], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
+    solved: [],
+    choices: {
+      hire: { effects: { purse: -GAYLORD_FEE, flag: CLIENT } },
+      take: { effects: { purse: LOAN, flag: OWES_GAYLORD }, skip: hiring.length },
+      pass: { skip: hiring.length },
+    },
+  },
+  ...hiring,
+  { type: 'slot' },
 ];
 
 /** The coal depot at Rock Island: friendly, and on strike. */
@@ -320,18 +319,7 @@ const triCities: Hub = {
       ],
     },
     { id: 'tournament', times: ['morning'], flag: 'met:deckIntel', coal: CLIMB_COAL, steps: tournament },
-    {
-      id: 'gaylord',
-      times: ['morning'],
-      flag: 'met:deckIntel',
-      notFlag: [OWES_GAYLORD],
-      from: GAYLORD_FIRST_HIRE,
-      to: GAYLORD_LAST_HIRE,
-      cost: GAYLORD_FEE,
-      coal: CLIMB_COAL,
-      steps: hiredGaylord,
-    },
-    { id: 'loan', flag: BEAT_GAYLORD, notFlag: [OWES_GAYLORD, CLIENT], to: GAYLORD_LEAVES, steps: [loanTalk] },
+    { id: 'breakfast', times: ['morning'], cost: BREAKFAST_COST, from: GAYLORD_FIRST_HIRE, to: GAYLORD_LEAVES, steps: breakfast },
     {
       id: 'jobs',
       times: DAYTIME,
@@ -499,6 +487,32 @@ function quarrel(day: number): SpeechLine[] {
 function noonTalk({ met, day }: TalkContext): RoundScript {
   const intro = [say('ellie', ['Ellie Sawyer, out of Cordova. I take one boat up the rapids today.', 'Whoever wins this table. Or if I win it myself, the runner-up.']), say('willie', 'They say you’re crazy, taking boats up on the thaw.'), say('ellie', 'I prefer adventurous.')];
   return { deal: [...(met ? [] : intro), ...quarrel(day)] };
+}
+
+/** Over breakfast: he only brings up what he'd offer you. */
+function breakfastTalk({ day, client, flags, purse, coal }: TalkContext): RoundScript {
+  const pass = { label: 'Good day', effect: 'pass', end: true };
+  const owes = flags.includes(OWES_GAYLORD);
+  const canHire = day >= GAYLORD_FIRST_HIRE && day <= GAYLORD_LAST_HIRE && !owes && flags.includes('met:deckIntel') && coal >= CLIMB_COAL && purse >= GAYLORD_FEE;
+  if (canHire)
+    return {
+      deal: [
+        {
+          ...say('gaylord', ['I play at Davenport of a noon, Captain, on behalf of those who’d rather not. Ten dollars covers my breakfast, my stay and the entry.', 'I take the noon entry out of the winnings, and I keep the rest. You get a boat up the rapids. Watch and learn.']),
+          replies: [pass, { label: 'Done', effect: 'hire', end: true }],
+        },
+      ],
+    };
+  if (flags.includes(BEAT_GAYLORD) && !owes && !client)
+    return {
+      deal: [
+        {
+          ...say('gaylord', ['Fearless and audacious. I see myself in you, Captain.', `${LOAN} dollars now. Double back when we next meet, shall we say two weeks? It doubles again if the third week begins.`]),
+          replies: [pass, { label: 'Done', effect: 'take', end: true }],
+        },
+      ],
+    };
+  return { deal: [{ ...say('gaylord', 'The eggs are adequate, Captain. Good morning.'), replies: [pass] }] };
 }
 
 /** Gaylord in your seat, saying what he's about. */
@@ -785,21 +799,7 @@ export const RIVER_TALK: Record<string, Talk> = {
   morning: morningTalk,
   noon: noonTalk,
   hired: hiredTalk,
-  loan: {
-    rounds: [
-      {
-        deal: [
-          {
-            ...say('gaylord', ['Fearless and audacious. I see myself in you, Captain.', `${LOAN} dollars now. Double back when we next meet, shall we say two weeks? It doubles again if the third week begins.`]),
-            replies: [
-              { label: 'No, thanks', effect: 'decline', end: true },
-              { label: 'Done', effect: 'take', end: true },
-            ],
-          },
-        ],
-      },
-    ],
-  },
+  breakfast: breakfastTalk,
   rapids: rapidsTalk,
   deckIntel: (context: TalkContext): RoundScript => ({
     ...deckTalk(context),

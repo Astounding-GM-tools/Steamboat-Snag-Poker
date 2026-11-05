@@ -33,7 +33,7 @@ export const SCENES: { label: string; state: () => JourneyState }[] = [
   { label: 'Pilot Games, noon, the Bingo day', state: () => tournament(1, 5) },
   { label: 'Pilot Games, noon, after Gaylord', state: () => tournament(1, 9) },
   { label: 'The Rapids', state: () => tournament(2) },
-  { label: 'Gaylord plays your seat', state: () => goTo({ ...hub('morning', ['met:deckIntel'], 6), mornings: 3 }, RIVER, 'gaylord') },
-  { label: 'Gaylord’s loan', state: () => goTo({ ...hub('morning', ['met:deckIntel', 'beatGaylord'], 6), mornings: 7 }, RIVER, 'loan') },
+  { label: 'Breakfast, Gaylord for hire', state: () => goTo({ ...hub('morning', ['met:deckIntel'], 6), mornings: 3 }, RIVER, 'breakfast') },
+  { label: 'Breakfast, Gaylord’s loan', state: () => goTo({ ...hub('morning', ['met:deckIntel', 'beatGaylord'], 6), mornings: 7 }, RIVER, 'breakfast') },
   { label: 'Bettendorf, after the week', state: () => goTo({ ...hub('evening', ['met:deckIntel', 'met:triCities'], 6), mornings: 10 }, RIVER, 'bettendorf') },
 ];

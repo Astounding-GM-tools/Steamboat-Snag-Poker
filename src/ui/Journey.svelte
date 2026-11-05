@@ -148,6 +148,9 @@
       met: journey.flags.includes(`met:${id}`),
       attempt: step?.type === 'encounter' ? (step.attempt ?? 1) : 1,
       client: journey.flags.includes('hiredGaylord'),
+      flags: journey.flags,
+      purse: journey.purse,
+      coal: journey.coal,
     });
   }
 

@@ -80,6 +80,8 @@ export interface Effects {
   coal?: number;
   purse?: number;
   flag?: string;
+  /** Strength added to tomorrow morning's only. */
+  tomorrow?: number;
   /** A snag handed to you. */
   snag?: number;
   /** A flag taken down. */
@@ -368,6 +370,7 @@ function applyEffects(state: JourneyState, effects: Effects | undefined) {
   if (effects.coal) state.coal = Math.max(0, Math.min(BOAT.bunker, state.coal + effects.coal));
   if (effects.purse) state.purse = Math.max(0, state.purse + effects.purse);
   if (effects.flag && !state.flags.includes(effects.flag)) state.flags.push(effects.flag);
+  if (effects.tomorrow) state.tomorrow += effects.tomorrow;
   if (effects.clear) state.flags = state.flags.filter((f) => f !== effects.clear);
   if (effects.snag !== undefined) state.snags.push(jokerCard(effects.snag));
   if (effects.settle) {

@@ -452,24 +452,41 @@ describe('Gaylord\'s week', () => {
     expect(noon(9)).not.toContain('gaylord');
   });
 
-  it('can be hired on days 3 to 5, unless you owe him', () => {
-    expect(ids(at(3))).toContain('gaylord');
-    expect(ids(at(5))).toContain('gaylord');
-    expect(ids(at(6))).not.toContain('gaylord');
-    expect(ids(at(3, 'morning', ['met:deckIntel', 'owesGaylord']))).not.toContain('gaylord');
+  const breakfast = (day: number, flags = ['met:deckIntel']) => proceed(goTo(at(day, 'morning', flags), RIVER, 'breakfast'), RIVER);
+  const talk = RIVER_TALK.breakfast as unknown as (c: Record<string, unknown>) => RoundScript;
+  const offered = (c: Record<string, unknown>) => talk({ day: 4, client: false, flags: ['met:deckIntel'], purse: 40, coal: 6, ...c }).deal![0].replies!.map((r) => r.effect);
+
+  it('has breakfast on the menu every morning he\'s here, for the crew\'s sake', () => {
+    expect(ids(at(2))).not.toContain('breakfast');
+    expect(ids(at(10))).toContain('breakfast');
+    expect(ids(at(3, 'afternoon'))).not.toContain('breakfast');
+    const s = breakfast(4);
+    expect(s.purse).toBe(56);
+    expect(s.tomorrow).toBe(4);
   });
 
-  it('only brings up a loan with someone who has beaten him, and only once', () => {
-    expect(ids(at(4))).not.toContain('loan');
-    const s = goTo(at(4, 'morning', ['met:deckIntel', 'beatGaylord']), RIVER, 'loan');
-    const after = choose(s, RIVER, 'take');
-    expect(after.purse).toBe(110);
-    expect(ids(after)).not.toContain('loan');
+  it('offers to play your seat on days 3 to 5, if you could use it', () => {
+    expect(offered({ day: 3 })).toContain('hire');
+    expect(offered({ day: 6 })).not.toContain('hire');
+    expect(offered({ coal: 2 })).not.toContain('hire');
+    expect(offered({ flags: ['met:deckIntel', 'owesGaylord'] })).not.toContain('hire');
+  });
+
+  it('only brings up a loan with someone who has beaten him, once, and never with a client', () => {
+    const beaten = ['met:deckIntel', 'beatGaylord'];
+    expect(offered({ day: 7 })).not.toContain('take');
+    expect(offered({ day: 7, flags: beaten })).toContain('take');
+    expect(offered({ day: 7, flags: [...beaten, 'owesGaylord'] })).not.toContain('take');
+    expect(offered({ day: 7, flags: beaten, client: true })).not.toContain('take');
+    const after = choose(breakfast(7, beaten), RIVER, 'take');
+    expect(after.purse).toBe(106);
+    expect(after.time).toBe('afternoon');
   });
 
   it('plays your seat: you pay at breakfast, he decides, and his winnings are his', () => {
-    let s = proceed(goTo(at(3), RIVER, 'gaylord'), RIVER);
-    expect(s.purse).toBe(50);
+    let s = choose(breakfast(3), RIVER, 'hire');
+    expect(s.purse).toBe(46);
+    expect(s.flags).toContain('hiredGaylord');
     expect(s.encounter?.def.proxy).toBe('gambler');
     expect(s.encounter?.session.seats.map((p) => p.id)).not.toContain('gaylord');
     for (let k = 0; k < 400 && !s.encounter?.outcome; k++) {
@@ -477,21 +494,20 @@ describe('Gaylord\'s week', () => {
       if (e.session.phase === 'hand') s = playEncounter(s, myMoveOwed(s) ? { type: 'fold' } : null);
       else s = handDone(s, RIVER);
     }
-    expect(s.purse).toBe(50);
+    expect(s.purse).toBe(46);
   });
 
-  it('never mentions a loan to a client, whatever they\'ve done', () => {
-    const hired = proceed(goTo(at(4), RIVER, 'gaylord'), RIVER);
-    expect(hired.flags).toContain('hiredGaylord');
-    expect(ids({ ...at(7), flags: [...hired.flags, 'beatGaylord'] })).not.toContain('loan');
+  it('leaves the morning spent if you only had breakfast', () => {
+    const s = choose(breakfast(9), RIVER, 'pass');
+    expect(s.time).toBe('afternoon');
+    expect(currentStep(s, RIVER)?.type).toBe('hub');
   });
 
   it('counts finishing a table ahead of him as beating him', () => {
     const s = goTo(at(4, 'evening'), RIVER, 'bettendorf');
     const end = (mine: number, his: number) => {
-      const e = structuredClone(s);
       const rng = new Rng(1);
-      let g = e;
+      let g = s;
       while (g.encounter!.session.phase === 'hand') {
         const c = g.encounter!;
         g = playEncounter(g, myMoveOwed(g) ? chooseAction('careful', viewFor(c.session.round!, mySeatAt(c), c.session.config), c.session.config, rng) : null);

@@ -582,9 +582,12 @@ week with clients (rich captains of big companies, who could sue).
 | 6–8 | The contracted days, through gritted teeth |
 | 9 on | Captains only. Gaylord back at Bettendorf, reminiscing |
 
-*Ten dollars at breakfast* covers his breakfast, stay and entry; he takes the noon
-entry out of the winnings and keeps the rest. Hireable on days 3 to 5, and not
-if you owe him. You watch from your own seat, tapping I see, as he talks shop.
+**Bettendorf Breakfast** is on the morning list while he's in town: a throwaway
+*"Gaylord Montague is staying at the saloon"*, and $4 to treat the crew (+4
+strength tomorrow). And look, there's Gaylord, what a coincidence. It's where he
+says whatever he'd say to you. *Ten dollars* covers his breakfast, stay and
+entry; he takes the noon entry out of the winnings and keeps the rest. Hireable
+on days 3 to 5, and not if you owe him. You watch from your own seat, tapping I see, as he talks shop.
 He can be in two places in a slot: the player can't, so it never shows.
 
 **His loan: $50**, double back when you next meet in two weeks, doubled again

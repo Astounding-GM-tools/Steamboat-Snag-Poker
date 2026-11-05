@@ -37,6 +37,10 @@ export interface TalkContext {
   attempt: number;
   /** You've hired Gaylord to play your seat. */
   client: boolean;
+  /** The voyage's flags, purse and coal, for talk that offers what you could take up. */
+  flags: string[];
+  purse: number;
+  coal: number;
 }
 
 /** An encounter's talk: set lines hand by hand, or worked out as the hand stands. */
