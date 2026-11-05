@@ -570,7 +570,9 @@ down by evening, cargo lost; the *Terry Belle* is back in the queue. Lenny sings
 it at Bettendorf: *everybody knows the thaw's too strong.* Then, at the foot of the
 rapids, *"Just give me all she's got, Mr. Klemm." "It does not work like that,
 Captain."* The Mercantile sells a boiler and an engine overhaul, each doubling that
-station's work. Below 34 strength, he won't let it drop.
+station's work. Below 34 strength, he won't let it drop. And when it goes wrong,
+no I-told-you-so: *"We'll do better next time, Captain."* He'd do anything to climb
+those rapids, and now you know his hints were right.
 
 **The Tri-Cities are the hub.** The queue is at **Davenport**, at the foot of
 the rapids, and the whole area is a place to live a while: losing money to

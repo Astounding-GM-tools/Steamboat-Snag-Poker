@@ -140,7 +140,7 @@ const sweptBack: Step[] = [
     lines: [
       { text: 'The bunker’s empty. The river takes the Best Intentions, and hands her back at Davenport.' },
       { who: 'ellie', text: 'Nobody gets it every time, Captain. Same time tomorrow.' },
-      { who: 'gus', text: 'I did say, Captain.' },
+      { who: 'gus', text: 'We’ll do better next time, Captain.' },
     ],
   },
   { type: 'nightfall' },
@@ -152,7 +152,7 @@ const turnedBack: Step[] = [
     type: 'caption',
     lines: [
       { who: 'ellie', text: 'Good. That’s the first sensible thing anyone’s said on this river. Back of the queue, Captain.' },
-      { who: 'gus', text: 'I did say, Captain.' },
+      { who: 'gus', text: 'We’ll do better next time, Captain.' },
     ],
   },
   { type: 'nightfall' },
