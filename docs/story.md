@@ -708,6 +708,33 @@ wear it down. The Tri-Cities table: hunt a big hand. The depot: lose on purpose,
 at a showdown. The Games: last one standing. The rapids: lose slowly. A new
 chapter should ask for something the last ones didn't.
 
+## Up is power, down is control
+
+The voyage is a metaphor, and industry's too. Going up is about power: boats that
+fail just don't get where they want to be. Going down is much faster and much
+more dangerous, about control, mitigating danger and repairing damage: it's on the
+downswing that boats sink. They cease to exist. Boom and bust; coal will follow
+timber, and the river trade both. Hubs on the way down are for restoration, not
+upgrades. Ideas: the boat's condition as the thing spent, a speed choice each leg,
+Patty's own condition, obstacles that strike rather than block.
+
+## LeClaire to Dubuque (about 83 miles)
+
+After the rapids, easy going: not everything is a mad dash.
+
+- **A drifting raft:** a game, gossip, leisure. Rafters live aboard, in houseboats
+  and tents on the logs: a floating village.
+- **Clinton:** a boomtown gone bust. Lumber peaked 1880–94, 13 or 17 millionaires by
+  the sources, Lamb, Young, Joyce, Curtis; essentially finished by 1900, the barons
+  gone south and west, a few mills left (the last closed in 1910). Thousands left
+  (how many is disputed). Less business than hoped, and no demand but for booze.
+- **Towing raft folk up to Sabula:** rafts only come down, so this is people, not
+  logs: their floating homes, up to where there's work. Hard on the coal.
+- **Sabula:** coal at fair prices, no strike. Not yet an island in 1904: that came
+  with Lock and Dam 13 in 1939. A railroad bridge to Savanna (swing span: to verify).
+- **The Ice:** a table of three ice sheets, with quips and puns.
+- **The last leg to Dubuque.**
+
 ## A day on the river
 
 Taking on cargo, passengers and crew landing by landing makes the voyage a
