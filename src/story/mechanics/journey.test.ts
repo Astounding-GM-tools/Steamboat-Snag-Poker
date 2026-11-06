@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
-import type { RoundScript } from '../story/script';
-import { chooseAction, viewFor } from './ai';
-import { jokerCard } from './cards';
+import { RIVER, RIVER_START, RIVER_TALK } from '../river';
+import type { RoundScript } from './script';
+import { chooseAction, viewFor } from '../../engine/ai';
+import { jokerCard } from '../../engine/cards';
 import {
   buy,
   canBuy,
@@ -35,8 +35,8 @@ import {
   STORY_CONFIG,
 } from './journey';
 import { BOAT, shipStrength } from './boat';
-import { Rng } from './rng';
-import { newSession, nextSessionHand, submit, type TableSession } from './session';
+import { Rng } from '../../engine/rng';
+import { newSession, nextSessionHand, submit, type TableSession } from '../../engine/session';
 import { DOCK_FEE, TROUBLE, coveredHands } from './snags';
 
 /** Plays the voyage as a careful captain would; returns every state passed through. */
@@ -243,9 +243,9 @@ describe('the dock fee', () => {
 });
 
 describe('table talk', () => {
-  const context = { hand: 1, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: false, attempt: 1, client: false, strength: 18, flags: [] as string[], purse: 30, coal: 6, fixed: [] as { id: string; snag: number }[] };
-  const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
-  const deck = RIVER_TALK.deck as (c: typeof context) => RoundScript;
+  const context = { hand: 1, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: false, attempt: 1, journey: newJourney(1, RIVER, RIVER_START), fixed: [] as { id: string; snag: number }[] };
+  const sandy = RIVER_TALK.sandbar as unknown as (c: typeof context) => RoundScript;
+  const deck = RIVER_TALK.deck as unknown as (c: typeof context) => RoundScript;
 
   it('never quips over the opening, or the same line twice in a day', () => {
     expect(sandy(context).flop).toHaveLength(2);
@@ -267,7 +267,7 @@ describe('table talk', () => {
   });
 
   it('has the foreman never say what he wants, until he has it', () => {
-    const depot = RIVER_TALK.depot as (c: typeof context) => RoundScript;
+    const depot = RIVER_TALK.depot as unknown as (c: typeof context) => RoundScript;
     const said = (c: Partial<typeof context>) => depot({ ...context, hand: 3, ...c }).verdict!.map((l) => String(l.text)).join(' ');
     expect(said({ lost: 4 })).not.toContain('sacks have fallen');
     expect(said({ lost: 13 })).toContain('sacks have fallen');
@@ -388,8 +388,8 @@ describe('the Tri-Cities', () => {
 });
 
 describe('Sandy', () => {
-  const context = { hand: 2, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: true, attempt: 1, client: false, fixed: [] as { id: string; snag: number }[] };
-  const sandy = RIVER_TALK.sandbar as (c: typeof context) => RoundScript;
+  const context = { hand: 2, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: true, attempt: 1, journey: newJourney(1, RIVER, RIVER_START), fixed: [] as { id: string; snag: number }[] };
+  const sandy = RIVER_TALK.sandbar as unknown as (c: typeof context) => RoundScript;
 
   it('doesn\'t repeat itself from one day to the next', () => {
     const said = [1, 2, 3].flatMap((attempt) => [2, 4, 6, 8].map((hand) => String(sandy({ ...context, attempt, hand }).flop?.[0].text)));
@@ -506,8 +506,11 @@ describe('Gaylord\'s week', () => {
   });
 
   const breakfast = (day: number, flags = ['met:deckIntel']) => proceed(goTo(at(day, 'morning', flags), RIVER, 'breakfast'), RIVER);
-  const talk = RIVER_TALK.breakfast as unknown as (c: Record<string, unknown>) => RoundScript;
-  const offered = (c: Record<string, unknown>) => talk({ day: 4, client: false, flags: ['met:deckIntel'], purse: 40, coal: 6, ...c }).deal![0].replies!.map((r) => r.effect);
+  const talk = RIVER_TALK.breakfast as unknown as (c: { day: number; journey: JourneyState }) => RoundScript;
+  const offered = (o: { day?: number; client?: boolean; flags?: string[] }) => {
+    const flags = [...(o.flags ?? ['met:deckIntel']), ...(o.client ? ['hiredGaylord'] : [])];
+    return talk({ day: o.day ?? 4, journey: { ...newJourney(1, RIVER, RIVER_START), flags, purse: 40 } }).deal![0].replies!.map((r) => r.effect);
+  };
 
   it('has breakfast on the menu every morning he\'s here, for the crew\'s sake', () => {
     expect(ids(at(2))).not.toContain('breakfast');

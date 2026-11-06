@@ -1,6 +1,6 @@
-import { HUMAN_ID, PRESETS, ROSTER, jokerCard, newGame, nextMonth, submitAction, type Action, type ArrangedHand, type GameState, type RulesConfig } from '../engine';
-import type { SpeechLine } from '../ui/Speech.svelte';
-import type { Script } from './script';
+import { HUMAN_ID, PRESETS, ROSTER, jokerCard, newGame, nextMonth, submitAction, type Action, type ArrangedHand, type GameState, type RulesConfig } from '../../../engine';
+import type { SpeechLine } from '../../../ui/Speech.svelte';
+import type { Script } from '../../mechanics/script';
 import { handsDeal, handsRound } from './hands';
 
 /**

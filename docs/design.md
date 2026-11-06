@@ -12,7 +12,7 @@
 down for a hand of poker. You are **The Captain**, in a tournament against a
 cast of public-domain cartoon captains. Each **crossing** you duel one of them;
 the rest play each other off-screen. Losing costs money, and can saddle you
-with **Snags**: liabilities like stinking cargo, tiresome passengers and
+with **Snags**: liabilities like stinking cargo, tireso me passengers and
 thankless duties that cost upkeep every crossing until you dump them on someone
 you beat.
 
@@ -442,25 +442,29 @@ as a fallback. Dropping is final.
   Story mode gives snags a nature: a kind (person, animal, object, duty,
   trouble), a temper (the hands of the day it volunteers in, against an
   obstacle), a fixer, an address. All of that is the snag's own row in
-  `snags.ts`, and the engine reads it from there, generically: no
+  `story/mechanics/snags.ts`, and the story reads it from there, generically: no
   `if (snag is the mule)` anywhere in the code. A new snag is a new row.
   Indices 0–11 are the League's snags, 12–13 the lessons' (Grudging
   Respect, the Solemn Oath), 14 on the troubles.
-- **Story mode** (Steamboat to St. Louis, docs/story.md). `journey.ts` is the
-  voyage: day, place, purse (coins), the crew's strength (buttons, made each
-  morning), coal, crew, upgrades, snags carried, flags; it plays a story's
-  days step by step, generically. A step is a caption, the morning council
-  (advice, the trader, casting off with the day's coal), a dawn or a run up
-  the river (they play themselves), or an encounter: a `session.ts` table
-  with a goal (take a pot, clear the obstacle, play to trips, lose an
-  amount, the evening's game) and a number of hands. The session knows three
-  story seats, all generic: an **obstacle** (nobody comes out ahead against
-  it), **cover** (hands in which a seat's losses are given back: the
-  volunteers among its snags) and **fixes** (snags a crew member absorbs).
-  The content is `src/story/river.ts`; the numbers (crew, boat, goods) are
-  `boat.ts`. The screen is `Journey.svelte`: a title card for captions, the
-  council, `Table.svelte` for encounters. Saved under its own key; `river()`
-  in the development console starts it afresh.
+- **Story mode** (Steamboat to St. Louis, docs/story.md) lives in `src/story`:
+  - `mechanics/`: what the story needs beyond the game. `journey.ts` is the
+    voyage (day, place, purse, the crew's strength, coal, crew, stations, hires,
+    snags, flags), playing steps generically: captions, hubs and their menus,
+    encounters at the table, forks. `boat.ts` is the crew, the vessel and the
+    goods; `snags.ts` every snag's nature; `script.ts` how talk is written.
+  - `chapters/`: what happens, a folder a stretch of river: `00_tutorial`,
+    `01_muscatine`, `02_triCities`, `03_rapids`. A scene's steps and its talk
+    sit together.
+  - `characters/`: who recurs across chapters: `crew`, `gaylord`, `sandy`.
+  - `river.ts` puts the voyage together; `numbers.ts` holds every tuning number,
+    `flags.ts` the flags by name, `lines.ts` the ways of saying things; `dev.ts`
+    the scene list on the title.
+  The engine knows nothing of any of this, except three story-minded seats in
+  `session.ts`, all generic: an **obstacle** (nobody comes out ahead against it),
+  **cover** (hands in which a seat's losses are given back) and **fixes** (snags a
+  crew member absorbs). The screen is `ui/Journey.svelte`: the docking menu, the
+  ship menu (`ShipPage.svelte`) and `Table.svelte` for encounters. Saved under its
+  own key; `river()` in the development console starts it afresh.
 - **Saving:** localStorage for now.
 - **Tests:** Vitest on the engine.
 

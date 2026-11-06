@@ -1,6 +1,6 @@
-import type { Action, ArrangedHand } from '../engine';
-import type { SpeechLine } from '../ui/Speech.svelte';
-import type { RoundScript } from './script';
+import type { Action, ArrangedHand } from '../../../engine';
+import type { SpeechLine } from '../../../ui/Speech.svelte';
+import type { RoundScript } from '../../mechanics/script';
 
 /**
  * Morag's lesson on the hands: one round of the tutorial (offered after round
@@ -37,8 +37,8 @@ const say = (line: Omit<SpeechLine, 'who' | 'size'> & Partial<SpeechLine>): Spee
 export function handsRound(after: SpeechLine[]): RoundScript {
   return {
     flop: [
-      say({ text: 'Hands it is, then. I’ll rig the deck, and I’ll play open: you see my cards, I see yours.', show: true, replies: [{ label: 'Yes, ma’am' }] }),
-      say({ text: 'We share the cards in the middle. See your ace?', names: ['Ah'], replies: [{ label: 'High card' }] }),
+      say({ text: 'Hands it is, then. I’ll rig the deck and we´ll play cards open: you see my cards, I see yours.', show: true, replies: [{ label: 'Yes, ma’am' }] }),
+      say({ text: 'We share these cards in the middle. See your ace?', names: ['Ah'], replies: [{ label: 'High card' }] }),
       say({ text: 'That’s the high card. If you play that and I play my king, you win.' }),
       say({ text: 'But I can play my deuce instead, and have a pair. Any pair beats any high card. So what do you do?', names: ['4c'], replies: [{ label: 'Pair' }] }),
       say({ text: 'Right: you play the four. Your pair of fours beats my pair of deuces.', replies: [{ label: 'Ducks!' }] }),

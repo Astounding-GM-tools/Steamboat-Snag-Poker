@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { anteFor, bestHand, nextMonth, streetFee, submitAction } from '../engine';
+import { anteFor, bestHand, nextMonth, streetFee, submitAction } from '../../../engine';
 import { OATH, RESPECT, giveButtons, newTutorial, rematch, skipToButtons, skipToHands } from './tutorial';
 
 describe('the tutorial', () => {

@@ -19,22 +19,20 @@
     mySeatAt,
     newJourney,
     playEncounter,
-    morningStrength,
     proceed,
     pushAgain,
     setRehire,
     setStation,
     turnBack,
-    seatOf,
     snagDef,
     wonWithTrips,
-    type Action,
     type JourneyState,
     type StoryLine,
-  } from '../engine';
+  } from '../story/mechanics';
+  import { seatOf, type Action } from '../engine';
   import { t } from '../i18n';
   import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
-  import { roundScript } from '../story/script';
+  import { roundScript } from '../story/mechanics/script';
   import BoatScene from './BoatScene.svelte';
   import ShipPage from './ShipPage.svelte';
   import Speech, { autoMs, type SpeechLine } from './Speech.svelte';
@@ -44,7 +42,7 @@
 
   /**
    * The story (Steamboat to St. Louis): the voyage's steps one after another
-   * (src/engine/journey.ts plays them, src/story/river.ts says what they are).
+   * (src/story/mechanics plays them, src/story/chapters says what they are).
    * A caption is a title card to read; the morning council is the crew's
    * advice and the landing's trader; an encounter is played at the table, and
    * what came of it is read after. The voyage is saved at every step.
@@ -150,11 +148,7 @@
       foldedOut: !!res?.byFolds && !!round?.seats[me]?.folded,
       met: journey.flags.includes(`met:${id}`),
       attempt: step?.type === 'encounter' ? (step.attempt ?? 1) : 1,
-      client: journey.flags.includes('hiredGaylord'),
-      strength: morningStrength(journey),
-      flags: journey.flags,
-      purse: journey.purse,
-      coal: journey.coal,
+      journey,
     });
   }
 

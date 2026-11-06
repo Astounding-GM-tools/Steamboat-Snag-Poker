@@ -7,7 +7,7 @@
  *
  * The League uses none of this: there a snag is a snag. The story reads it.
  */
-import type { JokerCard } from './cards';
+import type { JokerCard } from '../../engine/cards';
 
 export type SnagKind =
   /** Volunteers on the river: people and animals. */

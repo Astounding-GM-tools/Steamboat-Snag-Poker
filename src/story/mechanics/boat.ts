@@ -4,7 +4,7 @@
  * one table each, read generically; the starting guesses all live here, to be
  * tuned by play.
  */
-import type { AiId } from './characters';
+import type { AiId } from '../../engine/characters';
 import { TROUBLE } from './snags';
 
 /** Everything on the boat is rated 0, 1 or 2: none, some, the best. */
@@ -38,6 +38,9 @@ export const CREW: Record<string, CrewDef> = {
 
 /** Who's aboard when the voyage begins. */
 export const STARTING_CREW = ['gus', 'lars', 'willie'];
+
+/** Who gives up their chair at the deck game to a hire: the first hire takes the first. */
+export const GIVE_UP_CHAIR = ['lars', 'willie'];
 
 /** The vessel's own features, rated like the crew. */
 export interface BoatParts {

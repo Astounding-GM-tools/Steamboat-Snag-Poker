@@ -2,7 +2,7 @@
 
 Status: **playable from start to finish**: **Tutorial** on the title screen
 (always there, and on How to play) (decks and lines in
-`src/story/tutorial.ts`; in development, `tutorialButtons()` in the console
+`src/story/chapters/00_tutorial/tutorial.ts`; in development, `tutorialButtons()` in the console
 jumps to the knockout). Chapter one of the story, and canon: the
 First Mate meets Morag, who is looking for her husband, and learns
 Snag Poker from the one person on the river who disapproves of it. See
@@ -252,7 +252,7 @@ the buttons follow. One round, the deck **openly rigged** and Morag **playing op
 teaching moment, not a game, and the sequence is always the same. The
 weak hands on the Flop, the middling ones on the Turn, the big ones on the
 River; and the lesson worth coming back for: a good middling hand must be
-given up when the board makes bigger ones easy. Deal in `src/story/hands.ts`.
+given up when the board makes bigger ones easy. Deal in `src/story/chapters/00_tutorial/hands.ts`.
 
 - The Flop 2♥ 3♣ 4♥. You A♥ 7♠ 4♣; Morag 2♠ 4♦ K♣.
 - Swaps: you 7♠ 4♣ for 5♥ 6♥; she 4♦ K♣ for 5♠ 6♣.

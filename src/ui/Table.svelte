@@ -28,7 +28,7 @@
   import { called, cardLabel, jokerList, name, tagName } from './format';
   import { flight } from './flight.svelte';
   import { rankLabel, winnerOf } from '../engine';
-  import type { RoundScript, Trigger } from '../story/script';
+  import type { RoundScript, Trigger } from '../story/mechanics/script';
   import { handLabel } from './handNames';
   import { cardPrefs } from './cards.svelte';
   import { CoinFlow, FACE_DOWN_MS, FACE_UP_MS, FLOP_MS, thrownCard } from './coinflow.svelte';

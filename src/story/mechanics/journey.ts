@@ -1,7 +1,7 @@
 /**
  * The story's voyage (Steamboat to St. Louis): the boat, her purse and her
  * crew's strength, day after day, step after step (docs/story.md). The days
- * themselves are content (src/story/river.ts): a list of steps, which this
+ * themselves are content (src/story/chapters): a list of steps, which this
  * plays through generically. Each step is a caption to read, the morning
  * council (buy, hire, cast off), a run up or down the river (it burns coal),
  * or an encounter played at the table: a duel or a table at a landing for the
@@ -9,15 +9,15 @@
  * after supper for buttons. Plain, serializable data, and every function
  * pure, like the rest of the engine.
  */
-import { type JokerCard, jokerCard } from './cards';
-import type { AiId } from './characters';
-import { chooseAction, viewFor } from './ai';
-import { DEFAULT_CONFIG, type RulesConfig } from './config';
-import { BOAT, CREW, HIRE_DAYS, ITEMS, STARTING_CREW, shipStrength, type BoatParts, type Station, type Stations } from './boat';
-import { CATEGORIES } from './evaluate';
-import { Rng } from './rng';
-import type { Action, RoundResult, RoundState } from './round';
-import { newSession, nextSessionHand, playOn, seatOf, submit, waitingFor, type TableSession } from './session';
+import { type JokerCard, jokerCard } from '../../engine/cards';
+import type { AiId } from '../../engine/characters';
+import { chooseAction, viewFor } from '../../engine/ai';
+import { DEFAULT_CONFIG, type RulesConfig } from '../../engine/config';
+import { BOAT, CREW, GIVE_UP_CHAIR, HIRE_DAYS, ITEMS, STARTING_CREW, shipStrength, type BoatParts, type Station, type Stations } from './boat';
+import { CATEGORIES } from '../../engine/evaluate';
+import { Rng } from '../../engine/rng';
+import type { Action, RoundResult, RoundState } from '../../engine/round';
+import { newSession, nextSessionHand, playOn, seatOf, submit, waitingFor, type TableSession } from '../../engine/session';
 import { SNAGS, TROUBLES, coveredHands, snagDef } from './snags';
 
 /** A line said in a caption: by someone (a character's id, `willie`, `you`), or the intertitle's own words (no `who`). */
@@ -94,10 +94,10 @@ export interface Effects {
   settle?: { snag: number; amount: number };
 }
 
-/** An answer in the talk at the table that decides what happens: these effects, and this many of the steps ahead skipped. */
+/** An answer in the talk at the table that decides what happens: these effects, and `end` ends the scene there. */
 export interface Choice {
   effects?: Effects;
-  skip?: number;
+  end?: boolean;
 }
 
 export type Step =
@@ -117,8 +117,10 @@ export type Step =
     }
   /** A push failed, with coal left: go again, or call it off. */
   | { type: 'fork'; lines: StoryLine[]; stage: Step; turnedBack: Step[] }
-  /** Evening comes, whatever slot it was (a day spent). */
-  | { type: 'nightfall' }
+  /** Steps that belong together: a choice in them can end the lot (a hub's option is a scene too). */
+  | { type: 'scene'; steps: Step[] }
+  /** Evening comes, whatever slot it was (a day spent). A label: somewhere to go on from (`onFail`). */
+  | { type: 'nightfall'; label?: string }
   /** That took the slot: on to the next. */
   | { type: 'slot' }
   /** A place with things to do: its options (`StoryDef.hubs`) are offered, and we come back here after each. */
@@ -153,8 +155,8 @@ export type Step =
       sweptBack?: Step[];
       /** Calling it off instead: these steps, and all the rest are off. */
       turnedBack?: Step[];
-      /** Failing it, this many of the steps ahead are passed by (a tournament lost is a day done). */
-      failSkip?: number;
+      /** Failing it, on from the step with this label: what's between is passed by (a tournament lost is a day done). */
+      onFail?: string;
       /** Which try this is (the first, or again after a night stuck). */
       attempt?: number;
       /** What a reply in the talk can decide, by its effect (see `choose`): the encounter ends there. */
@@ -352,6 +354,12 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
     if (state.mornings > 1) state.purse = Math.max(0, state.purse - state.crew.reduce((a, id) => a + (CREW[id]?.temporary ? 0 : (CREW[id]?.wage ?? 0)), 0));
     return advance(state, story);
   }
+  if (step.type === 'scene') {
+    if (state.pending.length) state.pending.shift();
+    else state.step++;
+    state.pending = [...clone(step.steps), ...state.pending];
+    return arrive(state, story);
+  }
   if (step.type === 'nightfall') {
     state.time = 'evening';
     return advance(state, story);
@@ -475,7 +483,7 @@ export function setRehire(prev: JourneyState, id: string, rehire: boolean): Jour
 
 /** Who sits down at the deck game: a hire takes Lars's chair, a second Willie's. */
 export function deckCrew(state: JourneyState): string[] {
-  const out = ['lars', 'willie'].slice(0, state.hires.length);
+  const out = GIVE_UP_CHAIR.slice(0, state.hires.length);
   return state.crew.filter((id) => !out.includes(id));
 }
 
@@ -761,9 +769,9 @@ export function choose(prev: JourneyState, story: StoryDef, key: string): Journe
   const state = clone(prev);
   state.encounter = null;
   applyEffects(state, choice.effects);
-  for (let k = 0; k < (choice.skip ?? 0); k++) {
-    if (state.pending.length) state.pending.shift();
-    else state.step++;
+  if (choice.end) {
+    state.pending = [];
+    return arrive(state, story);
   }
   return advance(state, story);
 }
@@ -808,8 +816,9 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
     return arrive(state, story);
   }
   if (enc.outcome === 'solved') applyEffects(state, step.effects);
-  else {
-    for (let k = 0; k < (step.failSkip ?? 0); k++) state.pending.splice(1, 1);
+  else if (step.onFail) {
+    const on = state.pending.findIndex((p) => p.type === 'nightfall' && p.label === step.onFail);
+    if (on > 1) state.pending.splice(1, on - 1);
   }
   return advance(state, story);
 }

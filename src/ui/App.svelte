@@ -11,8 +11,8 @@
   import Title from './Title.svelte';
   import { loadBest, loadGame, loadJourney, recordResult, saveGame, saveJourney } from './storage';
   import { SCENES } from '../story/dev';
-  import { giveButtons, newTutorial, rematch, skipToButtons, skipToHands, tutorialScript, TUTORIAL } from '../story/tutorial';
-  import { roundScript, type Script } from '../story/script';
+  import { giveButtons, newTutorial, rematch, skipToButtons, skipToHands, tutorialScript, TUTORIAL } from '../story/chapters/00_tutorial/tutorial';
+  import { roundScript, type Script } from '../story/mechanics/script';
 
   /** Lessons and story encounters, by the id a game carries. */
   const scripts: Record<string, Script> = { [TUTORIAL]: tutorialScript };

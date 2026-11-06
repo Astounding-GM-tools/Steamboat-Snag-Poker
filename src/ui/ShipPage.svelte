@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { BOAT, CREW, STATIONS, morningStrength, snagDef, type BoatParts, type JourneyState, type Station } from '../engine';
+  import { BOAT, CREW, STATIONS, morningStrength, snagDef, type BoatParts, type JourneyState, type Station } from '../story/mechanics';
   import { t } from '../i18n';
   import { called, snagTitle } from './format';
 

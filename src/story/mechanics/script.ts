@@ -1,4 +1,5 @@
-import type { SpeechLine } from '../ui/Speech.svelte';
+import type { SpeechLine } from '../../ui/Speech.svelte';
+import type { JourneyState } from './journey';
 
 /**
  * When a round's lines are spoken: before the deal (the deal waits for them),
@@ -35,14 +36,8 @@ export interface TalkContext {
   met: boolean;
   /** Which try at it this is (mornings on the bar). */
   attempt: number;
-  /** You've hired Gaylord to play your seat. */
-  client: boolean;
-  /** What the crew are making today. */
-  strength: number;
-  /** The voyage's flags, purse and coal, for talk that offers what you could take up. */
-  flags: string[];
-  purse: number;
-  coal: number;
+  /** The voyage as it stands: what's aboard, what's known. */
+  journey: JourneyState;
 }
 
 /** An encounter's talk: set lines hand by hand, or worked out as the hand stands. */

@@ -5,7 +5,7 @@
   import Standings from './Standings.svelte';
   import Table, { type TableView } from './Table.svelte';
   import { name } from './format';
-  import type { RoundScript } from '../story/script';
+  import type { RoundScript } from '../story/mechanics/script';
 
   /**
    * A crossing of the voyage (the League, or Morag's lessons) at the table:

@@ -1,4 +1,5 @@
-import type { GameState, JourneyState } from '../engine';
+import type { GameState } from '../engine';
+import type { JourneyState } from '../story/mechanics';
 
 export interface Best {
   /** Tournaments won. */
