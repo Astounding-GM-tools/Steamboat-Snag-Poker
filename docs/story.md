@@ -693,6 +693,21 @@ gently turning paddle wheel in place of the cogwheel.
 
 **Days gone: X.** The day count, a tribute to *Days Gone*.
 
+## Three kinds of chapter
+
+- **A passage:** a stretch of river. Some exposition, something happens on the
+  water, you arrive. Muscatine and the Sandbar.
+- **A hub:** a place to potter about: a docking menu, jobs, a shop, a table,
+  regulars keeping their own calendar. The Tri-Cities. You stay as long as you like.
+- **A gate:** an announced obstacle with real risk. A game to earn the attempt, then
+  the ordeal; fail, and you're back at the hub. The rapids. Gates work both ways: the
+  same gate going down, with its own game (Rapids City).
+
+**Each teaches a way of playing, not only a place.** The Sandbar: win pots to
+wear it down. The Tri-Cities table: hunt a big hand. The depot: lose on purpose,
+at a showdown. The Games: last one standing. The rapids: lose slowly. A new
+chapter should ask for something the last ones didn't.
+
 ## A day on the river
 
 Taking on cargo, passengers and crew landing by landing makes the voyage a

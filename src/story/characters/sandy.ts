@@ -53,6 +53,7 @@ const QUIPS = [
   'That’s a shore thing, that is.',
   'I’ll have you know I’m a pillar of the riverbed.',
   'Bar’s open. Bar’s always open. That’s rather the trouble.',
+  'I want to be a Beach Club when I grow up.',
 ];
 
 /** Each new morning on the bar opens differently. */
