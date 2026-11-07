@@ -541,7 +541,7 @@ const odds: Face = {
 const lenny: Face = {
   head: { width: 25, top: 14, jaw: 84, chin: 17, bottom: 92 },
   eyes: { y: 50, gap: 10.5, rx: 3.6, ry: 5.2 },
-  brows: { y: 44, gap: 10.5, length: 11, weight: 3.2, arch: 0.5 },
+  brows: { y: 46, gap: 10.5, length: 11, weight: 3.2, arch: 0.5 },
   nose: { kind: 'bulb', y: 63, size: 5.6, pale: true },
   mouth: { y: 75, width: 9 },
   parts: [
@@ -557,6 +557,11 @@ const lenny: Face = {
   blink: 5.8,
   temper: 0.9,
   rest: { browTilt: -0.25, mouthCurve: -0.3, eyeOpen: 0.55, lookY: 0.5 },
+  // The same mouth whatever the cards: it's all hopeless anyway. Everybody knows.
+  moods: {
+    confident: { browCock: 2, eyeOpen: 0.85, lean: -3 },
+    nervous: { browLift: 1.5, browTilt: -0.6, eyeOpen: 1.2, lookX: -0.6, lean: 3, sweat: 1 },
+  },
 };
 
 /** Max Moritz, "Long Coat": a very tall captain in a very long coat, the collar up to his grin. There's someone else in the coat: two eyes in the gap between the buttons. */
@@ -585,25 +590,25 @@ const maxMoritz: Face = {
   tic: { effect: 'shifty', every: 6 },
 };
 
-/** Ignatz, the Hurler: a man, but you'd say mouse. Big round ears, a sharp little nose, close-set eyes, a few wiry whiskers of a moustache, and no patience whatsoever. */
+/** Ignatz, the Hurler: a long face with tall, staring eyes, a big nose set low, no mouth to speak of, and a widow's peak. No patience whatsoever. */
 const ignatz: Face = {
-  head: { width: 25, top: 18, jaw: 78, chin: 14, bottom: 88 },
-  eyes: { y: 51, gap: 8.5, rx: 3.4, ry: 4.8 },
-  brows: { y: 42, gap: 8.5, length: 8, weight: 3, arch: 1 },
-  nose: { kind: 'hook', y: 60, size: 5 },
-  mouth: { y: 76, width: 7 },
+  head: { width: 25, top: 14, jaw: 84, chin: 16, bottom: 92 },
+  eyes: { y: 48, gap: 8.5, rx: 3.3, ry: 9 },
+  brows: { y: 35, gap: 8.5, length: 8, weight: 3, arch: 1 },
+  nose: { kind: 'bulb', y: 70, size: 7.5, pale: true },
+  mouth: { y: 84, width: 7, hidden: true },
   parts: [
-    // Big round ears.
-    { layer: 'back', d: 'M12 44 a11 12 0 1 0 22 0 a11 12 0 1 0 -22 0 Z M66 44 a11 12 0 1 0 22 0 a11 12 0 1 0 -22 0 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
-    { layer: 'back', d: 'M17 44 a6 7 0 1 0 12 0 a6 7 0 1 0 -12 0 Z M71 44 a6 7 0 1 0 12 0 a6 7 0 1 0 -12 0 Z', fill: 'grey' },
-    // Hair, slicked flat.
-    { layer: 'front', d: 'M26 40 C24 26 36 20 50 21 C64 20 76 26 74 40 C68 31 60 28 50 30 C40 28 32 31 26 40 Z', fill: 'ink' },
-    // A few wiry whiskers.
-    { layer: 'mouth', d: 'M46 69 L33 66 M46 71 L32 72 M54 69 L67 66 M54 71 L68 72', fill: 'none', stroke: 'ink', width: 1.3 },
+    { layer: 'back', d: 'M26 50 C19 46 19 60 27 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M74 50 C81 46 81 60 73 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    // Hair slicked back to a widow's peak.
+    { layer: 'front', d: 'M25 40 C23 20 36 12 50 12 C64 12 77 20 75 40 C72 30 64 25 56 26 L50 33 L44 26 C36 25 28 30 25 40 Z', fill: 'ink' },
+    // The bridge of the nose, long, down to the bulb, and a nostril or two.
+    { layer: 'face', d: 'M48.5 52 C47 58 45.5 62 45 66 M54.5 52 C55 58 55 62 55 66', fill: 'none', stroke: 'ink', width: 2.2 },
+    { layer: 'front', d: 'M45 75 C46 73 48 73 48.5 75 M51.5 75 C52 73 54 73 55 75', fill: 'none', stroke: 'ink', width: 1.8 },
   ],
   blink: 3.1,
   temper: 1.1,
-  rest: { browTilt: 1, mouthCurve: -0.2, eyeOpen: 0.85 },
+  rest: { browTilt: 1, eyeOpen: 0.9 },
   tic: { effect: 'twitch', every: 5 },
 };
 

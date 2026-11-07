@@ -176,10 +176,6 @@
     <path class="head" d={headPath} fill={COLOUR[face.fill ?? 'paper']} stroke={COLOUR.ink} stroke-width="2.8" stroke-linejoin="round" />
     {#each partsIn('face') as part, i (i)}{@render drawn(part)}{/each}
 
-    <g class="brows" fill="none" stroke={COLOUR.ink} stroke-width={face.brows.weight} stroke-linecap="round">
-      <path d={brow(-1)} />
-      <path class="brow-right" d={brow(1)} />
-    </g>
     <g class="eyes">
       {#each [-1, 1] as const as side (side)}
         {@const cx = 50 + side * face.eyes.gap}
@@ -200,6 +196,11 @@
           {/if}
         {/if}
       {/each}
+    </g>
+    <!-- The brows over the eyes, so a brow hangs over a lid rather than under a pupil. -->
+    <g class="brows" fill="none" stroke={COLOUR.ink} stroke-width={face.brows.weight} stroke-linecap="round">
+      <path d={brow(-1)} />
+      <path class="brow-right" d={brow(1)} />
     </g>
     {#if nose}<path class="nose" d={nose} fill={face.nose?.kind === 'hook' ? 'none' : face.nose?.pale ? COLOUR[face.fill ?? 'paper'] : COLOUR.ink} stroke={COLOUR.ink} stroke-width="2.4" stroke-linecap="round" />{/if}
     {#if !face.mouth.hidden}<path class="mouth" d={mouth} fill={p.mouthOpen < 0.03 ? 'none' : COLOUR.ink} stroke={COLOUR.ink} stroke-width={3 - Math.min(1, p.wobble) * 1.2} stroke-linecap="round" stroke-linejoin="round" />{/if}
