@@ -9,6 +9,12 @@ snags. The table takes any number of captains, and a story can say who sits
 at yours, landing by landing, with their decks and moves scripted. The story
 itself is still a proposal; its lines are drafts to argue over, not copy.
 
+**New notes, 7 November 2026:** decisions from a design session (the ice jam,
+the Fog Bank, Dubuque as a hub, the whole way down to St. Louis, the Chain of
+Rocks finale, the ending, portraits, scenes and vignettes) are in
+[story-notes-2026-11-07.md](story-notes-2026-11-07.md), not yet merged here.
+Where they disagree with this file, the notes are newer.
+
 ## The premise
 
 **Every encounter ends in a game of Snag Poker.** It is silly, and it is a
@@ -211,9 +217,10 @@ has to lose for you to win: it's you against the river.
   distance made. Fleece it quickly and you still make the landing; slowly,
   and you tie up short for the night, somewhere along the bank, with
   whoever else is stuck there for company (or nobody).
-- **Snags go one way.** The Sandbar cares nothing for your In-Laws or the
-  Mail Run: it's an obstacle to your duties, not a place to leave them. You
-  can't play snags against an obstacle; it can play its own on you. It starts
+- **Snags against the river.** The first idea was that snags go one way: the
+  Sandbar cares nothing for your In-Laws or the Mail Run. The game doesn't work
+  that way: you can play your snags at an obstacle, and if you win they go to it,
+  where it may throw them back. We keep that, for now. It starts
   with a chunk of sand and a few troubles (a Twisted Axle, a Broken Paddle),
   and when it wins a showdown they're yours, to be fixed later. Coming off
   clean is the best ending; carrying a Broken Paddle to the next landing is
@@ -232,9 +239,9 @@ has to lose for you to win: it's you against the river.
 **Formats:**
 
 - **The Sandbar, heads-up:** fleece it, against the clock.
-- **The ice (High Rollers):** early April, the last of the ice coming down
-  the river: several sheets of ice at one table, each its own seat, to be
-  played clear of one by one.
+- **The Ice Jam (High Rollers):** early April, ice let go upstream jammed at a narrows:
+  several sheets of ice at one table, each its own seat, to be played clear of one by
+  one. They play as one, pieces of one jam: see LeClaire to Dubuque.
 - **Two boats on one bar:** the player and a stuck captain both at the
   Sandbar's table. Beat it together and both float free: helping, not a
   contest of who stays stuck.
@@ -249,8 +256,8 @@ plays the stubborn style (stands pat, never gives up). What's new:
    your own stake and its sand vanishes; if it wins, your whole stake becomes
    sand on its pile. One rule at the end of the hand; the hand itself is
    untouched.
-2. **Snags go one way:** your snags can't be played in this encounter (a
-   check on which moves are legal).
+2. **Snags:** first planned as one way, with no check built. Your snags can be
+   played at an obstacle like at anyone (see above).
 3. **Troubles:** a new set of snags (Twisted Axle, Broken Paddle, Busted
    Boiler, Fatigue, Soggy Lumber…), their upkeep the cost of the repair
    until it's done.
@@ -728,12 +735,358 @@ After the rapids, easy going: not everything is a mad dash.
   the sources, Lamb, Young, Joyce, Curtis; essentially finished by 1900, the barons
   gone south and west, a few mills left (the last closed in 1910). Thousands left
   (how many is disputed). Less business than hoped, and no demand but for booze.
-- **Towing raft folk up to Sabula:** rafts only come down, so this is people, not
-  logs: their floating homes, up to where there's work. Hard on the coal.
-- **Sabula:** coal at fair prices, no strike. Not yet an island in 1904: that came
-  with Lock and Dam 13 in 1939. A railroad bridge to Savanna (swing span: to verify).
-- **The Ice:** a table of three ice sheets, with quips and puns.
-- **The last leg to Dubuque.**
+- **Towing the raft folk:** rafts only come down, so this is people, not logs:
+  their floating homes, all the way to Dubuque. See The tow, below.
+- **Sabula:** coal, but dear: the top-up that spares the rafts. Not yet an island in
+  1904: that came with Lock and Dam 13 in the 1930s. The railroad bridge to Savanna has a swing
+  span: built 1881 (one source says 1882), replaced 1906, so in 1904 it's the older
+  iron one. A whistle-timing moment: signal the tender in time, or drift for the
+  piers. Whistles as river signals are real; the rest is game logic.
+- **The Ice Jam:** a table of three ice sheets, with quips and puns. See below.
+- **Bellevue:** a leadsman calling depths past an invented hazard. Don't name a
+  ledge: no source for one. See The Deadheads, below.
+- **The last leg to Dubuque.** The echo trick, finding your way by whistle off the
+  bluffs: no source, but lovely, and a use for the whistle in the Fog Bank. The Julien
+  Dubuque monument on the bluff as you arrive: 25-foot limestone tower, dedicated
+  1897, over a grave from 1810. The Mines of Spain were still worked in 1904 (mining
+  ran to 1914), so a camp or shanty boats are fair colour.
+
+**Don't use:** Sabula as "Iowa's only island city" (not until the 1930s); Clinton's
+rafts clogging the river (the 1902 Herald says few rafts, the trade dying); the
+Savanna Army depot (about 1917 as we recall it, unconfirmed); "Steamboat Hollow" (no
+source). The lock and dam at Bellevue is 1930s too.
+
+### The Ice Jam: three sheets playing as one
+
+- Replaces the river freezing back overnight: a cold night makes skim ice, not sheets that stop a steamboat.
+- As we understand it, the river opens from the south. Ice let go upstream drifts down and jams at a narrows, bend, island or bar, the floes riding up and freezing together. To verify: whether the river above Sabula runs narrower between bluffs.
+- The three sheets are pieces of one jam, which is why they play as one. Clearing a sheet loosens the rest: the table getting easier is the jam breaking up.
+- An ice jam, where the rafters know timber jams: sawmill hands breaking it with axes and pike poles is their everyday work.
+- **With the tow:** crews sent out on the ice wear the sheets down before play, like the pushes on the rapids. Not a big deal.
+- **Without the tow:** Lars goes out on the ice (no fireman is needed while the boat is stuck), and Willie goes along to learn. Little strength: it takes a very good game.
+- **Willie's ducking:** he slips into the river and Lars fishes him out by the collar. A trouble snag (Head Cold or similar): less strength for some days, Willie sniffling under a blanket.
+- **Gus cooks** while Willie is laid up. He never complained about the beans; his boiled cabbage is worse, cooked exactly to time. *"Like my mother made it."* The joke is Gus, not Germany.
+
+This is the first table that isn't honest. Everywhere else, everyone's enemy is
+everyone else, and you can let them knock each other out. The sheets are collaborating
+to defeat you: the same table shape as a tournament, a different game.
+
+**Without the village it's pretty much hopeless.** The lesson is patience, and patience
+costs money: a strong ship can afford to wait for the monster hand, so the tow buys the
+very thing the table demands. A good, lucky captain can still get through, and that's fine:
+they miss the subplots. After a failure the way back to the rafts is open, and Gus points at
+it, as a fact: *"Forty men down at the rafts, Captain."*
+
+**The soft play and the whipsaw** are game AI in the old sense: new rules, no language model.
+A seat trait with two behaviours:
+
+- **Soft play:** the sheets never fight each other. If you fold, they check it down
+  and nothing moves between them.
+- **The whipsaw:** when you're in a hand, the two sheets either side of you raise
+  back and forth, and every call costs you more.
+
+**The counter is the lesson.** Their raising builds a pot they can only lose to you:
+play far fewer hands, wait for a monster, and let them do the betting. It gets easier
+as you go: three sheets is brutal, two is a squeeze, and one is plain heads-up. So the
+table ends in a thaw.
+
+- **Let the player notice.** No announcement. The sheets just never bet into each
+  other, until Gus says it flatly: *"They ain't played a hand against each other all
+  morning, Captain."*
+- **Names:** a freeze-out is a real poker format and a cold deck a real cheat's term,
+  so the table could be the Freeze-Out. Cold shoulders for the puns.
+- **Left out:** a beaten sheet merging its pile into its neighbour. Thematic, but it
+  punishes the very progress that should feel like a thaw.
+- **To build:** that seat trait. Look at how the current AI's betting is built first.
+
+### Four days to Dubuque
+
+Miles are approximate. A free boat makes about 40 miles a day, so the 83 miles take
+two or three. With the tow at about half speed (a guess), each hop is about a day:
+towing costs a day or two against the calendar, which is what makes it a choice.
+Passing up the tow: encounters not placed yet.
+
+| Day | Stretch | Miles | On the river | Evening |
+|---|---|---|---|---|
+| 1 | LeClaire to Clinton | 21 | Fill or Half at LeClaire. Leisure: a raft drifting down, a game, the gossip that the timber's finished | The floating village outside Clinton: little trade, no coal, a demand for booze, and the rafters ask for a tow |
+| 2 | Clinton to Sabula | 17 | **The Deadheads** (timber lost off rafts bound for Clinton, so it belongs here). Willie healthy, sounding. The rafts tag along | Sabula: dear coal; the swing bridge |
+| 3 | Sabula to Bellevue or above | 21 | **The Ice Jam** | Bellevue: the village moored around the boat |
+| 4 | to Dubuque | 24 | **The Fog Bank**, the echo trick, the monument on the bluff | Dubuque: Pretty Patty, and the rafts cast off |
+
+The ice is no longer the first thing after taking on the rafts.
+
+### The tow: a row of ducklings
+
+The *Best Intentions* tows a fleet of rafts up the Mississippi, and for that stretch
+she's a village. A kindness that turns out to save you: they pay more than they cost.
+
+**The hardest, slowest, most encumbered days on the river, and perhaps the best days of
+their lives.** This is what life can be if you let it. So for this stretch the pressure
+comes off the screen: nobody mentions the calendar, and the evenings are the longest and
+fullest in the game. It's the only price of the tow: a day or two.
+
+**Fuel: Fill or Half.** At LeClaire, the bunker empty after the climb, it's the Captain's
+call: *Fill* ($x) or *Half* ($x/2). Gus: *"Hrmpf. Never leave port without a full bunker."*
+Willie is sure there's cheaper fuel at Clinton. It's fair sailing from here, no rapids, so
+six loads may not be needed. They're both right: Clinton is a mill town and sells no
+coal (keep why vague: a mill town, nobody sells coal), and the cheaper fuel turns out to
+be the rafts. Sabula has coal, but dear.
+
+**The rafts are made of fuel.** Built from overbuilt homes on worthless plots, and from
+sawmill cut-offs: a cutting board, a chair, a shutter, a door, a windowsill, then the
+floorboards. Eventually there's only the soggy foundation left: the house is gone, but it
+got them closer to a new life.
+
+**The evening games are the village's own.** The Captain isn't playing the rafters for
+their homes. They bring their promises, and the game is how they work out among themselves
+who owes what, who gives up the cutting board, the windowsill, the shutter.
+
+- **A regular game; the currency is wood.** Each rafter's stack is their raft. Every pot goes to
+  the furnace, whoever wins it, and the game ends when there's enough fuel for tomorrow.
+  Winning means keeping more of your home a little longer: resource management, which
+  the game was always about.
+- **A rotating roster of villagers,** men and women, the cook among them, sits in. Gus, Willie
+  and Lars all cede their places at the table on these nights.
+- **They can take your snags, and send none back:** it's the one table where snags only
+  leave you. (In the engine, close to the `fixes` and `unhands` seat traits.)
+- **The tow has to take a few days,** so there are several of these evenings.
+
+- **The row of ducklings dwindles** and the deck of the *Best Intentions* grows more crowded,
+  as the furniture, the floorboards and the panelling burn.
+- **A real choice:** buy Sabula's dear coal and spare the rafts, or burn homes for free. A
+  broke captain burns the floorboards; a flush one doesn't have to. The village arrives with
+  whatever you left them. No punishment for burning: it's their gift, and arriving with
+  nothing but each other is the poem.
+- **Wood firing** is slower, demands more of the firemen, leaves more ash, soots the
+  chimney. It's a slower pace and more work, which is the point: more evenings together.
+  Fogg burned his steamer's woodwork too, in *Around the World in Eighty Days*.
+
+**What the village brings:**
+
+- **Manpower:** strong sawmill workers. Extra hands, so everyone's rested and the ship's
+  strength is at its maximum (they work like hires).
+- **The carpenters** refit a storage room as a state room on the move, which allows
+  passenger traffic (the boat's `rooms` part). It would cost a fortune at a dock.
+- **The cook,** a widow who worked the mansions, seeking work in Dubuque with her two children.
+  Everyone's fed, Fatigue goes, Willie's beans get a dignified retirement. Gus: *"Fresh
+  biscuits for breakfast. Hm. Could get used to this."*
+- **Company:** a full table every evening, rumours running thick. They pay very little.
+
+**The cook's family.** Working names: Mrs. Halloran, Nell and Tam.
+
+- **She offers to stay** with her children, as cook, chambermaid and deckhand. Hiring her isn't
+  a stat upgrade: it's trying to keep a little of that life. Only if you took the tow.
+- **Her daughter and Willie are sweethearts:** entirely innocent, just sweet. Shy looks, an extra
+  biscuit set aside, Willie suddenly combing his hair. No ages on screen.
+- **She and Gus:** perhaps. In his way.
+- **Who they are** is open: Willie may be a Black lad (see the portraits), and the cook and her
+  children could be Black too. We don't have to be historically accurate: it's still 2026,
+  even if the art style is 1926.
+- **Lars** could get a note from her that nobody else can read.
+
+**The stove and cook move to Dubuque.** They come out of the Tri-Cities' trader (the $15 stove
+and $6 cook, in `boat.ts`) and go on sale at Dubuque at a comparable cost, showing what great
+value the village's cook is. **Pfund goes:** the name, not the hire. The Dubuque cook could
+be just "Cookie".
+
+**Other details:**
+
+- **Why Dubuque:** there isn't much work before it. From memory it had boatyards and
+  millwork (to verify), which is enough for "where the work is".
+- **The Ice and the village.** Three sheets work together to beat you, and a whole
+  village works together for you. Nobody points this out.
+- **The swing bridge:** see below.
+- **The ending.** The rafts cast off at Dubuque, and the next morning the boat is
+  quiet. Gus says so, as a fact. Nobody says "best intentions": the name does that.
+- **To simulate:** the Ice Jam with and without the tow, so "pretty much hopeless" is
+  true without being impossible.
+
+### The Deadheads: soundings
+
+A snag-heavy stretch, but you get warnings. It teaches choosing your hands with great
+care, and looking for the signs and heeding them.
+
+**The Deadheads** is the working name: a real river word for partly sunken logs and
+snags, and snags are our dead cards. This is timber lost off the rafts on the way to
+Clinton, so the river bed is what's left of the boom. Its pile is soggy lumber.
+
+**Willie sounds the river** from the bow, as cheerful as ever, reading the adversary's
+actual hand as it stands on each street. He isn't reading the hand so much as the
+danger, and his pole isn't that long: "Mark twain" is the bottom of what he can measure.
+
+| Their hand | Willie calls | Snags | What to do |
+|---|---|---|---|
+| High card, pair, two pair | "Mark twain!" | Up to 2 (two pair: 1) | Bottom tier. If you can't field a decent two pair, you should have folded |
+| Straight, flush, full house | "Mark!" | None | Can cost you money, never snags |
+| Three of a kind | "Sawyer!" | 2 | Back out, unless you can beat it |
+| Four of a kind | "Planter!" | 1 | Back out |
+
+A sawyer was a sunken tree bobbing in the current, a planter one rooted in the riverbed:
+kinds of snag, so "Sawyer!" isn't just a nod to Tom. Trips rank below a straight, so the
+scariest call isn't the strongest hand: the player learns to fear the snag, not the rank.
+
+**The adversary** always holds two snags, restocked each hand, and plays as many as its
+hand has room for. It's full poker, swaps and rising street fees included, so heeding a
+warning early is cheaper.
+
+- **Beat it,** and it forfeits for each snag it risked, on top of the pot: it runs out
+  of funds fast. A "Mark twain!" with two snags in it pays you.
+- **Lose,** and they land on you.
+- **Always fold,** and it pays nothing, as we read the rules. You don't win by folding.
+- **Your own snags** go to it if you win: the one stretch where the river takes them
+  off you. Another reason to stand.
+
+**Twice.** It comes back on the way down, largely the same, with fewer hands at higher
+stakes (down is control). Nobody ever explains "mark twain", and the reach can end on a
+long one as you come into safe water.
+
+**To build:** a seat trait that restocks it to two; its snag play made certain (the AI's
+hurl fires 35% of the time); forfeits on for this encounter, no upkeep for the river seat,
+which is the reverse of other obstacles. Pile, hands and what folding costs: to simulate.
+
+### The dams (background, after our time)
+
+Lock and Dam 13 doesn't mean rough water: the trouble there was too little water,
+shallow channels and sandbars, and the dams hold pools to keep nine feet of depth. They
+were built for navigation, not power, the exception being the private Keokuk hydro plant
+(1910–13), made Lock and Dam 19 in 1930. Congress authorised the nine-foot channel in 1930
+"despite a thirty-year decline in upper-river traffic", and it made Depression jobs. In
+1904 the job in hand is a six-foot channel, authorised in 1907; from memory that meant wing
+dams, already being built (to verify: a possible hazard). The river did not retire: it
+lost passengers and general freight and kept bulk cargo. Nearly half of US corn and soybean
+exports still go down it by barge.
+
+**Mark Twain:** two fathoms, about twelve feet, the minimum safe depth for a steamboat. Clemens
+first used the name in 1863. His own story is that he took it from the pilot Isaiah Sellers, on
+thin evidence, and there's a rival story about a bar tab of two drinks.
+
+## The rest of the river
+
+From the drive of 7 November. Drafts, not copy.
+
+### The swing bridge at Sabula
+
+- The span is the meter: play well and it stays open; lose and it swings shut.
+- The result is how many of the six rafts get through. Cut-off rafts wait for the next opening and catch up in the morning; nothing is lost but time, and the cut-off rafters miss the evening's game at Sabula.
+- The gag: Willie on the whistle cord, a feeble toot, then a blast that knocks the sleeping tender out of his chair. A rafter flattened by the span peels himself off and shakes his fist.
+- One animation (the bridge swinging) does the work.
+
+### The Fog Bank
+
+- The community cards (Flop, Turn, River) are hidden under fog. Your own cards stay visible.
+- **The whistle** lifts the fog off the whole board for a moment, then it rolls back. It costs strength, which doesn't go in the pot and isn't won back.
+- With the village aboard (manpower, raft lumber to burn) you can whistle freely; without it every look costs strength you can't stake.
+- **No hand callout in fog games,** not even while the fog is lifted: the player reads and remembers the board. As in real poker. The last encounter before Dubuque, so the training wheels come off at the end of the way up.
+- Willie, sniffling: *"Can't see a thing, Captain. You'll have to read it yourself."*
+
+### Dubuque: a hub, the high point
+
+- A hub like the Tri-Cities: repairs, upgrades, hires, trading, a few days.
+- The cook and her children may stay on; a raftsman may sign on as fireman.
+- Diamond Jo Line, based in Dubuque: a grand steamer with a High Rollers table can be moored there.
+- **Pretty Patty comes aboard** over a ramp onto the foredeck (a sternwheeler's freight goes on the main deck, forward; no hold). The inventor drives her up; she stalls halfway; Lars pushes her the rest of the way.
+- A victory. An evening of celebration, then the quiet morning after the rafts cast off, then downstream.
+- Up is power, down is control: Dubuque is where the shopping list turns to control (rudder, spares, hull). The hubs below are for repair.
+
+### Down: repeats until Muscatine
+
+- Gone: the ice (broken up), the Fog Bank.
+- Again: the Deadheads (fewer hands, higher stakes), the rapids, Sandy.
+
+#### The rapids going down
+
+- Ellie's pilot games as before, captains only, no Gaylord.
+- Then the descent: the same chains in reverse, heads-up stages. The Long Reach first, the hardest, while the boat is strongest; then Campbell's Chain; then the Moline Chain, the easiest, when strength is lowest. Difficulty falls while strength falls.
+- Each stage gets a small, fixed number of hands, high antes from the start. Win decisively and quickly. Run out of hands and you go through anyway, and take a damage snag. It can't stop you, only bruise you.
+- Damage snags are removed only by repairs. Their upkeep raises the ante, so every bruise makes the next hand dearer.
+- **Losing control:** run out of strength and you can no longer swap or fold. You can only choose which cards to play at the showdown (a snag still goes in if the hand has room). You pick up snags at a higher rate.
+- Willie: *"She won't answer the wheel, Captain!"* Gus: *"No turning back now, Captain."* The swap and fold buttons go dark.
+- The trap to simulate: spend everything on the Long Reach and the easy Moline Chain wrecks you. Gus: *"It's gonna be a tight squeeze, Captain."*
+
+### The Tri-Cities coming down
+
+- Called the Quad Cities by now: the name took hold while the boat was up north. (The real name only won out around 1930.)
+- A dry dock: repairs, odd jobs, a few days.
+- **Gaylord's loan** is offered whenever you qualify. Most players will need it here, after the rapids, more than going up.
+- Gaylord has outstayed his welcome at Bettendorf (the quads table empties). He waits for the *Best Intentions* and asks for passage; decline and he doesn't come. No departure on a cruiser around day 21.
+- **He rides all the way to St. Louis,** for the international High Rollers game at the Fair, and may meet you at the final table. The loan falls due there.
+- **At the deck games** he plays for buttons: reads Willie's tells, lectures Lars, wins buttons worth nothing; over the evenings he lets go and laughs. Villain-coded, never a villain. Nobody says he's one of the crew; one evening he's just in Lars's chair.
+
+### Muscatine
+
+- Quiet run down from the Quad Cities.
+- **Steamboat Bill:** a visit and a game, news of Patty. He takes troubles off your hands and fixes them on his porch, glad to be useful while he's ashore.
+- **Morag and Finlay:** the Finlay subplot may be cut (the story is crowded). Morag keeps the tutorial.
+
+### Below Muscatine
+
+About 275 miles to St. Louis: some 4 or 5 days at roughly 10 mph by day, more with the lock.
+
+| Day | Stretch | Encounter |
+| --- | --- | --- |
+| 1 | Muscatine past Burlington | **Sandy again,** just south of Muscatine: the sand washed off going up, relocated and refurbished. *"Welcome back, Captain! Like what we've done with the place?"* Run aground and dig out, the old way. A nostalgic, friendly slog; plenty of strength by now. The last repeat |
+| 2+ | to Keokuk | **The lock queue** (may take days) |
+| 3 | Keokuk to Hannibal (~55) | A quiet run. Hannibal in the evening |
+| 4 | Hannibal to Alton (~107) | **The long haul**: just a good, hard day's work. Distance as the pile; everyone pitches in |
+| 5 | Alton to St. Louis | **The Chain of Rocks** |
+
+No cargo inspector: the federal Steamboat Inspection Service checked boilers, hulls and licences, not freight, and there was no customs between states.
+
+#### The lock queue at Keokuk
+
+- A captains' table game, like the pilot games, but **the lock has capacity**: say three slots. A large packet takes all three, the *Best Intentions* (medium) one, small boats share one. Boats go through in finishing order until the lock is full.
+- Not only about winning: if the big packet finishes first it takes the whole lock. Knock it out, or even help a small boat win.
+- **Gaylord** can play your seat (he will, as a passenger who wants to get on, but despises you for it, and the warmth at the deck games cools) or be **lent to a small boat** (he's delighted: a captain who understands the game). He can lose: a good human player beats him.
+- The lesson of the chapter: play the whole room, not your hand. (The Sandbar: wear it down. The depot: lose on purpose. The rapids up: lose slowly. The rapids down: win fast.)
+
+#### The evening before the Chain
+
+The deck game after the long haul. Everyone tired and a little scared; little said, nobody raises. Lars doesn't sing. Gus: *"Seventeen miles of rock, Captain. Early start."*
+
+#### The Chain of Rocks: the finale
+
+- About 17 miles of limestone ledges beginning just north of St. Louis, below the mouth of the Missouri. Impassable at low water, dangerous at high water; bypassed by the Chain of Rocks Canal in 1953. No named ledges found in the sources.
+- Not the Grand Chain (near Thebes, below St. Louis), which Twain wrote about.
+- **No pilot.** The Captain takes it; at most a pilot for hire at Alton, a purchase, no game.
+- A chained event that draws on earlier lessons without throwing in everything. Stages hung on real landmarks:
+  - **The Big Muddy** (the Missouri's nickname): the river's mouth as a greedy, bottomless mouth. It swallows everything put in the pot and can't be busted. Played for a fixed number of hands, drifting past it; what counts is how much is left of you. Its mud clouds the water (the board half hidden, as in the fog).
+  - **Chouteau Island**, along which the ledges run (after the Chouteau family, fur traders who helped found St. Louis in 1764).
+  - **The Eads Bridge** (1874) at St. Louis as the finish line.
+- Then the Fair, and the international High Rollers table.
+- Number of stages and their mechanics: open.
+
+### Why the river, not the railroad
+
+- Roads were mostly dirt, mud in April; the AAA tour that summer set out to prove cars could survive them at all.
+- Rail was the sensible way: four railroads ran through Dubuque by 1900, among them the Burlington Route, which also reached St. Louis. A day or two by freight car. The 1904 rate for a crated car: not found.
+- The story's reason: **Steamboat Bill owes the inventor a favour,** so the river is free. It also explains why Bill got the job and why it pays so little.
+- Other options: the inventor's showmanship (arrive by steamboat at the levee and drive off under her own power), or not trusting the railroads with his only machine.
+
+### The ending
+
+- Fanfare at St. Louis: Patty drives off the gangplank under her own power, the band, confetti, the crowd following her up the levee.
+- Then the levee empty, the deck game one last time. Gus: *"There's freight for Memphis in the morning, Captain."* The crew belong on the river.
+- **The League is the Fair's High Rollers table,** separate from the story, for players who want more.
+- What the story is about: family, helping out, making the best of it. Patty is the reason to set off.
+
+### Releasing the story
+
+Chapter by chapter, like a film serial. Chapter one: Morag's lessons, Muscatine, Sandy, the Tri-Cities, ending at the foot of the rapids with an intertitle: *Next time: the Rock Island Rapids!*
+
+### The Big Muddy
+
+- The Missouri personified: a huge, hungry mouth drooling mud. Not supernatural: real hazard, cartoon face, like Sandy.
+- **A bottomless purse:** you can't outbid it, outlast it or bust it. Endless appetite, endless capacity. You only get past it.
+- Background only (never on screen): Fenrir bound with Gleipnir, a fetter that included the roots of a mountain, and the river Ván running from his jaws, in Snorri.
+- Draft stages: 1) the Big Muddy, a fixed number of hands, the board half hidden by mud; 2) the ledges past Chouteau Island, win decisively or take strikes, losing control if strength runs out; 3) the run to the Eads Bridge, arriving with what's left.
+- **The lesson of the Big Muddy: don't feed it.** Everything put in is swallowed, so stay small and quiet, fold cheaply, bet only when nearly certain. Sneak past; never try to empty it.
+- **The ledges, proposed:** a chain of seven links, each link one single hand. Win and you slide over the ledge; lose and you scrape it, a strike and a damage snag. No rest between. Gus counts them off: *"Four more, Captain."* Asks for the Deadheads' reading and the rapids' decisiveness at once.
+- **The Eads Bridge, proposed:** as far as we know, steamboat men complained it was too low for tall chimneys, and some boats had hinged chimneys (to verify). Lowering the stacks costs draught and steam: a last hand played with reduced strength. Not a hand you must lose: win it and you sail in proudly, lose it and you limp in under the bridge. Either way you arrive.
+- **Settled shape of the finale:** 1) the Big Muddy; 2) the seven links; 3) the arrival under the Eads Bridge as a vignette, not a game (after the links, another hand would be padding). Willie and Gus crank the chimneys down, smoke everywhere, the boat ducks under, the Fair opens up beyond.
+- **Seven links, rules:** the rocks send a snag with any hand they win, even a straight or full house (an exception to the normal rule). Folding is allowed: reversing the wheel against the current, it costs strength, you don't advance, the same link waits. At zero strength, control is lost and folding goes (the existing rule).
+- **Front-loaded:** win the first links and the current can carry you over the last ones. Snags raise the ante and drain strength faster, so it snowballs: simulate so it doesn't spiral too hard. You always arrive; the question is how battered.
+- **Ending variety:** a careful captain arrives clean; a reckless one limps in listing and smoking, a paddle missing, Patty spotless on the foredeck.
+- Also on the shelf: the Chain of Rocks as a necklace on a grand lady dressed for the Fair.
 
 ## A day on the river
 
@@ -796,22 +1149,23 @@ prologue, not day one.
 | 1 | Muscatine, up to the Tri-Cities | The exposition and the handover, over a few hands with Bill: he goes ashore, and leaves the new captain the winter's **Dock Fee**, the first snag, with $50: enough to settle it ($37), and a little over for food and coal; past that, you find your own cargo. At **the harbour master's**: *Pay*, or *Snag*: five hands, and whoever holds the bill after that settles it. Not long out: **the Sandbar**, which eats into the coal | The Tri-Cities, just in time: "batty about betting there", as Willie puts it. Trips or quads |
 | 2 | The Tri-Cities | The coal yard on strike: no coal, no climb | The foreman's game: lose an appropriate amount |
 | 3 | The Rock Island Rapids, up | Ellie's table at the foot for the afternoon's climb; the climb (many hands, low stakes, a second fireman) | LeClaire's saloon: **Ellie, Finlay and Gaylord** at the table. Gaylord offers **the loan** either way (he has a stash, and likes the captain's style); if he finishes first or second, all the more |
-| 4 | LeClaire to Clinton | **The Ice**: a High Rollers table of floes | Clinton, the sawmill town: a game on deck |
-| 5 | Clinton to Bellevue | A quiet run; a log raft from the pineries going by | Bellevue, a small landing: the night's game aboard, crew and passengers |
-| 6 | Bellevue to Dubuque | **The Fog Bank** in the morning | Dubuque: Pretty Patty and her inventor, the advance; a grand steamer moored |
-| 7 | Dubuque down to Clinton | **A Sawyer** (a sunken tree that bobs: the original snag) | Clinton again, something changed |
-| 8 | Clinton to LeClaire | A short run | LeClaire's saloon: **Morag** is there, but Finlay has gone downriver; **Gaylord** snitches on him, and wants to sign on as a passenger until he can board a grand steamer with a High Rollers table (he plays for his passage). Ellie's table for tomorrow's client down |
-| 9 | The Rapids, down; the Tri-Cities | The descent (few hands, high stakes) | The Tri-Cities, a steamer or the saloon |
-| 10 | Down to Muscatine | **The Sandbar**, a new one: the sand you washed off going up | Muscatine: Finlay and Morag, the next instalment |
-| 11 | Muscatine to Burlington | A quiet run, the St. Louis passengers aboard | Burlington |
-| 12 | Burlington to Keokuk | Fort Madison in passing | **The queue at the lock**: play the captains ahead for their place |
-| 13 | Keokuk to Hannibal | **The long haul**, 107 miles at full steam all day: an obstacle in itself. Making time takes the most out of everyone, on deck and in the engine room | Hannibal: a grand steamer at last. Gaylord goes aboard for its High Rollers table, and he'll need **the loan back** first |
-| 14 | Hannibal to Alton | High water, flotsam | Alton |
-| 15 | Alton to St. Louis | **The Chain of Rocks**, the last obstacle (from memory, to verify), the Missouri's mud joining | The Fair |
+| 4 | LeClaire to Clinton | Fill or Half. Leisure: a raft drifting down | The floating village outside Clinton: the tow |
+| 5 | Clinton to Sabula | The tow. **The Deadheads**: Willie's soundings | Sabula: dear coal; the swing bridge |
+| 6 | Sabula to Bellevue | **The Ice Jam** | Bellevue: the village moored around the boat |
+| 7 | Bellevue to Dubuque | **The Fog Bank** | Dubuque, the high point: **Pretty Patty** comes aboard, the rafts cast off; a hub of a few days |
+| 8 | Dubuque down to Clinton | **The Deadheads** again: fewer hands, higher stakes | Clinton again, something changed |
+| 9 | Clinton to LeClaire | A short run | LeClaire's saloon; Ellie's pilot games, captains only |
+| 10 | The Rapids, down; the Quad Cities | The descent: the Long Reach first, the Moline Chain last | The Quad Cities, a dry dock: Gaylord's loan, and he asks for passage |
+| 11 | Down to Muscatine | A quiet run | Muscatine: **Steamboat Bill** on his porch, fixing your troubles |
+| 12 | Muscatine past Burlington | **Sandy again**: the sand washed off going up, refurbished. A nostalgic, friendly slog | Burlington |
+| 13 | To Keokuk | **The lock queue** (may take days) | Keokuk |
+| 14 | Keokuk to Hannibal (~55) | A quiet run | Hannibal |
+| 15 | Hannibal to Alton (~107) | **The long haul**: just a good, hard day's work | Alton: the evening before the Chain |
+| 16 | Alton to St. Louis | **The Chain of Rocks**: the Big Muddy, then the seven links | The arrival under the Eads Bridge, the Fair |
 
-Six days up, nine down: about the two and a half weeks the river allows.
+Seven days up with the tow, nine down: about the two and a half weeks the river allows.
 
-**The long haul as an obstacle:** its stack is the distance (107 miles), and
+**The long haul as an obstacle:** Hannibal to Alton. Its stack is the distance (107 miles), and
 every pot won is miles made; the volunteers matter most here (everyone
 aboard pitching in). "In the engine room", not "below": a shallow-draft
 sternwheeler carries her boilers, engine and cargo on the main deck, with
@@ -833,7 +1187,8 @@ River miles from memory, approximate (counted up from the Ohio at Cairo):
 | Tri-Cities | ~482 | 27 |
 | LeClaire (top of the rapids) | ~497 | 15 |
 | Clinton | ~518 | 21 |
-| Bellevue | ~556 | 38 |
+| Sabula | ~535 | 17 |
+| Bellevue | ~556 | 21 |
 | **Dubuque** | ~580 | 24 |
 
 A small sternwheeler on a spring current: about 5 mph up, 10 down, running by
@@ -843,10 +1198,10 @@ for the game). The Rock Island Rapids are slow either way.
 - **Up, Muscatine to Dubuque, ~125 miles:** 3 days pushing hard; **5 days**
   at a landing a night: the Tri-Cities (a short day, time for the coal yard),
   LeClaire (15 miles, but the climb up the rapids), Clinton, Bellevue,
-  Dubuque.
+  Dubuque. With the tow, a day longer: Sabula as well.
 - **Down, Dubuque to St. Louis, ~400 miles:** 5 days pushing hard; **about
   9–11** stopping everywhere. Short stretches above Muscatine, long ones
-  below (Keokuk to Hannibal is 107 miles), so downstream some landings get
+  below (Hannibal to Alton is 107 miles), so downstream some landings get
   run past, or the stop decides the day.
 - **The whole voyage: about 2–2½ weeks**, plus days lost to fog, sandbars,
   the lock and broke detours.
@@ -1079,7 +1434,7 @@ Names and personalities below are first drafts.
   up again down the river.
 - **The engineer: Augustus "Gus" Klemm.** From Davenport's Germans (a large
   community then). Meticulous, oil to the elbows, talks to the engine (who has
-  a name of her own, *Old Hildegard*, and moods). Knows to the shovel what
+  a name of her own, *Old Hildegard* (a placeholder), and moods). Knows to the shovel what
   each stretch will burn: the voice of coal and the cost of going up. A steam
   man with a gasoline motor crated on deck: he scorns Pretty Patty in public
   and sneaks out at night to look at her.
