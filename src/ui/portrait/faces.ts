@@ -590,26 +590,27 @@ const maxMoritz: Face = {
   tic: { effect: 'shifty', every: 6 },
 };
 
-/** Ignatz, the Hurler: a long face with tall, staring eyes, a big nose set low, no mouth to speak of, and a widow's peak. No patience whatsoever. */
+/**
+ * Ignatz, the Hurler: all eyes. Very tall ones, puzzled at everything, on a long
+ * face that narrows to almost nothing at the chin; a triangle of hair on top,
+ * and nothing else. No moods to speak of: he always throws, and sticks it out,
+ * and rarely gets it right.
+ */
 const ignatz: Face = {
-  head: { width: 25, top: 14, jaw: 84, chin: 16, bottom: 92 },
-  eyes: { y: 48, gap: 8.5, rx: 3.3, ry: 9 },
-  brows: { y: 35, gap: 8.5, length: 8, weight: 3, arch: 1 },
-  nose: { kind: 'bulb', y: 70, size: 7.5, pale: true },
+  head: { width: 24, top: 14, jaw: 74, chin: 5, bottom: 95 },
+  eyes: { y: 50, gap: 8.5, rx: 3.6, ry: 12 },
+  brows: { y: 34, gap: 8.5, length: 8, weight: 0, arch: 1 },
   mouth: { y: 84, width: 7, hidden: true },
   parts: [
-    { layer: 'back', d: 'M26 50 C19 46 19 60 27 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
-    { layer: 'back', d: 'M74 50 C81 46 81 60 73 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
-    // Hair slicked back to a widow's peak.
-    { layer: 'front', d: 'M25 40 C23 20 36 12 50 12 C64 12 77 20 75 40 C72 30 64 25 56 26 L50 33 L44 26 C36 25 28 30 25 40 Z', fill: 'ink' },
-    // The bridge of the nose, long, down to the bulb, and a nostril or two.
-    { layer: 'face', d: 'M48.5 52 C47 58 45.5 62 45 66 M54.5 52 C55 58 55 62 55 66', fill: 'none', stroke: 'ink', width: 2.2 },
-    { layer: 'front', d: 'M45 75 C46 73 48 73 48.5 75 M51.5 75 C52 73 54 73 55 75', fill: 'none', stroke: 'ink', width: 1.8 },
+    { layer: 'back', d: 'M27 50 C20 46 20 60 28 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M73 50 C80 46 80 60 72 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    // A triangle of hair.
+    { layer: 'front', d: 'M50 8 L40 24 L60 24 Z', fill: 'none', stroke: 'ink', width: 2.4 },
   ],
   blink: 3.1,
-  temper: 1.1,
-  rest: { browTilt: 1, eyeOpen: 0.9 },
-  tic: { effect: 'twitch', every: 5 },
+  temper: 0,
+  dry: true,
+  rest: { lookX: 0.35, lookY: -0.35 },
 };
 
 /** Nemo, the Sleepwalker: never quite awake. Heavy lids, eyes drifting up after something nobody else can see, one brow puzzled, a long nightcap whose tassel won't keep to the frame. */
