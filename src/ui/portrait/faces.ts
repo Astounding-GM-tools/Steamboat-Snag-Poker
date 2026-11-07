@@ -592,8 +592,8 @@ const maxMoritz: Face = {
 
 /**
  * Ignatz, the Hurler: all eyes. Very tall ones, puzzled at everything, on a long
- * face that narrows to almost nothing at the chin; a triangle of hair on top,
- * and nothing else. No moods to speak of: he always throws, and sticks it out,
+ * face that narrows to almost nothing at the chin; a triangle of hair pointing
+ * down onto his forehead, and nothing else. No moods to speak of: he always throws, and sticks it out,
  * and rarely gets it right.
  */
 const ignatz: Face = {
@@ -604,8 +604,8 @@ const ignatz: Face = {
   parts: [
     { layer: 'back', d: 'M27 50 C20 46 20 60 28 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     { layer: 'back', d: 'M73 50 C80 46 80 60 72 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
-    // A triangle of hair.
-    { layer: 'front', d: 'M50 8 L40 24 L60 24 Z', fill: 'none', stroke: 'ink', width: 2.4 },
+    // A triangle of hair, pointing down onto his forehead.
+    { layer: 'front', d: 'M38 22 L62 22 L50 37 Z', fill: 'none', stroke: 'ink', width: 2.4 },
   ],
   blink: 3.1,
   temper: 0,
