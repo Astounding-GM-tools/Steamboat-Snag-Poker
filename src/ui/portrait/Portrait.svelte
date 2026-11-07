@@ -2,7 +2,7 @@
   import { cubicOut } from 'svelte/easing';
   import { Tween } from 'svelte/motion';
   import { untrack } from 'svelte';
-  import { FACES, POSES, type Effect, type Face, type FaceId, type MoodBlend, type Part, type Pose } from './faces';
+  import { FACES, POSES, type Backdrop, type Effect, type Face, type FaceId, type MoodBlend, type Part, type Pose } from './faces';
 
   /**
    * A face: one rig for everyone, in plain SVG. A mood is a pose of the
@@ -11,7 +11,7 @@
    * any face; `play` sets one off, and a face's own tic sets it off now
    * and then.
    */
-  let { id, mood = 'neutral', still = false }: { id: FaceId; mood?: MoodBlend; still?: boolean } = $props();
+  let { id, mood = 'neutral', still = false, backdrop }: { id: FaceId; mood?: MoodBlend; still?: boolean; backdrop?: Backdrop } = $props();
   const face: Face = $derived(FACES[id]);
   const uid = $props.id();
 
@@ -21,7 +21,8 @@
     const total = Object.values(weights).reduce((a, b) => a + (b ?? 0), 0) || 1;
     const out = { ...POSES.neutral, ...who.rest };
     for (const [mood, weight] of Object.entries(weights)) {
-      const pose = mood === 'nervous' && who.poker ? { ...POSES.neutral, ...who.poker } : POSES[mood as keyof typeof POSES];
+      const own = who.moods?.[mood as keyof typeof POSES];
+      const pose = own ? { ...POSES.neutral, ...own } : POSES[mood as keyof typeof POSES];
       for (const k of Object.keys(out) as (keyof Pose)[]) out[k] += ((pose[k] - POSES.neutral[k]) * (weight ?? 0) * who.temper) / total;
     }
     if (who.dry) out.sweat = 0;
@@ -82,9 +83,12 @@
     const b = face.brows;
     const inner = 50 + side * (b.gap - b.length / 2);
     const outer = 50 + side * (b.gap + b.length / 2);
-    const lift = -p.browLift - (side === 1 ? p.browCock : 0);
+    const lift = -p.browLift - (side === 1 ? Math.max(0, p.browCock) : Math.max(0, -p.browCock));
     const tip = p.browTilt * 4;
     const y = b.y + lift;
+    // Under a brim, a brow shows whole or not at all.
+    const top = Math.min(y + tip, y - b.arch / 2, y - tip * 0.3) - b.weight / 2;
+    if (face.brim !== undefined && top < face.brim) return '';
     return `M${inner} ${y + tip} Q${(inner + outer) / 2} ${y - b.arch} ${outer} ${y - tip * 0.3}`;
   }
 
@@ -118,7 +122,8 @@
       const t = i / n;
       const x = x0 + (x1 - x0) * t;
       const curve = 4 * t * (1 - t) * (mid - (y0 + y1) / 2);
-      const y = y0 + (y1 - y0) * t + curve + (i % 2 ? 1 : -1) * 2.2 * p.wobble * (i === n ? 0 : 1);
+      // Uneven: each kink its own size.
+      const y = y0 + (y1 - y0) * t + curve + (i % 2 ? 1 : -1) * 2.2 * p.wobble * (0.55 + 0.45 * Math.abs(Math.sin(i * 2.3))) * (i === n ? 0 : 1);
       d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
     }
     return d;
@@ -132,19 +137,34 @@
     if (n.kind === 'hook') return `M${50} ${y - s} C${50 + s * 1.6} ${y} ${50 + s * 1.2} ${y + s * 1.1} ${50 - s * 0.4} ${y + s * 0.8}`;
     return `M${50 - s} ${y} a${s} ${s * 0.8} 0 1 0 ${s * 2} 0 a${s} ${s * 0.8} 0 1 0 ${-s * 2} 0 Z`;
   });
+  /** Faces fill their oval: drawn a little larger than the box, about the middle of the face. */
+  const zoom = $derived(`translate(50 58) scale(${face.zoom ?? 1.16}) translate(-50 -58)`);
   const partsIn = (layer: Part['layer']) => (face.parts ?? []).filter((x) => x.layer === layer);
   /** The moustache's lift goes with the corners of the mouth. */
   const mouthShift = $derived(-p.mouthCurve * 2 - p.browLift * 0.1);
 </script>
 
 {#snippet drawn(part: Part)}
-  <path d={part.d} fill={fillOf(part)} stroke={part.stroke ? COLOUR[part.stroke] : 'none'} stroke-width={part.width ?? 0} stroke-linejoin="round" stroke-linecap="round" />
+  <path transform={part.tilt ? `rotate(${part.tilt.join(' ')})` : undefined} d={part.d} fill={fillOf(part)} stroke={part.stroke ? COLOUR[part.stroke] : 'none'} stroke-width={part.width ?? 0} stroke-linejoin="round" stroke-linecap="round" />
 {/snippet}
 
 <svg class="portrait-rig" class:still class:shifty={acting === 'shifty'} class:twitch={acting === 'twitch'} class:wrinkle={acting === 'wrinkle'} viewBox="0 0 100 100" aria-hidden="true" style="--blink: {face.blink}s">
-  <defs><clipPath id="frame-{uid}"><circle cx="50" cy="50" r="50" /></clipPath></defs>
-  <!-- Inside the portrait's oval; `over` parts and smoke break out of it. -->
-  <g clip-path="url(#frame-{uid})"><g transform="rotate({p.lean} 50 92)">
+  <defs>
+    <clipPath id="frame-{uid}"><circle cx="50" cy="50" r="50" /></clipPath>
+    <mask id="outside-{uid}" maskUnits="userSpaceOnUse" x="-50" y="-50" width="200" height="200">
+      <rect x="-50" y="-50" width="200" height="200" fill="#fff" />
+      <circle cx="50" cy="50" r="50" fill="#000" />
+    </mask>
+    <radialGradient id="cream-{uid}" cx="50%" cy="42%" r="60%">
+      <stop offset="0%" stop-color="#e4ddcb" />
+      <stop offset="75%" stop-color="#cdc5b0" />
+      <stop offset="100%" stop-color="#a9a18c" />
+    </radialGradient>
+  </defs>
+  <!-- Inside the portrait's oval, its backdrop first; `over` parts and smoke break out of it. -->
+  <g clip-path="url(#frame-{uid})">
+  {#if (backdrop ?? face.backdrop ?? 'cream') === 'cream'}<circle cx="50" cy="50" r="50" fill="url(#cream-{uid})" />{/if}
+  <g transform={zoom}><g transform="rotate({p.lean} 50 92)">
     {#each face.grains ?? [] as [x, y], i (i)}
       <circle class="grain" cx={x} cy={y} r={0.9 + (i % 3) * 0.35} fill={COLOUR.sand} style="--d: {(i * 0.73) % 2.6}s" />
     {/each}
@@ -174,7 +194,7 @@
       {/each}
     </g>
     {#if nose}<path class="nose" d={nose} fill={face.nose?.kind === 'hook' ? 'none' : face.nose?.pale ? COLOUR[face.fill ?? 'paper'] : COLOUR.ink} stroke={COLOUR.ink} stroke-width="2.4" stroke-linecap="round" />{/if}
-    <path class="mouth" d={mouth} fill={p.mouthOpen < 0.03 ? 'none' : COLOUR.ink} stroke={COLOUR.ink} stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    {#if !face.mouth.hidden}<path class="mouth" d={mouth} fill={p.mouthOpen < 0.03 ? 'none' : COLOUR.ink} stroke={COLOUR.ink} stroke-width={3 - Math.min(1, p.wobble) * 1.2} stroke-linecap="round" stroke-linejoin="round" />{/if}
     <g transform="translate(0 {mouthShift})">
       {#each partsIn('mouth') as part, i (i)}{@render drawn(part)}{/each}
     </g>
@@ -182,15 +202,27 @@
       <path class="sweat" d="M73 26 C70 31 69 34 73 35 C77 34 76 31 73 26 Z" fill={COLOUR.paper} stroke={COLOUR.ink} stroke-width="1.5" opacity={Math.min(1, p.sweat)} />
     {/if}
     {#each partsIn('front') as part, i (i)}{@render drawn(part)}{/each}
-  </g></g>
-  <g transform="rotate({p.lean} 50 92)"><g transform={face.pivot ? `rotate(${p.pipe * 7} ${face.pivot[0]} ${face.pivot[1]})` : undefined}>
-    {#each partsIn('over') as part, i (i)}{@render drawn(part)}{/each}
-    {#if face.smoke}
+  </g></g></g>
+  <g transform={zoom}><g transform="rotate({p.lean} 50 92)">
+    {#each partsIn('over').filter((x) => !x.swing && !x.withMouth) as part, i (i)}{@render drawn(part)}{/each}
+    <g transform={face.pivot ? `rotate(${p.pipe * 7} ${face.pivot[0]} ${face.pivot[1]})` : undefined}>
+    {#each partsIn('over').filter((x) => x.swing) as part, i (i)}{@render drawn(part)}{/each}
+    {#if face.smoke && !still}
       {#each [0, 1, 2] as i (i)}
         <circle class="smoke" cx={face.smoke[0]} cy={face.smoke[1]} r={1.8 + i * 0.5} fill={COLOUR.grey} style="--d: {i * 1.1}s" />
       {/each}
     {/if}
+  </g>
+    <g transform="translate(0 {mouthShift})">
+      {#each partsIn('over').filter((x) => x.withMouth) as part, i (i)}{@render drawn(part)}{/each}
+    </g>
   </g></g>
+  <!-- What spills past the frame (a beard): drawn again, only outside it. -->
+  <g mask="url(#outside-{uid})"><g transform={zoom}><g transform="rotate({p.lean} 50 92)">
+    {#each (face.parts ?? []).filter((x) => x.spill) as part, i (i)}
+      <g transform={part.layer === 'mouth' ? `translate(0 ${mouthShift})` : undefined}>{@render drawn(part)}</g>
+    {/each}
+  </g></g></g>
 </svg>
 
 <style>
