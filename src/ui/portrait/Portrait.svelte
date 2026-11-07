@@ -100,9 +100,11 @@
     const cx = 50 + side * e.gap;
     const a = Math.PI * -0.3 + p.lookX * 1.1;
     const r = Math.max(e.rx, e.ry) * 1.1;
+    // Squashed with the eye, so a half-shut eye keeps its light inside it.
+    const open = Math.max(0.1, p.eyeOpen);
     const tipX = cx + p.lookX * e.rx * 0.5;
-    const tipY = e.y + 1 + p.lookY * e.ry * 0.5;
-    return `M${tipX} ${tipY} L${cx + Math.cos(a - 0.42) * r} ${e.y + Math.sin(a - 0.42) * r * 1.3} L${cx + Math.cos(a + 0.42) * r} ${e.y + Math.sin(a + 0.42) * r * 1.3} Z`;
+    const tipY = e.y + (1 + p.lookY * e.ry * 0.5) * open;
+    return `M${tipX} ${tipY} L${cx + Math.cos(a - 0.42) * r} ${e.y + Math.sin(a - 0.42) * r * 1.3 * open} L${cx + Math.cos(a + 0.42) * r} ${e.y + Math.sin(a + 0.42) * r * 1.3 * open} Z`;
   }
 
   const mouth = $derived.by(() => {
@@ -150,7 +152,7 @@
   <path transform={part.tilt ? `rotate(${part.tilt.join(' ')})` : undefined} d={part.d} fill={fillOf(part)} stroke={part.stroke ? COLOUR[part.stroke] : 'none'} stroke-width={part.width ?? 0} stroke-linejoin="round" stroke-linecap="round" />
 {/snippet}
 
-<svg class="portrait-rig" class:still class:shifty={acting === 'shifty'} class:twitch={acting === 'twitch'} class:wrinkle={acting === 'wrinkle'} viewBox="0 0 100 100" aria-hidden="true" style="--blink: {face.blink}s">
+<svg class="portrait-rig" class:slow-blink={face.slowBlink} class:still class:shifty={acting === 'shifty'} class:twitch={acting === 'twitch'} class:wrinkle={acting === 'wrinkle'} viewBox="0 0 100 100" aria-hidden="true" style="--blink: {face.blink}s">
   <defs>
     <clipPath id="frame-{uid}"><circle cx="50" cy="50" r="50" /></clipPath>
     <mask id="outside-{uid}" maskUnits="userSpaceOnUse" x="-50" y="-50" width="200" height="200">
@@ -243,6 +245,21 @@
     transform-box: fill-box;
     transform-origin: center;
     animation: blink var(--blink) infinite;
+  }
+  /* Lids that take their time: down, a long moment shut, and up again. */
+  .slow-blink .eyes {
+    animation-name: blink-slow;
+  }
+  @keyframes blink-slow {
+    0%,
+    62%,
+    100% {
+      transform: scaleY(1);
+    }
+    76%,
+    84% {
+      transform: scaleY(0.08);
+    }
   }
   @keyframes blink {
     0%,

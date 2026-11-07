@@ -85,6 +85,8 @@ export interface Face {
   backdrop?: Backdrop;
   /** Seconds between blinks. */
   blink: number;
+  /** Blinks that take their time: lids down, a long moment shut, and slowly up again. */
+  slowBlink?: boolean;
   /** How much of a mood shows: Gus gives little away. */
   temper: number;
   /** Where the face rests, before any mood: Willie is smiling already. */
@@ -624,7 +626,8 @@ const nemo: Face = {
     // Z, z, z.
     { layer: 'over', d: 'M80 6 H86 L80 12 H86 M89 -2 H93 L89 2 H93', fill: 'none', stroke: 'ink', width: 1.6 },
   ],
-  blink: 2.6,
+  blink: 7,
+  slowBlink: true,
   temper: 0.8,
   rest: { eyeOpen: 0.5, browCock: 3, browLift: 1, lookX: 0.5, lookY: -0.6, mouthCurve: 0.12, smirk: -0.4, lean: 6 },
 };
