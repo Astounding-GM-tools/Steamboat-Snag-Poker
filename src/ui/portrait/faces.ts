@@ -71,7 +71,7 @@ export interface Face {
   head: { width: number; top: number; jaw: number; chin: number; bottom: number } | { outline: string };
   fill?: 'paper' | 'sand' | 'grey' | 'umber';
   /** Pie eyes work on a pale face; on a dark one, `soft`: round eyes with a small round catch of light. */
-  eyes: { y: number; gap: number; rx: number; ry: number; soft?: boolean };
+  eyes: { y: number; gap: number; rx: number; ry: number; soft?: boolean; lashes?: boolean };
   brows: { y: number; gap: number; length: number; weight: number; arch: number };
   nose?: { kind: 'bulb' | 'hook' | 'button'; y: number; size: number; pale?: boolean };
   /** `hidden`: no mouth drawn, the moustache does the talking. */
@@ -425,8 +425,282 @@ const foreman: Face = {
   moods: { nervous: { browLift: 3, browTilt: -1, eyeOpen: 1.2, lookX: -0.7, lookY: -0.2, mouthCurve: -0.55, wobble: 1.3, lean: 4, sweat: 1 } },
 };
 
+/** Ellie Sawyer, the rapids pilot: a bob under a pilot's cap pushed well back, a neckerchief, and a grin that has seen the Long Reach. */
+const ellie: Face = {
+  head: { width: 26, top: 14, jaw: 80, chin: 18, bottom: 88 },
+  eyes: { y: 49, gap: 10.5, rx: 4, ry: 5.8, lashes: true },
+  brows: { y: 39, gap: 10.5, length: 9, weight: 2.4, arch: 2.5 },
+  nose: { kind: 'button', y: 59, size: 2.4 },
+  mouth: { y: 71, width: 11 },
+  parts: [
+    // The bob, to the jaw.
+    { layer: 'back', d: 'M20 66 C14 40 22 20 50 18 C78 20 86 40 80 66 C76 70 72 66 72 60 L28 60 C28 66 24 70 20 66 Z', fill: 'ink' },
+    { layer: 'front', d: 'M25 43 C25 30 34 26 44 27 C40 31 38 35 37 38 C34 34 30 36 25 43 Z M75 43 C75 30 66 26 56 27 C60 31 62 35 63 38 C66 34 70 36 75 43 Z', fill: 'ink' },
+    // The pilot's cap, pushed back: a white top, a black band, the peak tipped up.
+    { layer: 'front', d: 'M26 33 C23 13 77 13 74 33 Z', fill: 'paper', stroke: 'ink', width: 2.2 },
+    { layer: 'front', d: 'M26 35 C40 30 60 30 74 35 L74 28 C60 23 40 23 26 28 Z', fill: 'ink' },
+    { layer: 'front', d: 'M29 35 C42 32 58 32 71 35 C65 27 35 27 29 35 Z', fill: 'ink' },
+    // A neckerchief, knotted.
+    { layer: 'front', d: 'M33 89 C42 95 58 95 67 89 L64 98 L58 94 L50 101 L42 94 L36 98 Z', fill: 'grey', stroke: 'ink', width: 2 },
+  ],
+  blink: 4.6,
+  temper: 1,
+  rest: { mouthCurve: 0.4, smirk: 0.3 },
+};
+
+/** Cornelius Tripp, the Old Guard of Davenport: bald on top, white mutton chops that spill past the frame, a monocle, a mouth set against change. */
+const tripp: Face = {
+  head: { width: 29, top: 10, jaw: 86, chin: 22, bottom: 90 },
+  eyes: { y: 48, gap: 11, rx: 3.4, ry: 4.6 },
+  brows: { y: 39, gap: 11, length: 12, weight: 4.5, arch: 1 },
+  nose: { kind: 'bulb', y: 58, size: 5, pale: true },
+  mouth: { y: 73, width: 9 },
+  parts: [
+    { layer: 'back', d: 'M22 47 C15 43 15 58 23 58 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M78 47 C85 43 85 58 77 58 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    // A fringe of white hair round the back of a bald head.
+    { layer: 'back', d: 'M19 52 C16 36 20 28 26 26 C24 34 24 42 26 50 Z M81 52 C84 36 80 28 74 26 C76 34 76 42 74 50 Z', fill: 'paper', stroke: 'ink', width: 2 },
+    // A shine on the dome.
+    { layer: 'face', d: 'M38 20 C42 17 48 16 52 17', fill: 'none', stroke: 'grey', width: 2 },
+    // Mutton chops, down to the jaw and out past the frame.
+    { layer: 'face', spill: true, d: 'M21 50 C17 66 20 82 30 88 C34 80 34 70 33 62 C30 58 25 56 21 50 Z M79 50 C83 66 80 82 70 88 C66 80 66 70 67 62 C70 58 75 56 79 50 Z', fill: 'paper', stroke: 'ink', width: 2.2 },
+    // The monocle, on its cord.
+    { layer: 'front', d: 'M55.5 48 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0 Z', fill: 'none', stroke: 'ink', width: 2 },
+    { layer: 'front', d: 'M67.5 50 C72 62 70 76 64 90', fill: 'none', stroke: 'grey', width: 1.2 },
+  ],
+  blink: 6.6,
+  temper: 0.6,
+  rest: { mouthCurve: -0.25, browTilt: 0.4 },
+  tic: { effect: 'twitch', every: 10 },
+};
+
+/** Tommy Rourke, on the picket line at Rock Island: a soft cap with a strike button, stubble, and a matchstick in the corner of his mouth. */
+const rourke: Face = {
+  head: { width: 27, top: 12, jaw: 84, chin: 20, bottom: 90 },
+  eyes: { y: 49, gap: 11, rx: 4, ry: 5.6 },
+  brows: { y: 39, gap: 11, length: 11, weight: 3.2, arch: 2 },
+  nose: { kind: 'hook', y: 58, size: 4.5 },
+  mouth: { y: 74, width: 12 },
+  parts: [
+    { layer: 'back', d: 'M24 48 C17 44 17 59 25 59 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M76 48 C83 44 83 59 75 59 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'face', d: 'M37 80 h.1 M42 83 h.1 M48 84 h.1 M54 84 h.1 M60 82 h.1 M64 79 h.1 M45 87 h.1 M55 87 h.1', stroke: 'grey', width: 1.8 },
+    // A soft cap, eight panels and a button, worn over one eye.
+    { layer: 'front', d: 'M18 34 C10 18 30 6 52 7 C74 8 88 18 82 32 C66 26 40 26 18 34 Z', fill: 'grey', stroke: 'ink', width: 2.2 },
+    { layer: 'front', d: 'M50 8 C46 16 44 22 44 28 M32 12 C36 18 38 24 38 29 M68 11 C64 18 62 24 62 28', fill: 'none', stroke: 'ink', width: 1.2 },
+    { layer: 'front', d: 'M18 34 C34 28 50 28 64 33 C52 39 32 40 18 34 Z', fill: 'ink' },
+    // The strike button.
+    { layer: 'front', d: 'M64 20 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 Z', fill: 'paper', stroke: 'ink', width: 1.6 },
+    { layer: 'front', d: 'M66.5 20 h3', fill: 'none', stroke: 'ink', width: 1.4 },
+    // A matchstick.
+    { layer: 'over', swing: true, d: 'M60 74 L78 70', fill: 'none', stroke: 'ink', width: 2 },
+    { layer: 'over', swing: true, d: 'M76.5 70.3 L80 69.5', fill: 'none', stroke: 'ink', width: 3.6 },
+  ],
+  pivot: [60, 74],
+  blink: 4.3,
+  temper: 1,
+  rest: { mouthCurve: 0.35, smirk: 0.4, eyeOpen: 0.9 },
+};
+
+/** Otto Pfeiffer, "Odds", the bookmaker of Bettendorf: a straw boater, round cheeks, a little curled moustache, and a pencil behind his ear for the book. */
+const odds: Face = {
+  head: { width: 28, top: 13, jaw: 86, chin: 26, bottom: 88 },
+  eyes: { y: 50, gap: 11, rx: 3.8, ry: 5.2 },
+  brows: { y: 41, gap: 11, length: 10, weight: 3, arch: 3 },
+  nose: { kind: 'button', y: 60, size: 4 },
+  mouth: { y: 74, width: 12 },
+  parts: [
+    // The pencil behind his ear, point up: his head hides the rest.
+    { layer: 'back', d: 'M70 64 L86 34 L89.6 35.8 L73.6 65.8 Z', fill: 'paper', stroke: 'ink', width: 1.6 },
+    { layer: 'back', d: 'M86 34 L88.6 28.4 L89.6 35.8 Z', fill: 'ink' },
+    { layer: 'back', d: 'M23 49 C16 45 16 60 24 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M77 49 C84 45 84 60 76 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    // Round cheeks.
+    { layer: 'face', d: 'M27 66 C29 62 34 62 36 66 M73 66 C71 62 66 62 64 66', fill: 'none', stroke: 'grey', width: 1.8 },
+    { layer: 'mouth', d: 'M50 68 C46 66 41 66 38 68 C36 69 35 67 36 65 C33 67 35 71 39 70 C43 70 47 69 50 69 C53 69 57 70 61 70 C65 71 67 67 64 65 C65 67 64 69 62 68 C59 66 54 66 50 68 Z', fill: 'ink' },
+    // The boater: a flat straw crown, a black band, a wide brim.
+    { layer: 'front', d: 'M27 30 C38 32 62 32 73 30 L72 16 C60 13 40 13 28 16 Z', fill: 'sand', stroke: 'ink', width: 2 },
+    { layer: 'front', d: 'M27.6 25 C38 27 62 27 72.4 25 L72.2 20 C62 22 38 22 27.8 20 Z', fill: 'ink' },
+    { layer: 'front', d: 'M30 18 H70 M29 29 H71', fill: 'none', stroke: 'grey', width: 1 },
+    { layer: 'front', d: 'M12 30 C16 27 22 27 28 30 C38 33 62 33 72 30 C78 27 84 27 88 30 C84 36 66 38 50 38 C34 38 16 36 12 30 Z', fill: 'sand', stroke: 'ink', width: 2 },
+  ],
+  blink: 3.9,
+  temper: 1,
+  rest: { mouthCurve: 0.45, browLift: 1 },
+  tic: { effect: 'shifty', every: 9 },
+};
+
+/** Lenny King, the troubadour: curly hair, sad brows, a face that expects the worst, and the scroll of a cardboard violin at his shoulder. */
+const lenny: Face = {
+  head: { width: 25, top: 14, jaw: 84, chin: 17, bottom: 92 },
+  eyes: { y: 50, gap: 10.5, rx: 3.6, ry: 5.2 },
+  brows: { y: 40, gap: 10.5, length: 10, weight: 2.8, arch: 1.5 },
+  nose: { kind: 'button', y: 60, size: 3.2 },
+  mouth: { y: 75, width: 9 },
+  parts: [
+    { layer: 'back', d: 'M25 49 C18 45 18 60 26 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M75 49 C82 45 82 60 74 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    // Curls.
+    { layer: 'front', d: 'M24 44 C16 38 20 28 26 28 C24 20 32 14 38 18 C40 10 50 10 52 16 C56 9 66 11 66 18 C72 14 80 20 76 28 C82 30 84 40 76 44 C74 38 70 34 64 33 C58 31 42 31 36 33 C30 34 26 38 24 44 Z', fill: 'ink' },
+    // The violin's scroll and neck, at his shoulder.
+    { layer: 'over', d: 'M80 104 L90 80', fill: 'none', stroke: 'ink', width: 4 },
+    { layer: 'over', d: 'M86 80 C84 74 90 70 94 73 C97 76 94 80 91 78 C90 76 92 75 93 76', fill: 'sand', stroke: 'ink', width: 2 },
+    { layer: 'over', d: 'M87 84 L93 85 M86 87 L92 88', fill: 'none', stroke: 'ink', width: 1.4 },
+  ],
+  blink: 5.8,
+  temper: 0.9,
+  rest: { browTilt: -0.7, mouthCurve: -0.35, eyeOpen: 0.8, lookY: 0.3 },
+};
+
+/** Max Moritz, "Long Coat": a very tall captain in a very long coat, the collar up to his grin. There's someone else in the coat: two eyes in the gap between the buttons. */
+const maxMoritz: Face = {
+  head: { width: 24, top: 10, jaw: 72, chin: 20, bottom: 78 },
+  eyes: { y: 41, gap: 10, rx: 4, ry: 5.6 },
+  brows: { y: 31, gap: 10, length: 9, weight: 3, arch: 3 },
+  nose: { kind: 'button', y: 51, size: 3 },
+  mouth: { y: 62, width: 13 },
+  parts: [
+    { layer: 'back', d: 'M26 40 C19 36 19 51 27 51 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M74 40 C81 36 81 51 73 51 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    // A tuft that won't lie flat.
+    { layer: 'front', d: 'M40 16 C38 6 46 10 47 3 C51 11 55 4 58 10 C62 6 64 14 60 18 C54 14 46 14 40 16 Z', fill: 'ink' },
+    // The coat, collar up to his cheeks, and the eyes in the gap.
+    { layer: 'front', d: 'M4 104 L6 72 C14 66 22 62 28 64 C34 70 40 74 50 74 C60 74 66 70 72 64 C78 62 86 66 94 72 L96 104 Z', fill: 'grey', stroke: 'ink', width: 2.4 },
+    { layer: 'front', d: 'M28 64 L40 92 L50 80 L60 92 L72 64', fill: 'none', stroke: 'ink', width: 2 },
+    { layer: 'front', d: 'M41 83 C43 79 57 79 59 83 C59 94 41 94 41 83 Z', fill: 'ink' },
+    { layer: 'front', d: 'M44.4 86 a2.6 3.2 0 1 0 5.2 0 a2.6 3.2 0 1 0 -5.2 0 Z M50.4 86 a2.6 3.2 0 1 0 5.2 0 a2.6 3.2 0 1 0 -5.2 0 Z', fill: 'paper' },
+    { layer: 'front', d: 'M47.6 87 h.1 M53.6 87 h.1', fill: 'none', stroke: 'ink', width: 2.2 },
+    { layer: 'front', d: 'M50 96 h.1 M50 101 h.1', fill: 'none', stroke: 'ink', width: 2.6 },
+  ],
+  blink: 3.4,
+  temper: 1,
+  rest: { mouthCurve: 0.6, smirk: 0.5 },
+  tic: { effect: 'shifty', every: 6 },
+};
+
+/** Ignatz, the Hurler: a mouse captain with round ears, a sharp snout, whiskers, and a brick held ready. */
+const ignatz: Face = {
+  head: { width: 22, top: 22, jaw: 76, chin: 10, bottom: 86 },
+  eyes: { y: 51, gap: 8, rx: 3.6, ry: 5 },
+  brows: { y: 42, gap: 8, length: 8, weight: 3, arch: 1 },
+  nose: { kind: 'button', y: 74, size: 3.4 },
+  mouth: { y: 79, width: 7 },
+  parts: [
+    // Round ears.
+    { layer: 'back', d: 'M8 28 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 Z M62 28 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M14 29 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0 Z M68 29 a9 9 0 1 0 18 0 a9 9 0 1 0 -18 0 Z', fill: 'grey' },
+    // Whiskers.
+    { layer: 'front', d: 'M44 74 L26 70 M44 76 L25 77 M56 74 L74 70 M56 76 L75 77', fill: 'none', stroke: 'ink', width: 1.3 },
+    // The brick, held up at his shoulder.
+    { layer: 'over', d: 'M74 78 L98 72 L102 88 L78 94 Z', fill: 'grey', stroke: 'ink', width: 2.2 },
+    { layer: 'over', d: 'M76 86 L100 80 M86 75.5 L88 83 M89 83 L91 91', fill: 'none', stroke: 'ink', width: 1.4 },
+  ],
+  blink: 3.1,
+  temper: 1.1,
+  rest: { browTilt: 1, mouthCurve: -0.2, eyeOpen: 0.85 },
+  tic: { effect: 'twitch', every: 5 },
+};
+
+/** Nemo, the Sleepwalker: never quite awake. Heavy lids, a long nightcap whose tassel won't keep to the frame, a dreamy half smile. */
+const nemo: Face = {
+  head: { width: 27, top: 14, jaw: 82, chin: 22, bottom: 88 },
+  eyes: { y: 50, gap: 11, rx: 4, ry: 5.8 },
+  brows: { y: 40, gap: 11, length: 10, weight: 2.4, arch: 3 },
+  nose: { kind: 'button', y: 60, size: 3 },
+  mouth: { y: 72, width: 10 },
+  parts: [
+    { layer: 'back', d: 'M24 49 C17 45 17 60 25 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M76 49 C83 45 83 60 75 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    // The nightcap, flopping over to one side, the tassel out past the frame.
+    { layer: 'over', d: 'M22 38 C18 14 44 6 62 12 C80 18 92 36 93 62 C89 60 86 54 84 46 C80 36 72 31 62 30 C46 28 34 32 22 38 Z', fill: 'paper', stroke: 'ink', width: 2.2 },
+    { layer: 'over', d: 'M21 38 C36 30 54 28 70 31 L70 37 C54 34 36 36 21 44 Z', fill: 'grey', stroke: 'ink', width: 1.8 },
+    { layer: 'over', d: 'M44 10 C50 16 54 22 56 30 M66 15 C72 22 76 30 78 40', fill: 'none', stroke: 'grey', width: 1.4 },
+    { layer: 'over', d: 'M87 64 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0 Z', fill: 'paper', stroke: 'ink', width: 2 },
+    { layer: 'over', d: 'M90 61 L96 67 M96 61 L90 67', fill: 'none', stroke: 'grey', width: 1.2 },
+    // Z, z, z.
+    { layer: 'over', d: 'M80 6 H86 L80 12 H86 M89 -2 H93 L89 2 H93', fill: 'none', stroke: 'ink', width: 1.6 },
+  ],
+  blink: 2.6,
+  temper: 0.8,
+  rest: { eyeOpen: 0.38, mouthCurve: 0.25, lean: 6, lookY: 0.3 },
+};
+
+/** The Walrus, an old sea dog: a sailor's cap, a mighty moustache, small eyes, and tusks that won't keep to the frame. */
+const walrus: Face = {
+  head: { width: 34, top: 14, jaw: 86, chin: 30, bottom: 88 },
+  fill: 'grey',
+  eyes: { y: 44, gap: 13, rx: 3, ry: 4 },
+  brows: { y: 36, gap: 13, length: 10, weight: 3, arch: 2 },
+  nose: { kind: 'button', y: 53, size: 4 },
+  mouth: { y: 80, width: 8, hidden: true },
+  parts: [
+    // The moustache: a bristling cushion over everything below the nose.
+    { layer: 'face', d: 'M16 62 C16 54 34 52 50 58 C66 52 84 54 84 62 C84 76 66 80 50 74 C34 80 16 76 16 62 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'face', d: 'M26 64 L28 72 M34 63 L35 73 M42 62 L42 72 M58 62 L58 72 M66 63 L65 73 M74 64 L72 72', fill: 'none', stroke: 'grey', width: 1.4 },
+    // Tusks, down past the frame.
+    { layer: 'over', withMouth: true, d: 'M36 74 C35 86 37 96 41 104 C43 96 43 86 42 75 Z M64 74 C65 86 63 96 59 104 C57 96 57 86 58 75 Z', fill: 'paper', stroke: 'ink', width: 2 },
+    // A sailor's cap.
+    { layer: 'front', d: 'M30 27 C28 10 72 10 70 27 Z', fill: 'ink' },
+    { layer: 'front', d: 'M29 29 C42 25 58 25 71 29 L71 24 C58 20 42 20 29 24 Z', fill: 'paper', stroke: 'ink', width: 1.6 },
+    { layer: 'front', d: 'M30 30 C38 33 46 33 52 30 C46 36 36 36 30 30 Z', fill: 'ink' },
+  ],
+  blink: 5.4,
+  temper: 0.8,
+  rest: { eyeOpen: 0.85 },
+  zoom: 1.06,
+};
+
+/** Eliza Bathory, Bone Pale: charming, patient, terribly polite. A widow's peak, hair swept up, a pearl choker, a black collar, and a small, knowing smile. */
+const eliza: Face = {
+  head: { width: 24, top: 12, jaw: 82, chin: 15, bottom: 90 },
+  eyes: { y: 49, gap: 10.5, rx: 3.6, ry: 5, lashes: true },
+  brows: { y: 39, gap: 10.5, length: 10, weight: 2, arch: 4 },
+  nose: { kind: 'hook', y: 58, size: 3.6 },
+  mouth: { y: 73, width: 8 },
+  parts: [
+    // Dark hair swept up and back, with a widow's peak.
+    { layer: 'back', d: 'M22 56 C14 26 30 4 50 4 C70 4 86 26 78 56 Z', fill: 'ink' },
+    { layer: 'front', d: 'M26 44 C24 24 36 16 50 16 C64 16 76 24 74 44 C70 30 60 24 50 32 C40 24 30 30 26 44 Z', fill: 'ink' },
+    // Earrings.
+    { layer: 'front', d: 'M24 62 a2.2 3 0 1 0 4.4 0 a2.2 3 0 1 0 -4.4 0 Z M71.6 62 a2.2 3 0 1 0 4.4 0 a2.2 3 0 1 0 -4.4 0 Z', fill: 'paper', stroke: 'ink', width: 1.4 },
+    // A high black collar and a pearl choker.
+    { layer: 'front', d: 'M30 102 L34 88 C42 94 58 94 66 88 L70 102 Z', fill: 'ink' },
+    { layer: 'front', d: 'M37 89 h.1 M41 91 h.1 M45.5 92 h.1 M50 92.3 h.1 M54.5 92 h.1 M59 91 h.1 M63 89 h.1', fill: 'none', stroke: 'paper', width: 3 },
+  ],
+  blink: 7.2,
+  temper: 0.6,
+  dry: true,
+  rest: { mouthCurve: 0.3, smirk: 0.25, eyeOpen: 0.82 },
+  moods: { nervous: { mouthCurve: -0.1, eyeOpen: 0.9 } },
+};
+
+/** Finlay, the Carouser: a bricklayer who struck it rich and never got used to it. A bald head with three hairs combed over, a big grin, and a fat cigar. */
+const finlay: Face = {
+  head: { width: 31, top: 10, jaw: 86, chin: 26, bottom: 90 },
+  eyes: { y: 47, gap: 12, rx: 3.8, ry: 5.2 },
+  brows: { y: 38, gap: 12, length: 11, weight: 3.4, arch: 3 },
+  nose: { kind: 'bulb', y: 58, size: 6.5, pale: true },
+  mouth: { y: 73, width: 15 },
+  parts: [
+    { layer: 'back', d: 'M20 46 C13 42 13 58 21 58 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M80 46 C87 42 87 58 79 58 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    // Three hairs, combed over.
+    { layer: 'face', d: 'M34 22 C42 14 56 14 66 20 M36 26 C44 19 56 19 64 24 M38 30 C46 24 56 24 62 28', fill: 'none', stroke: 'ink', width: 1.6 },
+    // A rosy nose.
+    { layer: 'face', d: 'M45 60 h.1 M53 59 h.1', fill: 'none', stroke: 'grey', width: 2 },
+    // The cigar.
+    { layer: 'over', swing: true, d: 'M60 74 L84 70 L85 76 L61 79 Z', fill: 'grey', stroke: 'ink', width: 2 },
+    { layer: 'over', swing: true, d: 'M70 72 L71 77.6', fill: 'none', stroke: 'ink', width: 1.6 },
+  ],
+  smoke: [87, 70],
+  pivot: [60, 76],
+  blink: 4.2,
+  temper: 1.1,
+  rest: { mouthCurve: 0.65 },
+};
+
 /** By the id they go by at the table and in the story. */
-export const FACES = { gus, willie, lars, sandbar: sandy, iceSheet, gaylord, steamboatBill, morag, konrad, harbourMaster, foreman };
+export const FACES = { gus, willie, lars, sandbar: sandy, iceSheet, gaylord, steamboatBill, morag, konrad, harbourMaster, foreman, ellie, tripp, rourke, odds, lenny, maxMoritz, ignatz, nemo, walrus, eliza, finlay };
 export type FaceId = keyof typeof FACES;
 
 export const hasFace = (id: string): id is FaceId => id in FACES;

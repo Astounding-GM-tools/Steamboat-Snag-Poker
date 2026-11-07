@@ -186,6 +186,10 @@
           <ellipse {cx} cy={face.eyes.y} rx={face.eyes.rx + 1.3} ry={(face.eyes.ry + 1.1) * open} fill={COLOUR.sand} opacity="0.55" />
         {/if}
         <ellipse {cx} cy={face.eyes.y} rx={face.eyes.rx} ry={face.eyes.ry * open} fill={COLOUR.ink} />
+        {#if face.eyes.lashes && p.eyeOpen > 0.3}
+          {@const top = face.eyes.y - face.eyes.ry * open}
+          <path d="M{cx + side * face.eyes.rx * 0.5} {top + 1} l{side * 2.6} -3 M{cx + side * face.eyes.rx * 0.95} {top + 2.6} l{side * 3} -2" fill="none" stroke={COLOUR.ink} stroke-width="1.5" stroke-linecap="round" />
+        {/if}
         {#if p.eyeOpen > 0.3}
           {#if face.eyes.soft}
             <circle class="wedge" cx={cx + p.lookX * face.eyes.rx * 0.45 + 1.5} cy={face.eyes.y - face.eyes.ry * 0.3 + p.lookY * 1.5} r={face.eyes.rx * 0.36} fill={COLOUR.paper} />
