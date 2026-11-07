@@ -73,7 +73,8 @@ export interface Face {
   /** Pie eyes work on a pale face; on a dark one, `soft`: round eyes with a small round catch of light. */
   eyes: { y: number; gap: number; rx: number; ry: number; soft?: boolean; lashes?: boolean };
   brows: { y: number; gap: number; length: number; weight: number; arch: number };
-  nose?: { kind: 'bulb' | 'hook' | 'button'; y: number; size: number; pale?: boolean };
+  /** `pale`: the colour of the face; `tint`: coloured in a little (a nose that's seen some port). */
+  nose?: { kind: 'bulb' | 'hook' | 'button'; y: number; size: number; pale?: boolean; tint?: 'sand' | 'grey' };
   /** `hidden`: no mouth drawn, the moustache does the talking. */
   mouth: { y: number; width: number; hidden?: boolean };
   parts?: Part[];
@@ -101,6 +102,8 @@ export interface Face {
   brim?: number;
   /** Where `over` parts pivot with the mood: a pipe, held in the teeth. */
   pivot?: [number, number];
+  /** The pipe or cigar is on the left of the picture, so it rises and sags the other way round. */
+  leftSide?: boolean;
   /** A tic of its own, now and then: an effect, and about how many seconds apart. */
   tic?: { effect: Effect; every: number };
 }
@@ -592,12 +595,12 @@ const maxMoritz: Face = {
 
 /**
  * Ignatz, the Hurler: all eyes. Very tall ones, puzzled at everything, on a long
- * face that narrows to almost nothing at the chin; a triangle of hair pointing
+ * face that narrows to a small chin; a triangle of hair pointing
  * down onto his forehead, and nothing else. No moods to speak of: he always throws, and sticks it out,
  * and rarely gets it right.
  */
 const ignatz: Face = {
-  head: { width: 24, top: 14, jaw: 74, chin: 5, bottom: 95 },
+  head: { width: 24, top: 14, jaw: 76, chin: 11, bottom: 93 },
   eyes: { y: 50, gap: 8.5, rx: 3.6, ry: 12 },
   brows: { y: 34, gap: 8.5, length: 8, weight: 0, arch: 1 },
   mouth: { y: 84, width: 7, hidden: true },
@@ -605,9 +608,10 @@ const ignatz: Face = {
     { layer: 'back', d: 'M27 50 C20 46 20 60 28 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     { layer: 'back', d: 'M73 50 C80 46 80 60 72 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     // A triangle of hair, pointing down onto his forehead.
-    { layer: 'front', d: 'M38 22 L62 22 L50 37 Z', fill: 'none', stroke: 'ink', width: 2.4 },
+    { layer: 'front', d: 'M37 27 C43 24 57 24 63 27 L50 38 Z', fill: 'none', stroke: 'ink', width: 2.4, },
   ],
-  blink: 3.1,
+  // He hardly ever blinks.
+  blink: 31,
   temper: 0,
   dry: true,
   rest: { lookX: 0.35, lookY: -0.35 },
@@ -636,6 +640,9 @@ const nemo: Face = {
   slowBlink: true,
   temper: 0.8,
   rest: { eyeOpen: 0.5, browCock: 3, browLift: 1, lookX: 0.5, lookY: -0.6, mouthCurve: 0.12, smirk: -0.4, lean: 6 },
+  // Sleepwalking: worry reaches his brows and eyes, never his mouth, and he doesn't sweat.
+  moods: { nervous: { browLift: 2, browTilt: -0.6, eyeOpen: 1.15, lookX: -0.6, lean: 4 } },
+  dry: true,
 };
 
 /** The Walrus, an old sea dog: a captain's cap with braid, a mighty moustache, and a big straight beard that won't keep to the frame. */
@@ -704,27 +711,28 @@ const finlay: Face = {
   head: { width: 31, top: 10, jaw: 86, chin: 26, bottom: 90 },
   eyes: { y: 47, gap: 12, rx: 3.8, ry: 5.2 },
   brows: { y: 38, gap: 12, length: 11, weight: 3.4, arch: 3 },
-  nose: { kind: 'bulb', y: 58, size: 6.5, pale: true },
+  nose: { kind: 'bulb', y: 58, size: 6.5, tint: 'sand' },
   mouth: { y: 73, width: 15 },
   parts: [
     { layer: 'back', d: 'M20 46 C13 42 13 58 21 58 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     { layer: 'back', d: 'M80 46 C87 42 87 58 79 58 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     // Three hairs, combed over.
     { layer: 'face', d: 'M34 22 C42 14 56 14 66 20 M36 26 C44 19 56 19 64 24 M38 30 C46 24 56 24 62 28', fill: 'none', stroke: 'ink', width: 1.6 },
-    // A rosy nose.
-    { layer: 'face', d: 'M45 60 h.1 M53 59 h.1', fill: 'none', stroke: 'grey', width: 2 },
-    // The cigar, from the corner of his grin, and the lip that chomps it.
-    { layer: 'over', swing: true, d: 'M62 69 L85 65 L86 71 L63 74.5 Z', fill: 'grey', stroke: 'ink', width: 2 },
-    { layer: 'over', swing: true, d: 'M72 67.4 L73 73', fill: 'none', stroke: 'ink', width: 1.6 },
-    { layer: 'over', swing: true, d: 'M58 69 C59 65 64 65 65 68 M58 75 C60 78 64 77 65 74', fill: 'none', stroke: 'ink', width: 2.2 },
-    // A bowler, tipped jauntily.
-    { layer: 'over', tilt: [-12, 50, 26], d: 'M29 27 C38 30 62 30 71 27 C74 3 26 3 29 27 Z', fill: 'ink' },
-    { layer: 'over', tilt: [-12, 50, 26], d: 'M15 26 C19 23 25 23 31 26 C40 29 60 29 69 26 C75 23 81 23 85 26 C81 33 66 35 50 35 C34 35 19 33 15 26 Z', fill: 'ink' },
+    // Stubble: he's been at it a while.
+    { layer: 'face', d: 'M30 74 h.1 M34 79 h.1 M39 83 h.1 M45 86 h.1 M51 87 h.1 M57 86 h.1 M63 83 h.1 M68 79 h.1 M72 74 h.1 M36 75 h.1 M42 80 h.1 M58 80 h.1 M64 75 h.1 M48 82 h.1 M54 82 h.1', stroke: 'grey', width: 1.8 },
+    // The cigar, from the left of his grin, and the lip that chomps it.
+    { layer: 'over', swing: true, d: 'M38 69 L15 65 L14 71 L37 74.5 Z', fill: 'grey', stroke: 'ink', width: 2 },
+    { layer: 'over', swing: true, d: 'M28 67.4 L27 73', fill: 'none', stroke: 'ink', width: 1.6 },
+    { layer: 'over', swing: true, d: 'M42 69 C41 65 36 65 35 68 M42 75 C40 78 36 77 35 74', fill: 'none', stroke: 'ink', width: 2.2 },
+    // A bowler, tipped jauntily, down on his head.
+    { layer: 'over', tilt: [12, 50, 30], d: 'M26 31 C37 35 63 35 74 31 C78 4 22 4 26 31 Z', fill: 'ink' },
+    { layer: 'over', tilt: [12, 50, 30], d: 'M11 30 C15 27 22 27 28 30 C39 34 61 34 72 30 C78 27 85 27 89 30 C85 38 68 40 50 40 C32 40 15 38 11 30 Z', fill: 'ink' },
   ],
-  smoke: [88, 64],
-  pivot: [61, 71],
+  smoke: [12, 64],
+  pivot: [39, 71],
   blink: 4.2,
   temper: 1.1,
+  leftSide: true,
   rest: { mouthCurve: 0.65 },
 };
 

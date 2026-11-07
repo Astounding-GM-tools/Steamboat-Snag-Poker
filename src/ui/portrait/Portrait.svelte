@@ -202,7 +202,7 @@
       <path d={brow(-1)} />
       <path class="brow-right" d={brow(1)} />
     </g>
-    {#if nose}<path class="nose" d={nose} fill={face.nose?.kind === 'hook' ? 'none' : face.nose?.pale ? COLOUR[face.fill ?? 'paper'] : COLOUR.ink} stroke={COLOUR.ink} stroke-width="2.4" stroke-linecap="round" />{/if}
+    {#if nose}<path class="nose" d={nose} fill={face.nose?.kind === 'hook' ? 'none' : face.nose?.tint ? COLOUR[face.nose.tint] : face.nose?.pale ? COLOUR[face.fill ?? 'paper'] : COLOUR.ink} stroke={COLOUR.ink} stroke-width="2.4" stroke-linecap="round" />{/if}
     {#if !face.mouth.hidden}<path class="mouth" d={mouth} fill={p.mouthOpen < 0.03 ? 'none' : COLOUR.ink} stroke={COLOUR.ink} stroke-width={3 - Math.min(1, p.wobble) * 1.2} stroke-linecap="round" stroke-linejoin="round" />{/if}
     <g transform="translate(0 {mouthShift})">
       {#each partsIn('mouth') as part, i (i)}{@render drawn(part)}{/each}
@@ -214,7 +214,7 @@
   </g></g></g>
   <g transform={zoom}><g transform="rotate({p.lean} 50 92)">
     {#each partsIn('over').filter((x) => !x.swing && !x.withMouth) as part, i (i)}{@render drawn(part)}{/each}
-    <g transform={face.pivot ? `rotate(${p.pipe * 7} ${face.pivot[0]} ${face.pivot[1]})` : undefined}>
+    <g transform={face.pivot ? `rotate(${p.pipe * 7 * (face.leftSide ? -1 : 1)} ${face.pivot[0]} ${face.pivot[1]})` : undefined}>
     {#each partsIn('over').filter((x) => x.swing) as part, i (i)}{@render drawn(part)}{/each}
     {#if face.smoke && !still}
       {#each [0, 1, 2] as i (i)}
