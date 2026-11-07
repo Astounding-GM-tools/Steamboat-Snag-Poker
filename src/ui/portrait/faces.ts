@@ -44,7 +44,7 @@ const NEUTRAL: Pose = { browLift: 0, browTilt: 0, browCock: 0, eyeOpen: 1, lookX
 export const POSES: Record<Mood, Pose> = {
   neutral: NEUTRAL,
   confident: { ...NEUTRAL, browCock: 4, eyeOpen: 0.72, lookX: 0.3, mouthCurve: 0.75, smirk: 0.7, lean: -5, pipe: -1.2 },
-  nervous: { ...NEUTRAL, browLift: 3, browTilt: -1, eyeOpen: 1.2, lookX: -0.7, lookY: -0.2, mouthCurve: -0.5, mouthOpen: 0.12, wobble: 1, lean: 4, sweat: 1, pipe: 1.7 },
+  nervous: { ...NEUTRAL, browLift: 3, browTilt: -1, eyeOpen: 1.2, lookX: -0.7, lookY: -0.2, mouthCurve: -0.5, wobble: 1, lean: 4, sweat: 1, pipe: 1.7 },
 };
 
 /** Anything drawn on a face that isn't the rig: a hat, a tie, a moustache. */
@@ -421,31 +421,40 @@ const foreman: Face = {
   blink: 4.4,
   temper: 1,
   rest: { mouthCurve: 0.5 },
-  // Nervous, the grin goes to a thin, uneven scribble.
+  // Nervous, the grin has further to fall.
   moods: { nervous: { browLift: 3, browTilt: -1, eyeOpen: 1.2, lookX: -0.7, lookY: -0.2, mouthCurve: -0.55, wobble: 1.3, lean: 4, sweat: 1 } },
 };
 
-/** Ellie Sawyer, the rapids pilot: a bob under a pilot's cap pushed well back, a neckerchief, and a grin that has seen the Long Reach. */
+/**
+ * Ellie Sawyer, the rapids pilot, and a swashbuckler by her own account: a dark
+ * pilot's cap with a ship's wheel on the badge, worn raked over one eye; black
+ * curls in a bob, a kiss curl; big eyes, a narrow chin, and a smile that dares
+ * you to try the Long Reach.
+ */
 const ellie: Face = {
-  head: { width: 26, top: 14, jaw: 80, chin: 18, bottom: 88 },
-  eyes: { y: 49, gap: 10.5, rx: 4, ry: 5.8, lashes: true },
-  brows: { y: 39, gap: 10.5, length: 9, weight: 2.4, arch: 2.5 },
-  nose: { kind: 'button', y: 59, size: 2.4 },
-  mouth: { y: 71, width: 11 },
+  head: { width: 24, top: 14, jaw: 78, chin: 11, bottom: 90 },
+  eyes: { y: 51, gap: 10, rx: 4.4, ry: 6.6, lashes: true },
+  brows: { y: 40, gap: 10, length: 9, weight: 2, arch: 3.5 },
+  nose: { kind: 'button', y: 62, size: 2.2 },
+  mouth: { y: 74, width: 8 },
   parts: [
-    // The bob, to the jaw.
-    { layer: 'back', d: 'M20 66 C14 40 22 20 50 18 C78 20 86 40 80 66 C76 70 72 66 72 60 L28 60 C28 66 24 70 20 66 Z', fill: 'ink' },
-    { layer: 'front', d: 'M25 43 C25 30 34 26 44 27 C40 31 38 35 37 38 C34 34 30 36 25 43 Z M75 43 C75 30 66 26 56 27 C60 31 62 35 63 38 C66 34 70 36 75 43 Z', fill: 'ink' },
-    // The pilot's cap, pushed back: a white top, a black band, the peak tipped up.
-    { layer: 'front', d: 'M26 33 C23 13 77 13 74 33 Z', fill: 'paper', stroke: 'ink', width: 2.2 },
-    { layer: 'front', d: 'M26 35 C40 30 60 30 74 35 L74 28 C60 23 40 23 26 28 Z', fill: 'ink' },
-    { layer: 'front', d: 'M29 35 C42 32 58 32 71 35 C65 27 35 27 29 35 Z', fill: 'ink' },
+    // Black curls, to the jaw.
+    { layer: 'back', d: 'M22 70 C14 66 16 58 20 56 C13 50 16 42 21 40 C17 32 24 24 30 25 C30 17 40 14 46 18 C50 12 60 13 62 19 C68 15 78 20 77 27 C84 28 87 37 81 42 C87 46 86 55 80 58 C85 62 83 70 77 70 C74 66 72 62 72 58 L28 58 C28 63 26 67 22 70 Z', fill: 'ink' },
+    { layer: 'front', d: 'M25 46 C24 36 30 30 38 30 C36 34 33 37 30 38 C28 40 26 43 25 46 Z M75 46 C76 36 70 30 62 30 C64 34 67 37 70 38 C72 40 74 43 75 46 Z', fill: 'ink' },
+    // A kiss curl on her brow.
+    { layer: 'front', d: 'M42 34 C40 38 44 41 47 39 C49 37 47 34 45 35', fill: 'none', stroke: 'ink', width: 2 },
     // A neckerchief, knotted.
-    { layer: 'front', d: 'M33 89 C42 95 58 95 67 89 L64 98 L58 94 L50 101 L42 94 L36 98 Z', fill: 'grey', stroke: 'ink', width: 2 },
+    { layer: 'front', d: 'M35 90 C42 95 58 95 65 90 L62 98 L57 94 L50 101 L43 94 L38 98 Z', fill: 'grey', stroke: 'ink', width: 2 },
+    // The pilot's cap: dark, a ship's wheel on the badge, raked over one eye.
+    { layer: 'over', tilt: [-14, 50, 30], d: 'M22 31 C17 10 81 10 76 31 Z', fill: 'ink' },
+    { layer: 'over', tilt: [-14, 50, 30], d: 'M22 32 C40 27 58 27 76 32 L76 27 C58 22 40 22 22 27 Z', fill: 'grey', stroke: 'ink', width: 1.4 },
+    { layer: 'over', tilt: [-14, 50, 30], d: 'M24 32 C38 36 52 37 62 34 C54 44 32 44 24 32 Z', fill: 'ink' },
+    { layer: 'over', tilt: [-14, 50, 30], d: 'M44.5 18 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z', fill: 'paper' },
+    { layer: 'over', tilt: [-14, 50, 30], d: 'M49.5 12 V24 M43.5 18 H55.5 M45.3 13.8 L53.7 22.2 M53.7 13.8 L45.3 22.2', fill: 'none', stroke: 'ink', width: 1.1 },
   ],
   blink: 4.6,
   temper: 1,
-  rest: { mouthCurve: 0.4, smirk: 0.3 },
+  rest: { mouthCurve: 0.35, smirk: 0.55, browCock: 1.5 },
 };
 
 /** Cornelius Tripp, the Old Guard of Davenport: bald on top, white mutton chops that spill past the frame, a monocle, a mouth set against change. */
