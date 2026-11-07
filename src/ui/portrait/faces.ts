@@ -79,15 +79,15 @@ export interface Face {
   parts?: Part[];
   /** Sand running off it: grains falling from these points. */
   grains?: [number, number][];
-  /** How large it's drawn in its oval (default 1.16): a heap of sand may want less. */
+  /** How large it's drawn in its oval (default 1.16): a square jaw or a jagged sheet of ice wants less. */
   zoom?: number;
-  /** Its own backdrop, where cream won't do. */
+  /** Its own backdrop, where cream won't do (none does yet). */
   backdrop?: Backdrop;
   /** Seconds between blinks. */
   blink: number;
   /** How much of a mood shows: Gus gives little away. */
   temper: number;
-  /** Where the face rests: Willie is smiling already. */
+  /** Where the face rests, before any mood: Willie is smiling already. */
   rest?: Partial<Pose>;
   /** Its own way of showing a mood, in place of the usual pose: Sandy's nervous face is a straight one. */
   moods?: Partial<Record<Mood, Partial<Pose>>>;
@@ -111,8 +111,9 @@ export const EFFECTS = ['shifty', 'twitch', 'wrinkle'] as const;
 export type Effect = (typeof EFFECTS)[number];
 
 /**
- * Gus: the chief engineer. A square head that gives nothing away, a cap
- * worn flat, a brush of a moustache that does his smiling for him.
+ * Gus: the chief engineer. A square head that gives nothing away, a flat cap,
+ * a smear of soot, a brush of a moustache, and a corn-cob pipe that rises and
+ * sags with his mood: the one thing about him that does.
  */
 const gus: Face = {
   head: { width: 30, top: 8, jaw: 84, chin: 21, bottom: 88 },
@@ -177,43 +178,29 @@ const crewCap: Part[] = [
   { layer: 'front', d: 'M24 23 L24 30 M33 21 L33 28 M42 20 L42 27 M51 20 L51 27 M60 20 L60 27 M69 21 L69 28 M77 23 L77 30', fill: 'none', stroke: 'ink', width: 1.4 },
 ];
 
-/** Willie: a round face, the crew's cap, freckles, and a smile that needs no reason. */
+/**
+ * Willie: a round face, close-cropped hair under the crew's cap, and a smile
+ * that needs no reason. The same rig, proportions and smile as everyone else,
+ * in a skin tone of the film's own greys; round eyes with a catch of light,
+ * since pie eyes only work on a pale face. The old cartoons' minstrel shapes
+ * (ink-black skin, a pale ring of a mouth, big lips) have no place on this boat.
+ */
 const willie: Face = {
   head: { width: 29, top: 13, jaw: 78, chin: 24, bottom: 84 },
-  eyes: { y: 49, gap: 11, rx: 4.6, ry: 6.8 },
+  fill: 'umber',
+  eyes: { y: 49, gap: 11, rx: 4.4, ry: 5.4, soft: true },
   brows: { y: 37, gap: 11, length: 9, weight: 2.4, arch: 2 },
-  nose: { kind: 'button', y: 60, size: 2.6 },
+  nose: { kind: 'bulb', y: 59, size: 3.2, pale: true },
   mouth: { y: 69, width: 13 },
   parts: [
-    { layer: 'back', d: 'M22 48 C15 44 15 58 23 58 Z', fill: 'paper', stroke: 'ink', width: 2.5 },
-    { layer: 'back', d: 'M78 48 C85 44 85 58 77 58 Z', fill: 'paper', stroke: 'ink', width: 2.5 },
-    // Freckles.
-    { layer: 'face', d: 'M31 58 h.1 M35 61 h.1 M29 62 h.1 M69 58 h.1 M65 61 h.1 M71 62 h.1', stroke: 'ink', width: 1.8 },
+    { layer: 'back', d: 'M22 48 C15 44 15 58 23 58 Z', fill: 'umber', stroke: 'ink', width: 2.5 },
+    { layer: 'back', d: 'M78 48 C85 44 85 58 77 58 Z', fill: 'umber', stroke: 'ink', width: 2.5 },
+    { layer: 'front', d: 'M22 42 C21 28 30 22 50 21 C70 22 79 28 78 42 C74 34 70 31 50 30 C30 31 26 34 22 42 Z', fill: 'ink' },
     ...crewCap,
   ],
   blink: 4.1,
   temper: 1,
   rest: { mouthCurve: 0.55, browLift: 1 },
-};
-
-/**
- * Willie again, trying out a Black lad: the same rig, the same proportions and
- * the same smile as the other faces, in a skin tone of the film's own greys. The
- * old cartoons' minstrel shapes (ink-black skin, a pale ring of a mouth, big lips)
- * have no place on this boat: only the tone and the hair change.
- */
-const willieUmber: Face = {
-  ...willie,
-  fill: 'umber',
-  eyes: { ...willie.eyes, rx: 4.4, ry: 5.4, soft: true },
-  nose: { kind: 'bulb', y: 59, size: 3.2, pale: true },
-  parts: [
-    { layer: 'back', d: 'M22 48 C15 44 15 58 23 58 Z', fill: 'umber', stroke: 'ink', width: 2.5 },
-    { layer: 'back', d: 'M78 48 C85 44 85 58 77 58 Z', fill: 'umber', stroke: 'ink', width: 2.5 },
-    // Close-cropped hair, under the cap.
-    { layer: 'front', d: 'M22 42 C21 28 30 22 50 21 C70 22 79 28 78 42 C74 34 70 31 50 30 C30 31 26 34 22 42 Z', fill: 'ink' },
-    ...crewCap,
-  ],
 };
 
 /** Lars: enormous and nearly silent. A long head, a great beard, small eyes that have seen the furnace. */
@@ -260,12 +247,11 @@ const iceSheet: Face = {
 };
 
 /**
- * Gaylord Montague, Esquire: villain-coded, never a villain. A wide jaw with a
- * cleft chin and a scar, no mouth to speak of: a fat twirled moustache that a
- * cigarette holder disappears into, a top hat
- * worn low, so low his brows stay under the brim. He always has that smile,
- * the kind that could pass for cruel or sarcastic, rattled or not: the eyes
- * narrow and the cigarette tips up, and that's all. He doesn't sweat.
+ * Gaylord Montague, Esquire: villain-coded, never a villain. A wide jaw, a cleft
+ * chin, a thin scar, and no mouth to speak of: a fat twirled moustache that his
+ * cigarette holder disappears into. A top hat worn low and askew, so low his
+ * brows stay under the brim. Rattled or not, the moustache keeps its smile: his
+ * eyes narrow and the cigarette tips up, and that's all. He doesn't sweat.
  */
 const gaylord: Face = {
   head: { width: 28, top: 12, jaw: 88, chin: 21, bottom: 93 },
@@ -286,9 +272,9 @@ const gaylord: Face = {
     // The moustache, twirled up at the ends.
     { layer: 'over', withMouth: true, d: 'M50 70 C44 67 38 68 34 71 C30 73 26 71 27 66 C23 71 26 80 33 79 C40 79 45 77 50 77 C55 77 60 79 67 79 C74 80 77 71 73 66 C74 71 70 73 66 71 C62 68 56 67 50 70 Z', fill: 'ink' },
     // The top hat, worn low on his brow, and too tall for any frame.
-    { layer: 'over', tilt: [-7, 50, 34.5], d: 'M27.7 32.5 C39.4 35.5 60.6 35.5 72.3 32.5 L74.4 -1.5 C60.6 -5.5 39.4 -5.5 25.6 -1.5 Z', fill: 'ink', stroke: 'paper', width: 1.4 },
+    { layer: 'over', tilt: [-7, 50, 34.5], d: 'M27.7 32.5 C39.4 35.5 60.6 35.5 72.3 32.5 L74.4 -1.5 C60.6 -5.5 39.4 -5.5 25.6 -1.5 Z', fill: 'ink' },
     { layer: 'over', tilt: [-7, 50, 34.5], d: 'M28.1 27.5 C39.4 30.5 60.6 30.5 71.9 27.5 L72.3 21.5 C60.6 24.5 39.4 24.5 27.7 21.5 Z', fill: 'grey' },
-    { layer: 'over', tilt: [-7, 50, 34.5], d: 'M9.7 30.5 C12.9 27.5 19.3 27.5 27.7 30.5 C39.4 34.5 60.6 34.5 72.3 30.5 C80.7 27.5 87.1 27.5 90.3 30.5 C86 38.5 67 41.5 50 41.5 C33 41.5 14 38.5 9.7 30.5 Z', fill: 'ink', stroke: 'paper', width: 1.4 },
+    { layer: 'over', tilt: [-7, 50, 34.5], d: 'M9.7 30.5 C12.9 27.5 19.3 27.5 27.7 30.5 C39.4 34.5 60.6 34.5 72.3 30.5 C80.7 27.5 87.1 27.5 90.3 30.5 C86 38.5 67 41.5 50 41.5 C33 41.5 14 38.5 9.7 30.5 Z', fill: 'ink' },
     // A cigarette in a long holder, from the corner of his mouth out past the frame: held loosely, drooping a little.
     { layer: 'over', swing: true, d: 'M62 75 L91 80', fill: 'none', stroke: 'ink', width: 3 },
     { layer: 'over', swing: true, d: 'M89 79.8 L101 81.3', fill: 'none', stroke: 'paper', width: 3.4 },
@@ -324,9 +310,9 @@ const steamboatBill: Face = {
     // Hair under the brim.
     { layer: 'front', d: 'M25 42 C24 34 27 31 32 30 L30 37 Z M75 42 C76 34 73 31 68 30 L70 37 Z', fill: 'ink' },
     // The porkpie: a flat crown, a short brim.
-    { layer: 'front', d: 'M31 30 C42 32 58 32 69 30 L67 15 C57 12 43 12 33 15 Z', fill: 'ink', stroke: 'paper', width: 1.2 },
+    { layer: 'front', d: 'M31 30 C42 32 58 32 69 30 L67 15 C57 12 43 12 33 15 Z', fill: 'ink' },
     { layer: 'front', d: 'M35 16 C45 14 55 14 65 16', fill: 'none', stroke: 'grey', width: 1.6 },
-    { layer: 'front', d: 'M16 29 C20 26 26 26 32 29 C42 32 58 32 68 29 C74 26 80 26 84 29 C80 35 64 37 50 37 C36 37 20 35 16 29 Z', fill: 'ink', stroke: 'paper', width: 1.2 },
+    { layer: 'front', d: 'M16 29 C20 26 26 26 32 29 C42 32 58 32 68 29 C74 26 80 26 84 29 C80 35 64 37 50 37 C36 37 20 35 16 29 Z', fill: 'ink' },
   ],
   blink: 8.5,
   temper: 0,
@@ -334,7 +320,7 @@ const steamboatBill: Face = {
   rest: { browTilt: -0.15 },
 };
 
-/** A captain: a captain's cap, white whiskers all round. Drawn for Bill first; kept for Konrad. */
+/** Konrad Marlowe, "Whiteknuckle", captain of the Monarch: a captain's cap with an anchor, white whiskers all round. */
 const konrad: Face = {
   head: { width: 30, top: 12, jaw: 84, chin: 24, bottom: 90 },
   eyes: { y: 48, gap: 11, rx: 3.6, ry: 5 },
@@ -351,7 +337,7 @@ const konrad: Face = {
     // The captain's cap: white top, black band and peak, an anchor on the front.
     { layer: 'front', d: 'M21 29 C18 9 82 9 79 29 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     { layer: 'front', d: 'M21 31 C40 25 60 25 79 31 L79 25 C60 19 40 19 21 25 Z', fill: 'ink' },
-    { layer: 'front', d: 'M23 31 C40 37 60 37 77 31 C67 41 33 41 23 31 Z', fill: 'ink', stroke: 'paper', width: 1.2 },
+    { layer: 'front', d: 'M23 31 C40 37 60 37 77 31 C67 41 33 41 23 31 Z', fill: 'ink' },
     { layer: 'front', d: 'M50 12 V20 M46 17 C47 21 53 21 54 17 M47.5 13 H52.5', fill: 'none', stroke: 'ink', width: 1.4 },
   ],
   blink: 4.8,
@@ -402,7 +388,7 @@ const harbourMaster: Face = {
     // The official cap: dark, a grey band, a badge, the peak.
     { layer: 'front', d: 'M17 31 C13 11 87 11 83 31 Z', fill: 'ink' },
     { layer: 'front', d: 'M17 33 C40 27 60 27 83 33 L83 26 C60 20 40 20 17 26 Z', fill: 'grey', stroke: 'ink', width: 1.6 },
-    { layer: 'front', d: 'M19 33 C40 41 60 41 81 33 C71 45 29 45 19 33 Z', fill: 'ink', stroke: 'paper', width: 1.2 },
+    { layer: 'front', d: 'M19 33 C40 41 60 41 81 33 C71 45 29 45 19 33 Z', fill: 'ink' },
     { layer: 'front', d: 'M46 18 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 Z', fill: 'paper' },
   ],
   blink: 6.1,
@@ -429,8 +415,8 @@ const foreman: Face = {
     // A neckerchief.
     { layer: 'front', d: 'M31 90 L50 99 L69 90 L65 101 L35 101 Z', fill: 'grey', stroke: 'ink', width: 2 },
     // The bowler.
-    { layer: 'front', d: 'M27 30 C38 33 62 33 73 30 C76 3 24 3 27 30 Z', fill: 'ink', stroke: 'paper', width: 1.2 },
-    { layer: 'front', d: 'M13 29 C17 26 23 26 29 29 C40 33 60 33 71 29 C77 26 83 26 87 29 C83 36 66 38 50 38 C34 38 17 36 13 29 Z', fill: 'ink', stroke: 'paper', width: 1.2 },
+    { layer: 'front', d: 'M27 30 C38 33 62 33 73 30 C76 3 24 3 27 30 Z', fill: 'ink' },
+    { layer: 'front', d: 'M13 29 C17 26 23 26 29 29 C40 33 60 33 71 29 C77 26 83 26 87 29 C83 36 66 38 50 38 C34 38 17 36 13 29 Z', fill: 'ink' },
   ],
   blink: 4.4,
   temper: 1,
@@ -440,7 +426,7 @@ const foreman: Face = {
 };
 
 /** By the id they go by at the table and in the story. */
-export const FACES = { gus, willie, willieUmber, lars, sandbar: sandy, iceSheet, gaylord, steamboatBill, morag, konrad, harbourMaster, foreman };
+export const FACES = { gus, willie, lars, sandbar: sandy, iceSheet, gaylord, steamboatBill, morag, konrad, harbourMaster, foreman };
 export type FaceId = keyof typeof FACES;
 
 export const hasFace = (id: string): id is FaceId => id in FACES;

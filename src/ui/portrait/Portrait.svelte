@@ -5,17 +5,19 @@
   import { FACES, POSES, type Backdrop, type Effect, type Face, type FaceId, type MoodBlend, type Part, type Pose } from './faces';
 
   /**
-   * A face: one rig for everyone, in plain SVG. A mood is a pose of the
-   * rig's numbers, so moods blend and glide into each other; the rest moves
-   * in CSS, as the boat does. Effects are written once, here, and work on
-   * any face; `play` sets one off, and a face's own tic sets it off now
-   * and then.
+   * A face: one rig for everyone, in plain SVG, on a cream backdrop clipped
+   * to its oval. A mood is a pose of the rig's numbers (a face may rest
+   * somewhere of its own, and play a mood its own way), so moods blend and
+   * glide into each other; the rest moves in CSS, as the boat does. Effects
+   * are written once, here, and work on any face: `play` sets one off, and a
+   * face's own tic sets it off now and then. Hats, pipes and beards may break
+   * out of the oval.
    */
   let { id, mood = 'neutral', still = false, backdrop }: { id: FaceId; mood?: MoodBlend; still?: boolean; backdrop?: Backdrop } = $props();
   const face: Face = $derived(FACES[id]);
   const uid = $props.id();
 
-  /** A mood, or a blend, as numbers: a face's temper says how much of it shows. */
+  /** A mood, or a blend, as numbers, from where the face rests: its temper says how much of it shows. */
   function poseFor(blend: MoodBlend, who: Face): Pose {
     const weights = typeof blend === 'string' ? { [blend]: 1 } : blend;
     const total = Object.values(weights).reduce((a, b) => a + (b ?? 0), 0) || 1;
@@ -92,7 +94,7 @@
     return `M${inner} ${y + tip} Q${(inner + outer) / 2} ${y - b.arch} ${outer} ${y - tip * 0.3}`;
   }
 
-  /** A pie eye: black, with a wedge of light that shows where it's looking. */
+  /** A pie eye: black, with a wedge of light that shows where it's looking (a dark face's eyes are round: see below). */
   function wedge(side: -1 | 1) {
     const e = face.eyes;
     const cx = 50 + side * e.gap;
