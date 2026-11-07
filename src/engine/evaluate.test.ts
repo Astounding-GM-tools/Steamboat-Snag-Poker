@@ -52,9 +52,9 @@ describe('evaluate', () => {
     expect(beats('9s 9d 2c Ah Kd', '9h 9c X Ah Kd')).toBeGreaterThan(0);
   });
 
-  it('breaks exact rank ties by suit: clubs < diamonds < hearts < spades', () => {
-    expect(beats('Ks 7d 9h 9c 2s', 'Kh 7c 9h 9c 2s')).toBeGreaterThan(0);
-    expect(beats('Kc 7s 4h 3c 2s', 'Kd 7d 4h 3c 2s')).toBeLessThan(0);
+  it('suits rank nothing: the same ranks are dead level', () => {
+    expect(beats('Ks 7d 9h 9c 2s', 'Kh 7c 9h 9c 2s')).toBe(0);
+    expect(beats('Kc 7s 4h 3c 2s', 'Kd 7d 4h 3c 2s')).toBe(0);
   });
 
   it('is a true draw only with identical real cards', () => {

@@ -26,7 +26,7 @@ import { isJoker, jokerCard, type JokerCard } from './cards';
 import type { AiId } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
 import { Rng } from './rng';
-import { createRound, isLegal, movers, resolveStreet, type Action, type RoundState } from './round';
+import { createRound, isLegal, movers, resolveStreet, rideOn, type Action, type RoundState } from './round';
 
 export interface SessionSeat {
   /** A captain's id (a person may play any captain). */
@@ -148,6 +148,11 @@ export function waitingFor(session: TableSession): number[] {
  * (and the hand, if it's over: money settled, the broke off the table).
  */
 export function submit(prev: TableSession, seat: number, action: Action): TableSession {
+  if (action.type === 'ride') {
+    const session = clone(prev);
+    rideOn(session.round!, session.config);
+    return session;
+  }
   if (!waitingFor(prev).includes(seat)) throw new Error(`Seat ${seat} has no move owed`);
   if (!isLegal(prev.round!, seat, action)) throw new Error(`Illegal move for seat ${seat}: ${JSON.stringify(action)}`);
   const session = clone(prev);
@@ -159,7 +164,12 @@ export function submit(prev: TableSession, seat: number, action: Action): TableS
 /** Nobody's move is owed (no person in the hand: they folded, or are out of money): the AIs play the street. */
 export function playOn(prev: TableSession): TableSession {
   if (prev.phase !== 'hand' || waitingFor(prev).length) throw new Error('Not the AIs\' street to play');
-  return resolve(clone(prev));
+  const session = clone(prev);
+  if (session.round?.result?.rides) {
+    rideOn(session.round, session.config);
+    return session;
+  }
+  return resolve(session);
 }
 
 /** The street resolves: the people's moves as collected, the AIs' chosen now. */
@@ -174,7 +184,7 @@ function resolve(session: TableSession): TableSession {
   });
   resolveStreet(round, actions, session.config);
   session.pending = session.seated.map(() => null);
-  if (round.result) settle(session);
+  if (round.result && !round.result.rides) settle(session);
   session.rngState = rng.state;
   return session;
 }

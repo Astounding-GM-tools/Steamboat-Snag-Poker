@@ -1,4 +1,4 @@
-/** Suits in tie-break order: clubs < diamonds < hearts < spades. */
+/** The four suits: they make flushes, and rank nothing (a dead-level hand rides: see round.ts). */
 export const SUITS = ['c', 'd', 'h', 's'] as const;
 export type Suit = (typeof SUITS)[number];
 

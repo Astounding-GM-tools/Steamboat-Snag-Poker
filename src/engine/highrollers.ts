@@ -10,7 +10,7 @@ import { chooseAction, viewFor } from './ai';
 import { jokerCard, type JokerCard } from './cards';
 import { HUMAN_ID, ROSTER, type AiId } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
-import { createRound, movers, resolveStreet, type Action, type RoundState } from './round';
+import { createRound, movers, resolveStreet, rideOn, type Action, type RoundState } from './round';
 import { Rng } from './rng';
 import { raiseChance, wantsMatch, wantsRaise, type Standing } from './raise';
 
@@ -137,6 +137,10 @@ export function mySeat(state: HighRollersState): number {
 export function playHighRollers(prev: HighRollersState, mine: Action | null): HighRollersState {
   if (prev.phase !== 'hand' || !prev.round) throw new Error('No hand in play');
   const state = clone(prev);
+  if (mine?.type === 'ride') {
+    rideOn(state.round!, state.config);
+    return state;
+  }
   const rng = new Rng(state.rngState);
   const round = state.round!;
   const me = mySeat(state);
@@ -159,7 +163,7 @@ export function playHighRollers(prev: HighRollersState, mine: Action | null): Hi
     return action;
   });
   resolveStreet(round, actions, state.config);
-  if (round.result) settle(state);
+  if (round.result && !round.result.rides) settle(state);
   state.rngState = rng.state;
   return state;
 }

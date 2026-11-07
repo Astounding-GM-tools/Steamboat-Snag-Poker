@@ -8,6 +8,8 @@
   import SnagFan from './SnagFan.svelte';
   import { cardPrefs } from './cards.svelte';
   import { name, nickname, tagName } from './format';
+  import Portrait from './portrait/Portrait.svelte';
+  import { hasFace, type MoodBlend } from './portrait/faces';
 
   /**
    * An opponent at the table, however many there are: what it shows depends
@@ -26,8 +28,8 @@
     faded?: boolean;
     fresh?: boolean;
     deal?: 'top' | 'flip' | null;
-    /** Held in the hand: it can leave on its own when thrown away. */
-    held?: boolean;
+    /** Held in the hand, in this slot: it can leave on its own when thrown away, and nothing moves. */
+    held?: number;
   }
   interface PurseShown {
     amount: number;
@@ -62,6 +64,8 @@
     onselect?: () => void;
     /** Something over the portrait (a line's countdown). */
     portrait?: Snippet;
+    /** How they look, for those with a face. */
+    mood?: MoodBlend;
     /** Columns of the table's twelve it spans (twelve: the whole width). */
     span?: number;
     cardsEl?: HTMLElement;
@@ -85,6 +89,7 @@
     broke = false,
     onselect,
     portrait,
+    mood = 'neutral',
     span = 12,
     cardsEl = $bindable(),
     purseEl = $bindable(),
@@ -102,9 +107,12 @@
   const title = $derived(nickname(id) ? `“${nickname(id)}”` : t(`character.${id}.boat`));
 </script>
 
+{#snippet likeness()}
+  {#if hasFace(id)}<span class="likeness"><Portrait {id} {mood} /></span>{:else}{name(id)[0]}{/if}
+{/snippet}
 {#snippet hand()}
   {#each cards as c (c.key)}
-    {#if c.held}<span class="held" out:thrown={c.card}>{@render one(c)}</span>{:else}{@render one(c)}{/if}
+    {#if c.held !== undefined}<span class="held" style="--slot: {c.held}" out:thrown={c.card}>{@render one(c)}</span>{:else}{@render one(c)}{/if}
   {/each}
 {/snippet}
 {#snippet one(c: SeatCard)}
@@ -135,7 +143,7 @@
         <div class="purse-place" data-purse={seat} bind:this={purseEl}>{@render coins('big')}</div>
       </div>
       <button class="portrait-btn" onclick={onselect} aria-label={name(id)}>
-        <span class="oval portrait">{name(id)[0]}{@render portrait?.()}</span>
+        <span class="oval portrait">{@render likeness()}{@render portrait?.()}</span>
       </button>
     </div>
     <div class="cards" bind:this={cardsEl}>
@@ -150,7 +158,7 @@
     <!-- Mirroring yours across the table: the name at their edge, cards held close, their purse with them, and what they do (or hold) under it, nearest the pot. -->
     <div class="tagline">
       {#if mode === 'medium'}
-        <button class="mini-portrait" onclick={onselect} aria-label={name(id)}><span class="oval">{name(id)[0]}{@render portrait?.()}</span></button>
+        <button class="mini-portrait" onclick={onselect} aria-label={name(id)}><span class="oval">{@render likeness()}{@render portrait?.()}</span></button>
       {/if}
       {#if dealer}<span class="button" title={t('hr.dealer')}></span>{/if}
       <span class="tag">{tagName(id)}</span>
@@ -270,7 +278,9 @@
     align-items: end;
   }
   .hand-cell {
+    --step: calc(var(--card-w) + var(--gap));
     grid-column: 1 / 7;
+    position: relative;
     display: flex;
     gap: var(--gap);
     align-items: flex-end;
@@ -342,6 +352,11 @@
   .medium .tag {
     font-size: 1rem;
   }
+  /* A drawn face, in the oval's shape. */
+  .likeness {
+    position: absolute;
+    inset: 0;
+  }
   .mini-portrait {
     flex: none;
     padding: 0;
@@ -377,6 +392,8 @@
     gap: 4px;
   }
   .small-hand {
+    --step: calc(var(--small-w) + 2px);
+    position: relative;
     display: flex;
     gap: 2px;
     flex: none;
@@ -400,10 +417,11 @@
   .purse-place {
     position: relative;
   }
-  /* A card held in a hand: its own box, so it can leave on its own. */
+  /* A card held in a hand: its own box in its own slot, so it can leave on its own and nothing moves. */
   .held {
-    display: block;
-    flex: none;
+    position: absolute;
+    bottom: 0;
+    left: calc(var(--slot) * var(--step));
   }
   .line {
     margin: 0;

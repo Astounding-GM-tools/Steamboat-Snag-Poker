@@ -28,6 +28,7 @@
   import { called, cardLabel, jokerList, name, tagName } from './format';
   import { flight } from './flight.svelte';
   import { rankLabel, winnerOf } from '../engine';
+  import type { MoodBlend } from './portrait/faces';
   import type { RoundScript, Trigger } from '../story/mechanics/script';
   import { handLabel } from './handNames';
   import { cardPrefs } from './cards.svelte';
@@ -116,6 +117,8 @@
   let tapped = $state<string[]>([]);
 
   const round = $derived(table.round);
+  /** This hand, or this part of it: when the pot rides, it's dealt afresh. */
+  const part = $derived(table.hand * 100 + (round.part ?? 0));
   const me = $derived(table.me);
   const mine = $derived(me >= 0 ? round.seats[me] : null);
   const meIn = $derived(!!mine && !mine.folded);
@@ -147,14 +150,19 @@
   const betOf = (seat: number) => (view !== 'replay' || !before || placeIn(seat) <= betsAt ? round : before).bets[seat];
   /** A swap being shown: the seat, and how many replacements have been dealt so far (0: the thrown cards have just gone). */
   let swapping = $state<{ seat: number; drawn: number } | null>(null);
-  /** A seat's hand as it should be seen: mid-swap, without the thrown cards and with the replacements dealt so far. */
-  function handOf(seat: number): Card[] {
+  /**
+   * A seat's hand as it should be seen, slot by slot: mid-swap, a thrown card's slot is empty (null) until its
+   * replacement is dealt. The cards you throw leave your hand as you throw them (they're on your discard pile by
+   * then); only their replacements wait for your turn in the seating order.
+   */
+  function handOf(seat: number): (Card | null)[] {
     const sw = swapping;
     const move = queue.find((q) => q.seat === seat)?.action;
-    if (sw?.seat === seat && before && move?.type === 'draw') {
+    const mid = sw?.seat === seat;
+    if ((mid || (seat === me && view === 'replay' && !shownYet(seat))) && before && move?.type === 'draw') {
       const old = before.seats[seat].hand;
-      const fresh = round.seats[seat].hand.filter((c) => !old.some((o) => o.id === c.id));
-      return [...old.filter((c) => !move.cardIds.includes(c.id)), ...fresh.slice(0, sw.drawn)];
+      let dealtIn = mid ? sw.drawn : 0;
+      return round.seats[seat].hand.map((c) => (old.some((o) => o.id === c.id) || dealtIn-- > 0 ? c : null));
     }
     // Your hand on the River is as you laid it (the cards you play shown apart): only a swap waits its turn.
     return (seat === me && before && before.street >= 2 ? round : seen(seat)).seats[seat].hand;
@@ -230,15 +238,16 @@
     }
   }
 
-  /** A thrown card: up out of the hand, turning, and gone (only in a swap, and not when hurried). */
+  /** A thrown card: up out of the hand, turning, and gone (only in a swap or as you throw, and not when hurried). */
   function thrown(_node: Element, _card?: Card | null) {
-    return thrownCard(!!swapping && !coins.still);
+    return thrownCard((!!swapping || (view === 'replay' && !!before && before.street < 2)) && !coins.still);
   }
 
   /** A breath between beats (none when hurried). */
   const pause = (ms: number) => (coins.still ? Promise.resolve() : new Promise<void>((r) => setTimeout(r, ms)));
   const STEP_MS = 700;
-  const THROW_MS = 450;
+  /** A touch past the throw itself, so a replacement never lands beside a card still on its way out. */
+  const THROW_MS = 480;
 
   /**
    * The Flop's or the Turn's moves, by themselves, in seating order: each
@@ -253,7 +262,8 @@
         const { seat, action } = queue[i];
         if (action.type === 'draw' && action.cardIds.length) {
           swapping = { seat, drawn: 0 };
-          await pause(THROW_MS);
+          // Your own cards went as you threw them: unless that was just now, there's nothing to wait for.
+          if (seat !== me || i === 0) await pause(THROW_MS);
           for (let k = 0; k < action.cardIds.length; k++) {
             swapping = { seat, drawn: k + 1 };
             await pause(seat === me ? FACE_UP_MS : FACE_DOWN_MS * 2);
@@ -284,7 +294,13 @@
     else play({ type: 'draw', cardIds: tappedCards.map((c) => c.id) });
   }
 
+  /** Dead level: on to the next part of the hand, the pot riding. */
+  function ride() {
+    onplay({ type: 'ride' });
+  }
+
   function next() {
+    if (view === 'verdict' && round.result?.rides) return ride();
     if (view === 'replay') {
       if (at + 1 < queue.length) betsAt = ++at;
       else afterReplay();
@@ -335,12 +351,12 @@
 
   /** The showdown, by itself: each hand in turn (yours you know: just its name), a breath between, then the verdict. */
   async function showdown() {
-    const hand = table.hand;
+    const hand = part;
     coins.begin();
     try {
       for (let i = 0; i < revealOrder.length; i++) {
         // Tapped ahead (Next through the hands, then past the verdict): this showdown is done with.
-        if (view !== 'reveal' || table.hand !== hand) break;
+        if (view !== 'reveal' || part !== hand) break;
         revealed = i;
         await turnOver(revealOrder[i]);
         await pause(STEP_MS);
@@ -349,7 +365,7 @@
       coins.end();
     }
     // Only if it's still this hand's showdown: a quick tap may already have moved on to the next hand.
-    if (view !== 'reveal' || table.hand !== hand) return;
+    if (view !== 'reveal' || part !== hand) return;
     noteSnags();
     view = 'verdict';
   }
@@ -358,7 +374,7 @@
   // Picked up again mid-hand, the board as it was; between hands, on to the next.
   let handNow = -1;
   $effect(() => {
-    const hand = table.hand;
+    const hand = part;
     untrack(() => {
       if (hand === handNow) return;
       const first = handNow === -1;
@@ -597,7 +613,7 @@
   let dealtHand = $state(-1);
   // A street's lines once its cards are on the table and the moves before them have played out.
   $effect(() => {
-    if (table.phase !== 'hand' || round.result || view !== 'choose' || busy || dealtHand !== table.hand || round.street > 2) return;
+    if (table.phase !== 'hand' || round.result || view !== 'choose' || busy || dealtHand !== part || round.street > 2) return;
     const trigger: Trigger = round.street === 0 ? 'flop' : round.street === 1 ? 'turn' : 'river';
     untrack(() => fire(trigger));
   });
@@ -671,7 +687,7 @@
     return fee ? t('hr.move.call', { amount: money(fee) }) : t('hr.move.check');
   }
   /** Settled purses show only at the verdict; until then, what each had at the start of the hand, less what's in the pot. */
-  const settled = $derived(view === 'verdict');
+  const settled = $derived(view === 'verdict' && !round.result?.rides);
   const purse = (seat: number) => (settled ? table.money[seat] : table.start[seat] - betOf(seat));
   /** What each seat has in the pot, as far as the table has seen. */
   const shownBets = $derived(round.seats.map((_, s) => betOf(s)));
@@ -801,12 +817,12 @@
 
   $effect(() => {
     const bets = shownBets;
-    const hand = table.hand;
+    const hand = part;
     const winners = settled ? round.result?.winners : undefined;
     untrack(() => {
       const fresh = hand !== flownHand;
-      if (fresh && table.asItStands && flownHand === -1) {
-        // Taking a seat at a hand under way: the money's in, the cards are out.
+      if (fresh && flownHand === -1 && (table.asItStands || round.history.length)) {
+        // Taking a seat at a hand under way (or picking it up after a reload): the money's in, the cards are out.
         flownHand = hand;
         flown = [...bets];
         dealt = DEALT_ALL;
@@ -815,7 +831,8 @@
       }
       if (fresh) {
         flownHand = hand;
-        flown = bets.map(() => 0);
+        // What's in a riding pot stays there: only the new antes go in.
+        if (!round.part) flown = bets.map(() => 0);
         coins.reset();
         dealt = 0;
         // The Last Hand is announced before anything moves.
@@ -853,11 +870,12 @@
   const verdictText = $derived.by(() => {
     const res = round.result;
     if (!res) return '';
+    if (res.rides) return t('hr.rides');
     // You get your own line ("You take the pot!"), not your name in theirs.
     const line = (key: string, s: number) => (s === me ? (table.winLine ?? t(`${key}.you`)) : t(key, { name: who(s) }));
     // You folded and one captain is left: say so (with more still at the table, the rest folded too).
     if (res.byFolds && me >= 0 && round.seats[me].folded && res.winners.length === 1 && round.seats.length === 2) return t('hr.youFolded', { name: who(res.winners[0]) });
-    if (res.byFolds) return line('hr.byFolds', res.winners[0]);
+    if (res.byFolds) return [line('hr.byFolds', res.winners[0]), res.weakest !== null && res.dumped.length ? line('hr.snagsTo', res.weakest) : ''].filter(Boolean).join(' ');
     const wins = res.winners.length > 1 ? t('hr.split', { names: res.winners.map(who).join(' & ') }) : line('hr.wins', res.winners[0]);
     const said = res.weakest !== null && res.dumped.length + res.boardTaken.length ? `${wins} ${line('hr.snagsTo', res.weakest)}` : wins;
     return [said, table.aftermath].filter(Boolean).join(' ');
@@ -866,6 +884,15 @@
     const h = round.result?.hands[seat];
     return h ? handLabel(h) : null;
   };
+  /** How a rival looks: at the verdict, pleased or not; before it, the emptier their purse, the more it shows. */
+  function rivalMood(seat: number): MoodBlend {
+    const res = round.result;
+    if (view === 'verdict' && res) return res.rides ? 'nervous' : res.winners.includes(seat) ? 'confident' : 'nervous';
+    if (view === 'choose' && round.raisers.includes(seat)) return 'confident';
+    const start = table.start[seat] || 1;
+    const nerves = Math.min(1, Math.max(0, 1 - purse(seat) / start));
+    return { neutral: 1 - nerves * 0.8, nervous: nerves * 0.8 };
+  }
   /** A rival's line under their cards: the move being shown, their hand at the showdown, or that they're out of it. */
   function rivalLine(seat: number): string {
     if (view === 'replay' && focus === seat) return moveText(queue[at].action);
@@ -882,13 +909,16 @@
     if (s.folded && !shows(seat)) return s.hand.map((_, i) => ({ key: `f${i}`, faceDown: true, faded: true }));
     // Shown (a lesson, an encounter): face up, as they are, for the rest of the hand.
     if (shows(seat) && !(shownTo(seat) && shown.length))
-      return [...shown, ...handOf(seat)].slice(0, Math.max(shown.length, holeDealt(seat))).map((card) => ({ key: card.id, card, fresh: true, held: !shown.some((c) => c.id === card.id) }));
+      return [
+        ...shown.map((card): SeatCard => ({ key: card.id, card, fresh: true })),
+        ...handOf(seat).flatMap((card, slot): SeatCard[] => (card && shown.length + slot < holeDealt(seat) ? [{ key: card.id, card, fresh: true, held: shown.length + slot }] : [])),
+      ];
     if (shownTo(seat) && shown.length)
       return [
         ...shown.map((card, k): SeatCard => (turning(seat) && k >= turned ? { key: card.id, faceDown: true } : { key: card.id, card, deal: turning(seat) ? 'flip' : null })),
         ...s.hand.map((card): SeatCard => (turnedUp(seat) ? { key: card.id, card, faded: true } : { key: card.id, faceDown: true, faded: true })),
       ];
-    return Array.from({ length: Math.min(shown.length + handOf(seat).length, holeDealt(seat)) }, (_, i) => ({ key: `h${i}`, faceDown: true, deal: 'top' as const, held: true }));
+    return handOf(seat).flatMap((card, slot): SeatCard[] => (card && slot < holeDealt(seat) ? [{ key: `h${slot}`, faceDown: true, deal: 'top', held: slot }] : []));
   }
   const myPlayed = $derived(mine ? played(mine.played).filter((c) => !isJoker(c)) : []);
   const myPlayedSnags = $derived(new Set(mine ? played(mine.played).filter(isJoker).map((c) => c.id) : []));
@@ -921,8 +951,8 @@
     play({ type: 'fold' });
   }
 
-  /** Snags on the board: at stake, the weakest hand takes them. */
-  const stakes = $derived(boardCards.filter((c): c is Card => !!c && isJoker(c)));
+  /** Snags on the board, and any riding with the pot: at stake, the weakest hand takes them. */
+  const stakes = $derived([...(round.staked ?? []), ...boardCards.filter((c): c is Card => !!c && isJoker(c))]);
 
   // --- Fitting the screen --------------------------------------------------
   // The table is drawn to the screen's width, and its height follows (the cards are sized by the columns).
@@ -996,6 +1026,7 @@
           span={12 / table.chairs.length}
           cards={rivalCards(seat)}
           {thrown}
+          mood={rivalMood(seat)}
           snags={snagsOf(seat)}
           snagLook={(card) => ({ lifted: turnedUp(seat) && s.played.some((c) => c.id === card.id) })}
           discarded={s.discarded}
@@ -1023,9 +1054,9 @@
       <!-- Which crossing, and the snags in the deck (face down: how many is public, which ones isn't). -->
       <span class="crossing">{table.label ?? ''}<DeckSnags count={deckSnags} /></span>
       <span class="street">
-        {table.heading ?? t(`street.${streetName}`)}
+        {table.heading ?? (round.part ? t(`street.part.${Math.min(round.part, 3)}`) : t(`street.${streetName}`))}
         <!-- Every street has a second line, so nothing moves. -->
-        <span class="street-sub">{round.result || table.heading ? '' : t(`street.sub.${composing ? 'compose' : streetName}`)}</span>
+        <span class="street-sub">{table.heading ? '' : round.part ? t(`street.${streetName}`) : round.result ? '' : t(`street.sub.${composing ? 'compose' : streetName}`)}</span>
       </span>
       <button class="ghost icon" class:beckon={helpWanted && !showHelp} onclick={openHelp} aria-label={t('title.howTo')}>?</button>
     </div>
@@ -1038,7 +1069,7 @@
     {/if}
     <!-- Between hands, whatever comes then (the standings, a captain's details) takes the board's place; it stays, hidden, so nothing moves. -->
     <div class="board-place" class:covered={!!cover}>
-      <PotBand count={potCount} paid={settled} outcome={settled ? verdictText : null} won={!!round.result?.winners.includes(me)} wordy bind:el={pileEl} />
+      <PotBand count={potCount} paid={settled} outcome={view === 'verdict' ? verdictText : null} won={!!round.result?.winners.includes(me)} wordy bind:el={pileEl} />
       <Board cards={boardCards} marks={(card) => ({ above: theirBoard.has(card.id), below: usedIds.has(card.id) })} bind:el={boardEl} />
       {#if cover}<div class="cover">{@render cover()}</div>{/if}
     </div>
@@ -1072,10 +1103,10 @@
     {#if mine}
       <MyCards
         played={myPlayed}
-        hand={handOf(me).filter((_, k) => k >= 3 || dealIndex(me, k) < dealt)}
+        hand={handOf(me).flatMap((card, slot) => (card && (slot >= 3 || dealIndex(me, slot) < dealt) ? [{ card, slot }] : []))}
         look={(card) => ({
-          selected: (composing || naming) && !laid && tapped.includes(card.id),
-          used: (laid && tapped.includes(card.id)) || ((composing || naming) && usedIds.has(card.id)),
+          selected: (composing || naming) && tapped.includes(card.id),
+          used: (composing || naming) && usedIds.has(card.id) && !tapped.includes(card.id),
           toss: !composing && !naming && tapped.includes(card.id),
           faded: mine.folded || (shownTo(me) && myPlayed.length > 0) || (laid && !tapped.includes(card.id)),
         })}
@@ -1083,8 +1114,8 @@
         {thrown}
         snags={mySnags}
         snagLook={(card) => ({
-          selected: !laid && tapped.includes(card.id),
-          used: myPlayedSnags.has(card.id) || (laid && tapped.includes(card.id)),
+          selected: tapped.includes(card.id),
+          used: myPlayedSnags.has(card.id),
           lifted: shownTo(me) && myPlayedSnags.has(card.id),
         })}
         onsnag={view === 'choose' && meIn && composing ? tap : undefined}
@@ -1137,8 +1168,8 @@
       <button onclick={() => (laid = true)} data-heavy="true">{goLabel}</button>
     {:else if view === 'choose' && myTurn}
       <!-- A line asking for a move: only that move will do (no folding your way out of a lesson). -->
-      <button class="ghost" onclick={fold} disabled={!!table.proxy || dealtHand !== table.hand || !canFold(round, me) || (line?.require ? line.require !== 'fold' : !complies)}>{foldLabel}</button>
-      <button onclick={() => go()} disabled={dealtHand !== table.hand || !complies} data-heavy={composing || answering || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>
+      <button class="ghost" onclick={fold} disabled={!!table.proxy || dealtHand !== part || !canFold(round, me) || (line?.require ? line.require !== 'fold' : !complies)}>{foldLabel}</button>
+      <button onclick={() => go()} disabled={dealtHand !== part || !complies} data-heavy={composing || answering || tappedCards.length > 0 || cost > 0 ? 'true' : undefined}>{goLabel}</button>
     {:else if view === 'replay'}
       <!-- The rivals' turns: Next through them, one by one, or Skip to the end. -->
       <button class="ghost" onclick={skipReplay}>{t('show.skip')}</button>

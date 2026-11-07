@@ -17,13 +17,15 @@ import { fullDeck, isJoker, type Card, type JokerCard, type StdCard } from './ca
 import type { RulesConfig } from './config';
 import { bestHand, type HandValue } from './evaluate';
 import { anteFor, baseAnte, discardCost, streetFee } from './pot';
-import type { Rng } from './rng';
+import { Rng } from './rng';
 
 export type Action =
   /** On the Flop and the Turn: discard these cards and draw replacements (none = stand pat). */
   | { type: 'draw'; cardIds: string[] }
   /** On the River: the hand cards and number of snags you play; at a table that allows it, perhaps with a raise. */
   | { type: 'compose'; cardIds: string[]; jokers: number; raise?: boolean }
+  /** After a dead-level showdown: on to the next part of the hand (see `rideOn`). */
+  | { type: 'ride' }
   /** After a raise on the River: put in as much, and stay in. */
   | { type: 'match' }
   /** On the Flop or the Turn (or facing a raise): give up the pot. */
@@ -48,7 +50,7 @@ export const STREETS = ['flop', 'turn', 'river'] as const;
 export type StreetName = (typeof STREETS)[number];
 
 export interface RoundResult {
-  /** Seats that won (more than one on a tie: the pot is split). */
+  /** Seats that won (more than one: dead level, and the pot rides; only a lesson without a pot ends there). */
   winners: number[];
   /** Each seat's hand at the showdown; null for a folded seat (or everyone, when the hand ended in folds). */
   hands: (HandValue | null)[];
@@ -56,16 +58,18 @@ export interface RoundResult {
   pot: number;
   /** What each seat takes from the pot (and the forfeits). */
   share: number[];
-  /** The seat with the weakest hand still in, which takes the snags; null on a tie, or when the hand ended in folds. */
+  /** The seat that takes the snags: the weakest hand still in, or whoever folded first from a riding pot; null on a tie, or when the hand ended in folds. */
   weakest: number | null;
-  /** Snags the winners played: the weakest hand takes them. */
+  /** Snags the winners played, and those staked in a riding pot: the weakest hand takes them. */
   dumped: JokerCard[];
   /** Snags at stake on the board: the weakest hand takes them too. */
   boardTaken: JokerCard[];
   /** Forfeits paid by each seat (losers who played snags), to the winners. */
   forfeit: number[];
-  /** The hand ended because everyone else folded (or everyone folded at once: a stand-off, the pot split). */
+  /** The hand ended because everyone else folded. */
   byFolds: boolean;
+  /** Dead level: nothing is settled, and the winners play on for the pot (`rideOn`). */
+  rides?: boolean;
   /** Snags that went back to the pool (left in the deck, or on the board when nobody took them). */
   returnedToPool: JokerCard[];
 }
@@ -100,6 +104,12 @@ export interface RoundState {
   bets: number[];
   /** What each seat had when the hand began: nobody pays in (or forfeits) more (missing: no limit). */
   purses?: number[];
+  /** How many times the pot has ridden: part two of the hand is 1, and so on. */
+  part?: number;
+  /** Snags staked in the parts before this one: they ride with the pot. */
+  staked?: JokerCard[];
+  /** Who has folded from a riding pot, in order: folding is losing, and the first takes the snags. */
+  folders?: number[];
   result: RoundResult | null;
 }
 
@@ -201,13 +211,13 @@ function draw(round: RoundState): Card {
   return card;
 }
 
-/** One card for a seat; a snag fished out of the deck becomes the seat's, and it draws again (catching it is penalty enough). */
-function drawToSeat(round: RoundState, seat: number) {
+/** One card for a seat, at `slot` in its hand; a snag fished out of the deck becomes the seat's, and it draws again (catching it is penalty enough). */
+function drawToSeat(round: RoundState, seat: number, slot = round.seats[seat].hand.length) {
   const s = round.seats[seat];
   while (round.deck.length) {
     const card = draw(round);
     if (!isJoker(card)) {
-      s.hand.push(card);
+      s.hand.splice(slot, 0, card);
       return;
     }
     s.jokers.push(card);
@@ -325,11 +335,18 @@ export function resolveStreet(round: RoundState, actions: (Action | null)[], con
   const record = () => round.history.push({ street: round.street, actions: round.seats.map((_, i) => (moving.includes(i) ? actions[i] : null)) });
   const folding = moving.filter((i) => actions[i]!.type === 'fold');
   for (const i of folding) round.seats[i].folded = true;
-  const left = inHand(round);
-  if (left.length <= 1) {
+  if (round.part) (round.folders ??= []).push(...folding);
+  let left = inHand(round);
+  // Everyone still in folding at once: moves go in seat order, so the last had only to stay.
+  if (!left.length) {
+    const last = folding.at(-1)!;
+    round.seats[last].folded = false;
+    round.folders = round.folders?.filter((i) => i !== last);
+    left = [last];
+  }
+  if (left.length === 1) {
     record();
-    // Everyone still in folding at once is a stand-off: the pot is split between them.
-    return endByFolds(round, left.length ? left : folding);
+    return endByFolds(round, left);
   }
   for (const i of seatOrder(round)) {
     const a = actions[i];
@@ -339,12 +356,14 @@ export function resolveStreet(round: RoundState, actions: (Action | null)[], con
     if (a.type === 'compose' && a.raise) round.raisers.push(i);
     if (a.type === 'draw') {
       if (round.street === 0) s.flopDiscards = a.cardIds.length;
+      // A replacement takes the place of the card it replaces.
+      const slots = a.cardIds.map((id) => s.hand.findIndex((c) => c.id === id)).sort((x, y) => x - y);
       for (const id of a.cardIds) {
         const [card] = s.hand.splice(s.hand.findIndex((c) => c.id === id), 1);
         round.discards.push(card);
         s.discarded.push(card);
       }
-      for (let k = 0; k < a.cardIds.length; k++) drawToSeat(round, i);
+      for (const slot of slots) drawToSeat(round, i, slot);
     } else if (a.type === 'compose') {
       s.played = [...a.cardIds.map((id) => s.hand.find((c) => c.id === id)!), ...s.jokers.splice(0, a.jokers)];
       s.hand = s.hand.filter((c) => !a.cardIds.includes(c.id));
@@ -361,7 +380,7 @@ export function resolveStreet(round: RoundState, actions: (Action | null)[], con
   for (let i = 0; i < config.communitySchedule[round.street]; i++) round.community.push(draw(round));
 }
 
-/** The one winner, or null on a split pot. */
+/** The one winner, or null when it's dead level. */
 export function winnerOf(result: RoundResult): number | null {
   return result.winners.length === 1 ? result.winners[0] : null;
 }
@@ -384,17 +403,18 @@ function shares(round: RoundState, winners: number[], forfeits: number): number[
   return share;
 }
 
-/** Everyone else folded: the last seat in takes the pot; no hands shown, no snags change hands, the board's go back. */
+/** Everyone else folded: the last seat in takes the pot; no hands shown, no snags change hands, the board's go back. From a riding pot, though, the first to fold takes what rode with it. */
 function endByFolds(round: RoundState, winners: number[]) {
-  const order = seatOrder(round);
-  winners.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  const staked = round.staked ?? [];
+  const taker = staked.length ? (round.folders?.[0] ?? null) : null;
+  if (taker !== null) round.seats[taker].jokers.push(...staked);
   round.result = {
     winners,
     hands: round.seats.map(() => null),
     pot: potOf(round),
     share: shares(round, winners, 0),
-    weakest: null,
-    dumped: [],
+    weakest: taker,
+    dumped: taker === null ? [] : staked,
     boardTaken: [],
     forfeit: round.seats.map(() => 0),
     byFolds: true,
@@ -411,16 +431,22 @@ function showdown(round: RoundState, config: RulesConfig) {
   const top = Math.max(...left.map(score));
   const winners = left.filter((i) => score(i) === top);
   const losers = left.filter((i) => score(i) < top);
-  // The weakest hand still in (on a tie, the one acting earliest this hand).
-  const weakest = losers.length ? losers.reduce((w, i) => (score(i) < score(w) ? i : w)) : null;
+  // Dead level: nothing is settled, and the pot rides.
+  if (round.potMode && winners.length > 1) {
+    const none = round.seats.map(() => 0);
+    round.result = { winners, hands, pot: potOf(round), share: none, weakest: null, dumped: [], boardTaken: [], forfeit: none, byFolds: false, returnedToPool: [], rides: true };
+    return;
+  }
+  // The weakest hand still in (on a tie, the one acting earliest this hand); from a riding pot, whoever folded first: folding is losing.
+  const weakest = round.folders?.[0] ?? (losers.length ? losers.reduce((w, i) => (score(i) < score(w) ? i : w)) : null);
 
   const played = round.seats.map((s) => s.played.filter(isJoker));
   const boardSnags = round.community.filter(isJoker);
   // A loser's forfeits, as far as its purse goes (a lesson without a pot has none).
   const forfeit = round.seats.map((_, i) => (round.potMode && losers.includes(i) ? Math.min(played[i].length * (config.jokerForfeit ?? 0), roundLeft(round, i)) : 0));
-  // A winner's played snags (and the board's) go to the weakest hand; a loser keeps its own.
-  // If everyone still in tied, there's no weakest: each keeps its own, and the board's go back to the pool.
-  const dumped = weakest === null ? [] : winners.flatMap((i) => played[i]);
+  // A winner's played snags (and the board's, and any that rode with the pot) go to the weakest hand; a loser keeps its own.
+  // If everyone still in tied (only without a pot), there's no weakest: each keeps its own, and the board's go back to the pool.
+  const dumped = weakest === null ? [] : [...winners.flatMap((i) => played[i]), ...(round.staked ?? [])];
   const boardTaken = weakest === null ? [] : boardSnags;
   round.seats.forEach((s, i) => {
     if (i === weakest) s.jokers.push(...dumped, ...played[i], ...boardTaken);
@@ -439,4 +465,49 @@ function showdown(round: RoundState, config: RulesConfig) {
     byFolds: false,
     returnedToPool: [...round.deck.filter(isJoker), ...(weakest === null ? boardSnags : [])],
   };
+}
+
+/**
+ * After a dead-level showdown, the pot rides: part two of the same hand, for
+ * the seats that tied. The rest are out of it, and pay their forfeits into the
+ * pot. Those still in stake what they played, the board's snags with them:
+ * it all rides with the pot, to go to whoever finally loses. A fresh deck, a
+ * fresh deal, and everyone in antes again (all in, you play on for nothing:
+ * your money's in the pot already). It rides as often as it ties, and only
+ * then is the hand over, so whoever runs the game settles it once.
+ */
+export function rideOn(round: RoundState, config: RulesConfig) {
+  const res = round.result;
+  if (!res?.rides) throw new Error('There is no pot riding');
+  const staked = round.staked ?? [];
+  round.seats.forEach((s, i) => {
+    const snags = s.played.filter(isJoker);
+    if (res.winners.includes(i)) staked.push(...snags);
+    else if (!s.folded) {
+      s.jokers.push(...snags);
+      round.bets[i] += Math.min(snags.length * (config.jokerForfeit ?? 0), roundLeft(round, i));
+      s.folded = true;
+    }
+    s.hand = [];
+    s.played = [];
+    s.discarded = [];
+    delete s.flopDiscards;
+  });
+  staked.push(...round.community.filter(isJoker));
+  round.staked = staked;
+  round.folders = [];
+  round.part = (round.part ?? 0) + 1;
+  // Its own shuffle, from how the last deck lay: the hand needs no more than that.
+  const seed = round.deck.reduce((h, c) => (Math.imul(h, 31) + c.id.charCodeAt(0) + c.id.charCodeAt(1)) | 0, round.part);
+  round.deck = new Rng(seed >>> 0).shuffle([...fullDeck(), ...round.deck.filter(isJoker)]);
+  round.community = [];
+  round.street = 0;
+  round.raisers = [];
+  round.discards = [];
+  round.fished = [];
+  round.result = null;
+  const riders = inHand(round);
+  for (const i of riders) round.bets[i] += Math.min(anteFor(config, round.month, round.seats[i].jokers.length, round.stakes), roundLeft(round, i));
+  for (let i = 0; i < config.communitySchedule[0]; i++) round.community.push(draw(round));
+  for (let k = 0; k < config.handSize; k++) for (const s of riders) drawToSeat(round, s);
 }

@@ -30,7 +30,7 @@
   <div class="snag-fan" class:tiny class:live={!!ontap} style="--n: {cards.length}">
     {#each cards as card (card.id)}
       {@const l = look(card)}
-      <span class="snag" data-snag={card.id}><CardView {card} selected={l.selected} used={l.used} lifted={l.lifted} fresh={l.fresh} onclick={ontap ? () => ontap(card) : undefined} /></span>
+      <span class="snag" data-snag={card.id}><CardView {card} selected={l.selected} used={l.used} lifted={l.lifted} fresh={l.fresh} onclick={ontap ? () => ontap?.(card) : undefined} /></span>
     {/each}
     {#if cards.length > (tiny ? 1 : 2)}<span class="snag-count">×{cards.length}</span>{/if}
   </div>

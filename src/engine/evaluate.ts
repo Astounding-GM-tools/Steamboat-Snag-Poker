@@ -32,7 +32,6 @@ export interface OwnCardRule {
 
 const R1 = 15, R2 = R1 * 15, R3 = R2 * 15, R4 = R3 * 15, R5 = R4 * 15;
 const RANK_W = [R4, R3, R2, R1, 1];
-const SUIT_W = [256, 64, 16, 4, 1];
 
 // Scratch buffers: scoring runs millions of times inside the AI's simulations.
 const rk = new Int8Array(5);
@@ -40,14 +39,14 @@ const st = new Int8Array(5);
 const counts = new Int8Array(15);
 const groups = new Int8Array(5);
 
-/** The cards scored so far, sorted as they come: rank down, then suit down. */
+/** The cards scored so far, sorted as they come: rank down. */
 let n = 0;
 
-/** One real card into the hand being scored (insertion sort: rank desc, then suit desc). */
+/** One real card into the hand being scored (insertion sort: rank desc). */
 function add(r: number, sv: number) {
   if (n === 5) throw new Error('At most 5 real cards can be evaluated');
   let j = n++;
-  while (j > 0 && (rk[j - 1] < r || (rk[j - 1] === r && st[j - 1] < sv))) {
+  while (j > 0 && rk[j - 1] < r) {
     rk[j] = rk[j - 1];
     st[j] = st[j - 1];
     j--;
@@ -86,14 +85,12 @@ function finish(): number {
   let score = cat * R5;
   if (cat === 8 || cat === 4) score += straightHigh * RANK_W[0];
   else for (let i = 0; i < g; i++) score += groups[i] * RANK_W[i];
-  score *= 1024;
-  for (let i = 0; i < n; i++) score += st[i] * SUIT_W[i];
   return score;
 }
 
 /**
  * Scores up to 5 cards as one comparable number: category, then ranks (group
- * ranks, kickers), then suits card-by-card (♣ < ♦ < ♥ < ♠). Jokers and nulls
+ * ranks, kickers). Suits rank nothing: equal hands are dead level. Jokers and nulls
  * are dead, so fewer real cards lose once everything else is equal.
  * Straights and flushes need 5 real cards.
  */
@@ -107,7 +104,7 @@ export function scoreCards(inPlay: readonly (Card | null)[]): number {
 }
 
 export function categoryOf(score: number): Category {
-  return CATEGORIES[Math.floor(score / 1024 / R5)];
+  return CATEGORIES[Math.floor(score / R5)];
 }
 
 export function evaluate(inPlay: readonly (Card | null)[]): HandValue {

@@ -1,4 +1,5 @@
 <script module lang="ts">
+  import type { MoodBlend } from './portrait/faces';
   export type SpeechSize = 'aside' | 'scene' | 'full';
 
   /** An answer on one of the two buttons. */
@@ -15,6 +16,8 @@
 
   /** One line of a conversation. */
   export interface SpeechLine {
+    /** How the speaker looks saying it, if they have a face. */
+    mood?: MoodBlend;
     id?: string;
     size: SpeechSize;
     /** A captain's id, `you` or `willie`. */
@@ -82,6 +85,8 @@
 </script>
 
 <script lang="ts">
+  import Portrait from './portrait/Portrait.svelte';
+  import { hasFace } from './portrait/faces';
   import Countdown from './Countdown.svelte';
 
   /**
@@ -145,7 +150,7 @@
   {#key line}
     {#if !opponent || line.size === 'full'}
       <span class="face" aria-hidden="true">
-        {name[0]}
+        {#if hasFace(line.who)}<span class="likeness"><Portrait id={line.who} mood={line.mood} /></span>{:else}{name[0]}{/if}
         {#if ms}<Countdown {ms} />{/if}
       </span>
     {/if}
@@ -210,6 +215,10 @@
     font-family: var(--title-font);
     font-size: 1.4rem;
     line-height: 1;
+  }
+  .likeness {
+    position: absolute;
+    inset: 0;
   }
   /* The full caption reaches the top of the screen: its portrait sits inside the frame. */
   .full .face {

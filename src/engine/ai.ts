@@ -37,6 +37,8 @@ export interface SeatView {
   pot: number;
   fees: [number, number];
   canFold: boolean;
+  /** Snags riding with the pot: fold now, and they're yours. */
+  staked: number;
   /** Snags shuffled into the deck this crossing (public knowledge). */
   deckSnags: number;
   deckSize: number;
@@ -63,6 +65,7 @@ export function viewFor(round: RoundState, seat: number, config: RulesConfig): S
     pot: round.bets.reduce((a, b) => a + b, 0),
     fees: [feeFor(round, config, 1), feeFor(round, config, 2)],
     canFold: canFold(round, seat),
+    staked: round.staked?.length ?? 0,
     deckSnags: round.deck.filter(isJoker).length,
     deckSize: round.deck.length,
   };
@@ -192,7 +195,8 @@ function smartDraw(ai: AiId, view: SeatView, config: RulesConfig, rng: Rng, opti
     }
   }
   const bar = FOLD_BAR[ai];
-  if (view.potMode && view.canFold && bar !== undefined && bestValue < bar * view.pot) return { type: 'fold' };
+  // With snags riding on the pot, folding only makes them yours: stick it out.
+  if (view.potMode && view.canFold && !view.staked && bar !== undefined && bestValue < bar * view.pot) return { type: 'fold' };
   return { type: 'draw', cardIds: best };
 }
 

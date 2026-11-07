@@ -4,7 +4,7 @@ import { chooseAction, viewFor } from './ai';
 import { DEFAULT_CONFIG } from './config';
 import { Rng } from './rng';
 import { baseAnte } from './pot';
-import { createRound, feeFor, isAnswering, resolveStreet, type Action, type RoundOptions, type RoundPlayer, type RoundState } from './round';
+import { createRound, feeFor, isAnswering, resolveStreet, rideOn, type Action, type RoundOptions, type RoundPlayer, type RoundState } from './round';
 import { HIGH_ROLLERS_FEES, highRollersResult, mySeat, newHighRollers, nextHighRollersHand, placings, playHighRollers } from './highrollers';
 
 const config = DEFAULT_CONFIG;
@@ -43,6 +43,49 @@ describe('a hand at a table of four', () => {
     expect(round.bets[2]).toBe(1 + feeFor(round, config, 1) + 1);
   });
 
+  it('a replacement takes the place of the card it replaces', () => {
+    const round = table(1, players(4), 0, order.slice(0, 3).concat('9h', 'Qh', 'Jh', 'Th', '9s', 'Qs', 'Js', 'Ts', '9c', 'Qc', 'Jc', 'Tc', '8h', '8s', '7c', '6d'));
+    resolveStreet(round, [{ type: 'draw', cardIds: ['9c', '9h'] }, stand, stand, stand], config);
+    expect(round.seats[0].hand.map((c) => c.id)).toEqual(['8h', '9s', '8s']);
+  });
+
+  it('a dead-level showdown lets the pot ride: nothing settled, the snags staked, the antes in again', () => {
+    const snagged = players(2, [1, 1]);
+    // Both play the same pair of aces with the same kickers: one of them a snag each, so both stake it.
+    const round = createRound(1, snagged, [], config, new Rng(1), { arranged: ['As', 'Kd', 'Qc', '2h', '2s', '3h', '3s', '4h', '4s', '8h', '9h'] });
+    round.bets = [5, 5];
+    const hand = (s: number) => round.seats[s].hand.map((c) => c.id);
+    resolveStreet(round, [stand, stand], config);
+    resolveStreet(round, [stand, stand], config);
+    resolveStreet(round, [{ type: 'compose', cardIds: [hand(0)[0]], jokers: 1 }, { type: 'compose', cardIds: [hand(1)[0]], jokers: 1 }], config);
+    expect(round.result?.rides).toBe(true);
+    const pot = round.bets[0] + round.bets[1];
+    expect(round.result?.share).toEqual([0, 0]);
+    rideOn(round, config);
+    expect(round.result).toBeNull();
+    expect(round.part).toBe(1);
+    expect(round.staked?.length).toBe(2);
+    expect(round.seats.map((s) => s.jokers.length)).toEqual([0, 0]);
+    expect(round.seats.map((s) => s.hand.length)).toEqual([3, 3]);
+    expect(round.community.length).toBe(3);
+    expect(round.bets[0] + round.bets[1]).toBeGreaterThan(pot);
+  });
+
+  it('folding from a riding pot is losing: the pot to the other, the snags to the one who folded', () => {
+    const round = createRound(1, players(2, [1, 1]), [], config, new Rng(2), { arranged: ['As', 'Kd', 'Qc', '2h', '2s', '3h', '3s', '4h', '4s', '8h', '9h'] });
+    const hand = (s: number) => round.seats[s].hand.map((c) => c.id);
+    resolveStreet(round, [stand, stand], config);
+    resolveStreet(round, [stand, stand], config);
+    resolveStreet(round, [{ type: 'compose', cardIds: [hand(0)[0]], jokers: 1 }, { type: 'compose', cardIds: [hand(1)[0]], jokers: 1 }], config);
+    rideOn(round, config);
+    resolveStreet(round, [{ type: 'fold' }, stand], config);
+    expect(round.result?.winners).toEqual([1]);
+    expect(round.result?.byFolds).toBe(true);
+    expect(round.result?.weakest).toBe(0);
+    expect(round.seats[0].jokers.length).toBe(2);
+    expect(round.seats[1].jokers.length).toBe(0);
+  });
+
   it('folded seats stay out of the hand; the last one in takes the pot', () => {
     const round = table(3, players(4), 0, order);
     resolveStreet(round, [{ type: 'fold' }, stand, { type: 'fold' }, stand], config);
@@ -64,13 +107,14 @@ describe('a hand at a table of four', () => {
     expect(round.seats[1].hand.map((c) => c.id)).toContain('Jh'); // (seat 1: the jacks)
   });
 
-  it('everyone still in folding at once is a stand-off: the pot is split, the odd coin to the earliest seat', () => {
+  it('everyone still in folding at once: moves go in seat order, so the last had only to stay', () => {
     const round = table(4, players(3), 1, order);
     resolveStreet(round, [{ type: 'fold' }, { type: 'fold' }, { type: 'fold' }], config);
     const res = round.result!;
     expect(res.byFolds).toBe(true);
-    expect(res.winners).toEqual([1, 2, 0]);
-    expect(res.share.reduce((a, b) => a + b, 0)).toBe(res.pot);
+    expect(res.winners).toEqual([0]);
+    expect(round.seats[0].folded).toBe(false);
+    expect(res.share[0]).toBe(res.pot);
   });
 
   it('at the showdown the best hand takes the pot, and the snags go to the weakest hand still in', () => {
@@ -196,12 +240,16 @@ describe('High Rollers', () => {
         g = nextHighRollersHand(g);
         continue;
       }
+      if (g.round!.result?.rides) {
+        g = playHighRollers(g, { type: 'ride' });
+        continue;
+      }
       const round = g.round!;
       const seat = mySeat(g);
       const out = seat < 0 || round.seats[seat].folded || (round.street === 3 && !isAnswering(round, seat));
       const mine = out ? null : round.street === 3 ? ({ type: 'match' } as const) : chooseAction('careful', viewFor(round, seat, g.config), g.config, rng);
       g = playHighRollers(g, mine);
-      if (g.round!.result) {
+      if (g.round!.result && !g.round!.result.rides) {
         hands++;
         if (firstOut < 0 && g.players.some((p) => p.out)) firstOut = hands;
       }
@@ -213,7 +261,8 @@ describe('High Rollers', () => {
     for (const seed of [1, 2, 3, 4, 5]) {
       const { g, total, firstOut, hands } = playThrough(seed);
       expect(g.phase).toBe('over');
-      expect(g.lastHand).toBe(true);
+      // One hand can clear the table: then there's nobody left for The Last Hand.
+      if (g.players.filter((p) => !p.out).length > 1) expect(g.lastHand).toBe(true);
       // The Last Hand is the one after the first knockout (unless that left one captain alone).
       if (g.players.filter((p) => !p.out).length > 0 && firstOut < hands) expect(hands).toBe(firstOut + 1);
       expect(g.players.reduce((a, p) => a + p.money, 0)).toBe(total);

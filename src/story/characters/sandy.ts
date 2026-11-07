@@ -26,6 +26,7 @@ const QUIPS = [
   'You’re in deep now. Well. Shallow.',
   'All the time in the world, Captain. I’m what they measure it in.',
   'A steam freighter drifts into a sandbar… stop me if you’ve heard it.',
+  'A deuce drifts into a sandbar, says: “Put it on my bill.”',
   'You’re right, I AM a son of a beach!',
   'First one’s on the river.',
   'Can you dig your way out of this?',
@@ -66,6 +67,9 @@ const MORNINGS = [
   'They’re starting to talk, Captain. You, me, every morning.',
 ];
 
+/** Before the third hand on the first day, and every so often after: the joke is on the buttons. */
+const QUIZ = ['Welcome to the Sandbar Pub Quiz!', 'First question: what do you call a manmade structure for retaining water?'];
+
 /** Before the third hand: a dare, with Deal on the button. */
 const DARES = ['Let’s see if you can muddle through another round.', 'Care to dredge up another hand?', 'Fancy your chances? I fancy your boat.', 'One more for the road. There isn’t one.'];
 
@@ -89,7 +93,7 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
         ],
       }
     : { deal: [bar(MORNINGS[(attempt - 2) % MORNINGS.length])] };
-  const scene: RoundScript = hand === 1 ? opening : hand === 3 ? { deal: [{ ...bar(DARES[(attempt - 1) % DARES.length]), replies: [{ label: 'Deal' }] }, bar('Shore thing!')] } : {};
+  const scene: RoundScript = hand === 1 ? opening : hand === 3 ? { deal: attempt % DARES.length === 1 ? [{ ...bar(QUIZ), replies: [{ label: 'Well' }, { label: 'Dam' }] }] : [{ ...bar(DARES[(attempt - 1) % DARES.length]), replies: [{ label: 'Deal' }] }, bar('Shore thing!')] } : {};
   const talkOnFlop = hand % 2 === 0;
   const talkAfter = hand % 2 === 1 && hand > 1 && hand < hands && pile > 0;
   return {

@@ -49,7 +49,7 @@
     <h3>{t('options.faces')}</h3>
     <div class="choice">
       <button class:ghost={cardPrefs.face !== 'value'} aria-pressed={cardPrefs.face === 'value'} onclick={() => cardPrefs.face !== 'value' && switchFaces()}>{t('options.faceValue')}</button>
-      <button class:ghost={cardPrefs.face !== 'pair'} aria-pressed={cardPrefs.face === 'pair'} onclick={() => cardPrefs.face !== 'pair' && switchFaces()}>{t('options.facePair')}</button>
+      <button class:ghost={cardPrefs.face !== 'suit'} aria-pressed={cardPrefs.face === 'suit'} onclick={() => cardPrefs.face !== 'suit' && switchFaces()}>{t('options.faceSuit')}</button>
     </div>
     <div class="sample">{#each sample as card (card.id)}<CardView {card} />{/each}</div>
     <p class="tip">{t('options.facesTip')}</p>

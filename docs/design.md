@@ -120,7 +120,7 @@ after it.
 ### The pot (draw style)
 
 There are no fixed payouts: captains play for a **pot** in the middle of the
-felt, and the winner takes it (a tie splits it).
+felt, and the winner takes it (dead level, it rides: see Hand ranking).
 
 - **Ante**, paid at the deal: ceil(crossing ÷ 3) (🔧 `anteEvery`), **plus snag
   upkeep** for every snag you carry, so a captain dragging snags around pays
@@ -155,10 +155,32 @@ Straights and flushes need 5 real cards.
 Straight flush > Four of a kind > Full house > Flush > Straight > Three of a kind
 > Two pair > Pair > High card.
 
-**Ties:** compare category, then ranks (kickers) as usual. If still equal, compare
-suits card-by-card from the highest card down, with **♣ < ♦ < ♥ < ♠**.
-Only when both hands contain exactly the same real cards is it a true **draw**:
-nobody wins, no snags move, no money is gained.
+**Ties:** compare category, then ranks (kickers) as usual. Suits rank nothing: an
+ace-high straight in diamonds is just as good as one in spades. Equal hands are **dead
+level**, about one showdown in 50 in a duel, one in 25 at a table of four (simulated).
+
+### The pot rides
+
+There are no split pots. Dead level, nothing is settled and the same hand goes on: Part
+Two, for the seats that tied, a fresh deck and a fresh deal, the antes in again. Tie
+again and it rides again, as often as it takes (Part Three, then Still Riding).
+
+- **Out of it:** whoever lost the showdown pays their forfeit into the pot, keeps their
+  own snags and sits out the rest. All they put in stays in the pot.
+- **The snags ride with the pot:** what the tied seats staked, and the board's. At the
+  end the loser takes the lot.
+- **Folding is losing:** fold from a riding pot and the snags are yours, as the first
+  to fold. So there's every reason to stick it out and hope for a good hand, and the
+  AIs do. That's epic Snag Poker.
+- **All in:** your money's in the pot already, so you play on for nothing.
+- **At a League crossing** it's the same two captains, on the spot; at a table, the same
+  hand number: a part two is one hand, not two, so the ante doesn't rise and it doesn't
+  count against a day's hands. Only a lesson without a pot can end level: nothing moves.
+- **Everyone folding at once** can't split it either: moves go in seat order, so the
+  last to move had only to stay, and takes it.
+
+This isn't modern poker and doesn't pretend to be: it's Snag Poker, as captains and
+riverfolk played it to settle disputes, a variant nobody alive has played.
 
 ## The slots style (retired)
 
@@ -480,8 +502,8 @@ as a fallback. Dropping is final.
 - **The hands, best first:** tap a hand's name at the table (yours, or theirs
   at the showdown) for the nine hands with an example each, that one picked
   out; also in How it works.
-- **Card faces:** the value big in the middle, or value and suit side by side
-  (a flush is easier to spot). Tap a board card to switch; also in Options.
+- **Card faces:** the value big in the middle with the suit small in the corner,
+  or the other way about (a flush is easier to spot). Tap a board card to switch; also in Options.
 - **Tidy your stacks:** tap your own purse and the coins slide into neat
   stacks of ten (they're left as they fall otherwise).
 - **Options** (the gear on the title): the clink of coins on or off, and card

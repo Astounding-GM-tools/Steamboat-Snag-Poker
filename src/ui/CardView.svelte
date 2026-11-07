@@ -83,7 +83,7 @@
     class:small
     class:huge
     style={width ? `--w: ${width}` : undefined}
-    class:pair={cardPrefs.face === 'pair'}
+    class:suited={cardPrefs.face === 'suit'}
     class:passive={!onclick && !ondragstart}
     class:selected
     class:lifted
@@ -167,7 +167,6 @@
   }
   .selected {
     transform: translateY(-10px) rotate(-2deg) !important;
-    box-shadow: 0 0 0 3px var(--paper), 0 0 18px 4px rgba(255, 255, 255, 0.45);
   }
   .lifted {
     transform: translateY(-14px) !important;
@@ -278,7 +277,7 @@
   }
   /*
    * Two faces, chosen in Willie's help: the value big in the middle with the
-   * suit in the corner (the default), or value and suit side by side.
+   * suit small in the corner (the default), or the other way about.
    */
   .pip-corner {
     position: absolute;
@@ -304,26 +303,27 @@
   .pip-side {
     display: none;
   }
-  .pair .pip-corner {
+  .suited .pip-corner {
     display: none;
   }
-  .pair .pip-value {
-    inset: 0 auto 0 8%;
-    padding-top: 0;
-    font-size: calc(var(--w) * 0.5);
-  }
-  .pair .pip-value.ten {
-    left: 2%;
-    font-size: calc(var(--w) * 0.48);
-  }
-  .pair .pip-side {
-    display: block;
-    position: absolute;
-    top: 50%;
-    right: 9%;
+  .suited .pip-value {
+    inset: 6% auto auto 7%;
     width: calc(var(--w) * 0.36);
     height: calc(var(--w) * 0.36);
-    transform: translateY(-50%);
+    padding-top: 0;
+    font-size: calc(var(--w) * 0.36);
+  }
+  .suited .pip-value.ten {
+    font-size: calc(var(--w) * 0.32);
+  }
+  .suited .pip-side {
+    display: block;
+    position: absolute;
+    top: 61%;
+    left: 50%;
+    width: calc(var(--w) * 0.66);
+    height: calc(var(--w) * 0.66);
+    transform: translate(-50%, -50%);
   }
   .joker {
     background: repeating-linear-gradient(45deg, #ddd 0 6px, #bbb 6px 12px);

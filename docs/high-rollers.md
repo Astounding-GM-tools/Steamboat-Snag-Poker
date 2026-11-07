@@ -35,7 +35,7 @@ What you walk away with is your score.
 - **All in:** nobody pays more than they have. Short of the price (the ante,
   a fee, a raise), you put in everything and stay in the hand; the pot holds
   only real money. Lose it, and with nothing left, you're out.
-- **The showdown:** the best hand takes the pot (a tie splits it). **The
+- **The showdown:** the best hand takes the pot (dead level, it rides: see Hand ranking in design.md). **The
   snags go to the weakest hand** still in: every snag the winner played, and
   any snag at stake on the board. A loser who played a snag keeps it and pays
   the winner its forfeit.

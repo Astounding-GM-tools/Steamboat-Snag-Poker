@@ -20,8 +20,8 @@
   interface Props {
     /** The cards you played, shown first at the showdown. */
     played: Card[];
-    /** The cards in your hand (dealt so far). */
-    hand: Card[];
+    /** The cards in your hand (dealt so far), each in its slot: a thrown card's stays empty until its replacement comes. */
+    hand: { card: Card; slot: number }[];
     look: (card: Card) => Look;
     ontap?: (card: Card) => void;
     /** A card leaving your hand (thrown away). */
@@ -37,10 +37,10 @@
 
 <div class="hand-row">
   <div class="hand-cell">
-    {#each played as card (card.id)}<CardView {card} used />{/each}
-    {#each hand as card (card.id)}
+    {#each played as card (card.id)}<CardView {card} selected />{/each}
+    {#each hand as { card, slot } (card.id)}
       {@const l = look(card)}
-      <span class="held" out:thrown={card}><CardView {card} deal="left" selected={l.selected} toss={l.toss} used={l.used} faded={l.faded} onclick={ontap ? () => ontap(card) : undefined} /></span>
+      <span class="held" style="--slot: {played.length + slot}" out:thrown={card}><CardView {card} deal="left" selected={l.selected} toss={l.toss} used={l.used} faded={l.faded} onclick={ontap ? () => ontap?.(card) : undefined} /></span>
     {/each}
   </div>
   <div class="fan-cell"><SnagFan cards={snags} look={snagLook} ontap={onsnag} /></div>
@@ -57,14 +57,16 @@
   }
   .hand-cell {
     grid-column: 1 / 7;
+    position: relative;
     display: flex;
     gap: var(--gap);
     align-items: flex-end;
   }
-  /* A card held in a hand: its own box, so it can leave on its own. */
+  /* A card held in a hand: its own box in its own slot, so it can leave on its own and nothing moves. */
   .held {
-    display: block;
-    flex: none;
+    position: absolute;
+    bottom: 0;
+    left: calc(var(--slot) * (var(--card-w) + var(--gap)));
   }
   .fan-cell {
     grid-column: 7 / 11;

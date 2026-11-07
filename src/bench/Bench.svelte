@@ -24,8 +24,9 @@
   const thrown = () => thrownCard(false);
   const pot = (n: number) => ({ amount: n, start: n });
 
+  const slotted = (cards: Card[]) => cards.map((card, slot) => ({ card, slot }));
   /** Their cards: dealt face down, at the showdown (two played, one held back), or folded. */
-  const dealtDown = (): SeatCard[] => [0, 1, 2].map((i) => ({ key: `h${i}`, faceDown: true, held: true }));
+  const dealtDown = (): SeatCard[] => [0, 1, 2].map((i) => ({ key: `h${i}`, faceDown: true, held: i }));
   const shownDown = (codes: string): SeatCard[] => {
     const [a, b, held] = c(codes);
     return [
@@ -79,16 +80,16 @@
   <h2>Your cards</h2>
   <div class="grid">
     <Frame {width} label="Dealt">
-      <div><MyCards played={[]} hand={mine} look={noLook} {thrown} snags={snags(1, 12)} snagLook={noLook} discarded={[]} /></div>
+      <div><MyCards played={[]} hand={slotted(mine)} look={noLook} {thrown} snags={snags(1, 12)} snagLook={noLook} discarded={[]} /></div>
     </Frame>
     <Frame {width} label="Two tapped to swap">
-      <div><MyCards played={[]} hand={mine} look={(card) => ({ toss: card.id !== 'Kd' })} {thrown} snags={snags(1, 12)} snagLook={noLook} discarded={c('2c')} flopDiscards={1} /></div>
+      <div><MyCards played={[]} hand={slotted(mine)} look={(card) => ({ toss: card.id !== 'Kd' })} {thrown} snags={snags(1, 12)} snagLook={noLook} discarded={c('2c')} flopDiscards={1} /></div>
     </Frame>
     <Frame {width} label="Making your hand: two tapped, a snag riding">
-      <div><MyCards played={[]} hand={mine} look={(card) => ({ selected: card.id !== '7h', used: card.id !== '7h' })} ontap={() => {}} {thrown} snags={snags(2, 12)} snagLook={(card) => ({ selected: card.id === jokerCard(12).id })} onsnag={() => {}} discarded={c('2c 9s')} flopDiscards={1} /></div>
+      <div><MyCards played={[]} hand={slotted(mine)} look={(card) => ({ selected: card.id !== '7h', used: card.id !== '7h' })} ontap={() => {}} {thrown} snags={snags(2, 12)} snagLook={(card) => ({ selected: card.id === jokerCard(12).id })} onsnag={() => {}} discarded={c('2c 9s')} flopDiscards={1} /></div>
     </Frame>
     <Frame {width} label="Showdown: played first, the rest dimmed">
-      <div><MyCards played={c('Kd Ks')} hand={c('7h')} look={() => ({ faded: true })} {thrown} snags={snags(1, 12)} snagLook={() => ({ used: true, lifted: true })} discarded={[]} /></div>
+      <div><MyCards played={c('Kd Ks')} hand={slotted(c('7h'))} look={() => ({ faded: true })} {thrown} snags={snags(1, 12)} snagLook={() => ({ used: true, lifted: true })} discarded={[]} /></div>
     </Frame>
   </div>
 

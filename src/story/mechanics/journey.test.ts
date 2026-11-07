@@ -123,7 +123,7 @@ describe('a table with an obstacle', () => {
   function play(s: TableSession, rng: Rng): TableSession {
     while (s.phase === 'hand') {
       const me = s.seated.indexOf(0);
-      s = submit(s, me, chooseAction('careful', viewFor(s.round!, me, s.config), s.config, rng));
+      s = submit(s, me, s.round!.result?.rides ? { type: 'ride' } : chooseAction('careful', viewFor(s.round!, me, s.config), s.config, rng));
     }
     return s;
   }
@@ -483,7 +483,7 @@ describe('the climb', () => {
     let s = newSession(5, [{ id: 'captain', money: 40 }, { id: 'stage', ai: 'stubborn', money: 15, obstacle: true, steady: true }], STORY_CONFIG);
     for (let h = 0; h < 6 && s.phase !== 'over'; h++) {
       const before = s.seats[1].money;
-      while (s.phase === 'hand') s = submit(s, s.seated.indexOf(0), chooseAction('careful', viewFor(s.round!, s.seated.indexOf(0), s.config), s.config, rng));
+      while (s.phase === 'hand') s = submit(s, s.seated.indexOf(0), s.round!.result?.rides ? { type: 'ride' } : chooseAction('careful', viewFor(s.round!, s.seated.indexOf(0), s.config), s.config, rng));
       expect(s.seats[1].money).toBeLessThanOrEqual(before);
       if (s.phase === 'handEnd') s = nextSessionHand(s);
     }

@@ -1,7 +1,7 @@
 import type { Card, Category } from '../engine';
 
-/** How a card face reads: the value big in the middle, or value and suit side by side. */
-export type CardFace = 'value' | 'pair';
+/** How a card face reads: the value big in the middle with the suit small in the corner, or the other way about. */
+export type CardFace = 'value' | 'suit';
 
 /**
  * Card display settings shared by every card on screen, the card held up for

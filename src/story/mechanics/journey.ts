@@ -635,8 +635,9 @@ export function playEncounter(prev: JourneyState, action: Action | null): Journe
   const state = clone(prev);
   const e = state.encounter!;
   const me = mySeatAt(e);
-  if (action) {
-    let move = action;
+  if (action?.type === 'ride') e.session = submit(e.session, me, action);
+  else if (action) {
+    let move: Action = action;
     if (e.def.proxy) {
       // Whoever's in your seat decides: you only said when.
       const rng = new Rng(state.rngState);

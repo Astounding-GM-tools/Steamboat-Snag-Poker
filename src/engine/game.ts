@@ -7,7 +7,7 @@ import { chooseAction, viewFor } from './ai';
 import { jokerCard, type JokerCard } from './cards';
 import { HUMAN_ID, ROSTER, drawLineUp, type AiId, type LineUpEntry } from './characters';
 import { DEFAULT_CONFIG, type RulesConfig } from './config';
-import { createRound, isLegal, movers, resolveStreet, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
+import { createRound, isLegal, movers, resolveStreet, rideOn, type Action, type ArrangedHand, type RoundResult, type RoundState } from './round';
 import { Rng } from './rng';
 import type { HighRollersResult, HighRollersSetup, HighRollersState } from './highrollers';
 
@@ -193,6 +193,10 @@ function startMonthMut(state: GameState): GameState {
 export function submitAction(prev: GameState, action: Action): GameState {
   if (prev.phase !== 'duel' || !prev.round) throw new Error('Not in a duel');
   const state = clone(prev);
+  if (action.type === 'ride') {
+    rideOn(state.round!, state.config);
+    return state;
+  }
   const rng = new Rng(state.rngState);
   const round = state.round!;
   const arranged = state.arranged?.[state.month - 1];
@@ -206,7 +210,7 @@ export function submitAction(prev: GameState, action: Action): GameState {
     return chooseAction(player(state, seat.playerId).ai!, viewFor(round, i, state.config), state.config, rng);
   });
   resolveStreet(round, actions, state.config);
-  if (round.result) finishMonth(state, rng);
+  if (round.result && !round.result.rides) finishMonth(state, rng);
   state.rngState = rng.state;
   return state;
 }
@@ -220,6 +224,7 @@ function simulateDuel(state: GameState, a: Player, b: Player, rng: Rng): RoundSt
       [chooseAction(a.ai!, viewFor(round, 0, state.config), state.config, rng), chooseAction(b.ai!, viewFor(round, 1, state.config), state.config, rng)],
       state.config,
     );
+    if ((round as RoundState).result?.rides) rideOn(round, state.config);
   }
   return round;
 }
