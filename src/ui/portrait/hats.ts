@@ -110,10 +110,13 @@ export function hat(h: Head, spec: HatSpec): Part[] {
     parts.push({ d: shaped(h, band, band - h.top + 1, 4, 1.1), fill: colour });
     parts.push({ d: peak(band, spec.size ?? 23, 7), fill: 'grey', stroke: 'ink', width: 2 });
   } else if (kind === 'soft') {
-    parts.push({ d: shaped(h, band, band - h.top + 3, 7, 1.2), fill: colour, stroke: 'ink', width: 2 });
+    // Flat and wide: more pancake than pudding.
+    const height = band - h.top - 5;
+    const crownTop = band - height;
+    parts.push({ d: shaped(h, band, height, 7, 1.5), fill: colour, stroke: 'ink', width: 2 });
     const [l, rt] = edges(h, band, 2.4);
-    parts.push({ d: `M50 ${r(top - 5)} L${r(l + 10)} ${band} M50 ${r(top - 5)} L50 ${band + BOW} M50 ${r(top - 5)} L${r(rt - 10)} ${band}`, fill: 'none', stroke: 'ink', width: 1.2 });
-    parts.push({ d: `M47.5 ${r(top - 5)} a2.5 2.5 0 1 0 5 0 a2.5 2.5 0 1 0 -5 0 Z`, fill: 'ink' });
+    parts.push({ d: `M50 ${r(crownTop + 1)} L${r(l + 8)} ${band} M50 ${r(crownTop + 1)} L50 ${band + BOW} M50 ${r(crownTop + 1)} L${r(rt - 8)} ${band}`, fill: 'none', stroke: 'ink', width: 1.2 });
+    parts.push({ d: `M47.5 ${r(crownTop + 1)} a2.5 2.5 0 1 0 5 0 a2.5 2.5 0 1 0 -5 0 Z`, fill: 'ink' });
     parts.push({ d: peak(band, spec.size ?? 22, 7), fill: 'ink' });
   } else if (kind === 'bowler') {
     parts.push({ d: shaped(h, band, band - h.top + 7, 2, 0.9), fill: colour });
@@ -137,7 +140,7 @@ export function hat(h: Head, spec: HatSpec): Part[] {
     parts.push({ d: brim(band, h.width + 13, 7), fill: 'sand', stroke: 'ink', width: 2 });
   } else {
     // An officer's cap: the crown spreads into a flat top, over a band and a peak.
-    parts.push({ d: shaped(h, band - 5, band - h.top + 1, 8, 1.4), fill: spec.colour ?? 'ink', stroke: 'ink', width: 2 });
+    parts.push({ d: shaped(h, band - 5, band - h.top - 4, 5, 1.3), fill: spec.colour ?? 'ink', stroke: 'ink', width: 2 });
     const [l, rt] = edges(h, band - 2.5, 2.4);
     parts.push({ d: strip(l, rt, band, band - 6), fill: 'grey', stroke: 'ink', width: 1.4 });
     if (spec.braid) {

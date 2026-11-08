@@ -609,7 +609,7 @@ const ignatz: Face = {
     { layer: 'back', d: 'M27 50 C20 46 20 60 28 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     { layer: 'back', d: 'M73 50 C80 46 80 60 72 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     // A triangle of hair, pointing down onto his forehead.
-    { layer: 'front', d: 'M37 27 C43 24 57 24 63 27 L50 38 Z', fill: 'none', stroke: 'ink', width: 2.4, },
+    { layer: 'front', d: 'M37 27 L50 38 L63 27', fill: 'none', stroke: 'ink', width: 2.4 },
   ],
   // He hardly ever blinks.
   blink: 31,
@@ -630,7 +630,7 @@ const nemo: Face = {
     { layer: 'back', d: 'M76 49 C83 45 83 60 75 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     // A bushy, dishevelled mane, slept in.
     { layer: 'back', d: 'M13.5 33.3 Q4.0 26.1 11.7 25.5 Q8.4 19.4 21.9 24.2 Q12.6 12.1 20.1 13.7 Q19.6 6.9 30.0 14.6 Q29.0 5.4 35.2 9.3 Q37.1 2.8 43.8 14.1 Q45.3 -2.3 50.0 3.2 Q54.7 -2.3 57.1 9.4 Q62.3 4.6 62.9 13.8 Q71.9 3.7 72.7 10.4 Q79.7 7.6 75.0 18.8 Q84.4 14.8 82.3 21.2 Q89.8 20.5 81.8 28.8 Q96.0 26.1 91.6 31.7 L74 62 L26 62 Z', fill: 'ink' },
-    { layer: 'front', d: 'M24 46 C24 34 30 27 38 28 C35 32 34 36 36 40 C38 32 44 27 51 29 C49 33 49 37 52 39 C54 32 61 28 67 31 C65 34 66 38 70 41 C72 38 75 41 76 46 C70 36 60 33 50 34 C40 33 30 37 24 46 Z', fill: 'ink' },
+    { layer: 'front', d: 'M22 50 C14 14 86 14 78 50 C76 44 73 41 70 42 C68 35 62 32 58 36 C55 30 48 30 45 35 C41 30 35 32 33 38 C29 37 25 42 22 50 Z', fill: 'ink' },
     // Z, z, z.
     { layer: 'over', d: 'M80 6 H86 L80 12 H86 M89 -2 H93 L89 2 H93', fill: 'none', stroke: 'ink', width: 1.6 },
   ],
