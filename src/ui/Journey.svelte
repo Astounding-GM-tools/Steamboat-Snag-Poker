@@ -67,6 +67,8 @@
   }
 
   /** The table as last shown: one on its way out may still be finishing an animation, and reads it. */
+  /** At the Sandbar, the heap's full size: the pile Sandy starts with (it may grow past it). */
+  const sandbarFull = (e: NonNullable<typeof enc>) => e.def.rivals !== 'crew' ? e.def.rivals.find((r) => r.obstacle && r.id === 'sandbar')?.money : undefined;
   const last: { view: TableView | null } = { view: null };
   const view = $derived.by((): TableView | null => {
     if (!enc || enc.outcome) return null;
@@ -88,6 +90,7 @@
       phase: s.phase,
       currency: enc.def.stake === 'strength' ? 'buttons' : undefined,
       label: t('river.day', { day: journey.mornings }),
+      ...(sandbarFull(enc) ? { scene: { kind: 'sandbar' as const, full: sandbarFull(enc)! } } : {}),
       ...(s.seats.some((p) => p.obstacle) ? { winLine: t(s.seats.some((p) => p.steady) ? 'river.gainedGround' : 'river.heldGround') } : {}),
       ...(enc.def.proxy ? { proxy: t('river.proxy') } : {}),
       ending: s.phase === 'over' ? (s.seats[0].out ? 'lostAll' : 'wonAll') : undefined,

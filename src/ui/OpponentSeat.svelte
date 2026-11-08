@@ -66,6 +66,8 @@
     portrait?: Snippet;
     /** How they look, for those with a face. */
     mood?: MoodBlend;
+    /** A picture in place of the portrait, across the head of the seat (an obstacle's scene: the scene is the score). */
+    scene?: Snippet;
     /** Columns of the table's twelve it spans (twelve: the whole width). */
     span?: number;
     cardsEl?: HTMLElement;
@@ -90,6 +92,7 @@
     onselect,
     portrait,
     mood = 'neutral',
+    scene,
     span = 12,
     cardsEl = $bindable(),
     purseEl = $bindable(),
@@ -132,7 +135,7 @@
 <div class="seat {mode}" class:focus class:folded class:broke style:grid-column={mode === 'full' ? '1 / -1' : `span ${span}`} bind:clientWidth={width}>
   {#if mode === 'full'}
     <!-- Name and title over their coins; a tall portrait beside both. -->
-    <div class="head">
+    <div class="head" class:with-scene={!!scene}>
       <div class="left">
         <button class="name-btn" onclick={onselect}>
           <span class="who">
@@ -142,9 +145,13 @@
         </button>
         <div class="purse-place" data-purse={seat} bind:this={purseEl}>{@render coins('big')}</div>
       </div>
-      <button class="portrait-btn" onclick={onselect} aria-label={name(id)}>
-        <span class="oval portrait">{@render likeness()}{@render portrait?.()}</span>
-      </button>
+      {#if scene}
+        <button class="scene-btn" onclick={onselect} aria-label={name(id)}>{@render scene()}<span class="scene-countdown">{@render portrait?.()}</span></button>
+      {:else}
+        <button class="portrait-btn" onclick={onselect} aria-label={name(id)}>
+          <span class="oval portrait">{@render likeness()}{@render portrait?.()}</span>
+        </button>
+      {/if}
     </div>
     <div class="cards" bind:this={cardsEl}>
       <div class="hand-cell">{@render hand()}</div>
@@ -249,6 +256,27 @@
   }
   :global(.short) .full .purse-place {
     min-height: 56px;
+  }
+  /* With a scene: the name and coins narrow to the left, the picture takes the rest. */
+  .with-scene .left {
+    grid-column: 1 / 5;
+  }
+  .scene-btn {
+    grid-column: 5 / 13;
+    position: relative;
+    display: block;
+    padding: 0;
+    background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+  }
+  .scene-countdown {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 28px;
+    height: 28px;
   }
   .portrait-btn {
     grid-column: 9 / 13;
