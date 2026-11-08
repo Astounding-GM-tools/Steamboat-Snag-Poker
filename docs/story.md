@@ -1664,7 +1664,9 @@ Sandy's, in `src/story/characters/sandy.ts`:
   his mother was a beach; "You are a very grounded person, Captain."; "I'll put it on your
   tab."; "What's your poison, Captain? We've got silt, and we've got grit. Moonshine too, if
   you stick around."; "That's a very fine sediment, Captain."; "The nerve of some people,
-  calling me shallow!" **Five to find.**
+  calling me shallow!"; "I want to be a Beach Club when I grow up."; "♪ Sand and deliver! Your
+  money and your time! ♪" (after Adam Ant); "I used to be a mountain, you know. The erosion was
+  a constant grind." (may want more work). **Two to find.**
 - **Last call!** **Cleared:** "I'll drift off downstream now… Catch you later, Captain!"
   **Beaten:** "I think you've had enough, Captain. You're in no shape to drive: you'd better
   stay the night."
@@ -1684,7 +1686,7 @@ Sandy's, in `src/story/characters/sandy.ts`:
 - One-liners cut in the last pass: "You're in deep now. Well. Shallow." "All the time in the world,
   Captain. I'm what they measure it in." "I was a mountain once. I can wait." "I'd offer you a
   stool, but you're sitting on me." "I never forget a face. I do wear them down." "Tell your
-  engineer I said hello. I'm in his boiler." "I want to be a Beach Club when I grow up." "What's
+  engineer I said hello. I'm in his boiler." "What's
   your poison? We've got silt, grit and more silt." "Lovely hull. Mind if I keep it?" "I hear the
   Fair's very nice. Tell me all about it, some year." "Bar's open. Bar's always open."
 - Mornings: "Back at the bar? Regulars drink free. It's nothing, but it's free." "Sleep well? You
