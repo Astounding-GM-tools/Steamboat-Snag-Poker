@@ -340,7 +340,7 @@ export const en = {
   'character.tripp.nick': 'Old Guard',
   'character.tripp.boat': 'Of Davenport',
   'character.tripp.blurb': 'Three of a kind settles it. Always has, always will.',
-  'character.odds.name': 'Otto Pfeiffer',
+  'character.odds.name': 'Ottilie Pfeiffer',
   'character.odds.called': 'Odds',
   'character.odds.nick': 'Odds',
   'character.odds.boat': 'Bookmaker, of Bettendorf',

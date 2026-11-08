@@ -71,7 +71,7 @@
   });
 
   // --- The drawing --------------------------------------------------------
-  const COLOUR = { ink: 'var(--ink, #111)', paper: 'var(--paper, #f2efe6)', sand: '#cfc8b4', grey: '#8f8c84', umber: '#70675d', none: 'none' };
+  const COLOUR = { ink: 'var(--ink, #111)', paper: 'var(--paper, #f2efe6)', sand: '#cfc8b4', grey: '#8f8c84', umber: '#70675d', tan: '#a3927d', none: 'none' };
   const fillOf = (part: Part) => COLOUR[part.fill ?? 'none'];
 
   const headPath = $derived.by(() => {

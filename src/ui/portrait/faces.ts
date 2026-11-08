@@ -53,7 +53,7 @@ import { hat } from './hats';
 export interface Part {
   /** Path data. */
   d: string;
-  fill?: 'ink' | 'paper' | 'none' | 'sand' | 'grey' | 'umber';
+  fill?: 'ink' | 'paper' | 'none' | 'sand' | 'grey' | 'umber' | 'tan';
   stroke?: 'ink' | 'paper' | 'grey';
   width?: number;
   /** Swings with the mood, about the face's `pivot` (a pipe in the teeth). */
@@ -71,7 +71,8 @@ export interface Part {
 export interface Face {
   /** The head: a jowly oval by these numbers, or any shape of its own (a heap of sand). */
   head: { width: number; top: number; jaw: number; chin: number; bottom: number } | { outline: string };
-  fill?: 'paper' | 'sand' | 'grey' | 'umber';
+  /** The skin: paper, or a tone from the film's own greys (`tan`, `umber`), never ink. */
+  fill?: 'paper' | 'sand' | 'grey' | 'umber' | 'tan';
   /** Pie eyes work on a pale face; on a dark one, `soft`: round eyes with a small round catch of light. */
   eyes: { y: number; gap: number; rx: number; ry: number; soft?: boolean; lashes?: boolean };
   brows: { y: number; gap: number; length: number; weight: number; arch: number };
@@ -494,17 +495,18 @@ const tripp: Face = {
 };
 
 const rourkeHead = { width: 27, top: 12, jaw: 84, chin: 20, bottom: 90 };
-/** Tommy Rourke, on the picket line at Rock Island: a soft cap with a strike button, stubble, and a matchstick in the corner of his mouth. */
+/** Tommy Rourke, on the picket line at Rock Island, one of the Black miners in the strike: a soft cap with a strike button, stubble, and a matchstick in the corner of his mouth. */
 const rourke: Face = {
   head: rourkeHead,
-  eyes: { y: 49, gap: 11, rx: 4, ry: 5.6 },
+  fill: 'tan',
+  eyes: { y: 49, gap: 11, rx: 4, ry: 5.6, soft: true },
   brows: { y: 39, gap: 11, length: 11, weight: 3.2, arch: 2 },
   nose: { kind: 'hook', y: 58, size: 4.5 },
   mouth: { y: 74, width: 12 },
   parts: [
-    { layer: 'back', d: 'M24 48 C17 44 17 59 25 59 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
-    { layer: 'back', d: 'M76 48 C83 44 83 59 75 59 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
-    { layer: 'face', d: 'M37 80 h.1 M42 83 h.1 M48 84 h.1 M54 84 h.1 M60 82 h.1 M64 79 h.1 M45 87 h.1 M55 87 h.1', stroke: 'grey', width: 1.8 },
+    { layer: 'back', d: 'M24 48 C17 44 17 59 25 59 Z', fill: 'tan', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M76 48 C83 44 83 59 75 59 Z', fill: 'tan', stroke: 'ink', width: 2.4 },
+    { layer: 'face', d: 'M37 80 h.1 M42 83 h.1 M48 84 h.1 M54 84 h.1 M60 82 h.1 M64 79 h.1 M45 87 h.1 M55 87 h.1', stroke: 'ink', width: 1.8 },
     // A matchstick.
     { layer: 'over', swing: true, d: 'M60 74 L72 86', fill: 'none', stroke: 'ink', width: 2 },
     { layer: 'over', swing: true, d: 'M71 85 L73.5 87.5', fill: 'none', stroke: 'ink', width: 3.8 },
@@ -521,18 +523,19 @@ const rourke: Face = {
 };
 
 const oddsHead = { width: 28, top: 13, jaw: 86, chin: 26, bottom: 88 };
-/** Otto Pfeiffer, "Odds", the bookmaker of Bettendorf: a straw boater, round cheeks, and a waxed moustache curled up at both ends. */
+/** Ottilie Pfeiffer, "Odds", the bookmaker of Bettendorf: a straw boater over pinned-up hair, round cheeks, earrings, and a grin that has already set the odds. */
 const odds: Face = {
   head: oddsHead,
-  eyes: { y: 50, gap: 11, rx: 3.8, ry: 5.2 },
+  eyes: { y: 50, gap: 11, rx: 3.8, ry: 5.2, lashes: true },
   brows: { y: 41, gap: 11, length: 10, weight: 3, arch: 3 },
   nose: { kind: 'button', y: 60, size: 4 },
   mouth: { y: 74, width: 12 },
   parts: [
     { layer: 'back', d: 'M23 49 C16 45 16 60 24 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
     { layer: 'back', d: 'M77 49 C84 45 84 60 76 60 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
-    // A waxed moustache, curled up at both ends.
-    { layer: 'mouth', d: 'M50 67 C45 64 39 66 35 68 C31 70 27 68 28 63 C29 60 32 59 33 61 C31 61 30 64 32 65 C35 66 39 63 42 63 C45 62 48 63 50 64 C52 63 55 62 58 63 C61 63 65 66 68 65 C70 64 69 61 67 61 C68 59 71 60 72 63 C73 68 69 70 65 68 C61 66 55 64 50 67 Z', fill: 'ink' },
+    // Hair pinned up under the boater, and earrings.
+    { layer: 'back', d: 'M20 56 C14 34 26 20 50 20 C74 20 86 34 80 56 C76 48 74 40 70 36 L30 36 C26 40 24 48 20 56 Z', fill: 'ink' },
+    { layer: 'front', d: 'M21 61 a2.4 3.2 0 1 0 4.8 0 a2.4 3.2 0 1 0 -4.8 0 Z M74.2 61 a2.4 3.2 0 1 0 4.8 0 a2.4 3.2 0 1 0 -4.8 0 Z', fill: 'paper', stroke: 'ink', width: 1.4 },
     // The boater.
     ...hat(oddsHead, { kind: 'boater', band: 31 }),
 
@@ -646,16 +649,17 @@ const nemo: Face = {
 };
 
 const walrusHead = { width: 30, top: 12, jaw: 84, chin: 26, bottom: 90 };
-/** The Walrus, an old sea dog: a captain's cap with braid, a mighty moustache, and a big straight beard that won't keep to the frame. */
+/** The Walrus, an old sea dog and one of the river's few Black captains: a captain's cap with braid, a mighty moustache, and a big straight beard that won't keep to the frame. */
 const walrus: Face = {
   head: walrusHead,
-  eyes: { y: 46, gap: 11, rx: 3.2, ry: 4.4 },
+  fill: 'umber',
+  eyes: { y: 46, gap: 11, rx: 3.2, ry: 4.4, soft: true },
   brows: { y: 37, gap: 11, length: 12, weight: 5, arch: 1 },
   nose: { kind: 'bulb', y: 56, size: 5.5, pale: true },
   mouth: { y: 74, width: 8, hidden: true },
   parts: [
-    { layer: 'back', d: 'M21 46 C14 42 14 57 22 57 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
-    { layer: 'back', d: 'M79 46 C86 42 86 57 78 57 Z', fill: 'paper', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M21 46 C14 42 14 57 22 57 Z', fill: 'umber', stroke: 'ink', width: 2.4 },
+    { layer: 'back', d: 'M79 46 C86 42 86 57 78 57 Z', fill: 'umber', stroke: 'ink', width: 2.4 },
     // The beard: big and straight, down past the frame.
     { layer: 'face', spill: true, d: 'M22 52 C21 68 25 86 32 101 L68 101 C75 86 79 68 78 52 C73 62 66 66 50 66 C34 66 27 62 22 52 Z', fill: 'grey', stroke: 'ink', width: 2.4 },
     { layer: 'face', d: 'M37 72 L38 94 M45 74 L45 98 M55 74 L55 98 M63 72 L62 94', fill: 'none', stroke: 'ink', width: 1.2 },
