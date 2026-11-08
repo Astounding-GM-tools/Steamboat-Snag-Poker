@@ -160,6 +160,17 @@
       <rect x="-50" y="-50" width="200" height="200" fill="#fff" />
       <circle cx="50" cy="50" r="50" fill="#000" />
     </mask>
+    <!-- Gentle occlusion: hats, hair and moustaches cast a soft shadow, and the oval darkens toward its rim. -->
+    <filter id="shade-{uid}" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.6" stdDeviation="1.4" flood-color="#000" flood-opacity="0.32" />
+    </filter>
+    <filter id="soft-{uid}" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2.4" flood-color="#000" flood-opacity="0.22" />
+    </filter>
+    <radialGradient id="rim-{uid}" cx="50%" cy="46%" r="54%">
+      <stop offset="62%" stop-color="#000" stop-opacity="0" />
+      <stop offset="100%" stop-color="#000" stop-opacity="0.28" />
+    </radialGradient>
     <radialGradient id="cream-{uid}" cx="50%" cy="42%" r="60%">
       <stop offset="0%" stop-color="#e4ddcb" />
       <stop offset="75%" stop-color="#cdc5b0" />
@@ -174,7 +185,7 @@
       <circle class="grain" cx={x} cy={y} r={0.9 + (i % 3) * 0.35} fill={COLOUR.sand} style="--d: {(i * 0.73) % 2.6}s" />
     {/each}
     {#each partsIn('back') as part, i (i)}{@render drawn(part)}{/each}
-    <path class="head" d={headPath} fill={COLOUR[face.fill ?? 'paper']} stroke={COLOUR.ink} stroke-width="2.8" stroke-linejoin="round" />
+    <path class="head" filter="url(#soft-{uid})" d={headPath} fill={COLOUR[face.fill ?? 'paper']} stroke={COLOUR.ink} stroke-width="2.8" stroke-linejoin="round" />
     {#each partsIn('face') as part, i (i)}{@render drawn(part)}{/each}
 
     <g class="eyes">
@@ -205,15 +216,17 @@
     </g>
     {#if nose}<path class="nose" d={nose} fill={face.nose?.kind === 'hook' ? 'none' : face.nose?.tint ? COLOUR[face.nose.tint] : face.nose?.pale ? COLOUR[face.fill ?? 'paper'] : COLOUR.ink} stroke={COLOUR.ink} stroke-width="2.4" stroke-linecap="round" />{/if}
     {#if !face.mouth.hidden}<path class="mouth" d={mouth} fill={p.mouthOpen < 0.03 ? 'none' : COLOUR.ink} stroke={COLOUR.ink} stroke-width={3 - Math.min(1, p.wobble) * 1.2} stroke-linecap="round" stroke-linejoin="round" />{/if}
-    <g transform="translate(0 {mouthShift})">
+    <g transform="translate(0 {mouthShift})" filter="url(#shade-{uid})">
       {#each partsIn('mouth') as part, i (i)}{@render drawn(part)}{/each}
     </g>
     {#if p.sweat > 0.05}
       <path class="sweat" d="M73 26 C70 31 69 34 73 35 C77 34 76 31 73 26 Z" fill={COLOUR.paper} stroke={COLOUR.ink} stroke-width="1.5" opacity={Math.min(1, p.sweat)} />
     {/if}
-    {#each partsIn('front') as part, i (i)}{@render drawn(part)}{/each}
-  </g></g></g>
-  <g transform={zoom}><g transform="rotate({p.lean} 50 92)">
+    <g filter="url(#shade-{uid})">{#each partsIn('front') as part, i (i)}{@render drawn(part)}{/each}</g>
+  </g></g>
+  <circle cx="50" cy="50" r="50" fill="url(#rim-{uid})" pointer-events="none" />
+  </g>
+  <g transform={zoom} filter="url(#shade-{uid})"><g transform="rotate({p.lean} 50 92)">
     {#each partsIn('over').filter((x) => !x.swing && !x.withMouth) as part, i (i)}{@render drawn(part)}{/each}
     <g transform={face.pivot ? `rotate(${p.pipe * 7 * (face.leftSide ? -1 : 1)} ${face.pivot[0]} ${face.pivot[1]})` : undefined}>
     {#each partsIn('over').filter((x) => x.swing) as part, i (i)}{@render drawn(part)}{/each}

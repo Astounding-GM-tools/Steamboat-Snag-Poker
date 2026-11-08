@@ -104,7 +104,8 @@
   const room = $derived(width || span * 28);
   // Across the whole table it's always all there, however narrow the table (a short screen narrows it to fit).
   const mode = $derived(span === 12 || room >= 260 ? 'full' : room >= 150 ? 'medium' : 'compact');
-  const title = $derived(nickname(id) ? `“${nickname(id)}”` : t(`character.${id}.boat`));
+  /** Under the name, no quotes: their nickname (Hurler, Deck hand), or else their boat (the Walrus: The Cacophony). */
+  const title = $derived(nickname(id) ?? t(`character.${id}.boat`).replace(/^Captain of the /, 'The '));
 </script>
 
 {#snippet likeness()}
@@ -254,6 +255,10 @@
     grid-column: 9 / 13;
     position: relative;
     display: block;
+    /* No height of its own, sat at the foot of the row: the portrait hangs up from there, beside the name and
+       the coins, and never moves. (Left to stretch, a button sometimes doesn't, and the portrait jumped.) */
+    align-self: end;
+    height: 0;
     padding: 0;
     background: none;
     border: none;
