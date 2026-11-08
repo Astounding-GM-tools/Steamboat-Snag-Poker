@@ -508,7 +508,7 @@ export const en = {
   'joker.12': 'Grudging Respect',
   'joker.13': 'the Solemn Oath',
   'joker.14': 'the Broken Pole',
-  'joker.15': 'the Twisted Axle',
+  'joker.15': 'the Twisted Crankshaft',
   'joker.16': 'the Broken Paddle',
   'joker.17': 'the Busted Boiler',
   'joker.18': 'Fatigue',
@@ -516,6 +516,7 @@ export const en = {
   'joker.20': 'the Dock Fee',
   'joker.21': 'Pamphlet Distribution',
   'joker.22': 'the Strike Support Button',
+  'joker.23': 'On the Rocks',
 
 
 } as const;

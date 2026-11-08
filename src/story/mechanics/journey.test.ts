@@ -263,7 +263,7 @@ describe('table talk', () => {
   });
 
   it('has whoever takes a trouble that isn\'t theirs hand it to whoever fixes it', () => {
-    const lines = deck({ ...context, fixed: [{ id: 'willie', snag: TROUBLE.twistedAxle }] }).verdict!;
+    const lines = deck({ ...context, fixed: [{ id: 'willie', snag: TROUBLE.twistedCrankshaft }] }).verdict!;
     expect(lines.map((l) => l.who)).toEqual(['willie', 'gus']);
     expect(lines[0].text).toContain('Gus');
   });

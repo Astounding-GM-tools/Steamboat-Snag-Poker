@@ -93,7 +93,7 @@
   <div class="heap" style="--size: {size}">
     <Portrait id="sandbar" {mood} backdrop="dark" />
     <svg class="troubles" viewBox="0 0 100 100" aria-hidden="true">
-      {#if has(14)}
+      {#if has(23)}
         <!-- A broken pole, snapped, stuck in the sand. -->
         <path d="M14 88 L6 58 M8 56 L2 44" stroke="#cfc8b4" stroke-width="4" stroke-linecap="round" />
         <path d="M14 88 L6 58 M8 56 L2 44" stroke="#111" stroke-width="1.2" stroke-linecap="round" fill="none" />

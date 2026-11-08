@@ -13,7 +13,7 @@ const quip = (text: string | string[]): SpeechLine => ({ ...aside('sandbar', '')
 export const sandbar: EncounterDef = {
   id: 'sandbar',
   stake: 'strength',
-  rivals: [{ id: 'sandbar', ai: 'stubborn', money: SANDBAR_PILE, jokers: [TROUBLE.brokenPole, TROUBLE.brokenPaddle, TROUBLE.twistedAxle], obstacle: true }],
+  rivals: [{ id: 'sandbar', ai: 'stubborn', money: SANDBAR_PILE, jokers: [TROUBLE.onTheRocks, TROUBLE.brokenPaddle, TROUBLE.twistedCrankshaft], obstacle: true }],
   goal: { type: 'clear' },
   hands: SANDBAR_HANDS,
   // The river plays dear from the first hand: an ante of 2, then 3 (as if three hands were already past).
@@ -27,7 +27,7 @@ export const sandbar: EncounterDef = {
  */
 export const SANDY: Routine = {
   who: 'sandbar',
-  opening: 'Welcome to the sandbar, I’ll be your waiter this evening. Today’s specials are the Broken Paddle and the Twisted Axle.',
+  opening: ['Welcome to the sandbar! I’ll be your bartender this evening.', 'Today’s specials: Paddle Split, Crankshaft with a Twist, and the Best Intentions, served on the Rocks.'],
   mornings: ['Welcome back, Captain, have a seat. It’s five o’clock somewhere, I’m sure.'],
   rounds: [
     { text: 'Another round, Captain?', answers: [{ label: 'Leave', comeback: 'You wish.' }, { label: 'Deal', comeback: 'Shore thing.' }] },

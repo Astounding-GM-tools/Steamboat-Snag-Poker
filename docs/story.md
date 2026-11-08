@@ -221,7 +221,7 @@ has to lose for you to win: it's you against the river.
   Sandbar cares nothing for your In-Laws or the Mail Run. The game doesn't work
   that way: you can play your snags at an obstacle, and if you win they go to it,
   where it may throw them back. We keep that, for now. It starts
-  with a chunk of sand and a few troubles (a Twisted Axle, a Broken Paddle),
+  with a chunk of sand and a few troubles (a Twisted Crankshaft, a Broken Paddle),
   and when it wins a showdown they're yours, to be fixed later. Coming off
   clean is the best ending; carrying a Broken Paddle to the next landing is
   the usual one.
@@ -258,7 +258,7 @@ plays the stubborn style (stands pat, never gives up). What's new:
    untouched.
 2. **Snags:** first planned as one way, with no check built. Your snags can be
    played at an obstacle like at anyone (see above).
-3. **Troubles:** a new set of snags (Twisted Axle, Broken Paddle, Busted
+3. **Troubles:** a new set of snags (Twisted Crankshaft, Broken Paddle, Busted
    Boiler, Fatigue, Soggy Lumber…), their upkeep the cost of the repair
    until it's done.
 4. **The ending:** won when its pile is gone; stuck when your purse or the
@@ -284,7 +284,7 @@ different game from the landing's: a ceremony of resilience and community.
 It doesn't matter who gets a snag, or who wins the hand: lay a trouble on the
 table and it leaves you. Whoever takes it comments, they talk over who's the
 better match (*"That's one for Gus, Captain"*), and pass it among themselves.
-By morning it's fixed and gone. The Busted Boiler and Twisted Axle end up
+By morning it's fixed and gone. The Busted Boiler and Twisted Crankshaft end up
 with Gus, the Broken Pole and Paddle with Lars, Fatigue and the Broken Heart
 with Willie, whose good nature is indomitable.
 
@@ -1598,13 +1598,13 @@ Built as listed below, with these simplifications for now:
   are four and five); an obstacle forfeits nothing for its troubles.
 - The Sandbar: a pile of 20, an ante of 2 from the first hand (3 from the
   fourth), four hands (it's late by then), the stubborn style, holding a
-  Broken Pole, a Broken Paddle and a Twisted Axle. The boat is meant to
+  Broken Pole, a Broken Paddle and a Twisted Crankshaft. The boat is meant to
   spend the night: simulated against a careful player with the crew's 18,
   it's cleared one time in four on the first day. The next morning you face
   what's left of it, with eight hands and fresh strength, and clear it about
   half the time; otherwise a packet tows you off.
 - **Sandy keeps bar.** The Sandbar presents as a barman (*"Today's specials
-  are the Broken Paddle and the Twisted Axle"*) and is always chipper: wash
+  are the Broken Paddle and the Twisted Crankshaft"*) and is always chipper: wash
   him away and he only drifts off somewhere else. A quip every other hand, in
   asides.
 - **The deck game talks too:** someone says something on each Flop (*"Real
@@ -1655,8 +1655,10 @@ beats filler. The same shape will serve the Rapids' stages, the Deadheads and th
 
 Sandy's, in `src/story/characters/sandy.ts`:
 
-- **Opening:** "Welcome to the sandbar, I'll be your waiter this evening. Today's specials are
-  the Broken Paddle and the Twisted Axle."
+- **Opening:** "Welcome to the sandbar! I'll be your bartender this evening." / "Today's specials:
+  Paddle Split, Crankshaft with a Twist, and the Best Intentions, served on the Rocks." (Menu-speak:
+  no articles, but the boat's grand name keeps hers. His three troubles are on the menu: the Broken
+  Paddle, the Twisted Crankshaft, and On the Rocks, a scraped hull that whoever gets it mends.)
 - **Morning:** "Welcome back, Captain, have a seat. It's five o'clock somewhere, I'm sure."
 - **Rounds:** "Another round, Captain?" (Leave: "You wish." Deal: "Shore thing.") "Pub quiz,
   Captain! Name a structure for retaining water." (Well, Dam: and deal.) "Pub quiz, Captain!

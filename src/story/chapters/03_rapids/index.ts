@@ -105,7 +105,7 @@ export const tournament: Step[] = [
   stage('molineChain', STAGE_STRENGTH.molineChain, [TROUBLE.bustedBoiler]),
   stage('campbellsChain', STAGE_STRENGTH.campbellsChain, [TROUBLE.bustedBoiler, TROUBLE.fatigue, TROUBLE.brokenPaddle]),
   { type: 'caption', lines: [{ text: 'Hampton. Deep water close in to the shore, and the only breath you’ll get.' }, { who: 'ellie', text: 'St. Louis chain, Cabin chain, Sycamore, Smith’s. They don’t stop, Captain, so don’t you.' }] },
-  stage('longReach', STAGE_STRENGTH.longReach, [TROUBLE.bustedBoiler, TROUBLE.fatigue, TROUBLE.brokenPaddle, TROUBLE.twistedAxle, TROUBLE.brokenPole, TROUBLE.brokenHeart]),
+  stage('longReach', STAGE_STRENGTH.longReach, [TROUBLE.bustedBoiler, TROUBLE.fatigue, TROUBLE.brokenPaddle, TROUBLE.twistedCrankshaft, TROUBLE.brokenPole, TROUBLE.brokenHeart]),
   { type: 'travel', coal: 0, to: 'leClaire' },
   { type: 'leave' },
   { type: 'nightfall', label: DAY_OVER },
