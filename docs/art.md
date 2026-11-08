@@ -31,6 +31,8 @@ From the drive of 7 November. Drafts, not copy.
 - **Obstacles:** Sandy, the ice sheets, the Deadheads, the Fog Bank, the Big Muddy
 - **League gallery:** counted separately (roster.md)
 
+*The portraits are built: see docs/portraits.md for how the system works and how to add a face. What follows is the plan as first drawn up.*
+
 #### The portrait system
 
 One Svelte component, `Portrait`, renders every face as SVG; each character is data passed in.

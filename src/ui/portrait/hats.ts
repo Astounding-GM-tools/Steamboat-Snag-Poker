@@ -5,7 +5,7 @@
  * can't float above it or swallow it. The brim or peak is free to jut. A tilted
  * hat turns about the middle of the head, so it still sits on it, at an angle.
  */
-import type { Part } from './faces';
+import type { Part } from './rig';
 
 /** A head's numbers, as in `Face.head`: the rig's jowly oval. */
 export interface Head {
