@@ -348,28 +348,32 @@
       transform: translate(6px, -26px) scale(1.8);
     }
   }
-  /* A bead forms, hangs a while, runs down and is gone; a breath, and another. */
+  /* A bead forms (under a cap, as often as not), trickles down into view, stays a moment, and is gone; a breath, and another. */
   .sweat {
-    animation: sweat 3.4s ease-in infinite;
+    animation: sweat 3.6s ease-in-out infinite;
   }
   @keyframes sweat {
     0% {
       opacity: 0;
-      transform: translateY(-1px);
+      transform: translateY(0);
     }
-    10%,
-    55% {
+    8% {
       opacity: 1;
       transform: translateY(0);
     }
-    78% {
+    58% {
       opacity: 1;
-      transform: translateY(7px);
+      transform: translateY(14px);
     }
-    86%,
+    /* Still, at the end of its run, for about half a second. */
+    72% {
+      opacity: 1;
+      transform: translateY(14px);
+    }
+    80%,
     100% {
       opacity: 0;
-      transform: translateY(9px);
+      transform: translateY(15px);
     }
   }
   .still *,
