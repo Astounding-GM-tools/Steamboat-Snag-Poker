@@ -1,7 +1,7 @@
 /**
  * Sandy, the Sandbar, keeps bar. Met above Muscatine, and on the way back down.
  */
-import { Rng, TROUBLE, type EncounterDef, type RoundScript, type TalkContext } from '../mechanics';
+import { TROUBLE, morningLine, quipFor, roundLines, type EncounterDef, type RoundScript, type Routine, type TalkContext } from '../mechanics';
 import { aside, say } from '../lines';
 import { SANDBAR_HANDS, SANDBAR_MORNING_HANDS, SANDBAR_PILE } from '../numbers';
 import type { SpeechLine } from '../../ui/Speech.svelte';
@@ -21,66 +21,49 @@ export const sandbar: EncounterDef = {
 
 /**
  * Sandy keeps bar, and nothing gets him down. His routine, honed like a
- * comedian's: only the jokes that land. Puns still in the workshop are in
- * docs/story.md (Sandy's routine), until they're good enough to come out here.
+ * comedian's: a joke is excellent, or it's out. Jokes still in the workshop
+ * are in docs/story.md (Sandy's routine).
  */
-const QUIPS = [
-  'You’re in deep now. Well. Shallow.',
-  'All the time in the world, Captain. I’m what they measure it in.',
-  'A deuce drifts into a sandbar, says: “Put it on my bill.”',
-  'It wasn’t always easy for me, growing up. You see, my mother was a beach.',
-  'I was a mountain once. I can wait.',
-  'I’d offer you a stool, but you’re sitting on me.',
-  'What’s your poison? We’ve got silt, grit and more silt.',
-  'Lovely hull. Mind if I keep it?',
-  'I hear the Fair’s very nice. Tell me all about it, some year.',
-  'I never forget a face. I do wear them down.',
-  'Tell your engineer I said hello. I’m in his boiler.',
-  'Bar’s open. Bar’s always open. That’s rather the trouble.',
-  'I want to be a Beach Club when I grow up.',
-];
-
-/** Each new morning on the bar opens differently. */
-const MORNINGS = [
-  'Welcome back, Captain, have a seat. It’s five o’clock somewhere, I’m sure.',
-  'Back at the bar? Regulars drink free. It’s nothing, but it’s free.',
-  'Sleep well? You look well rested. You look stuck.',
-  'They’re starting to talk, Captain. You, me, every morning.',
-];
-
-/** Before the third hand on the first day, and every so often after: the joke is on the buttons. */
-const QUIZ = ['Welcome to the Sandbar Pub Quiz!', 'First question: what do you call a manmade structure for retaining water?'];
-
-/** Before the third hand, the other days: another round? Deal, or try to leave. */
-const DARES = ['Another round, Captain?', 'Fancy your chances? I fancy your boat.', 'One more for the road. There isn’t one.'];
+export const SANDY: Routine = {
+  who: 'sandbar',
+  opening: 'Welcome to the sandbar, I’ll be your waiter this evening. Today’s specials are the Broken Paddle and the Twisted Axle.',
+  mornings: ['Welcome back, Captain, have a seat. It’s five o’clock somewhere, I’m sure.'],
+  rounds: [
+    { text: 'Another round, Captain?', answers: [{ label: 'Leave', comeback: 'You wish.' }, { label: 'Deal', comeback: 'Shore thing.' }] },
+    { text: ['Pub quiz, Captain!', 'Name a structure for retaining water.'], answers: [{ label: 'Well' }, { label: 'Dam' }] },
+  ],
+  quips: [
+    'A deuce drifts into a sandbar, says: “Put it on my bill.”',
+    'It wasn’t always easy for me, growing up. You see, my mother was a beach.',
+    'You are a very grounded person, Captain.',
+    'I’ll put it on your tab.',
+  ],
+  lastCall: 'Last call!',
+  cleared: 'I’ll drift off downstream now… Catch you later, Captain!',
+  beaten: 'I think you’ve had enough, Captain. You’re in no shape to drive: you’d better stay the night.',
+};
 
 /**
- * A day against Sandy: the opening, then a quip every other hand, drawn from
- * one shuffle of the voyage so none comes round again until they all have, and
- * however the day ends, on whichever hand it comes.
+ * A day against Sandy: his opening or his morning; a round before the third
+ * hand; a one-liner a hand from the second on, while they last; last call at
+ * the start of the last round; and however the day ends, on whichever hand.
  */
 export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundScript {
   const hands = attempt > 1 ? SANDBAR_MORNING_HANDS : SANDBAR_HANDS;
   const first = attempt === 1;
-  const quips = new Rng(seed).shuffle(QUIPS);
-  const said = quips[((attempt - 1) * 8 + hand) % quips.length];
-  const dusk: SpeechLine[] = [bar('Last call, Captain.'), { size: 'scene', who: 'willie', text: 'That’s the light gone. She won’t move tonight.' }];
+  const said = quipFor(SANDY, seed, attempt, hand - 2);
   const opening: RoundScript = first
     ? {
-        deal: [bar('Welcome to the sandbar, I’ll be your waiter this evening. Today’s specials are the Broken Paddle and the Twisted Axle.')],
+        deal: [bar(SANDY.opening)],
         flop: [
           { size: 'scene', who: 'willie', text: 'Aground, Captain! Stuck fast!' },
           { size: 'scene', who: 'gus', text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'] },
         ],
       }
-    : { deal: [bar(MORNINGS[(attempt - 2) % MORNINGS.length])] };
-  const scene: RoundScript = hand === 1 ? opening : hand === 3 ? { deal: attempt % DARES.length === 1 ? [{ ...bar(QUIZ), replies: [{ label: 'Well' }, { label: 'Dam' }] }] : [
-              { ...bar(DARES[(attempt - 1) % DARES.length]), replies: [{ label: 'Leave', go: 'leave' }, { label: 'Deal', go: 'deal' }] },
-              { ...bar('Shore thing.'), id: 'deal', branch: true },
-              { ...bar('You wish.'), id: 'leave', branch: true },
-            ] } : {};
-  const talkOnFlop = hand % 2 === 0;
-  const talkAfter = hand % 2 === 1 && hand > 1 && hand < hands && pile > 0;
+    : { deal: [morningLine(SANDY, attempt)] };
+  const scene: RoundScript = hand === 1 ? opening : hand === 3 ? { deal: roundLines(SANDY, attempt - 1) } : hand === hands && SANDY.lastCall ? { deal: [bar(SANDY.lastCall)] } : {};
+  const talkOnFlop = hand % 2 === 0 && said;
+  const talkAfter = hand % 2 === 1 && hand > 1 && hand < hands && pile > 0 && said;
   return {
     ...scene,
     ...(talkOnFlop ? { flop: [quip(said)] } : {}),
@@ -94,11 +77,16 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
           ]
         : []),
       ...(talkAfter ? [{ ...quip(said), when: 'won' as const }, { ...quip(said), when: 'lost' as const }] : []),
-      { ...bar('I’ll drift off downstream now… Catch you later, Captain!'), when: 'wonAll' },
+      ...(SANDY.cleared ? [{ ...bar(SANDY.cleared), when: 'wonAll' as const }] : []),
       { size: 'scene', who: 'willie', when: 'wonAll', text: 'She’s off, Captain! We’re floating!' },
-      { ...bar('You’ve had enough. Pity you can’t leave.'), when: 'lostAll' },
+      ...(SANDY.beaten ? [{ ...bar(SANDY.beaten), when: 'lostAll' as const }] : []),
       { size: 'scene', who: 'gus', when: 'lostAll', text: 'That’s all they have, Captain. There’s not another shove in them today.' },
-      ...(hand === hands ? dusk.flatMap((l) => [{ ...l, when: 'won' as const }, { ...l, when: 'lost' as const }]) : []),
+      ...(hand === hands
+        ? [
+            { size: 'scene' as const, who: 'willie', when: 'won' as const, text: 'That’s the light gone. She won’t move tonight.' },
+            { size: 'scene' as const, who: 'willie', when: 'lost' as const, text: 'That’s the light gone. She won’t move tonight.' },
+          ]
+        : []),
     ],
   };
 }

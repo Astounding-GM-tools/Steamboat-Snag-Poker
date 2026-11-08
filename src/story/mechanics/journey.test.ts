@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { SANDY } from '../characters/sandy';
 import { RIVER, RIVER_START, RIVER_TALK } from '../river';
 import type { RoundScript } from './script';
 import { chooseAction, viewFor } from '../../engine/ai';
@@ -391,14 +392,28 @@ describe('Sandy', () => {
   const context = { hand: 2, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: true, attempt: 1, journey: newJourney(1, RIVER, RIVER_START), fixed: [] as { id: string; snag: number }[] };
   const sandy = RIVER_TALK.sandbar as unknown as (c: typeof context) => RoundScript;
 
-  it('doesn\'t repeat itself from one day to the next', () => {
-    const said = [1, 2, 3].flatMap((attempt) => [2, 4, 6, 8].map((hand) => String(sandy({ ...context, attempt, hand }).flop?.[0].text)));
-    expect(new Set(said).size).toBe(said.length);
+  it('never tells the same joke twice in a day, and says nothing once they run out', () => {
+    for (const attempt of [1, 2, 3]) {
+      const said = [2, 3, 4, 5, 6, 7, 8].flatMap((hand) => {
+        const talk = sandy({ ...context, attempt, hand });
+        return [...(talk.flop ?? []), ...(talk.verdict ?? []).filter((l) => l.size === 'aside' && l.when === 'won')].filter((l) => l.size === 'aside').map((l) => String(l.text));
+      });
+      expect(new Set(said).size).toBe(said.length);
+      expect(said.length).toBeLessThanOrEqual(SANDY.quips.length);
+    }
   });
 
-  it('opens each morning differently', () => {
-    const open = [2, 3, 4].map((attempt) => String(sandy({ ...context, hand: 1, attempt }).deal?.[0].text));
-    expect(new Set(open).size).toBe(3);
+  it('repeats its last morning once it has no more', () => {
+    const open = [2, 3, 4, 5].map((attempt) => String(sandy({ ...context, hand: 1, attempt }).deal?.[0].text));
+    expect(open.at(-1)).toBe(SANDY.mornings.at(-1));
+    expect(open.at(-2)).toBe(SANDY.mornings.at(-1));
+  });
+
+  it('asks a round before the third hand, in rotation, and calls last orders on the last', () => {
+    const round = (attempt: number) => sandy({ ...context, hand: 3, attempt }).deal!;
+    expect(round(1)[0].replies?.length).toBe(2);
+    expect(round(1)[0].text).not.toEqual(round(2)[0].text);
+    expect(sandy({ ...context, hand: 4, attempt: 1 }).deal?.[0].text).toBe(SANDY.lastCall);
   });
 });
 

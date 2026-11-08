@@ -4,6 +4,7 @@
  */
 export * from './boat';
 export * from './journey';
+export * from './routine';
 export * from './script';
 export * from './snags';
 export { Rng } from '../../engine/rng';

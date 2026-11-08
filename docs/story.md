@@ -1638,13 +1638,38 @@ voice with the story in mind).
 
 ## Sandy's routine
 
-Sandy's jokes are honed like a stand-up's routine: a joke is excellent, or it's out. What he
-says is in `src/story/characters/sandy.ts`; these are in the workshop, with something in them
-but not there yet. A pun that has to be worked out doesn't land.
+An obstacle's lines are a **routine** (`src/story/mechanics/routine.ts`), sorted by the job
+they do, so each kind can be judged on its own. A joke is excellent, or it's out: silence
+beats filler. The same shape will serve the Rapids' stages, the Deadheads and the Fog Bank.
+
+- **Opening:** the first time you meet. One line.
+- **Mornings:** each day after, in order; **the last one repeats.** Until there's more than
+  one good joke, the first is the last.
+- **Rounds:** before a round now and then (Sandy: the third hand), in rotation, answered on
+  the buttons. An answer may get a comeback, or simply deal. Trivia works here: it doesn't
+  matter what the Captain answers.
+- **One-liners:** a dozen, exactly, at random, never twice in a day; once they're spent,
+  he says nothing more that day.
+- **Last call:** at the start of the day's last round. **Cleared** and **beaten:** how it ends.
+
+Sandy's, in `src/story/characters/sandy.ts`:
+
+- **Opening:** "Welcome to the sandbar, I'll be your waiter this evening. Today's specials are
+  the Broken Paddle and the Twisted Axle."
+- **Morning:** "Welcome back, Captain, have a seat. It's five o'clock somewhere, I'm sure."
+- **Rounds:** "Another round, Captain?" (Leave: "You wish." Deal: "Shore thing.") "Pub quiz,
+  Captain! Name a structure for retaining water." (Well, Dam: and deal.)
+- **One-liners, 4 of the dozen:** the deuce that drifts into a sandbar ("Put it on my bill");
+  his mother was a beach; "You are a very grounded person, Captain."; "I'll put it on your
+  tab." **Eight to find.**
+- **Last call!** **Cleared:** "I'll drift off downstream now… Catch you later, Captain!"
+  **Beaten:** "I think you've had enough, Captain. You're in no shape to drive: you'd better
+  stay the night."
+
+**The workshop:** something in them, not there yet.
 
 - "You can't rush a good sediment." / "That's a fine sediment, Captain." (Potential.)
 - "I can't sand it any more!"
-- "I'm a very grounded person."
 - "Some say I'm shallow. They're right."
 - "Silt you down, make yourself at home."
 - "It's a fine bank. Very low interest."
@@ -1652,8 +1677,16 @@ but not there yet. A pun that has to be worked out doesn't land.
 - "I'll have you know I'm a pillar of the riverbed."
 - "Don't look so down. That's my job."
 - "Nothing personal. It's just bedrock."
-- "I'll start you a tab."
-- Dares: "Let's see if you can muddle through another round." "Care to dredge up another hand?"
+- Rounds: "Let's see if you can muddle through another round." "Care to dredge up another hand?"
+  "Fancy your chances? I fancy your boat." "One more for the road. There isn't one."
+- One-liners cut in the last pass: "You're in deep now. Well. Shallow." "All the time in the world,
+  Captain. I'm what they measure it in." "I was a mountain once. I can wait." "I'd offer you a
+  stool, but you're sitting on me." "I never forget a face. I do wear them down." "Tell your
+  engineer I said hello. I'm in his boiler." "I want to be a Beach Club when I grow up." "What's
+  your poison? We've got silt, grit and more silt." "Lovely hull. Mind if I keep it?" "I hear the
+  Fair's very nice. Tell me all about it, some year." "Bar's open. Bar's always open."
+- Mornings: "Back at the bar? Regulars drink free. It's nothing, but it's free." "Sleep well? You
+  look well rested. You look stuck." "They're starting to talk, Captain. You, me, every morning."
 
 Out for good: generic villainy ("Hoho! There's more where that came from!"), borrowed lines
 ("Stay a while… stay forever!", "Come out to the river, they said"), the steam freighter that
