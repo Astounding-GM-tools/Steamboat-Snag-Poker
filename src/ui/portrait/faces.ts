@@ -106,8 +106,8 @@ export interface Face {
   pivot?: [number, number];
   /** The pipe or cigar is on the left of the picture, so it rises and sags the other way round. */
   leftSide?: boolean;
-  /** A tic of its own, now and then: an effect, and about how many seconds apart. */
-  tic?: { effect: Effect; every: number };
+  /** A tic of its own, now and then: an effect, and about how many seconds apart; `when`, only in that mood (a tell). */
+  tic?: { effect: Effect; every: number; when?: Mood };
 }
 
 /** What's behind a face: cream, like an old photograph (ink reads on it without outlines), or the dark of the table. */
@@ -298,7 +298,8 @@ const gaylord: Face = {
     confident: { browCock: 3, eyeOpen: 0.82, mouthCurve: 0.15, lean: -4, pipe: -1 },
     nervous: { browCock: -4.5, eyeOpen: 0.82, mouthCurve: 0.15, lean: -4, pipe: -1 },
   },
-  tic: { effect: 'shifty', every: 7 },
+  // Glancing aside is his tell, his only one: he does it when he's rattled, never else.
+  tic: { effect: 'shifty', every: 4, when: 'nervous' },
 };
 
 const steamboatBillHead = { width: 26, top: 12, jaw: 84, chin: 18, bottom: 91 };

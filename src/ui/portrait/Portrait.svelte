@@ -51,7 +51,8 @@
       actTimer = setTimeout(() => (acting = null), 1500);
     });
   }
-  // A face's tic: now and then, never on the beat.
+  // A face's tic: now and then, never on the beat; a tell only in its mood.
+  const weightOf = (m: string) => (typeof mood === 'string' ? (mood === m ? 1 : 0) : ((mood as Record<string, number>)[m] ?? 0) / (Object.values(mood).reduce((a, b) => a + (b ?? 0), 0) || 1));
   $effect(() => {
     const tic = face.tic;
     if (!tic || still) return;
@@ -59,7 +60,7 @@
     const again = () => {
       timer = setTimeout(
         () => {
-          play(tic.effect);
+          if (!tic.when || weightOf(tic.when) >= 0.5) play(tic.effect);
           again();
         },
         tic.every * 1000 * (0.6 + Math.random() * 0.8),
