@@ -250,7 +250,8 @@ describe('table talk', () => {
 
   it('never quips over the opening, or the same line twice in a day', () => {
     expect(sandy(context).flop).toHaveLength(2);
-    const seen = [2, 4].map((hand) => String(sandy({ ...context, hand }).flop?.[0].text));
+    expect(sandy(context).verdict?.some((l) => l.size === 'aside')).toBe(false);
+    const seen = [2, 3].map((hand) => String(sandy({ ...context, hand }).verdict?.find((l) => l.size === 'aside')?.text));
     expect(new Set(seen).size).toBe(2);
   });
 
@@ -392,11 +393,12 @@ describe('Sandy', () => {
   const context = { hand: 2, pile: 20, seed: 9, day: 2, trips: false, lost: 0, foldedOut: false, met: true, attempt: 1, journey: newJourney(1, RIVER, RIVER_START), fixed: [] as { id: string; snag: number }[] };
   const sandy = RIVER_TALK.sandbar as unknown as (c: typeof context) => RoundScript;
 
-  it('never tells the same joke twice in a day, and says nothing once they run out', () => {
+  it('jokes only when you lose or fold a hand, never twice in a day, and says nothing once they run out', () => {
+    expect(sandy({ ...context, hand: 2 }).verdict?.filter((l) => l.size === 'aside').every((l) => l.when === 'lost')).toBe(true);
     for (const attempt of [1, 2, 3]) {
       const said = [2, 3, 4, 5, 6, 7, 8].flatMap((hand) => {
         const talk = sandy({ ...context, attempt, hand });
-        return [...(talk.flop ?? []), ...(talk.verdict ?? []).filter((l) => l.size === 'aside' && l.when === 'won')].filter((l) => l.size === 'aside').map((l) => String(l.text));
+        return (talk.verdict ?? []).filter((l) => l.size === 'aside').map((l) => String(l.text));
       });
       expect(new Set(said).size).toBe(said.length);
       expect(said.length).toBeLessThanOrEqual(SANDY.quips.length);

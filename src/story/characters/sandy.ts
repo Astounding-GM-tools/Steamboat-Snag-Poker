@@ -45,13 +45,15 @@ export const SANDY: Routine = {
 
 /**
  * A day against Sandy: his opening or his morning; a round before the third
- * hand; a one-liner a hand from the second on, while they last; last call at
- * the start of the last round; and however the day ends, on whichever hand.
+ * hand; last call at the start of the last round; and however the day ends, on
+ * whichever hand. His one-liners come when a hand goes his way (you lost it, or
+ * folded): a small consolation, while they last.
  */
 export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundScript {
   const hands = attempt > 1 ? SANDBAR_MORNING_HANDS : SANDBAR_HANDS;
   const first = attempt === 1;
-  const said = quipFor(SANDY, seed, attempt, hand - 2);
+  // A hand that opens the first day has his welcome after it; from then on, one a hand.
+  const said = first && hand === 1 ? null : quipFor(SANDY, seed, attempt, first ? hand - 2 : hand - 1);
   const opening: RoundScript = first
     ? {
         deal: [bar(SANDY.opening)],
@@ -62,11 +64,9 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
       }
     : { deal: [morningLine(SANDY, attempt)] };
   const scene: RoundScript = hand === 1 ? opening : hand === 3 ? { deal: roundLines(SANDY, attempt - 1) } : hand === hands && SANDY.lastCall ? { deal: [bar(SANDY.lastCall)] } : {};
-  const talkOnFlop = hand % 2 === 0 && said;
-  const talkAfter = hand % 2 === 1 && hand > 1 && hand < hands && pile > 0 && said;
+  const consolation = pile > 0 && said;
   return {
     ...scene,
-    ...(talkOnFlop ? { flop: [quip(said)] } : {}),
     // Stood pat: it says so, twice in a day at most.
     ...(hand === 1 ? { pat: [quip(first ? 'Going to sand pat, Captain?' : 'Sand pat again? You’ll fit right in.')] } : hand === 4 ? { pat: [quip(first ? 'Sand pat again? You’ll fit right in.' : 'You’re getting the hang of this. Do nothing. Nothing moves here.')] } : {}),
     verdict: [
@@ -76,7 +76,7 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
             { ...bar('Your first one’s on the house. So’s your boat.'), when: 'lost' as const },
           ]
         : []),
-      ...(talkAfter ? [{ ...quip(said), when: 'won' as const }, { ...quip(said), when: 'lost' as const }] : []),
+      ...(consolation ? [{ ...quip(said), when: 'lost' as const }] : []),
       ...(SANDY.cleared ? [{ ...bar(SANDY.cleared), when: 'wonAll' as const }] : []),
       { size: 'scene', who: 'willie', when: 'wonAll', text: 'She’s off, Captain! We’re floating!' },
       ...(SANDY.beaten ? [{ ...bar(SANDY.beaten), when: 'lostAll' as const }] : []),

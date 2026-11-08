@@ -1649,7 +1649,8 @@ beats filler. The same shape will serve the Rapids' stages, the Deadheads and th
   the buttons. An answer may get a comeback, or simply deal. Trivia works here: it doesn't
   matter what the Captain answers.
 - **One-liners:** a dozen, exactly, at random, never twice in a day; once they're spent,
-  he says nothing more that day.
+  he says nothing more that day. They come when a hand goes his way (you lost it, or folded):
+  a small reward when it doesn't go yours.
 - **Last call:** at the start of the day's last round. **Cleared** and **beaten:** how it ends.
 
 Sandy's, in `src/story/characters/sandy.ts`:
