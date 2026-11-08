@@ -1659,7 +1659,8 @@ Sandy's, in `src/story/characters/sandy.ts`:
   the Broken Paddle and the Twisted Axle."
 - **Morning:** "Welcome back, Captain, have a seat. It's five o'clock somewhere, I'm sure."
 - **Rounds:** "Another round, Captain?" (Leave: "You wish." Deal: "Shore thing.") "Pub quiz,
-  Captain! Name a structure for retaining water." (Well, Dam: and deal.)
+  Captain! Name a structure for retaining water." (Well, Dam: and deal.) "Pub quiz, Captain!
+  What's sand mostly made of?" (Quartz: and deal. Leave: "You wish.", the running gag.)
 - **The dozen** (a slash is a two-liner: the setup, a beat, the punchline):
   1. A deuce drifts into a sandbar, orders a beer. / Says: "Put it on my bill."
   2. It wasn't easy for me, growing up. / You see, my mother was a beach.
