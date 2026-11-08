@@ -258,8 +258,9 @@ const gaylordHead = { width: 28, top: 12, jaw: 88, chin: 21, bottom: 93 };
  * Gaylord Montague, Esquire: villain-coded, never a villain. A wide jaw, a cleft
  * chin, a thin scar, and no mouth to speak of: a fat twirled moustache that his
  * cigarette holder disappears into. A top hat worn low and askew, so low his
- * brows stay under the brim. Rattled or not, the moustache keeps its smile: his
- * eyes narrow and the cigarette tips up, and that's all. He doesn't sweat.
+ * brows stay under the brim. Rattled or not, the moustache keeps its smile. Pleased,
+ * his cigarette tips up; rattled, it droops and his eyes glance aside: his only
+ * tells. He doesn't sweat.
  */
 const gaylord: Face = {
   head: gaylordHead,
@@ -296,9 +297,9 @@ const gaylord: Face = {
   rest: { mouthCurve: 0.6, smirk: 0.5, browCock: 1.5, eyeOpen: 0.88 },
   moods: {
     confident: { browCock: 3, eyeOpen: 0.82, mouthCurve: 0.15, lean: -4, pipe: -1 },
-    nervous: { browCock: -4.5, eyeOpen: 0.82, mouthCurve: 0.15, lean: -4, pipe: -1 },
+    nervous: { browCock: -4.5, eyeOpen: 0.82, mouthCurve: 0.15, lean: -4, pipe: 1.6 },
   },
-  // Glancing aside is his tell, his only one: he does it when he's rattled, never else.
+  // His tells, rattled, and only then: his eyes glance aside, and the cigarette droops.
   tic: { effect: 'shifty', every: 4, when: 'nervous' },
 };
 
