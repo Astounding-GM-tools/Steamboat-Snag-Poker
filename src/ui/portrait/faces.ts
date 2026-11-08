@@ -447,7 +447,7 @@ const ellieHead = { width: 24, top: 14, jaw: 78, chin: 11, bottom: 90 };
  */
 const ellie: Face = {
   head: ellieHead,
-  eyes: { y: 51, gap: 10, rx: 4.4, ry: 6.6, lashes: true },
+  eyes: { y: 51, gap: 10, rx: 4.4, ry: 6.6, lashes: true, soft: true },
   brows: { y: 40, gap: 10, length: 9, weight: 2, arch: 3.5 },
   nose: { kind: 'button', y: 62, size: 2.2 },
   mouth: { y: 74, width: 8 },
