@@ -622,7 +622,7 @@ const ignatz: Face = {
 const nemo: Face = {
   head: { width: 27, top: 14, jaw: 82, chin: 22, bottom: 88 },
   eyes: { y: 50, gap: 11, rx: 4, ry: 5.8 },
-  brows: { y: 40, gap: 11, length: 10, weight: 2.4, arch: 3 },
+  brows: { y: 46, gap: 11, length: 10, weight: 2.4, arch: 3 },
   nose: { kind: 'button', y: 60, size: 3 },
   mouth: { y: 72, width: 10 },
   parts: [
@@ -637,7 +637,7 @@ const nemo: Face = {
   blink: 7,
   slowBlink: true,
   temper: 0.8,
-  rest: { eyeOpen: 0.5, browCock: 3, browLift: 1, lookX: 0.5, lookY: -0.6, mouthCurve: 0.12, smirk: -0.4, lean: 6 },
+  rest: { eyeOpen: 0.5, browCock: 2.5, lookX: 0.5, lookY: -0.6, mouthCurve: 0.12, smirk: -0.4, lean: 6 },
   // Sleepwalking: worry reaches his brows and eyes, never his mouth, and he doesn't sweat.
   moods: { nervous: { browLift: 2, browTilt: -0.6, eyeOpen: 1.15, lookX: -0.6, lean: 4 } },
   dry: true,

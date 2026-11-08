@@ -348,15 +348,28 @@
       transform: translate(6px, -26px) scale(1.8);
     }
   }
+  /* A bead forms, hangs a while, runs down and is gone; a breath, and another. */
   .sweat {
-    animation: sweat 1.5s ease-in infinite;
+    animation: sweat 3.4s ease-in infinite;
   }
   @keyframes sweat {
-    70% {
+    0% {
+      opacity: 0;
+      transform: translateY(-1px);
+    }
+    10%,
+    55% {
+      opacity: 1;
       transform: translateY(0);
     }
-    100% {
+    78% {
+      opacity: 1;
       transform: translateY(7px);
+    }
+    86%,
+    100% {
+      opacity: 0;
+      transform: translateY(9px);
     }
   }
   .still *,
