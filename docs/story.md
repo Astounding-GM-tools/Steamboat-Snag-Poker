@@ -1636,6 +1636,30 @@ Next: Gaylord at the final, the council's list of things to do, The Best Intenti
 Still to do alongside: a **character pass** (every name, description and
 voice with the story in mind).
 
+## Sandy's routine
+
+Sandy's jokes are honed like a stand-up's routine: a joke is excellent, or it's out. What he
+says is in `src/story/characters/sandy.ts`; these are in the workshop, with something in them
+but not there yet. A pun that has to be worked out doesn't land.
+
+- "You can't rush a good sediment." / "That's a fine sediment, Captain." (Potential.)
+- "I can't sand it any more!"
+- "I'm a very grounded person."
+- "Some say I'm shallow. They're right."
+- "Silt you down, make yourself at home."
+- "It's a fine bank. Very low interest."
+- "Every grain a regular."
+- "I'll have you know I'm a pillar of the riverbed."
+- "Don't look so down. That's my job."
+- "Nothing personal. It's just bedrock."
+- "I'll start you a tab."
+- Dares: "Let's see if you can muddle through another round." "Care to dredge up another hand?"
+
+Out for good: generic villainy ("Hoho! There's more where that came from!"), borrowed lines
+("Stay a while… stay forever!", "Come out to the river, they said"), the steam freighter that
+drifts into a sandbar (the deuce does it better), "son of a beach" (the mother joke does it
+better), and "That's a shore thing" (he says "Shore thing." when you deal).
+
 ## Backlog
 
 - **Portraits.** The letter in a circle is the biggest visual gap. First take

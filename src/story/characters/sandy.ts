@@ -19,50 +19,31 @@ export const sandbar: EncounterDef = {
   rules: { jokerForfeit: 0, antePast: -3 },
 };
 
-/** Sandy keeps bar, and nothing gets him down: wash him away and he'll only drift off somewhere else. */
+/**
+ * Sandy keeps bar, and nothing gets him down. His routine, honed like a
+ * comedian's: only the jokes that land. Puns still in the workshop are in
+ * docs/story.md (Sandy's routine), until they're good enough to come out here.
+ */
 const QUIPS = [
-  'Hoho! There’s more where that came from!',
-  'Stay a while… stay forever!',
   'You’re in deep now. Well. Shallow.',
   'All the time in the world, Captain. I’m what they measure it in.',
-  'A steam freighter drifts into a sandbar… stop me if you’ve heard it.',
   'A deuce drifts into a sandbar, says: “Put it on my bill.”',
-  'You’re right, I AM a son of a beach!',
-  'First one’s on the river.',
-  'Can you dig your way out of this?',
+  'It wasn’t always easy for me, growing up. You see, my mother was a beach.',
   'I was a mountain once. I can wait.',
-  'Come out to the river, they said. It’ll be fun, they said.',
-  'I can’t sand it any more!',
-  'I’ll start you a tab.',
-  'Happy hour’s every hour. Slow hour, too.',
-  'What’s your poison? We’ve got silt, grit and more silt.',
   'I’d offer you a stool, but you’re sitting on me.',
-  'You’re shoaling a lot of promise, Captain.',
-  'Nothing personal. It’s just bedrock.',
-  'I’m a very grounded person.',
-  'Some say I’m shallow. They’re right.',
-  'Don’t look so down. That’s my job.',
+  'What’s your poison? We’ve got silt, grit and more silt.',
   'Lovely hull. Mind if I keep it?',
   'I hear the Fair’s very nice. Tell me all about it, some year.',
-  'I’ve got grit, Captain. You’ve got to admire that.',
-  'Silt you down, make yourself at home.',
-  'Every grain a regular.',
-  'You can’t rush a good sediment.',
-  'It’s a fine bank. Very low interest.',
   'I never forget a face. I do wear them down.',
   'Tell your engineer I said hello. I’m in his boiler.',
-  'That’s a shore thing, that is.',
-  'I’ll have you know I’m a pillar of the riverbed.',
   'Bar’s open. Bar’s always open. That’s rather the trouble.',
   'I want to be a Beach Club when I grow up.',
 ];
 
 /** Each new morning on the bar opens differently. */
 const MORNINGS = [
-  'Well, it’s past noon somewhere. Can I get you the usual, Captain?',
+  'Welcome back, Captain, have a seat. It’s five o’clock somewhere, I’m sure.',
   'Back at the bar? Regulars drink free. It’s nothing, but it’s free.',
-  'Another morning! I’m naming a stool after you.',
-  'Your table’s still here. So am I.',
   'Sleep well? You look well rested. You look stuck.',
   'They’re starting to talk, Captain. You, me, every morning.',
 ];
@@ -70,8 +51,8 @@ const MORNINGS = [
 /** Before the third hand on the first day, and every so often after: the joke is on the buttons. */
 const QUIZ = ['Welcome to the Sandbar Pub Quiz!', 'First question: what do you call a manmade structure for retaining water?'];
 
-/** Before the third hand: a dare, with Deal on the button. */
-const DARES = ['Let’s see if you can muddle through another round.', 'Care to dredge up another hand?', 'Fancy your chances? I fancy your boat.', 'One more for the road. There isn’t one.'];
+/** Before the third hand, the other days: another round? Deal, or try to leave. */
+const DARES = ['Another round, Captain?', 'Fancy your chances? I fancy your boat.', 'One more for the road. There isn’t one.'];
 
 /**
  * A day against Sandy: the opening, then a quip every other hand, drawn from
@@ -86,14 +67,18 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
   const dusk: SpeechLine[] = [bar('Last call, Captain.'), { size: 'scene', who: 'willie', text: 'That’s the light gone. She won’t move tonight.' }];
   const opening: RoundScript = first
     ? {
-        deal: [bar('Going somewhere?'), bar('Welcome to the sandbar. Call me Sandy. Today’s specials are the Broken Paddle and the Twisted Axle. You must try them.')],
+        deal: [bar('Welcome to the sandbar, I’ll be your waiter this evening. Today’s specials are the Broken Paddle and the Twisted Axle.')],
         flop: [
           { size: 'scene', who: 'willie', text: 'Aground, Captain! Stuck fast!' },
           { size: 'scene', who: 'gus', text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'] },
         ],
       }
     : { deal: [bar(MORNINGS[(attempt - 2) % MORNINGS.length])] };
-  const scene: RoundScript = hand === 1 ? opening : hand === 3 ? { deal: attempt % DARES.length === 1 ? [{ ...bar(QUIZ), replies: [{ label: 'Well' }, { label: 'Dam' }] }] : [{ ...bar(DARES[(attempt - 1) % DARES.length]), replies: [{ label: 'Deal' }] }, bar('Shore thing!')] } : {};
+  const scene: RoundScript = hand === 1 ? opening : hand === 3 ? { deal: attempt % DARES.length === 1 ? [{ ...bar(QUIZ), replies: [{ label: 'Well' }, { label: 'Dam' }] }] : [
+              { ...bar(DARES[(attempt - 1) % DARES.length]), replies: [{ label: 'Leave', go: 'leave' }, { label: 'Deal', go: 'deal' }] },
+              { ...bar('Shore thing.'), id: 'deal', branch: true },
+              { ...bar('You wish.'), id: 'leave', branch: true },
+            ] } : {};
   const talkOnFlop = hand % 2 === 0;
   const talkAfter = hand % 2 === 1 && hand > 1 && hand < hands && pile > 0;
   return {
