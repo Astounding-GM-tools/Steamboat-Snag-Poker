@@ -1663,14 +1663,14 @@ Sandy's, in `src/story/characters/sandy.ts`:
 - **One-liners, 5 of the dozen:** the deuce that drifts into a sandbar ("Put it on my bill");
   his mother was a beach; "You are a very grounded person, Captain."; "I'll put it on your
   tab."; "What's your poison, Captain? We've got silt, and we've got grit. Moonshine too, if
-  you stick around." **Seven to find.**
+  you stick around."; "That's a very fine sediment, Captain."; "The nerve of some people,
+  calling me shallow!" **Five to find.**
 - **Last call!** **Cleared:** "I'll drift off downstream now… Catch you later, Captain!"
   **Beaten:** "I think you've had enough, Captain. You're in no shape to drive: you'd better
   stay the night."
 
 **The workshop:** something in them, not there yet.
 
-- "You can't rush a good sediment." / "That's a fine sediment, Captain." (Potential.)
 - "I can't sand it any more!"
 - "Some say I'm shallow. They're right."
 - "Silt you down, make yourself at home."
