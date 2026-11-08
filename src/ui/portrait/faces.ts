@@ -526,7 +526,7 @@ const oddsHead = { width: 28, top: 13, jaw: 86, chin: 26, bottom: 88 };
 /** Ottilie Pfeiffer, "Odds", the bookmaker of Bettendorf: a straw boater over pinned-up hair, round cheeks, earrings, and a grin that has already set the odds. */
 const odds: Face = {
   head: oddsHead,
-  eyes: { y: 50, gap: 11, rx: 3.8, ry: 5.2, lashes: true },
+  eyes: { y: 50, gap: 11, rx: 3.8, ry: 5.2, lashes: true, soft: true },
   brows: { y: 41, gap: 11, length: 10, weight: 3, arch: 3 },
   nose: { kind: 'button', y: 60, size: 4 },
   mouth: { y: 74, width: 12 },
