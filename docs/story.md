@@ -1660,9 +1660,10 @@ Sandy's, in `src/story/characters/sandy.ts`:
 - **Morning:** "Welcome back, Captain, have a seat. It's five o'clock somewhere, I'm sure."
 - **Rounds:** "Another round, Captain?" (Leave: "You wish." Deal: "Shore thing.") "Pub quiz,
   Captain! Name a structure for retaining water." (Well, Dam: and deal.)
-- **One-liners, 4 of the dozen:** the deuce that drifts into a sandbar ("Put it on my bill");
+- **One-liners, 5 of the dozen:** the deuce that drifts into a sandbar ("Put it on my bill");
   his mother was a beach; "You are a very grounded person, Captain."; "I'll put it on your
-  tab." **Eight to find.**
+  tab."; "What's your poison, Captain? We've got silt, and we've got grit. Moonshine too, if
+  you stick around." **Seven to find.**
 - **Last call!** **Cleared:** "I'll drift off downstream now… Catch you later, Captain!"
   **Beaten:** "I think you've had enough, Captain. You're in no shape to drive: you'd better
   stay the night."

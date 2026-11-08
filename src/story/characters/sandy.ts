@@ -37,6 +37,7 @@ export const SANDY: Routine = {
     'It wasn’t always easy for me, growing up. You see, my mother was a beach.',
     'You are a very grounded person, Captain.',
     'I’ll put it on your tab.',
+    'What’s your poison, Captain? We’ve got silt, and we’ve got grit. Moonshine too, if you stick around.',
   ],
   lastCall: 'Last call!',
   cleared: 'I’ll drift off downstream now… Catch you later, Captain!',
