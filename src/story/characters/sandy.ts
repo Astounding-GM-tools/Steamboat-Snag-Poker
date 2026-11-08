@@ -33,6 +33,10 @@ export const SANDY: Routine = {
     { text: 'Another round, Captain?', answers: [{ label: 'Leave', comeback: 'You wish.' }, { label: 'Deal', comeback: 'Shore thing.' }] },
     { text: ['Pub quiz, Captain!', 'Name a structure for retaining water.'], answers: [{ label: 'Well' }, { label: 'Dam' }] },
     { text: ['Pub quiz, Captain!', 'Name a common river sediment.'], answers: [{ label: 'Leaves' }, { label: 'Quartz' }] },
+    {
+      text: ['Pub quiz, Captain!', 'What do they raise along a river?'],
+      answers: [{ label: 'I just want to leave. Please let me leave.', comeback: 'Wrong answer, Captain.' }, { label: 'Levy' }, { label: 'Levee' }],
+    },
   ],
   quips: [
     ['A deuce drifts into a sandbar, orders a beer.', 'Says: “Put it on my bill.”'],
