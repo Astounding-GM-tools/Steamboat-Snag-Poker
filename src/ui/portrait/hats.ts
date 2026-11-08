@@ -35,6 +35,8 @@ export interface HatSpec {
   badgeColour?: Colour;
   /** Braid on the band (a sea dog's cap). */
   braid?: boolean;
+  /** Room for hair: the opening is this much wider than the head (a mass of curls). */
+  fit?: number;
 }
 
 const BOW = 2.5;
@@ -91,7 +93,8 @@ function badge(kind: Badge, y: number, colour: Colour): Omit<Part, 'layer'>[] {
 }
 
 /** A hat for this head, by kind. */
-export function hat(h: Head, spec: HatSpec): Part[] {
+export function hat(head: Head, spec: HatSpec): Part[] {
+  const h = spec.fit ? { ...head, width: head.width + spec.fit } : head;
   const { band, kind } = spec;
   const colour = spec.colour ?? 'ink';
   const parts: Omit<Part, 'layer'>[] = [];

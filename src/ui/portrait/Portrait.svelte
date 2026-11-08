@@ -141,6 +141,8 @@
     if (n.kind === 'hook') return `M${50} ${y - s} C${50 + s * 1.6} ${y} ${50 + s * 1.2} ${y + s * 1.1} ${50 - s * 0.4} ${y + s * 0.8}`;
     return `M${50 - s} ${y} a${s} ${s * 0.8} 0 1 0 ${s * 2} 0 a${s} ${s * 0.8} 0 1 0 ${-s * 2} 0 Z`;
   });
+  /** Where a bead of sweat forms: high on the forehead, toward the temple, whatever the face's size. */
+  const sweatAt = $derived<[number, number]>('width' in face.head ? [50 + face.head.width * 0.58, face.brows.y - 8] : [73, 26]);
   /** Faces fill their oval: drawn a little larger than the box, about the middle of the face. */
   const zoom = $derived(`translate(50 58) scale(${face.zoom ?? 1.16}) translate(-50 -58)`);
   const partsIn = (layer: Part['layer']) => (face.parts ?? []).filter((x) => x.layer === layer);
@@ -208,7 +210,7 @@
       {#each partsIn('mouth') as part, i (i)}{@render drawn(part)}{/each}
     </g>
     {#if p.sweat > 0.05}
-      <path class="sweat" d="M73 26 C70 31 69 34 73 35 C77 34 76 31 73 26 Z" fill={COLOUR.paper} stroke={COLOUR.ink} stroke-width="1.5" opacity={Math.min(1, p.sweat)} />
+      <path class="sweat" transform="translate({sweatAt[0] - 73} {sweatAt[1] - 26})" d="M73 26 C70 31 69 34 73 35 C77 34 76 31 73 26 Z" fill={COLOUR.paper} stroke={COLOUR.ink} stroke-width="1.5" opacity={Math.min(1, p.sweat)} />
     {/if}
     {#each partsIn('front') as part, i (i)}{@render drawn(part)}{/each}
   </g></g></g>

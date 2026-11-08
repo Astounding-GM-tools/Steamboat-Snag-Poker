@@ -457,7 +457,7 @@ const ellie: Face = {
     // A neckerchief, knotted.
     { layer: 'front', d: 'M35 90 C42 95 58 95 65 90 L62 98 L57 94 L50 101 L43 94 L38 98 Z', fill: 'grey', stroke: 'ink', width: 2 },
     // The pilot's cap, a ship's wheel on the badge, raked over one eye.
-    ...hat(ellieHead, { kind: 'officer', band: 34, badge: 'wheel', tilt: -10, layer: 'over' }),
+    ...hat(ellieHead, { kind: 'officer', band: 34, badge: 'wheel', tilt: -10, layer: 'over', fit: 6, size: 28 }),
 
   ],
   blink: 4.6,
