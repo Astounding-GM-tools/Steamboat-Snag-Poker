@@ -1660,15 +1660,22 @@ Sandy's, in `src/story/characters/sandy.ts`:
 - **Morning:** "Welcome back, Captain, have a seat. It's five o'clock somewhere, I'm sure."
 - **Rounds:** "Another round, Captain?" (Leave: "You wish." Deal: "Shore thing.") "Pub quiz,
   Captain! Name a structure for retaining water." (Well, Dam: and deal.)
-- **One-liners, 5 of the dozen:** the deuce that drifts into a sandbar ("Put it on my bill");
-  his mother was a beach; "You are a very grounded person, Captain."; "I'll put it on your
-  tab."; "What's your poison, Captain? We've got silt, and we've got grit. Moonshine too, if
-  you stick around."; "That's a very fine sediment, Captain."; "The nerve of some people,
-  calling me shallow!"; "I want to be a Beach Club when I grow up."; "♪ Sand and deliver! Your
-  money and your time! ♪" (after Adam Ant); "I used to be a mountain, you know." / "Erosion was
-  a constant grind."; "The best thing about sand? It gets everywhere." (Anakin, who hated it
-  for exactly that); "I do impressions, you know." / "That one's your hull." **The dozen.**
-  A slash is a two-liner: the setup, a beat, the punchline.
+- **The dozen** (a slash is a two-liner: the setup, a beat, the punchline):
+  1. A deuce drifts into a sandbar, orders a beer. / Says: "Put it on my bill."
+  2. It wasn't easy for me, growing up. / You see, my mother was a beach.
+  3. You are a very grounded person, Captain.
+  4. What's your poison, Captain? We've got silt, and we've got grit. / Moonshine too, if you
+     stick around.
+  5. This is a very fine sediment, Captain.
+  6. The nerve of some people! / Calling me shallow!
+  7. I aspire to be a Beach Club one day.
+  8. ♪ Sand and deliver! ♪ / ♪ Your money and your time! ♪ (after Adam Ant)
+  9. I used to be a mountain, you know. / Erosion was a constant grind.
+  10. I hope you like the impression I made of your hull. / But wait until you see my work on
+      the engine.
+  11. Do you know what the best thing about sand is? / Sand gets everywhere. (Anakin hated it
+      for exactly that.)
+  12. ♪ Do you like Piña Coladas? ♪ / ♪ And getting stuck on the river? ♪ (after Rupert Holmes)
 - **Last call!** **Cleared:** "I'll drift off downstream now… Catch you later, Captain!"
   **Beaten:** "I think you've had enough, Captain. You're in no shape to drive: you'd better
   stay the night."
