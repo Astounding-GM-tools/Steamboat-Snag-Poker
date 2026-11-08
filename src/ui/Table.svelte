@@ -450,6 +450,18 @@
       if (cut) stackFor = l;
     });
   });
+  /** A reply this short shares a row in a stack with the next one, if that's short too. */
+  const SHORT_REPLY = 12;
+  /** The stack's rows, by reply index: short replies in pairs, the rest a row each. */
+  function replyRows(replies: Reply[]): number[][] {
+    const short = (r: Reply) => (r.label ?? '').length > 0 && (r.label ?? '').length <= SHORT_REPLY;
+    const rows: number[][] = [];
+    for (let i = 0; i < replies.length; i++) {
+      if (short(replies[i]) && i + 1 < replies.length && short(replies[i + 1])) rows.push([i, ++i]);
+      else rows.push([i]);
+    }
+    return rows;
+  }
   /** A line with replies that also takes a move: once the move is tapped, the play buttons replace the replies. */
   const shortcut = $derived(!!line?.replies && !!line.require && complies);
   /** The line has the buttons: an answer to give, or a scene or more to read (one that asks for a move leaves them to play). */
@@ -1147,10 +1159,17 @@
           <button onclick={() => answer(replies[0])} disabled={naming && !named}>{label(replies[0], 0)}</button>
         {/if}
       {:else}
-        <!-- More replies, or longer ones than half the row holds: stacked, rising over the table, the last (white) nearest the thumb. -->
+        <!-- More replies, or longer ones than half the row holds: stacked, rising over the table, the last (white) nearest the thumb.
+             Short ones next to each other share a row; a long one has the row to itself, as tall as its words need. -->
         <button class="stand-in" disabled aria-hidden="true">&nbsp;</button>
         <div class="stack">
-          {#each replies as r, i (i)}<button class:ghost={i < replies.length - 1} onclick={() => answer(r)} disabled={naming && !named}>{label(r, i)}</button>{/each}
+          {#each replyRows(replies) as row, k (k)}
+            {#if row.length === 2}
+              <div class="pair">{#each row as i (i)}<button class:ghost={i < replies.length - 1} onclick={() => answer(replies[i])} disabled={naming && !named}>{label(replies[i], i)}</button>{/each}</div>
+            {:else}
+              <button class:ghost={row[0] < replies.length - 1} class:long={label(replies[row[0]], row[0]).length > SHORT_REPLY} onclick={() => answer(replies[row[0]])} disabled={naming && !named}>{label(replies[row[0]], row[0])}</button>
+            {/if}
+          {/each}
         </div>
       {/if}
     {:else if holding}

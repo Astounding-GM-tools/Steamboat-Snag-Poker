@@ -1661,8 +1661,8 @@ Sandy's, in `src/story/characters/sandy.ts`:
 - **Rounds:** "Another round, Captain?" (Leave: "You wish." Deal: "Shore thing.") "Pub quiz,
   Captain! Name a structure for retaining water." (Well, Dam: and deal.) "Pub quiz, Captain!
   Name a common river sediment." (Leaves, Quartz: and deal. Leaves looks like a way out.) "Pub
-  quiz, Captain! What do they raise along a river?" (Levy, Levee: both are raised, and deal. "I
-  just want to leave. Please let me leave.": "Wrong answer, Captain.")
+  quiz, Captain! What do they raise along a river?" (Levy, Levee, side by side, and under them,
+  full width: "I just want to leave. Please let me leave." All three deal: no easy way out.)
 - **The dozen** (a slash is a two-liner: the setup, a beat, the punchline):
   1. A deuce drifts into a sandbar, orders a beer. / Says: "Put it on my bill."
   2. It wasn't easy for me, growing up. / You see, my mother was a beach.

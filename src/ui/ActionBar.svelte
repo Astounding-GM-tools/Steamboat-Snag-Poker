@@ -61,6 +61,17 @@
   .actions :global(.stack button) {
     width: 100%;
   }
+  /* Two short answers side by side. */
+  .actions :global(.stack .pair) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  /* A long answer takes the row, and as many lines as its words need. */
+  .actions :global(.stack button.long) {
+    white-space: normal;
+    line-height: 1.25;
+  }
   .actions :global(.stack button.ghost) {
     background: #0c0c0b;
   }
