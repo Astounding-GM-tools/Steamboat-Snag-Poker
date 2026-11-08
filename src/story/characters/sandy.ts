@@ -7,7 +7,8 @@ import { SANDBAR_HANDS, SANDBAR_MORNING_HANDS, SANDBAR_PILE } from '../numbers';
 import type { SpeechLine } from '../../ui/Speech.svelte';
 
 const bar = (text: string | string[]): SpeechLine => say('sandbar', text);
-const quip = (text: string): SpeechLine => aside('sandbar', text);
+/** A one-liner, said aside; two parts are a setup and its punchline, a beat apart. */
+const quip = (text: string | string[]): SpeechLine => ({ ...aside('sandbar', ''), text });
 
 export const sandbar: EncounterDef = {
   id: 'sandbar',
@@ -42,7 +43,9 @@ export const SANDY: Routine = {
     'The nerve of some people, calling me shallow!',
     'I want to be a Beach Club when I grow up.',
     '♪ Sand and deliver! Your money and your time! ♪',
-    'I used to be a mountain, you know. The erosion was a constant grind.',
+    ['I used to be a mountain, you know.', 'Erosion was a constant grind.'],
+    'The best thing about sand? It gets everywhere.',
+    ['I do impressions, you know.', 'That one’s your hull.'],
   ],
   lastCall: 'Last call!',
   cleared: 'I’ll drift off downstream now… Catch you later, Captain!',

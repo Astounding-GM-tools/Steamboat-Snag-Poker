@@ -405,6 +405,10 @@ describe('Sandy', () => {
     }
   });
 
+  it('has a dozen one-liners, exactly', () => {
+    expect(SANDY.quips).toHaveLength(12);
+  });
+
   it('repeats its last morning once it has no more', () => {
     const open = [2, 3, 4, 5].map((attempt) => String(sandy({ ...context, hand: 1, attempt }).deal?.[0].text));
     expect(open.at(-1)).toBe(SANDY.mornings.at(-1));

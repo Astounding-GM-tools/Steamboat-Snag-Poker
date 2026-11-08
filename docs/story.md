@@ -1665,8 +1665,10 @@ Sandy's, in `src/story/characters/sandy.ts`:
   tab."; "What's your poison, Captain? We've got silt, and we've got grit. Moonshine too, if
   you stick around."; "That's a very fine sediment, Captain."; "The nerve of some people,
   calling me shallow!"; "I want to be a Beach Club when I grow up."; "♪ Sand and deliver! Your
-  money and your time! ♪" (after Adam Ant); "I used to be a mountain, you know. The erosion was
-  a constant grind." (may want more work). **Two to find.**
+  money and your time! ♪" (after Adam Ant); "I used to be a mountain, you know." / "Erosion was
+  a constant grind."; "The best thing about sand? It gets everywhere." (Anakin, who hated it
+  for exactly that); "I do impressions, you know." / "That one's your hull." **The dozen.**
+  A slash is a two-liner: the setup, a beat, the punchline.
 - **Last call!** **Cleared:** "I'll drift off downstream now… Catch you later, Captain!"
   **Beaten:** "I think you've had enough, Captain. You're in no shape to drive: you'd better
   stay the night."

@@ -23,8 +23,8 @@ export interface Routine {
   mornings: string[];
   /** Before a round, now and then, in rotation. */
   rounds: Round[];
-  /** The one-liners, at random, never twice in a day. When they run out, silence: no filler. Aim for a dozen. */
-  quips: string[];
+  /** The one-liners, at random, never twice in a day. When they run out, silence: no filler. Aim for a dozen. Two parts are a setup and its punchline, a beat apart. */
+  quips: (string | string[])[];
   /** Said at the start of the day's last round. */
   lastCall?: string;
   /** When you've cleared it. */
@@ -57,7 +57,7 @@ export function roundLines(r: Routine, n: number): SpeechLine[] {
  * voyage: never twice in a day, each day starting somewhere new. Null once the
  * day has had them all.
  */
-export function quipFor(r: Routine, seed: number, attempt: number, slot: number): string | null {
+export function quipFor(r: Routine, seed: number, attempt: number, slot: number): string | string[] | null {
   if (slot < 0 || slot >= r.quips.length) return null;
   const order = new Rng(seed).shuffle(r.quips);
   return order[((attempt - 1) * 5 + slot) % order.length];
