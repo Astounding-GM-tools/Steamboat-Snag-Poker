@@ -29,7 +29,6 @@
   import { flight } from './flight.svelte';
   import { rankLabel, winnerOf } from '../engine';
   import type { MoodBlend } from './portrait/faces';
-  import SandbarScene from './scenes/SandbarScene.svelte';
   import type { RoundScript, Trigger } from '../story/mechanics/script';
   import { handLabel } from './handNames';
   import { cardPrefs } from './cards.svelte';
@@ -68,8 +67,6 @@
     money: number[];
     /** The hand being played, the hand over, or the table over. */
     phase: 'hand' | 'handEnd' | 'over';
-    /** A picture across the opponent's seat that keeps the score (an obstacle's), and the pile it's drawn at full size for. */
-    scene?: { kind: 'sandbar'; full: number };
     /** Said with the verdict, after who won: who went broke, that the next hand is the last. */
     aftermath?: string;
     /** Said in place of "You take the pot!" (against an obstacle, there's no pot to take). */
@@ -887,8 +884,6 @@
     const h = round.result?.hands[seat];
     return h ? handLabel(h) : null;
   };
-  /** The heap at the start of the hand, and as it stands once the verdict is in. */
-  const scenePile = (seat: number) => (settled ? table.money[seat] : table.start[seat]);
   /** How a rival looks: at the verdict, pleased or not; before it, the emptier their purse, the more it shows. */
   function rivalMood(seat: number): MoodBlend {
     const res = round.result;
@@ -1032,7 +1027,6 @@
           cards={rivalCards(seat)}
           {thrown}
           mood={rivalMood(seat)}
-          scene={table.scene && table.chairs.length === 1 ? sandbarScene : undefined}
           snags={snagsOf(seat)}
           snagLook={(card) => ({ lifted: turnedUp(seat) && s.played.some((c) => c.id === card.id) })}
           discarded={s.discarded}
@@ -1187,11 +1181,6 @@
   </ActionBar>
 
 </div>
-
-{#snippet sandbarScene()}
-  {@const seat = table.chairs[0].seat}
-  <SandbarScene pile={scenePile(seat)} start={table.scene!.full} mood={rivalMood(seat)} snags={snagsOf(seat).map((j) => j.index)} />
-{/snippet}
 
 <style>
   /* The board's place: the pot over the board, and between hands whatever covers them (they stay, hidden, so nothing moves). */

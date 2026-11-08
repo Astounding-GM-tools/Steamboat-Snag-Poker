@@ -47,15 +47,12 @@ One Svelte component, `Portrait`, renders every face as SVG; each character is d
 
 ## Scenes and vignettes
 
-**Built so far: the Sandbar** (`src/ui/scenes/SandbarScene.svelte`, and `/scenes.html` to play
-with it). It sits across the top of Sandy's seat, the name and coins narrowed to the left, so
-nothing the player reads is hidden. The *Best Intentions* is aground on his heap, and the heap is
-his pile: drawn at full size for the pile he starts the day with, it shrinks as you win (sand
-drifting off downstream) and grows as you lose (your stake flung onto it as sand), changing at
-the verdict, not before. Clear it and she levels and floats, her wheel turning. The troubles he
-holds (a broken pole, a paddle, an axle) stick out of the sand. Sandy's face is the portrait rig,
-so his moods play on the heap. A Journey sets `scene` on the table view for the Sandbar;
-another obstacle's scene would go the same way.
+**Tried first: the Sandbar** (`src/ui/scenes/SandbarScene.svelte`; `/scenes.html` plays with it).
+The *Best Intentions* aground on Sandy's heap, the heap his pile: shrinking as you win, sand
+drifting off downstream, growing as you lose, and she floats when it's gone. It worked as a
+picture, but not in its place across the head of Sandy's seat: there it was just the boat tilted
+against his portrait, and added too little. Taken out of the game; Sandy keeps his portrait. The
+placement is the problem to solve, later (there are ideas). The component and the page stay.
 
 
 One 4:3 frame everywhere (silent-film ratio; Academy 1.37 came with sound around 1932). On a phone, full width, it fits over the opponent and pot area.
