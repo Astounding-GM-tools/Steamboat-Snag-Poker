@@ -300,7 +300,7 @@ const gaylord: Face = {
     nervous: { browCock: -4.5, eyeOpen: 0.82, mouthCurve: 0.15, lean: -4, pipe: 1.6 },
   },
   // His tells, rattled, and only then: his eyes glance aside, and the cigarette droops.
-  tic: { effect: 'shifty', every: 4, when: 'nervous' },
+  tic: { effect: 'shifty', every: 8, when: 'nervous' },
 };
 
 const steamboatBillHead = { width: 26, top: 12, jaw: 84, chin: 18, bottom: 91 };
