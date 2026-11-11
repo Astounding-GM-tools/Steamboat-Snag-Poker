@@ -9,7 +9,7 @@
   import Journey from './Journey.svelte';
   import MonthEnd from './MonthEnd.svelte';
   import Title from './Title.svelte';
-  import { loadBest, loadGame, loadJourney, recordResult, saveGame, saveJourney } from './storage';
+  import { loadBest, loadGame, loadJourney, recordResult, saveGame, saveJourney, setOnRiver, wasOnRiver } from './storage';
   import { SCENES } from '../story/dev';
   import { giveButtons, newTutorial, rematch, skipToButtons, skipToHands, tutorialScript, TUTORIAL } from '../story/chapters/00_tutorial/tutorial';
   import { roundScript, type Script } from '../story/mechanics/script';
@@ -82,7 +82,10 @@
     return { ...(purse ? { money: purse } : {}), ...(drawn ? { rivals: drawn } : {}) };
   }
   // A voyage in progress opens where it was left (a phone that slept, a page reloaded): the title is a Menu away.
-  if (untrack(() => saved)) resume();
+  // The story first, if that's where you were (however you got there: the dev menu's jumps are saved like any voyage).
+  if (wasOnRiver() && loadJourney()) river = { fresh: false };
+  else if (untrack(() => saved)) resume();
+  $effect(() => setOnRiver(!!river));
   if (import.meta.env.DEV) {
     const w = window as unknown as Record<string, unknown>;
     w.startTutorial = startTutorial;

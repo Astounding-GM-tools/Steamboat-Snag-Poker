@@ -857,7 +857,8 @@
         flown = [...bets];
         dealt = DEALT_ALL;
         dealtHand = hand;
-        preamble = false;
+        // What was to be said before the deal is said again: a conversation may be the whole point of the table (Willie, before she hits).
+        preamble = fire('deal');
         return;
       }
       if (fresh) {

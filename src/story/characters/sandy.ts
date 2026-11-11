@@ -27,7 +27,7 @@ export const sandbar: EncounterDef = {
  */
 export const SANDY: Routine = {
   who: 'sandbar',
-  opening: ['Welcome to the sandbar! I’ll be your bartender this evening.', 'Today’s specials: Paddle Split, Crankshaft with a Twist, and the Best Intentions, served on the Rocks.'],
+  opening: ['Welcome to The Sandbar! I’ll be your bartender this evening.', 'Today’s specials: Paddle Split, Crankshaft with a Twist, and the Best Intentions, served on the Rocks.'],
   mornings: ['Welcome back, Captain, have a seat. It’s five o’clock somewhere, I’m sure.'],
   rounds: [
     { text: 'Another round, Captain?', answers: [{ label: 'Leave', comeback: 'You wish.' }, { label: 'Deal', comeback: 'Shore thing.' }] },

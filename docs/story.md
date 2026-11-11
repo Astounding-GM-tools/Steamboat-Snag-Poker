@@ -1655,7 +1655,7 @@ beats filler. The same shape will serve the Rapids' stages, the Deadheads and th
 
 Sandy's, in `src/story/characters/sandy.ts`:
 
-- **Opening:** "Welcome to the sandbar! I'll be your bartender this evening." / "Today's specials:
+- **Opening:** "Welcome to The Sandbar! I'll be your bartender this evening." / "Today's specials:
   Paddle Split, Crankshaft with a Twist, and the Best Intentions, served on the Rocks." (Menu-speak:
   no articles, but the boat's grand name keeps hers. His three troubles are on the menu: the Broken
   Paddle, the Twisted Crankshaft, and On the Rocks, a scraped hull that whoever gets it mends.)

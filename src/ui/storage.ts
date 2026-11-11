@@ -96,3 +96,23 @@ export function saveJourney(journey: JourneyState | null) {
     /* storage unavailable */
   }
 }
+
+const ON_RIVER_KEY = 'wwr.onRiver';
+
+/** Whether the story was on screen when the page went (a phone that slept): it opens there again. */
+export function wasOnRiver(): boolean {
+  try {
+    return localStorage.getItem(ON_RIVER_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function setOnRiver(on: boolean) {
+  try {
+    if (on) localStorage.setItem(ON_RIVER_KEY, '1');
+    else localStorage.removeItem(ON_RIVER_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
