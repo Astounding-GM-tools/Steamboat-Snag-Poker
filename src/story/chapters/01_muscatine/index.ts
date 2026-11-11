@@ -158,6 +158,7 @@ export const muscatineTalk: Record<string, Talk> = {
           {
             size: 'scene',
             who: 'gus',
+            mood: 'nervous',
             text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'],
             replies: [{ label: 'Next', effect: 'aground', end: true }],
           },
