@@ -303,7 +303,7 @@
   <!-- Encounters may follow one another with nothing between: each sits down at a table of its own. -->
   {#key shownKey}
     <!-- Running aground: the whole picture lurches as the table comes up. On the river, the table's things slide in over the map, and off it again. -->
-    <div class="over" bind:this={overEl} class:jolt={step?.type === 'encounter' && step.jolt} class:lifting class:arriving inert={lifting}>
+    <div class="over" class:river={onRiver} bind:this={overEl} class:jolt={step?.type === 'encounter' && step.jolt} class:lifting class:arriving inert={lifting}>
       <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} onjolt={jolt} />
     </div>
   {/key}
@@ -320,6 +320,9 @@
         <label>skip speed <input type="range" min="2" max="40" step="1" bind:value={voyage.race} /> ×{voyage.race}</label>
         <label>zoomMin <input type="range" min="-6" max="0" step="0.1" bind:value={voyage.steamZoom} /> {voyage.steamZoom}</label>
         <label>zoomMax <input type="range" min="-6" max="1" step="0.1" bind:value={voyage.playZoom} /> {voyage.playZoom}</label>
+        <label>boat size <input type="range" min="1" max="6" step="0.5" bind:value={voyage.boatSize} /> ×{voyage.boatSize}</label>
+        <label>route x <input type="range" min="-300" max="300" step="10" bind:value={voyage.routeX} /> {voyage.routeX}</label>
+        <label>route y <input type="range" min="-300" max="300" step="10" bind:value={voyage.routeY} /> {voyage.routeY}</label>
       </div>
     {/if}
     {#if chatterNow}
@@ -430,6 +433,16 @@
   .over {
     position: relative;
     z-index: 1;
+  }
+  /* On the river, the board comes in when the round begins, not under the talk before it. */
+  .river :global(.table > .felt) {
+    transition:
+      translate 0.8s ease-out,
+      opacity 0.8s ease-out;
+  }
+  .river :global(.table.preamble > .felt) {
+    translate: -120vw 0;
+    opacity: 0;
   }
   .lifting :global(.table > .rivals) {
     animation: off-top 1.1s ease-in both;

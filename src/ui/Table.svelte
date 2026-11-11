@@ -639,6 +639,8 @@
   }
   /** The hand whose cards are all dealt: its street's lines may come. */
   let dealtHand = $state(-1);
+  /** Lines before the deal are being said (the preamble), or the table's only just up: on the river, the board waits off the screen till the round begins. */
+  let preamble = $state(true);
   // A street's lines once its cards are on the table and the moves before them have played out.
   $effect(() => {
     if (table.phase !== 'hand' || round.result || view !== 'choose' || busy || dealtHand !== part || round.street > 2) return;
@@ -855,6 +857,7 @@
         flown = [...bets];
         dealt = DEALT_ALL;
         dealtHand = hand;
+        preamble = false;
         return;
       }
       if (fresh) {
@@ -875,7 +878,8 @@
       // A new hand: the antes in, any lines before the deal, then the deal.
       if (fresh) {
         const said = fire('deal');
-        const go = () => coins.later(() => deal().then(() => void (dealtHand = hand)));
+        preamble = said;
+        const go = () => ((preamble = false), coins.later(() => deal().then(() => void (dealtHand = hand))));
         if (said) void quiet().then(go);
         else go();
       }
@@ -1036,7 +1040,7 @@
 
 <!-- A tap anywhere, while the table is moving, hurries it along. -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="table" class:buttons={table.currency === 'buttons'} style:max-width={fitWidth ? `${fitWidth}px` : null} bind:this={rootEl} onclick={hurry}>
+<div class="table" class:buttons={table.currency === 'buttons'} class:preamble style:max-width={fitWidth ? `${fitWidth}px` : null} bind:this={rootEl} onclick={hurry}>
   {#if showHelp}<div class="help-layer layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
   <!-- How it works covers what's said: the line comes back when it closes. -->
   {#if line && !showHelp}

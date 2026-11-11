@@ -11,6 +11,11 @@ export const voyage = $state({
   /** The map's height as log2 of its scale (screen px per map px; a map px is 2 m): steaming, and at play. */
   steamZoom: -1.6,
   playZoom: -1.4,
+  /** The boat on the map, and her wake's width, as multiples of the first drawing. */
+  boatSize: 3,
+  /** Shifts the channel line (and the boat on it) by map pixels (2 m each), until a route traced on the old charts comes. */
+  routeX: 0,
+  routeY: 90,
   /** A crew member's chatter closes this many seconds before the next comes up (or she arrives). */
   chatterGap: 5,
 });

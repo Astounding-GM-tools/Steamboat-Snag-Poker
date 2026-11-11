@@ -47,6 +47,8 @@
   });
 
   const course = $derived(sidecar ? route(sidecar.path.px[0], sidecar.stops) : null);
+  /** The channel as drawn, shifted (map/tuning.svelte.ts): the modern centreline sits off the 1890 channel here and there. */
+  const shift = $derived<Pt>([voyage.routeX, voyage.routeY]);
   const boat = $derived(course?.at(t));
   const wake = $derived(course ? course.line(0, t) : []);
 
@@ -55,7 +57,7 @@
   $effect(() => {
     zoom.target = mode === 'play' ? voyage.playZoom : voyage.steamZoom;
   });
-  const center = $derived<Pt>(boat?.p ?? [0, 0]);
+  const center = $derived<Pt>(boat ? [boat.p[0] + shift[0], boat.p[1] + shift[1]] : [0, 0]);
   const scale = $derived(2 ** zoom.current);
 
   const pts = (p: readonly Pt[]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
@@ -68,8 +70,9 @@
   {#if sidecar && boat}
     <div class="map">
       <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale}>
-        <polyline points={pts(wake)} class="wake" />
-        <g class="boat" transform="translate({boat.p[0]} {boat.p[1]}) scale({1 / scale}) rotate({deg}) scale(1 {flip})">
+        <g transform="translate({shift[0]} {shift[1]})">
+        <polyline points={pts(wake)} class="wake" style:stroke-width="{3 * voyage.boatSize}px" />
+        <g class="boat" transform="translate({boat.p[0]} {boat.p[1]}) scale({voyage.boatSize / scale}) rotate({deg}) scale(1 {flip})">
           <!-- A sternwheeler side on, bow to the right: hull, cabin, two chimneys, the wheel astern. -->
           <path class="ink" d="M -17 2 L 16 2 L 19 -1 L 19 3 Q 15 7 -15 7 Z" />
           <rect class="ink" x="-12" y="-4" width="20" height="6" />
@@ -83,6 +86,7 @@
           <circle class="wheel" cx="-19" cy="1" r="4.5" />
           <circle class="puff one" cx="8" cy="-19" r="2.5" />
           <circle class="puff two" cx="6" cy="-22" r="3.2" />
+        </g>
         </g>
       </TileMap>
     </div>
