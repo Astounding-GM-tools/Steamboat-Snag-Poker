@@ -194,6 +194,10 @@
   .left {
     grid-column: 1 / 9;
     min-width: 0;
+    /* As tall as the portrait beside it (columns 9–12 of the table's: a third of it, less a rem), so on a wide
+       table the portrait, hanging up from the row's foot, still has the row's height to hang in. */
+    min-height: calc(33.33cqw - 1rem);
+    justify-content: center;
     display: flex;
     flex-direction: column;
   }

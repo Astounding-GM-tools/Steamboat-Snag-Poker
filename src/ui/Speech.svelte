@@ -213,8 +213,8 @@
     display: grid;
     place-items: center;
     /* In its own em (1.4 of the caption's): 44px on a phone. */
-    width: 1.96em;
-    height: 1.96em;
+    width: max(1.96em, 12cqw);
+    height: max(1.96em, 12cqw);
     border-radius: 50%;
     background: #0c0c0b;
     border: 2px solid var(--paper);
@@ -230,8 +230,8 @@
   .full .face {
     top: 0.375em;
     right: 0.375em;
-    width: 2em;
-    height: 2em;
+    width: max(2em, 17cqw);
+    height: max(2em, 17cqw);
     font-size: 2em;
   }
   .words {
