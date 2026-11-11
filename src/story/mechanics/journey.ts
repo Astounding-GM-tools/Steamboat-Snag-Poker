@@ -138,8 +138,8 @@ export type Step =
     }
   /** Under way: it burns the coal, and you arrive. */
   | { type: 'travel'; coal: number; to: string }
-  /** Steaming up a leg of the river on the map (`leg`), to `to` (0 the leg's start, 1 its end): the felt lifts and the boat goes on until she gets there, or something stops her. */
-  | { type: 'steam'; leg: string; to: number }
+  /** Steaming up a leg of the river on the map (`leg`), to `to` (0 the leg's start, 1 its end): the felt lifts and the boat goes on until she gets there, or something stops her. The crew's `chatter` comes up along the way, evenly spaced, each line closing a little before the next. */
+  | { type: 'steam'; leg: string; to: number; chatter?: StoryLine[] }
   | {
       type: 'encounter';
       encounter: EncounterDef;

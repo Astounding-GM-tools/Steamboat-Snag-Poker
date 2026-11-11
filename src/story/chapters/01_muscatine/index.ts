@@ -9,8 +9,8 @@ import { DOCK_FEE_AMOUNT, HARBOUR_HANDS, HARBOUR_MASTER_PURSE } from '../../numb
 
 /** The river map's leg (public/maptiles/river-1904/chapter-1/travel), and where on it things happen: Muscatine is 0, LeClaire 1. */
 const CHAPTER_1 = 'chapter-1';
-/** A bit past halfway from Muscatine to the Tri-Cities (about mile 470 of 455 to 497). */
-export const SANDBAR_AT = 0.36;
+/** Well up from Muscatine, three quarters of the way to the Tri-Cities: the game has time to settle first (about mile 476 of 455 to 497). */
+export const SANDBAR_AT = 0.5;
 /** The Tri-Cities landing, as the map's sidecar has it. */
 const TRI_CITIES_AT = 0.6429;
 
@@ -52,7 +52,17 @@ export const muscatine: Step[] = [
     ],
   },
   // The felt lifts: the map beneath it, and the Best Intentions steaming up from Muscatine.
-  { type: 'steam', leg: CHAPTER_1, to: SANDBAR_AT },
+  {
+    type: 'steam',
+    leg: CHAPTER_1,
+    to: SANDBAR_AT,
+    // Placeholders, to be written.
+    chatter: [
+      { who: 'willie', text: 'Chatter 1' },
+      { who: 'willie', text: 'Chatter 2' },
+      { who: 'willie', text: 'Chatter 3' },
+    ],
+  },
   {
     type: 'encounter',
     // Under way, Willie talking (RIVER_TALK.underway), and then not.

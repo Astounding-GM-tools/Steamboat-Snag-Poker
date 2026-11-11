@@ -122,6 +122,35 @@
     });
   }
 
+  /** Where this stretch of river began (the boat's spot when the step came up). */
+  const steamFrom = $derived(step?.type === 'steam' ? (journey.river?.t ?? 0) : 0);
+  /** The crew's chatter on this stretch: evenly spaced along it, each up until a little before the next (or her arrival). */
+  const chatterAt = $derived.by(() => {
+    if (step?.type !== 'steam' || !step.chatter?.length) return [];
+    const n = step.chatter.length, to = step.to, from = steamFrom;
+    const gap = (voyage.chatterGap / voyage.legSeconds) * Math.sign(to - from);
+    const starts = step.chatter.map((_, i) => from + ((i + 1) * (to - from)) / (n + 1));
+    // Each line's caption made once: a new one every frame (as she moves) would start its words over and over.
+    return step.chatter.map(({ who, text }, i) => ({
+      speech: { size: 'aside', who: who ?? 'willie', text, auto: false } satisfies SpeechLine as SpeechLine,
+      start: starts[i],
+      end: (i + 1 < n ? starts[i + 1] : to) - gap,
+    }));
+  });
+  /** Chatter tapped away, by its place on the stretch. */
+  let hushed = $state<number[]>([]);
+  $effect(() => {
+    void step;
+    hushed = [];
+  });
+  const chatterNow = $derived.by((): SpeechLine | null => {
+    if (racing) return null;
+    const between = (x: number, a: number, b: number) => (a <= b ? x >= a && x < b : x <= a && x > b);
+    const k = chatterAt.findIndex((c) => between(boatT, c.start, c.end));
+    return k < 0 || hushed.includes(k) ? null : chatterAt[k].speech;
+  });
+  const chatterIndex = $derived(chatterNow ? chatterAt.findIndex((c) => c.speech === chatterNow) : -1);
+
   /** Leaving a table for the river: the table's things slide off every which way as the felt lifts. */
   let lifting = $state(false);
   let wasPlaying = false;
@@ -293,6 +322,12 @@
         <label>zoomMax <input type="range" min="-6" max="1" step="0.1" bind:value={voyage.playZoom} /> {voyage.playZoom}</label>
       </div>
     {/if}
+    {#if chatterNow}
+      <!-- The crew passing the time as she steams: it closes by itself before the next, or with a tap. -->
+      {#key chatterIndex}
+        <div class="chatter"><Speech line={chatterNow} name={called(chatterNow.who)} opponent={false} top={0} bottom={0} onnext={() => (hushed = [...hushed, chatterIndex])} /></div>
+      {/key}
+    {/if}
     <div class="dock" use:heavy>
       <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
       <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>
@@ -452,6 +487,17 @@
     .over :global(.table > *) {
       animation: none !important;
     }
+  }
+  /* Low on the screen, over the river below the boat, clear of her. */
+  .chatter {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 6.5rem;
+  }
+  .chatter :global(.speech) {
+    top: auto !important;
+    bottom: 0;
   }
   /* Up under the status line, clear of the boat in the middle. */
   .tune {

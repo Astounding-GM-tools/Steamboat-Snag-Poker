@@ -5,10 +5,12 @@
  */
 export const voyage = $state({
   /** Seconds for a whole leg (0 to 1) at a leisurely pace. */
-  legSeconds: 60,
+  legSeconds: 230,
   /** How much quicker she goes with Skip held. */
   race: 12,
   /** The map's height as log2 of its scale (screen px per map px; a map px is 2 m): steaming, and at play. */
-  steamZoom: -2.7,
+  steamZoom: -1.6,
   playZoom: -1.4,
+  /** A crew member's chatter closes this many seconds before the next comes up (or she arrives). */
+  chatterGap: 5,
 });
