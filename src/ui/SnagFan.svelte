@@ -76,11 +76,11 @@
     background: var(--ink);
     border: 1px solid var(--grey);
     font-family: var(--title-font);
-    font-size: 0.75rem;
+    font-size: calc(0.75 * var(--u, 1rem));
     line-height: 1.3;
   }
   .tiny .snag-count {
-    font-size: 0.6rem;
+    font-size: calc(0.6 * var(--u, 1rem));
     padding: 0 3px;
   }
 </style>

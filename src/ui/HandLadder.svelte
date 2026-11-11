@@ -46,8 +46,8 @@
     z-index: 70;
     display: grid;
     align-content: center;
-    gap: 0.5rem;
-    padding: 1rem;
+    gap: calc(0.5 * var(--u, 1rem));
+    padding: var(--u, 1rem);
     background: rgba(12, 12, 11, 0.95);
     animation: ladder-in 0.2s ease-out;
   }
@@ -63,7 +63,7 @@
     }
   }
   h2 {
-    margin: 0 0 0.25rem;
+    margin: 0 0 calc(0.25 * var(--u, 1rem));
     font-family: var(--title-font);
     font-weight: normal;
     text-align: center;
@@ -75,14 +75,14 @@
     padding: 0;
     list-style: none;
     display: grid;
-    gap: 0.3rem;
+    gap: calc(0.3 * var(--u, 1rem));
   }
   li {
     display: grid;
     grid-template-columns: 1.4em 1fr auto;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.2rem 0.4rem;
+    gap: calc(0.5 * var(--u, 1rem));
+    padding: calc(0.2 * var(--u, 1rem)) calc(0.4 * var(--u, 1rem));
     border: 1px solid transparent;
     border-radius: 4px;
   }
@@ -93,22 +93,22 @@
   }
   .n {
     color: var(--grey);
-    font-size: 0.8rem;
+    font-size: calc(0.8 * var(--u, 1rem));
   }
   .name {
     font-family: var(--title-font);
-    font-size: 0.95rem;
+    font-size: calc(0.95 * var(--u, 1rem));
   }
   .eg {
     color: var(--grey);
-    font-size: 0.8rem;
+    font-size: calc(0.8 * var(--u, 1rem));
     text-align: right;
   }
   p {
     width: 100%;
     max-width: 420px;
-    margin: 0.25rem auto 0;
-    font-size: 0.85rem;
+    margin: calc(0.25 * var(--u, 1rem)) auto 0;
+    font-size: calc(0.85 * var(--u, 1rem));
     line-height: 1.4;
     color: var(--grey);
   }

@@ -180,7 +180,7 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.7rem;
+    font-size: calc(0.7 * var(--u, 1rem));
     color: var(--paper);
     line-height: 1;
   }
@@ -358,7 +358,7 @@
     display: grid;
     place-items: center;
     color: var(--grey);
-    font-size: 0.75rem;
+    font-size: calc(0.75 * var(--u, 1rem));
     text-align: center;
   }
 </style>

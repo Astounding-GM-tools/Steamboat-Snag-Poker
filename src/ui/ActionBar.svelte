@@ -53,10 +53,10 @@
     bottom: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
-    padding-top: 0.6rem;
+    gap: calc(0.6 * var(--u, 1rem));
+    padding-top: calc(0.6 * var(--u, 1rem));
     background: #0c0c0b;
-    box-shadow: 0 -0.6rem 0.8rem #0c0c0b;
+    box-shadow: 0 -0.6rem calc(0.8 * var(--u, 1rem)) #0c0c0b;
   }
   .actions :global(.stack button) {
     width: 100%;
@@ -65,7 +65,7 @@
   .actions :global(.stack .pair) {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.6rem;
+    gap: calc(0.6 * var(--u, 1rem));
   }
   /* A long answer takes the row, and as many lines as its words need. */
   .actions :global(.stack button.long) {
@@ -104,7 +104,7 @@
   }
   @media (max-width: 600px) {
     .actions :global(button) {
-      font-size: 1.15rem;
+      font-size: calc(1.15 * var(--u, 1rem));
       padding-left: 0.5em;
       padding-right: 0.5em;
     }

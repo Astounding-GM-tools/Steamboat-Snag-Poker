@@ -86,6 +86,8 @@
       </TileMap>
     </div>
   {/if}
+  <!-- The projector's lamp: bright in the middle, falling away to black at the edges, so the chart's own edges never show hard. -->
+  <div class="lamp"></div>
   <!-- The felt: black over the map, lifted off it as she sets out. -->
   <div class="felt"></div>
 </div>
@@ -121,6 +123,11 @@
   }
   .play::after {
     opacity: 1;
+  }
+  .lamp {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 75% 70% at 50% 50%, transparent 30%, rgba(0, 0, 0, 0.45) 60%, rgba(0, 0, 0, 0.85) 85%, #000 100%);
   }
   .felt {
     position: absolute;

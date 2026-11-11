@@ -142,7 +142,7 @@
     ? `bottom: ${bottom}px; min-height: calc(100% - ${top + bottom}px)`
     : grow === 'down'
       ? `top: ${top}px; min-height: calc(100% - ${top + bottom}px)`
-      : `top: ${top}px; bottom: ${bottom}px`}
+      : `top: ${top}px; min-height: calc(100% - ${top + bottom}px)`}
   onclick={(e) => (e.stopPropagation(), onnext?.())}
   role="status"
   aria-live="polite"
@@ -164,14 +164,19 @@
 </div>
 
 <style>
+  /*
+   * Sized by the table it's on (its width, cqw): a tablet's captions, portraits and words grow with
+   * its table, a phone's stay as they were. Everything inside is in em, from this.
+   */
   .speech {
+    font-size: var(--u, 1rem);
     position: absolute;
-    left: 1rem;
-    right: 1rem;
+    left: 1em;
+    right: 1em;
     z-index: 20;
     display: grid;
     place-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.5em 1em;
     background: #0c0c0b;
     border: 2px solid var(--paper);
     outline: 1px solid var(--paper);
@@ -203,17 +208,18 @@
   /* Anyone but the opponent: their portrait sits on the caption's top right corner. */
   .face {
     position: absolute;
-    top: -14px;
-    right: -6px;
+    top: -0.625em;
+    right: -0.27em;
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
+    /* In its own em (1.4 of the caption's): 44px on a phone. */
+    width: 1.96em;
+    height: 1.96em;
     border-radius: 50%;
     background: #0c0c0b;
     border: 2px solid var(--paper);
     font-family: var(--title-font);
-    font-size: 1.4rem;
+    font-size: 1.4em;
     line-height: 1;
   }
   .likeness {
@@ -222,11 +228,11 @@
   }
   /* The full caption reaches the top of the screen: its portrait sits inside the frame. */
   .full .face {
-    top: 12px;
-    right: 12px;
-    width: 64px;
-    height: 64px;
-    font-size: 2rem;
+    top: 0.375em;
+    right: 0.375em;
+    width: 2em;
+    height: 2em;
+    font-size: 2em;
   }
   .words {
     animation: appear 0.2s ease-out;
@@ -255,37 +261,37 @@
     margin-top: 0.2em;
   }
   .aside p {
-    font-size: 1rem;
+    font-size: 1em;
     line-height: 1.25;
   }
   .scene p {
-    font-size: 1.2rem;
+    font-size: 1.2em;
   }
   /* Over your side, or between their cards and the board, there's a little less room. */
   .low p,
   .band p {
-    font-size: 1.05rem;
+    font-size: 1.05em;
   }
   .low .who {
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.35em;
   }
   .full p {
-    font-size: 1.25rem;
+    font-size: 1.25em;
   }
   .who {
     display: block;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.75em;
     font-family: var(--title-font);
-    font-size: 1.1rem;
+    font-size: 1.1em;
     letter-spacing: 0.08em;
     color: var(--grey);
   }
   .aside .who {
-    margin-bottom: 0.15rem;
-    font-size: 0.85rem;
+    margin-bottom: 0.15em;
+    font-size: 0.85em;
   }
   .full .who {
-    font-size: 1.5rem;
+    font-size: 1.5em;
     color: var(--paper);
   }
   @keyframes pop {

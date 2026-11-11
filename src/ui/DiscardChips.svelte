@@ -89,7 +89,7 @@
     background: var(--paper);
     color: var(--ink);
     font-family: var(--title-font);
-    font-size: 0.78rem;
+    font-size: calc(0.78 * var(--u, 1rem));
     line-height: 1;
     letter-spacing: 0;
     box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
@@ -106,7 +106,7 @@
     margin-top: calc((var(--h) - var(--chip-h) * var(--n)) / (var(--n) - 1));
   }
   .suit {
-    width: 0.65rem;
-    height: 0.65rem;
+    width: calc(0.65 * var(--u, 1rem));
+    height: calc(0.65 * var(--u, 1rem));
   }
 </style>

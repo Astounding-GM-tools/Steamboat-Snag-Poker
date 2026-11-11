@@ -350,3 +350,21 @@ button.ghost {
 .waiting {
   visibility: visible !important;
 }
+
+/*
+ * The table's unit (--u): a rem that grows with the table, set on its parts against its width (cqw),
+ * so a tablet's table has bigger lettering and a phone's is as it was (the table's parts size by
+ * calc(n * var(--u)) where they'd say n rem). Registered, so it settles to a length where it's set
+ * and is inherited as one (a seat's own container doesn't change it).
+ */
+@property --u {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 16px;
+}
+.table > * {
+  --u: clamp(1rem, 3.7cqw, 1.7rem);
+}
+.table button {
+  font-size: calc(1.1 * var(--u, 1rem));
+}

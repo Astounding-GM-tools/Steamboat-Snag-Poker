@@ -1265,8 +1265,8 @@
   .button {
     flex: none;
     align-self: center;
-    width: 0.6rem;
-    height: 0.6rem;
+    width: calc(0.6 * var(--u, 1rem));
+    height: calc(0.6 * var(--u, 1rem));
     border-radius: 50%;
     background: var(--paper);
     box-shadow:
@@ -1287,12 +1287,12 @@
   .street {
     margin: 0;
     font-family: var(--title-font);
-    font-size: 1.3rem;
+    font-size: calc(1.3 * var(--u, 1rem));
   }
 
   /* Your side: the duel's rows (cards in columns 1–6, the snag fan 7–10, the discards 11–12). */
   .mine {
-    row-gap: 0.4rem;
+    row-gap: calc(0.4 * var(--u, 1rem));
   }
   .my-purse {
     position: relative;
@@ -1303,13 +1303,13 @@
   }
   .my-hand {
     position: absolute;
-    top: 0.8rem;
+    top: calc(0.8 * var(--u, 1rem));
     left: 0;
     right: 0;
     margin: 0;
     text-align: center;
     font-style: italic;
-    font-size: 0.95rem;
+    font-size: calc(0.95 * var(--u, 1rem));
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1331,7 +1331,7 @@
     z-index: 5;
     display: grid;
     place-content: center;
-    gap: 0.4rem;
+    gap: calc(0.4 * var(--u, 1rem));
     background: rgba(12, 12, 11, 0.85);
     animation: title-in 0.6s ease-out;
   }
@@ -1340,13 +1340,13 @@
   }
   .title-card .big {
     font-family: var(--title-font);
-    font-size: 2.2rem;
+    font-size: calc(2.2 * var(--u, 1rem));
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
   .title-card .small {
     font-family: var(--title-font);
-    font-size: 1rem;
+    font-size: var(--u, 1rem);
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--grey);
@@ -1361,7 +1361,7 @@
     margin: 0;
     min-height: 1.2em;
     font-family: var(--title-font);
-    font-size: 0.8rem;
+    font-size: calc(0.8 * var(--u, 1rem));
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--grey);
@@ -1372,8 +1372,8 @@
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    height: 3.5rem;
-    margin-bottom: 0.4rem;
+    height: calc(3.5 * var(--u, 1rem));
+    margin-bottom: calc(0.4 * var(--u, 1rem));
   }
   .crossing {
     display: flex;
@@ -1381,7 +1381,7 @@
     align-items: flex-start;
     gap: 3px;
     font-family: var(--title-font);
-    font-size: 0.85rem;
+    font-size: calc(0.85 * var(--u, 1rem));
     color: var(--grey);
     text-align: left;
   }
@@ -1395,14 +1395,14 @@
   .street-sub {
     min-height: 1.2em;
     font-family: var(--body-font);
-    font-size: 0.85rem;
+    font-size: calc(0.85 * var(--u, 1rem));
     letter-spacing: 0.02em;
     color: var(--grey);
   }
   .icon {
     justify-self: end;
     padding: 0 0.55em;
-    font-size: 1rem;
+    font-size: var(--u, 1rem);
     border-radius: 50%;
   }
   /* A lesson pointing at How it works: the "?" pulses until it's opened. */
@@ -1432,7 +1432,7 @@
     grid-template-rows: 1fr 1fr auto;
     align-items: center;
     justify-items: center;
-    padding: 4px 0.5rem;
+    padding: 4px calc(0.5 * var(--u, 1rem));
     background: rgba(10, 10, 9, 0.88);
     border: 3px double var(--paper);
     text-align: center;
@@ -1447,20 +1447,20 @@
   }
   .call {
     font-family: var(--title-font);
-    font-size: 1.1rem;
+    font-size: calc(1.1 * var(--u, 1rem));
     line-height: 1.1;
   }
   /* "Straight flush, Diamonds, Queen high" still fits a phone. */
   .call.long {
-    font-size: 0.9rem;
+    font-size: calc(0.9 * var(--u, 1rem));
   }
   .lingo {
     font-style: italic;
-    font-size: 0.95rem;
+    font-size: calc(0.95 * var(--u, 1rem));
     line-height: 1.1;
   }
   .note {
-    font-size: 0.75rem;
+    font-size: calc(0.75 * var(--u, 1rem));
     color: var(--grey);
     min-height: 1em;
     line-height: 1;
@@ -1469,6 +1469,6 @@
     from { opacity: 0; }
   }
   :global(.short) .river-head {
-    height: 3.3rem;
+    height: calc(3.3 * var(--u, 1rem));
   }
 </style>

@@ -314,14 +314,14 @@
   .purse {
     display: flex;
     align-items: flex-end;
-    gap: 0.75rem;
+    gap: calc(0.75 * var(--u, 1rem));
   }
   /* Room for three figures, so the coins never move when the amount changes. */
   .amount {
     flex: none;
     min-width: 4.2ch;
     font-family: var(--title-font);
-    font-size: 1.6rem;
+    font-size: calc(1.6 * var(--u, 1rem));
     line-height: 1;
     font-variant-numeric: tabular-nums;
   }

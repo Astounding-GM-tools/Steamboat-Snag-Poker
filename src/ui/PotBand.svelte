@@ -29,7 +29,7 @@
   .pot-band {
     grid-column: 1 / -1;
     position: relative;
-    margin: 0.2rem 0 0.5rem;
+    margin: calc(0.2 * var(--u, 1rem)) 0 calc(0.5 * var(--u, 1rem));
   }
   .outcome {
     position: absolute;
@@ -38,17 +38,17 @@
     place-items: center;
     margin: 0;
     font-family: var(--title-font);
-    font-size: 1.6rem;
+    font-size: calc(1.6 * var(--u, 1rem));
     letter-spacing: 0.06em;
     color: var(--grey);
     animation: outcome 0.4s ease-out 0.8s backwards;
   }
   .outcome.won {
-    font-size: 2rem;
+    font-size: calc(2 * var(--u, 1rem));
     color: var(--paper);
   }
   .outcome.wordy {
-    font-size: 1.1rem;
+    font-size: calc(1.1 * var(--u, 1rem));
     letter-spacing: normal;
     line-height: 1.2;
     text-align: center;
@@ -56,7 +56,7 @@
     animation-delay: 0.6s;
   }
   .outcome.wordy.won {
-    font-size: 1.1rem;
+    font-size: calc(1.1 * var(--u, 1rem));
   }
   @keyframes outcome {
     from {

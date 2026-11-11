@@ -180,10 +180,10 @@
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: subgrid;
-    row-gap: 0.5rem;
+    row-gap: calc(0.5 * var(--u, 1rem));
   }
   :global(.short) .seat.full {
-    row-gap: 0.25rem;
+    row-gap: calc(0.25 * var(--u, 1rem));
   }
   /* Name and title over their coins in columns 1–8; the portrait in 9–12. */
   .head {
@@ -207,7 +207,7 @@
     z-index: 1;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: calc(0.5 * var(--u, 1rem));
     background: none;
     outline: none;
     border: none;
@@ -227,15 +227,15 @@
   .name {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: calc(0.4 * var(--u, 1rem));
     white-space: nowrap;
     font-family: var(--title-font);
-    font-size: 1.3rem;
+    font-size: calc(1.3 * var(--u, 1rem));
     text-decoration: underline dotted var(--grey);
     text-underline-offset: 4px;
   }
   .title {
-    font-size: 0.8rem;
+    font-size: calc(0.8 * var(--u, 1rem));
     color: var(--grey);
     letter-spacing: 0.04em;
     white-space: normal;
@@ -273,7 +273,7 @@
     height: auto;
     aspect-ratio: 1;
     border-radius: 50%;
-    font-size: 3.2rem;
+    font-size: calc(3.2 * var(--u, 1rem));
   }
   /* Their cards on the grid, like yours: three cards in columns 1–6, the snag fan in 7–10, the discards in 11–12. */
   .cards {
@@ -311,7 +311,7 @@
   .seat.compact {
     container-type: inline-size;
     display: grid;
-    grid-template-rows: 26px auto auto 1.9rem;
+    grid-template-rows: 26px auto auto calc(1.9 * var(--u, 1rem));
     row-gap: 3px;
     padding: 3px 4px 0;
     margin: -4px -4px 0;
@@ -323,7 +323,7 @@
       background 0.2s;
   }
   .seat.medium {
-    grid-template-rows: 40px auto auto 1.9rem;
+    grid-template-rows: 40px auto auto calc(1.9 * var(--u, 1rem));
   }
   .seat.focus {
     border-color: var(--paper);
@@ -348,14 +348,14 @@
   }
   .tag {
     font-family: var(--title-font);
-    font-size: 0.85rem;
+    font-size: calc(0.85 * var(--u, 1rem));
     line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .medium .tag {
-    font-size: 1rem;
+    font-size: var(--u, 1rem);
   }
   /* A drawn face, in the oval's shape. */
   .likeness {
@@ -376,14 +376,14 @@
     height: 38px;
     border-radius: 50%;
     border-width: 2px;
-    font-size: 1.2rem;
+    font-size: calc(1.2 * var(--u, 1rem));
   }
   /* The dealer's button: the dealer this hand (the one on their left acts, and draws, first). */
   .button {
     flex: none;
     align-self: center;
-    width: 0.6rem;
-    height: 0.6rem;
+    width: calc(0.6 * var(--u, 1rem));
+    height: calc(0.6 * var(--u, 1rem));
     border-radius: 50%;
     background: var(--paper);
     box-shadow:
@@ -413,7 +413,7 @@
     width: 20px;
   }
   .small-cards :global(.discards .chip) {
-    font-size: 0.55rem;
+    font-size: calc(0.55 * var(--u, 1rem));
     border-radius: 2px;
   }
   .small-cards :global(.discards .suit) {
@@ -430,13 +430,13 @@
   }
   .line {
     margin: 0;
-    font-size: 0.7rem;
+    font-size: calc(0.7 * var(--u, 1rem));
     line-height: 1.25;
     text-align: center;
     overflow: hidden;
   }
   .medium .line {
-    font-size: 0.8rem;
+    font-size: calc(0.8 * var(--u, 1rem));
   }
   .seat.folded .line {
     color: var(--grey);
