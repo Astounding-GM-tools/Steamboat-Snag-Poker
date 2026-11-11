@@ -904,6 +904,8 @@
   };
   /** How a rival looks: at the verdict, pleased or not; before it, the emptier their purse, the more it shows. */
   function rivalMood(seat: number): MoodBlend {
+    // Saying something in a mood of their own: their face in the seat says it too.
+    if (line?.mood && line.who === table.ids[seat]) return line.mood;
     const res = round.result;
     if (view === 'verdict' && res) return res.rides ? 'nervous' : res.winners.includes(seat) ? 'confident' : 'nervous';
     if (view === 'choose' && round.raisers.includes(seat)) return 'confident';
