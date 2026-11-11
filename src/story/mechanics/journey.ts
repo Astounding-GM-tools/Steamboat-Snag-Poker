@@ -138,6 +138,8 @@ export type Step =
     }
   /** Under way: it burns the coal, and you arrive. */
   | { type: 'travel'; coal: number; to: string }
+  /** Steaming up a leg of the river on the map (`leg`), to `to` (0 the leg's start, 1 its end): the felt lifts and the boat goes on until she gets there, or something stops her. */
+  | { type: 'steam'; leg: string; to: number }
   | {
       type: 'encounter';
       encounter: EncounterDef;
@@ -269,6 +271,8 @@ export interface JourneyState {
   nights: number;
   /** The voyage so far is played out (the slice's end). */
   done: boolean;
+  /** Out on the river: the leg of the map we're on and where along it (0 to 1). None: at a landing, or not yet cast off. */
+  river?: { leg: string; t: number };
 }
 
 /**
@@ -379,6 +383,8 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
   if (step.type === 'travel') {
     state.coal = Math.max(0, state.coal - step.coal);
     state.place = step.to;
+    // Tied up at the landing: off the river map.
+    delete state.river;
     return advance(state, story);
   }
   if (step.type === 'encounter' && !state.encounter) seat(state, step.encounter);
@@ -403,12 +409,13 @@ function applyEffects(state: JourneyState, effects: Effects | undefined) {
   }
 }
 
-/** A caption read: on. */
+/** A caption read, or a stretch of river steamed: on. */
 export function proceed(prev: JourneyState, story: StoryDef): JourneyState {
   const step = currentStep(prev, story);
-  if (step?.type !== 'caption') throw new Error('Not a caption');
+  if (step?.type !== 'caption' && step?.type !== 'steam') throw new Error('Not a caption or a stretch of river');
   const state = clone(prev);
-  applyEffects(state, step.effects);
+  if (step.type === 'steam') state.river = { leg: step.leg, t: step.to };
+  else applyEffects(state, step.effects);
   return advance(state, story);
 }
 

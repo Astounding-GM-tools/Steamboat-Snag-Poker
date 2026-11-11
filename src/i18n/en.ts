@@ -454,6 +454,8 @@ export const en = {
   'river.slot.afternoon': 'Afternoon',
   'river.slot.evening': 'Evening',
   'river.menu': 'Menu',
+  'river.pause': 'Pause',
+  'river.skip': 'Skip',
   'river.castOff': 'Cast off',
   'river.council': 'The morning council',
   'river.buy': 'Buy',

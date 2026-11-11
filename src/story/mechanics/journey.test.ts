@@ -47,7 +47,7 @@ function autopilot(seed: number, guard = 40000): JourneyState[] {
   const rng = new Rng(seed);
   for (let i = 0; i < guard && !s.done; i++) {
     const step = currentStep(s, RIVER)!;
-    if (step.type === 'caption') s = proceed(s, RIVER);
+    if (step.type === 'caption' || step.type === 'steam') s = proceed(s, RIVER);
     else if (step.type === 'council') s = castOff(s, RIVER);
     else if (step.type === 'fork') s = pushAgain(s, RIVER);
     else if (step.type === 'hub') {
@@ -217,7 +217,11 @@ describe('the dock fee', () => {
     const paid = choose(s, RIVER, 'pay');
     expect(paid.purse).toBe(13);
     expect(paid.snags).toEqual([]);
-    expect(paid.encounter?.def.id).toBe('underway');
+    // Out onto the river: the boat steams up to the sandbar, and Willie talks.
+    expect(currentStep(paid, RIVER)?.type).toBe('steam');
+    const out = proceed(paid, RIVER);
+    expect(out.river).toEqual({ leg: 'chapter-1', t: 0.12 });
+    expect(out.encounter?.def.id).toBe('underway');
   });
 
   it('can be played for: five hands, with the bill in your hand', () => {

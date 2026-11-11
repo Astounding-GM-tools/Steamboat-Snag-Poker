@@ -7,6 +7,13 @@ import { sandbar, sandbarTalk } from '../../characters/sandy';
 import { say, you } from '../../lines';
 import { DOCK_FEE_AMOUNT, HARBOUR_HANDS, HARBOUR_MASTER_PURSE } from '../../numbers';
 
+/** The river map's leg (public/maptiles/river-1904/chapter-1/travel), and where on it things happen: Muscatine is 0, LeClaire 1. */
+const CHAPTER_1 = 'chapter-1';
+/** About five miles up from Muscatine (mile 460 of 455 to 497). */
+const SANDBAR_AT = 0.12;
+/** The Tri-Cities landing, as the map's sidecar has it. */
+const TRI_CITIES_AT = 0.6429;
+
 const harbourMaster: Rival = { id: 'harbourMaster', ai: 'stubborn', money: HARBOUR_MASTER_PURSE };
 
 export const muscatine: Step[] = [
@@ -44,6 +51,8 @@ export const muscatine: Step[] = [
       },
     ],
   },
+  // The felt lifts: the map beneath it, and the Best Intentions steaming up from Muscatine.
+  { type: 'steam', leg: CHAPTER_1, to: SANDBAR_AT },
   {
     type: 'encounter',
     // Under way, Willie talking (RIVER_TALK.underway), and then not.
@@ -59,6 +68,7 @@ export const muscatine: Step[] = [
     failed: [],
     stuck: true,
   },
+  { type: 'steam', leg: CHAPTER_1, to: TRI_CITIES_AT },
   { type: 'travel', coal: 2, to: 'triCities' },
   { type: 'nightfall' },
   { type: 'hub', hub: 'triCities' },

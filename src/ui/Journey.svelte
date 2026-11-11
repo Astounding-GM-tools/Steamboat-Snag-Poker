@@ -34,6 +34,8 @@
   import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
   import { roundScript } from '../story/mechanics/script';
   import BoatScene from './BoatScene.svelte';
+  import RiverBackdrop from './map/RiverBackdrop.svelte';
+  import { heavy } from './heavy';
   import ShipPage from './ShipPage.svelte';
   import Speech, { autoMs, type SpeechLine } from './Speech.svelte';
   import Table, { type TableView } from './Table.svelte';
@@ -58,6 +60,57 @@
   const step = $derived(currentStep(journey, RIVER));
   const enc = $derived(journey.encounter);
   const playing = $derived(step?.type === 'encounter' && !!enc && !enc.outcome);
+
+  /** Out on the river (or setting out on it): the map is beneath the felt. */
+  const onRiver = $derived(!!journey.river || step?.type === 'steam');
+  const leg = $derived(journey.river?.leg ?? (step?.type === 'steam' ? step.leg : ''));
+  /** Where she is on the leg's map, as she steams. */
+  let boatT = $state(untrack(() => journey.river?.t ?? 0));
+  /** Skip held: she races on to wherever she's bound, or till something stops her. */
+  let racing = $state(false);
+  /** A leg's length (0 to 1) at a leisurely pace, in seconds; skipping is this much quicker. */
+  const LEG_SECONDS = 60;
+  const RACE = 12;
+  $effect(() => {
+    if (step?.type !== 'steam') {
+      if (journey.river) boatT = journey.river.t;
+      return;
+    }
+    const to = step.to;
+    racing = false;
+    let last = performance.now(), raf = 0;
+    const tick = (now: number) => {
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      const dir = Math.sign(to - boatT);
+      boatT += dir * Math.min(Math.abs(to - boatT), (dt / LEG_SECONDS) * (racing ? RACE : 1));
+      if (boatT === to) journey = proceed(journey, RIVER);
+      else raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  });
+
+  /** Leaving a table for the river: the table's things slide off every which way as the felt lifts. */
+  let lifting = $state(false);
+  let wasPlaying = false;
+  $effect.pre(() => {
+    const p = playing, steaming = step?.type === 'steam';
+    untrack(() => {
+      if (wasPlaying && !p && steaming) {
+        lifting = true;
+        setTimeout(() => (lifting = false), 1500);
+      }
+      wasPlaying = p;
+    });
+  });
+  /** The table's key: kept as it was while it slides away, so it isn't dealt afresh. */
+  let tableKey = '';
+  const shownKey = $derived.by(() => {
+    const k = `${journey.day}:${journey.step}:${journey.pending.length}`;
+    if (playing) tableKey = k;
+    return tableKey;
+  });
 
   /** Who's speaking, by what they're called aboard (none: the title card's own words). */
   function speaker(line: StoryLine): string | null {
@@ -176,6 +229,9 @@
   const troubles = $derived(journey.snags.filter((j) => snagDef(j.index).kind === 'trouble').length);
 </script>
 
+{#if onRiver && leg}
+  <RiverBackdrop {leg} t={boatT} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={step?.type === 'encounter' && !!step.jolt} />
+{/if}
 {#if journey.done || !step}
   <div class="page">
     <div class="panel intertitle">
@@ -183,14 +239,25 @@
     </div>
     <div class="dock"><button onclick={onmenu}>{t('river.backToTitle')}</button></div>
   </div>
-{:else if playing && view}
+{:else if (playing && view) || lifting}
   <!-- Encounters may follow one another with nothing between: each sits down at a table of its own. -->
-  {#key `${journey.day}:${journey.step}:${journey.pending.length}`}
-    <!-- Running aground: the whole picture lurches as the table comes up. -->
-    <div class:jolt={step?.type === 'encounter' && step.jolt}>
+  {#key shownKey}
+    <!-- Running aground: the whole picture lurches as the table comes up. On the river, the table's things slide in over the map, and off it again. -->
+    <div class="over" class:jolt={step?.type === 'encounter' && step.jolt} class:lifting class:arriving={onRiver && !lifting} inert={lifting}>
       <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} />
     </div>
   {/key}
+{:else if step.type === 'steam'}
+  <!-- Under way: the map is the picture; Pause for the menu, or hold Skip to race on. -->
+  <div class="page steaming">
+    <div class="status">
+      <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
+    </div>
+    <div class="dock" use:heavy>
+      <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
+      <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>
+    </div>
+  </div>
 {:else}
   <div class="page">
     <!-- Where the boat stands: the day, the place, the purse, the crew's strength, the coal. -->
@@ -285,6 +352,75 @@
 {/if}
 
 <style>
+  .over {
+    position: relative;
+    z-index: 1;
+  }
+  .lifting :global(.table > .rivals) {
+    animation: off-top 1.1s ease-in both;
+  }
+  .lifting :global(.table > .felt) {
+    animation: off-left 1.1s ease-in 0.15s both;
+  }
+  .lifting :global(.table > .mine) {
+    animation: off-right 1.1s ease-in 0.3s both;
+  }
+  .lifting :global(.table > .actions) {
+    animation: off-bottom 0.9s ease-in 0.05s both;
+  }
+  .lifting :global(.table > :not(.rivals, .felt, .mine, .actions)) {
+    animation: fade-out 0.5s both;
+  }
+  .arriving :global(.table > .rivals) {
+    animation: off-top 0.8s ease-out 0.7s reverse both;
+  }
+  .arriving :global(.table > .felt) {
+    animation: off-left 0.8s ease-out 0.8s reverse both;
+  }
+  .arriving :global(.table > .mine) {
+    animation: off-right 0.8s ease-out 0.9s reverse both;
+  }
+  .arriving :global(.table > .actions) {
+    animation: off-bottom 0.7s ease-out 1s reverse both;
+  }
+  @keyframes off-top {
+    to {
+      transform: translate(-6vw, -110vh) rotate(-9deg);
+    }
+  }
+  @keyframes off-left {
+    to {
+      transform: translate(-120vw, 4vh) rotate(6deg);
+    }
+  }
+  @keyframes off-right {
+    to {
+      transform: translate(120vw, 6vh) rotate(-5deg);
+    }
+  }
+  @keyframes off-bottom {
+    to {
+      transform: translateY(60vh);
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .over :global(.table > *) {
+      animation: none !important;
+    }
+  }
+  .steaming .dock {
+    animation: fade-in 0.6s ease 0.4s both;
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
   .jolt {
     animation: jolt 0.55s ease-out;
   }

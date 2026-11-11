@@ -8,9 +8,14 @@ import { DOCK_FEE, goTo, jumpTo, newJourney, type HubOption, type JourneyState, 
 import { RIVER, RIVER_START } from './river';
 
 const start = () => ({ ...newJourney(Date.now() >>> 0, RIVER, RIVER_START), mornings: 1, strength: 18 });
-const dayOne = (id: string): Step[] => {
-  const steps = RIVER.days[0].steps.flatMap((s) => (s.type === 'scene' ? s.steps : [s]));
-  return steps.slice(steps.findIndex((s) => s.type === 'encounter' && s.encounter.id === id));
+const isEncounter = (s: Step, id: string) => s.type === 'encounter' && s.encounter.id === id;
+/** Day one from the encounter `id` (inside a scene, the scene's steps from there), and the day's steps after it to follow. */
+const dayOne = (id: string, state: JourneyState): JourneyState => {
+  const steps = RIVER.days[0].steps;
+  const i = steps.findIndex((s) => (s.type === 'scene' ? s.steps.some((x) => isEncounter(x, id)) : isEncounter(s, id)));
+  const s = steps[i];
+  const from = s.type === 'scene' ? s.steps.slice(s.steps.findIndex((x) => isEncounter(x, id))) : [s];
+  return jumpTo({ ...state, step: i + 1 }, RIVER, from);
 };
 const hubIndex = RIVER.days[0].steps.findIndex((s) => s.type === 'hub');
 const hub = (time: Slot, flags: string[] = [], coal = 2): JourneyState => ({ ...start(), step: hubIndex, pending: [], encounter: null, place: 'triCities', time, flags, coal, purse: 30, mornings: 3 });
@@ -22,9 +27,9 @@ const tournament = (skip: number, day = 3): JourneyState => {
 };
 
 export const SCENES: { label: string; state: () => JourneyState }[] = [
-  { label: 'Harbour master', state: () => jumpTo({ ...start(), snags: [jokerCard(DOCK_FEE)] }, RIVER, dayOne('harbourTalk')) },
-  { label: 'Under way', state: () => jumpTo(start(), RIVER, dayOne('underway')) },
-  { label: 'Sandbar', state: () => jumpTo(start(), RIVER, dayOne('sandbar')) },
+  { label: 'Harbour master', state: () => dayOne('harbourTalk', { ...start(), snags: [jokerCard(DOCK_FEE)] }) },
+  { label: 'Under way', state: () => dayOne('underway', { ...start(), river: { leg: 'chapter-1', t: 0.12 } }) },
+  { label: 'Sandbar', state: () => dayOne('sandbar', { ...start(), river: { leg: 'chapter-1', t: 0.12 } }) },
   { label: 'Tri-Cities, evening', state: () => hub('evening') },
   { label: 'Tri-Cities, morning', state: () => hub('morning', [FLAG.heardOfPilot, FLAG.jobFound], 6) },
   { label: 'Deck game (Willie’s intel)', state: () => jumpTo(hub('evening'), RIVER, option('anchor').steps.slice(1)) },
