@@ -27,6 +27,7 @@
   import Speech, { autoMs, beats, BEAT_MS, type Reply, type SpeechLine } from './Speech.svelte';
   import { called, cardLabel, jokerList, name, tagName } from './format';
   import { flight } from './flight.svelte';
+  import { fly } from 'svelte/transition';
   import { rankLabel, winnerOf } from '../engine';
   import type { MoodBlend } from './portrait/faces';
   import type { RoundScript, Trigger } from '../story/mechanics/script';
@@ -401,6 +402,14 @@
   /** The line the conversation is at; it comes up once every coin in the air has landed. */
   const nextUp = $derived(talk ? talk.lines[talk.i] : null);
   let landedFor = $state<SpeechLine | null>(null);
+  /** Which way the last line went off: swiped right, or left (the usual). */
+  let exitDir = $state(-1);
+  // Once a line's gone off its way, the next goes left unless it's swiped otherwise.
+  $effect(() => {
+    void line;
+    const t = setTimeout(() => (exitDir = -1));
+    return () => clearTimeout(t);
+  });
   $effect(() => {
     const up = nextUp;
     // (Cleared between conversations: a rematch says the very same lines again.)
@@ -536,6 +545,7 @@
     if (!talk) talkOver();
   }
   function answer(reply: Reply) {
+    exitDir = -1;
     // Shown, not played: the taps go.
     if (line?.names) tapped = [];
     if (reply.effect) ontalk?.(reply.effect);
@@ -1030,6 +1040,9 @@
   {#if showHelp}<div class="help-layer layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
   <!-- How it works covers what's said: the line comes back when it closes. -->
   {#if line && !showHelp}
+    <!-- Each line slides in from the right, and out the way it went (swiped, or left on a button). -->
+    {#key line}
+    <div class="speech-slot" in:fly|global={{ x: 70, duration: 260, opacity: 0 }} out:fly|global={{ x: 90 * exitDir, duration: 220, opacity: 0 }}>
     <Speech
       {line}
       name={speakerName(line.who)}
@@ -1037,8 +1050,10 @@
       top={speechAt.top}
       bottom={speechAt.bottom}
       grow={line.at === 'band' ? 'down' : lowLine && line.size !== 'aside' ? 'up' : undefined}
-      onnext={line.replies || line.require ? undefined : () => nextLine()}
+      onnext={line.replies || line.require ? undefined : (dir) => ((exitDir = dir ?? -1), nextLine())}
     />
+    </div>
+    {/key}
   {/if}
   <!-- Your opponents across the top, in seat order: one across the whole width, two or three sharing it. -->
   <div class="rivals">
@@ -1239,6 +1254,16 @@
    * The duel's screen grid: 12 columns (a card is two and a gap wide), the
    * table kept to the bottom so the buttons sit where they always do.
    */
+  /* A caption's own layer over the table: the caption is placed in it as it was in the table (it's the table's size). */
+  .speech-slot {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .speech-slot > :global(*) {
+    pointer-events: auto;
+  }
   .table {
     --gap: 0.5rem;
     container-type: inline-size;

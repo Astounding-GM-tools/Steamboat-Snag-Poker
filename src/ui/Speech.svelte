@@ -125,10 +125,41 @@
     /** Grows past its edge when the words need more room: `up` past `top`, `down` past `bottom`. */
     grow?: 'up' | 'down';
     /** Tapping the caption: absent while the line waits for an answer or a move. */
-    onnext?: () => void;
+    onnext?: (dir?: number) => void;
   } = $props();
 
   const ms = $derived(autoMs(line));
+
+  // Swiped aside: a line that can be passed by (it has no answer to wait for) goes the way it's flung.
+  const SWIPE_PX = 70;
+  let drag = $state<{ x: number; y: number } | null>(null);
+  let dx = $state(0);
+  let dragged = false;
+  function down(e: PointerEvent) {
+    if (!onnext || e.button !== 0) return;
+    drag = { x: e.clientX, y: e.clientY };
+    dragged = false;
+  }
+  function move(e: PointerEvent) {
+    if (!drag) return;
+    const x = e.clientX - drag.x;
+    if (!dragged && Math.abs(x) > 8 && Math.abs(x) > Math.abs(e.clientY - drag.y)) {
+      dragged = true;
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      } catch {
+        // (A pointer that's already gone: the drag goes on without it.)
+      }
+    }
+    if (dragged) dx = x;
+  }
+  function up() {
+    if (!drag) return;
+    drag = null;
+    const flung = Math.abs(dx) > SWIPE_PX ? Math.sign(dx) : 0;
+    dx = 0;
+    if (flung) onnext?.(flung);
+  }
 
 </script>
 
@@ -145,7 +176,14 @@
     : grow === 'down'
       ? `top: ${top}px; min-height: calc(100% - ${top + bottom}px)`
       : `top: ${top}px; min-height: calc(100% - ${top + bottom}px)`}
-  onclick={(e) => (e.stopPropagation(), onnext?.())}
+  onclick={(e) => (e.stopPropagation(), dragged ? (dragged = false) : onnext?.())}
+  onpointerdown={down}
+  onpointermove={move}
+  onpointerup={up}
+  onpointercancel={up}
+  style:translate={dx ? `${dx}px 0` : null}
+  style:opacity={dx ? Math.max(0.3, 1 - Math.abs(dx) / 300) : null}
+  class:dragging={drag !== null}
   role="status"
   aria-live="polite"
 >
@@ -185,7 +223,11 @@
     outline-offset: 4px;
     text-align: center;
     cursor: pointer;
-    animation: pop 0.15s ease-out;
+    touch-action: pan-y;
+    transition: translate 0.2s ease-out, opacity 0.2s ease-out;
+  }
+  .dragging {
+    transition: none;
   }
   .waits {
     cursor: default;

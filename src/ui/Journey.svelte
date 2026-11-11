@@ -103,7 +103,20 @@
 
   /** Something hit her mid-talk (a line's `jolt`): the table and the map lurch together. */
   let jolted = $state(false);
+  let overEl = $state<HTMLElement>();
+  /** The same lurch as `.jolt`, played on top of whatever the parts are doing (a CSS animation put in place of theirs would restart theirs after: a caption popped in again). */
+  const LURCH: Keyframe[] = [
+    { transform: 'none' },
+    { transform: 'translate(-14px, 9px) rotate(-1.6deg)', offset: 0.12 },
+    { transform: 'translate(10px, -6px) rotate(1.1deg)', offset: 0.3 },
+    { transform: 'translate(-6px, 3px) rotate(-0.6deg)', offset: 0.5 },
+    { transform: 'translate(3px, -1px) rotate(0.3deg)', offset: 0.72 },
+    { transform: 'none' },
+  ];
   function jolt() {
+    // Everything but the rivals' row: a face changing as it's hit is worth seeing steady.
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches)
+      for (const el of overEl?.querySelectorAll<HTMLElement>('.table > :not(.rivals)') ?? []) el.animate(LURCH, { duration: 550, easing: 'ease-out', composite: 'add' });
     jolted = false;
     requestAnimationFrame(() => {
       jolted = true;
@@ -263,7 +276,7 @@
   <!-- Encounters may follow one another with nothing between: each sits down at a table of its own. -->
   {#key shownKey}
     <!-- Running aground: the whole picture lurches as the table comes up. On the river, the table's things slide in over the map, and off it again. -->
-    <div class="over" class:jolt={jolted || (step?.type === 'encounter' && step.jolt)} class:lifting class:arriving inert={lifting}>
+    <div class="over" bind:this={overEl} class:jolt={step?.type === 'encounter' && step.jolt} class:lifting class:arriving inert={lifting}>
       <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} onjolt={jolt} />
     </div>
   {/key}
