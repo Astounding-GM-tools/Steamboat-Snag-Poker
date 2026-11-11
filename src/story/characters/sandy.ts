@@ -73,7 +73,7 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
     ? {
         deal: [bar(SANDY.opening)],
         flop: [
-          { size: 'scene', who: 'willie', text: 'Aground, Captain! Stuck fast!' },
+          { size: 'scene', who: 'willie', mood: 'nervous', text: 'Aground, Captain! Stuck fast!' },
           { size: 'scene', who: 'gus', text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'] },
         ],
       }

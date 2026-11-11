@@ -205,10 +205,10 @@
     outline-offset: 6px;
     border-width: 3px;
   }
-  /* Anyone but the opponent: their portrait sits on the caption's top right corner. */
+  /* Anyone but the opponent: their portrait sits on the caption's bottom right corner (the top is where the opponent's own portrait looks down from). */
   .face {
     position: absolute;
-    top: -0.625em;
+    bottom: -0.625em;
     right: -0.27em;
     display: grid;
     place-items: center;
@@ -226,9 +226,9 @@
     position: absolute;
     inset: 0;
   }
-  /* The full caption reaches the top of the screen: its portrait sits inside the frame. */
+  /* The full caption fills the screen: its portrait sits inside the frame. */
   .full .face {
-    top: 0.375em;
+    bottom: 0.375em;
     right: 0.375em;
     width: max(2em, 17cqw);
     height: max(2em, 17cqw);
