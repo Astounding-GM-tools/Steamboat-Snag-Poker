@@ -152,7 +152,15 @@ export const muscatineTalk: Record<string, Talk> = {
             size: 'scene',
             who: 'willie',
             text: ['First boat up the river this year, Captain, and not a soul ahead of us!', 'Clear water to the Tri-Cities, Mr. Klemm says, and not a single sn—'],
-            replies: [{ label: 'Single what?', effect: 'aground', end: true }],
+            replies: [{ label: 'Single what?' }],
+          },
+          // She's hit it: Willie first, then Gus; then the sandbar's table comes up.
+          { size: 'scene', who: 'willie', mood: 'nervous', text: ['Aground, Captain!', 'Stuck fast!'] },
+          {
+            size: 'scene',
+            who: 'gus',
+            text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'],
+            replies: [{ label: 'Next', effect: 'aground', end: true }],
           },
         ],
       },

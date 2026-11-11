@@ -70,13 +70,8 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
   // A hand that opens the first day has his welcome after it; from then on, one a hand.
   const said = first && hand === 1 ? null : quipFor(SANDY, seed, attempt, first ? hand - 2 : hand - 1);
   const opening: RoundScript = first
-    ? {
-        deal: [bar(SANDY.opening)],
-        flop: [
-          { size: 'scene', who: 'willie', mood: 'nervous', text: 'Aground, Captain! Stuck fast!' },
-          { size: 'scene', who: 'gus', text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'] },
-        ],
-      }
+    ? // Willie's and Gus's word on it came as she hit (the underway talk): here, the bar opens.
+      { deal: [bar(SANDY.opening)] }
     : { deal: [morningLine(SANDY, attempt)] };
   const scene: RoundScript = hand === 1 ? opening : hand === 3 ? { deal: roundLines(SANDY, attempt - 1) } : hand === hands && SANDY.lastCall ? { deal: [bar(SANDY.lastCall)] } : {};
   const consolation = pile > 0 && said;

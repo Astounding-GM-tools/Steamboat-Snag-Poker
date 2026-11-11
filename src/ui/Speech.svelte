@@ -212,15 +212,22 @@
     right: -0.27em;
     display: grid;
     place-items: center;
-    /* In its own em (1.4 of the caption's): 44px on a phone. */
-    width: max(1.96em, 12cqw);
-    height: max(1.96em, 12cqw);
+    /* In its own em (1.4 of the caption's): about 90px on a phone. */
+    width: max(3.9em, 24cqw);
+    height: max(3.9em, 24cqw);
     border-radius: 50%;
     background: #0c0c0b;
     border: 2px solid var(--paper);
     font-family: var(--title-font);
     font-size: 1.4em;
     line-height: 1;
+  }
+  /* Room at the foot for the portrait, so it never sits on the words (in the caption's em: the face's are 1.4 of them, 2 in a full one). */
+  .speech:has(> .face) {
+    padding-bottom: calc(max(5.46em, 24cqw) - 0.875em);
+  }
+  .full.speech:has(> .face) {
+    padding-bottom: calc(max(8em, 34cqw) + 0.75em);
   }
   .likeness {
     position: absolute;
@@ -230,8 +237,8 @@
   .full .face {
     bottom: 0.375em;
     right: 0.375em;
-    width: max(2em, 17cqw);
-    height: max(2em, 17cqw);
+    width: max(4em, 34cqw);
+    height: max(4em, 34cqw);
     font-size: 2em;
   }
   .words {

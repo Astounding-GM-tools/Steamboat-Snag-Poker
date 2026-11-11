@@ -253,7 +253,7 @@ describe('table talk', () => {
   const deck = RIVER_TALK.deck as unknown as (c: typeof context) => RoundScript;
 
   it('never quips over the opening, or the same line twice in a day', () => {
-    expect(sandy(context).flop).toHaveLength(2);
+    expect(sandy(context).deal).toHaveLength(1);
     expect(sandy(context).verdict?.some((l) => l.size === 'aside')).toBe(false);
     const seen = [2, 3].map((hand) => String(sandy({ ...context, hand }).verdict?.find((l) => l.size === 'aside')?.text));
     expect(new Set(seen).size).toBe(2);
