@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snag Poker river map</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Our own typefaces (public/fonts): fetched at once, so the table's lettering is there from the first frame. -->
+    <link rel="preload" href="/fonts/limelight-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/special-elite-latin.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
+  <body>
+    <!-- Development only: the river maps (npm run dev, then /map.html), from the tiles in public/maptiles. Not part of the build. -->
+    <div id="bench"></div>
+    <script type="module" src="/src/bench/map.ts"></script>
+  </body>
+</html>
