@@ -971,12 +971,21 @@
   // On a short screen (a phone with its browser's bars showing) that can run past the bottom and take the
   // buttons with it: then the table narrows, just enough for all of it to fit, its cards a little smaller.
   let fitWidth = $state<number | null>(null);
+  /**
+   * How tall the table is laid out, ignoring transforms: a piece sliding in or out, or a card in flight,
+   * reaches past the bottom for a moment, and mustn't squeeze the table for the rest of the game.
+   */
+  function laidOut(el: HTMLElement): number {
+    let bottom = 0;
+    for (const c of el.children) if (c instanceof HTMLElement && getComputedStyle(c).position !== 'absolute') bottom = Math.max(bottom, c.offsetTop + c.offsetHeight);
+    return Math.max(el.clientHeight, bottom + parseFloat(getComputedStyle(el).paddingBottom || '0'));
+  }
   async function fitScreen() {
     if (!rootEl) return;
     fitWidth = null;
     await tick();
     const room = window.innerHeight;
-    if (rootEl.scrollHeight <= room + 1) return;
+    if (laidOut(rootEl) <= room + 1) return;
     // The widest table that fits, found by halving (a few layouts, no flicker: they all happen before the next frame).
     let lo = 240;
     let hi = rootEl.clientWidth;
@@ -984,7 +993,7 @@
       const mid = Math.floor((lo + hi) / 2);
       fitWidth = mid;
       await tick();
-      if (rootEl.scrollHeight <= room + 1) lo = mid;
+      if (laidOut(rootEl) <= room + 1) lo = mid;
       else hi = mid;
     }
     fitWidth = lo;
@@ -1232,7 +1241,8 @@
     row-gap: clamp(0.5rem, 2vh, 1.4rem);
     align-content: end;
     width: 100%;
-    max-width: 480px;
+    /* As wide as the screen allows, till the table stops making sense (or its height runs out: fitScreen). */
+    max-width: 720px;
     min-height: 100svh;
     margin: 0 auto;
     padding: 1rem 1rem 0.75rem;
