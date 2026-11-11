@@ -91,6 +91,16 @@
     return () => cancelAnimationFrame(raf);
   });
 
+  /** A table just come up on the river: its things slide in over the map (and only then: a jolt after mustn't replay it). */
+  let arriving = $state(false);
+  $effect(() => {
+    void shownKey;
+    if (!untrack(() => onRiver && !lifting)) return;
+    arriving = true;
+    const timer = setTimeout(() => (arriving = false), 2000);
+    return () => clearTimeout(timer);
+  });
+
   /** Something hit her mid-talk (a line's `jolt`): the table and the map lurch together. */
   let jolted = $state(false);
   function jolt() {
@@ -253,7 +263,7 @@
   <!-- Encounters may follow one another with nothing between: each sits down at a table of its own. -->
   {#key shownKey}
     <!-- Running aground: the whole picture lurches as the table comes up. On the river, the table's things slide in over the map, and off it again. -->
-    <div class="over" class:jolt={jolted || (step?.type === 'encounter' && step.jolt)} class:lifting class:arriving={onRiver && !lifting} inert={lifting}>
+    <div class="over" class:jolt={jolted || (step?.type === 'encounter' && step.jolt)} class:lifting class:arriving inert={lifting}>
       <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} onjolt={jolt} />
     </div>
   {/key}
@@ -431,7 +441,8 @@
       opacity: 0;
     }
   }
-  .jolt {
+  /* Everything but the rivals' row: a face changing as it's hit is worth seeing steady. */
+  .jolt :global(.table > :not(.rivals)) {
     animation: jolt 0.55s ease-out;
   }
   @keyframes jolt {

@@ -154,12 +154,12 @@ export const muscatineTalk: Record<string, Talk> = {
             replies: [{ label: 'Single what?' }],
           },
           // She's hit it: Willie first, then Gus; then the sandbar's table comes up.
-          { size: 'scene', who: 'willie', mood: 'nervous', jolt: true, text: ['Aground, Captain!', 'Stuck fast!'] },
+          { size: 'scene', who: 'willie', mood: 'nervous', jolt: true, text: ['Snag! We are aground, Captain!', 'Stuck fast!'] },
           {
             size: 'scene',
             who: 'gus',
             mood: 'nervous',
-            text: ['Steam won’t shift her. It’s poles and backs now.', 'Those buttons are the crew, Captain: all the strength they have in them today.'],
+            text: ['We have run aground a sandbar, Captain. The engine alone can’t shift us, we need shovels and poles.', 'Pray that our strength outlasts the work, or we will spend the night right here.'],
             replies: [{ label: 'Next', effect: 'aground', end: true }],
           },
         ],
