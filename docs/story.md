@@ -1682,8 +1682,8 @@ Sandy's, in `src/story/characters/sandy.ts`:
       for exactly that.)
   12. ♪ Do you like Piña Coladas? ♪ / ♪ And getting stuck on the river? ♪ (after Rupert Holmes)
 - **Last call!** **Cleared:** "I'll drift off downstream now… Catch you later, Captain!"
-  **Beaten:** "I think you've had enough, Captain. You're in no shape to drive: you'd better
-  stay the night."
+  **Beaten:** "I think you've had enough, Captain. You're in no shape to navigate; better
+  spend the night."
 
 **The workshop:** something in them, not there yet.
 

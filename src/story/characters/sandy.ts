@@ -55,7 +55,7 @@ export const SANDY: Routine = {
   ],
   lastCall: 'Last call!',
   cleared: 'I’ll drift off downstream now… Catch you later, Captain!',
-  beaten: 'I think you’ve had enough, Captain. You’re in no shape to drive: you’d better stay the night.',
+  beaten: 'I think you’ve had enough, Captain. You’re in no shape to navigate; better spend the night.',
 };
 
 /**
