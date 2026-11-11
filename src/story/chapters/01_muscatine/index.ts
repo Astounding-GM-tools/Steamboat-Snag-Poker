@@ -9,8 +9,8 @@ import { DOCK_FEE_AMOUNT, HARBOUR_HANDS, HARBOUR_MASTER_PURSE } from '../../numb
 
 /** The river map's leg (public/maptiles/river-1904/chapter-1/travel), and where on it things happen: Muscatine is 0, LeClaire 1. */
 const CHAPTER_1 = 'chapter-1';
-/** About five miles up from Muscatine (mile 460 of 455 to 497). */
-const SANDBAR_AT = 0.12;
+/** A bit past halfway from Muscatine to the Tri-Cities (about mile 470 of 455 to 497). */
+export const SANDBAR_AT = 0.36;
 /** The Tri-Cities landing, as the map's sidecar has it. */
 const TRI_CITIES_AT = 0.6429;
 

@@ -287,10 +287,10 @@
     {#if import.meta.env.DEV}
       <!-- Development only: the pace and the heights, live (settle on numbers, then write them into map/tuning.svelte.ts). -->
       <div class="tune">
-        <label>leg <input type="range" min="10" max="300" step="5" bind:value={voyage.legSeconds} /> {voyage.legSeconds}s</label>
-        <label>race <input type="range" min="2" max="40" step="1" bind:value={voyage.race} /> ×{voyage.race}</label>
-        <label>steam <input type="range" min="-6" max="0" step="0.1" bind:value={voyage.steamZoom} /> {voyage.steamZoom}</label>
-        <label>play <input type="range" min="-6" max="1" step="0.1" bind:value={voyage.playZoom} /> {voyage.playZoom}</label>
+        <label>speed <input type="range" min="10" max="300" step="5" bind:value={voyage.legSeconds} /> {voyage.legSeconds}s</label>
+        <label>skip speed <input type="range" min="2" max="40" step="1" bind:value={voyage.race} /> ×{voyage.race}</label>
+        <label>zoomMin <input type="range" min="-6" max="0" step="0.1" bind:value={voyage.steamZoom} /> {voyage.steamZoom}</label>
+        <label>zoomMax <input type="range" min="-6" max="1" step="0.1" bind:value={voyage.playZoom} /> {voyage.playZoom}</label>
       </div>
     {/if}
     <div class="dock" use:heavy>
@@ -467,7 +467,7 @@
   }
   .tune label {
     display: grid;
-    grid-template-columns: 3.5em 1fr 4em;
+    grid-template-columns: 6.5em 1fr 4em;
     align-items: center;
     gap: 0.5rem;
   }

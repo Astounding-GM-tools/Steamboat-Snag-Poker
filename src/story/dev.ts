@@ -6,6 +6,7 @@ import { jokerCard } from '../engine';
 import { FLAG } from './flags';
 import { DOCK_FEE, goTo, jumpTo, newJourney, type HubOption, type JourneyState, type Slot, type Step } from './mechanics';
 import { RIVER, RIVER_START } from './river';
+import { SANDBAR_AT } from './chapters/01_muscatine';
 
 const start = () => ({ ...newJourney(Date.now() >>> 0, RIVER, RIVER_START), mornings: 1, strength: 18 });
 const isEncounter = (s: Step, id: string) => s.type === 'encounter' && s.encounter.id === id;
@@ -30,8 +31,8 @@ export const SCENES: { label: string; state: () => JourneyState }[] = [
   { label: 'Harbour master', state: () => dayOne('harbourTalk', { ...start(), snags: [jokerCard(DOCK_FEE)] }) },
   // Out from Muscatine on the river map: the harbour master's done with, the dock fee paid.
   { label: 'Ambling along', state: () => jumpTo({ ...start(), step: RIVER.days[0].steps.findIndex((s) => s.type === 'steam') }, RIVER, []) },
-  { label: 'Under way', state: () => dayOne('underway', { ...start(), river: { leg: 'chapter-1', t: 0.12 } }) },
-  { label: 'Sandbar', state: () => dayOne('sandbar', { ...start(), river: { leg: 'chapter-1', t: 0.12 } }) },
+  { label: 'Under way', state: () => dayOne('underway', { ...start(), river: { leg: 'chapter-1', t: SANDBAR_AT } }) },
+  { label: 'Sandbar', state: () => dayOne('sandbar', { ...start(), river: { leg: 'chapter-1', t: SANDBAR_AT } }) },
   { label: 'Tri-Cities, evening', state: () => hub('evening') },
   { label: 'Tri-Cities, morning', state: () => hub('morning', [FLAG.heardOfPilot, FLAG.jobFound], 6) },
   { label: 'Deck game (Willie’s intel)', state: () => jumpTo(hub('evening'), RIVER, option('anchor').steps.slice(1)) },
