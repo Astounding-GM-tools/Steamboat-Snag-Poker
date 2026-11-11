@@ -95,6 +95,7 @@
     buttons,
     script,
     ontalk,
+    onjolt,
   }: {
     table: TableView;
     /** Your move for the street (null: you're out of the hand, and it plays on without you). */
@@ -112,6 +113,8 @@
     script?: RoundScript;
     /** An answer in a conversation set something going (`buttons`, `snag:hides`…): whoever runs the game handles it. */
     ontalk?: (effect: string) => void;
+    /** A line that hits as it's said came up: the picture lurches. */
+    onjolt?: () => void;
   } = $props();
 
   let tapped = $state<string[]>([]);
@@ -413,6 +416,9 @@
     return () => cancelAnimationFrame(id);
   });
   const line = $derived(nextUp && nextUp === landedFor ? nextUp : null);
+  $effect(() => {
+    if (line?.jolt) untrack(() => onjolt?.());
+  });
   /** A line waiting for the coins: the buttons wait with it, so it can't be skipped unseen. */
   const lineWaiting = $derived(!!nextUp && !line);
   /** Exactly these cards tapped, and only these. Whole cards first, then ranks, so `4c` and `4` both find their four. */

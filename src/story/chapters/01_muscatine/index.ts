@@ -63,7 +63,6 @@ export const muscatine: Step[] = [
   {
     type: 'encounter',
     encounter: sandbar,
-    jolt: true,
     solved: [],
     failed: [],
     stuck: true,
@@ -155,7 +154,7 @@ export const muscatineTalk: Record<string, Talk> = {
             replies: [{ label: 'Single what?' }],
           },
           // She's hit it: Willie first, then Gus; then the sandbar's table comes up.
-          { size: 'scene', who: 'willie', mood: 'nervous', text: ['Aground, Captain!', 'Stuck fast!'] },
+          { size: 'scene', who: 'willie', mood: 'nervous', jolt: true, text: ['Aground, Captain!', 'Stuck fast!'] },
           {
             size: 'scene',
             who: 'gus',

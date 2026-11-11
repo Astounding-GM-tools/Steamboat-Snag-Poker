@@ -91,6 +91,16 @@
     return () => cancelAnimationFrame(raf);
   });
 
+  /** Something hit her mid-talk (a line's `jolt`): the table and the map lurch together. */
+  let jolted = $state(false);
+  function jolt() {
+    jolted = false;
+    requestAnimationFrame(() => {
+      jolted = true;
+      setTimeout(() => (jolted = false), 600);
+    });
+  }
+
   /** Leaving a table for the river: the table's things slide off every which way as the felt lifts. */
   let lifting = $state(false);
   let wasPlaying = false;
@@ -230,7 +240,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={step?.type === 'encounter' && !!step.jolt} />
+  <RiverBackdrop {leg} t={boatT} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">
@@ -243,8 +253,8 @@
   <!-- Encounters may follow one another with nothing between: each sits down at a table of its own. -->
   {#key shownKey}
     <!-- Running aground: the whole picture lurches as the table comes up. On the river, the table's things slide in over the map, and off it again. -->
-    <div class="over" class:jolt={step?.type === 'encounter' && step.jolt} class:lifting class:arriving={onRiver && !lifting} inert={lifting}>
-      <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} />
+    <div class="over" class:jolt={jolted || (step?.type === 'encounter' && step.jolt)} class:lifting class:arriving={onRiver && !lifting} inert={lifting}>
+      <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} onjolt={jolt} />
     </div>
   {/key}
 {:else if step.type === 'steam'}

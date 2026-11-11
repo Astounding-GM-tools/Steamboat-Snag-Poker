@@ -18,6 +18,8 @@
   export interface SpeechLine {
     /** How the speaker looks saying it, if they have a face. */
     mood?: MoodBlend;
+    /** It hits as it's said: the whole picture lurches (whoever runs the game shakes it: the table's `onjolt`). */
+    jolt?: boolean;
     id?: string;
     size: SpeechSize;
     /** A captain's id, `you` or `willie`. */
