@@ -14,6 +14,7 @@
   import { cubicInOut } from 'svelte/easing';
   import TileMap from './TileMap.svelte';
   import { route, type Pt, type TravelSidecar } from './route';
+  import { voyage } from './tuning.svelte';
 
   interface Props {
     leg: string;
@@ -50,9 +51,9 @@
   const wake = $derived(course ? course.line(0, t) : []);
 
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
-  const zoom = new Tween(-2.7, { duration: 1100, easing: cubicInOut });
+  const zoom = new Tween(voyage.steamZoom, { duration: 1100, easing: cubicInOut });
   $effect(() => {
-    zoom.target = mode === 'play' ? -1.4 : -2.7;
+    zoom.target = mode === 'play' ? voyage.playZoom : voyage.steamZoom;
   });
   const center = $derived<Pt>(boat?.p ?? [0, 0]);
   const scale = $derived(2 ** zoom.current);

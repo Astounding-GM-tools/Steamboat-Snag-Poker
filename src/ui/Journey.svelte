@@ -35,6 +35,7 @@
   import { roundScript } from '../story/mechanics/script';
   import BoatScene from './BoatScene.svelte';
   import RiverBackdrop from './map/RiverBackdrop.svelte';
+  import { voyage } from './map/tuning.svelte';
   import { heavy } from './heavy';
   import ShipPage from './ShipPage.svelte';
   import Speech, { autoMs, type SpeechLine } from './Speech.svelte';
@@ -68,9 +69,6 @@
   let boatT = $state(untrack(() => journey.river?.t ?? 0));
   /** Skip held: she races on to wherever she's bound, or till something stops her. */
   let racing = $state(false);
-  /** A leg's length (0 to 1) at a leisurely pace, in seconds; skipping is this much quicker. */
-  const LEG_SECONDS = 60;
-  const RACE = 12;
   $effect(() => {
     if (step?.type !== 'steam') {
       if (journey.river) boatT = journey.river.t;
@@ -83,7 +81,7 @@
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       const dir = Math.sign(to - boatT);
-      boatT += dir * Math.min(Math.abs(to - boatT), (dt / LEG_SECONDS) * (racing ? RACE : 1));
+      boatT += dir * Math.min(Math.abs(to - boatT), (dt / voyage.legSeconds) * (racing ? voyage.race : 1));
       if (boatT === to) journey = proceed(journey, RIVER);
       else raf = requestAnimationFrame(tick);
     };
@@ -286,6 +284,15 @@
     <div class="status">
       <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
     </div>
+    {#if import.meta.env.DEV}
+      <!-- Development only: the pace and the heights, live (settle on numbers, then write them into map/tuning.svelte.ts). -->
+      <div class="tune">
+        <label>leg <input type="range" min="10" max="300" step="5" bind:value={voyage.legSeconds} /> {voyage.legSeconds}s</label>
+        <label>race <input type="range" min="2" max="40" step="1" bind:value={voyage.race} /> ×{voyage.race}</label>
+        <label>steam <input type="range" min="-6" max="0" step="0.1" bind:value={voyage.steamZoom} /> {voyage.steamZoom}</label>
+        <label>play <input type="range" min="-6" max="1" step="0.1" bind:value={voyage.playZoom} /> {voyage.playZoom}</label>
+      </div>
+    {/if}
     <div class="dock" use:heavy>
       <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
       <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>
@@ -445,6 +452,24 @@
     .over :global(.table > *) {
       animation: none !important;
     }
+  }
+  /* Up under the status line, clear of the boat in the middle. */
+  .tune {
+    position: absolute;
+    top: 2.6rem;
+    left: 1rem;
+    right: 1rem;
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    font: 0.75rem monospace;
+  }
+  .tune label {
+    display: grid;
+    grid-template-columns: 3.5em 1fr 4em;
+    align-items: center;
+    gap: 0.5rem;
   }
   .steaming .dock {
     animation: fade-in 0.6s ease 0.4s both;
