@@ -40,9 +40,8 @@
     });
   });
 
-  const course = $derived(sidecar ? forked(route(sidecar.path.px[0], sidecar.stops), leg, sidecar.islands ?? [], lanes) : null);
-  /** The channel as drawn, shifted (map/tuning.svelte.ts): the modern centreline sits off the 1890 channel here and there. */
-  const shift = $derived<Pt>([voyage.routeX, voyage.routeY]);
+  /** The main channel shifted (map/tuning.svelte.ts) where the line drawn runs up against the bank; the islands' passages as drawn. */
+  const course = $derived(sidecar ? forked(route(sidecar.path.px[0], sidecar.stops), leg, sidecar.islands ?? [], lanes, [voyage.routeX, voyage.routeY]) : null);
   const boat = $derived(course?.at(t));
   const wake = $derived(course ? course.line(0, t) : []);
 
@@ -61,7 +60,7 @@
   const center = $derived.by<Pt>(() => {
     if (!boat) return [0, 0];
     const [bx, by] = boat.p, k = lean.current, a = leanTo ?? boat.p;
-    return [bx + k * (a[0] - bx) + shift[0], by + k * (a[1] - by) + shift[1]];
+    return [bx + k * (a[0] - bx), by + k * (a[1] - by)];
   });
   const scale = $derived(2 ** zoom.current);
 
@@ -75,7 +74,6 @@
   {#if sidecar && boat}
     <div class="map">
       <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale}>
-        <g transform="translate({shift[0]} {shift[1]})">
         <polyline points={pts(wake)} class="wake" style:stroke-width="{3 * voyage.boatSize}px" />
         {#each crates as c, i (i)}
           <!-- A crate adrift: what she picks up if she goes that way. -->
@@ -98,7 +96,6 @@
           <circle class="wheel" cx="-19" cy="1" r="4.5" />
           <circle class="puff one" cx="8" cy="-19" r="2.5" />
           <circle class="puff two" cx="6" cy="-22" r="3.2" />
-        </g>
         </g>
       </TileMap>
     </div>
