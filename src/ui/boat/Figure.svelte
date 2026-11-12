@@ -1,7 +1,9 @@
 <script lang="ts" module>
   /** What a figure is doing: each is a short loop, drawn at a station on the boat. */
-  export type Doing = 'walk' | 'stroll' | 'stoke' | 'fish' | 'cards' | 'deal' | 'read' | 'cook' | 'pilot' | 'horn' | 'drum';
-  export type Hat = 'none' | 'cap' | 'boater' | 'bowler' | 'toque';
+  export const DOINGS = ['walk', 'stroll', 'stoke', 'fish', 'cards', 'deal', 'read', 'cook', 'pilot', 'horn', 'drum'] as const;
+  export type Doing = (typeof DOINGS)[number];
+  export const HATS = ['none', 'cap', 'boater', 'bowler', 'toque'] as const;
+  export type Hat = (typeof HATS)[number];
 </script>
 
 <script lang="ts">

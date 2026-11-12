@@ -1,6 +1,7 @@
 <script lang="ts">
   import BoatSide from '../ui/boat/BoatSide.svelte';
   import BoatTop from '../ui/boat/BoatTop.svelte';
+  import Figures from './Figures.svelte';
   import { MODULES, canBuild, type Built, type ModuleId } from '../ui/boat/boat';
 
   /**
@@ -97,6 +98,8 @@
       </figure>
     </div>
   </section>
+
+  <Figures />
 </main>
 
 <style>

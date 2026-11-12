@@ -86,6 +86,20 @@ so the story can put someone somewhere and both views agree.
 They are ink with a paper rim (an SVG dilate filter), so they read on the dark
 main deck and the white cabin alike.
 
+**One by one:** below the boat on `/boat.html`, every figure stands alone and
+large, with a hat to try on, a speed slider for the loops (down to a standstill,
+to catch a pose), facing aft, guides (the deck, a window’s height, the pivot
+line) and the three backdrops a figure must read on: the dark deck, the grey
+sky, the white cabin. A new figure is worked out there first, then given a
+station on the boat. A `doing` added to `Figure.svelte` (`DOINGS`) appears
+there by itself.
+
+**Close up:** she is all vectors in one set of units, so a scene can frame any
+part of her (the promenade for the deck game). At that size the figures want
+more than a pear and noodles: a detailed version of each figure for close
+scenes, perhaps borrowing faces from the portrait rig so Lars at the deck game
+is the Lars at the table. That would be worked out in the gallery too.
+
 ## Two views of one boat
 
 **Side on** (`BoatSide.svelte`) for the title and the story’s pages: a `<g>` in
@@ -140,6 +154,7 @@ cabin one bay longer, a chimney folding).
 | `src/ui/boat/Figure.svelte` | The people: `<Figure doing hat flip delay />` |
 | `src/ui/boat/boat.test.ts` | Every module fits; nothing before what it stands on |
 | `src/bench/Boat.svelte` | The bench page, `/boat.html` |
+| `src/bench/Figures.svelte` | The people one by one, on the same page |
 
 ## Next
 
