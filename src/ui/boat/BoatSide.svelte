@@ -252,7 +252,7 @@
 
   <!-- The fisherman on the guard, legs over the side -->
   {#if at.fisher}
-    <g transform="translate({at.fisher.x} {at.fisher.y})"><Figure doing="fish" hat="boater" toWater={-at.fisher.y + 1} delay={-1.3} /></g>
+    <g transform="translate({at.fisher.x} {at.fisher.y})"><Figure doing="fish" hat="boater" toWater={-at.fisher.y + RISE + 1} delay={-1.3} /></g>
   {/if}
 
   <!-- Roofs: the hurricane deck over each cabin, a scalloped fringe under its edge -->
