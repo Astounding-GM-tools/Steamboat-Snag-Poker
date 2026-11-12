@@ -68,24 +68,32 @@
   const pts = (p: readonly Pt[]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
   /** The way the channel runs where she is (degrees). */
   const course_deg = $derived(boat ? (boat.heading * 180) / Math.PI : 0);
-  /** The way she faces: she comes round to the channel's heading, never snaps to it. */
+  /**
+   * The way she faces: she comes round to the channel's heading, never snaps to it. A riverboat
+   * turns slowly: at most TURN degrees a second, easing in as she lines up.
+   */
+  const TURN = 25;
   let deg = $state(0);
   let turned = false;
+  let lastTurn = 0;
   // Eased as she moves (each step along the river), so she keeps coming round on a straight stretch too.
   $effect(() => {
     const target = course_deg;
     void t;
     untrack(() => {
+      const now = performance.now();
+      const dt = Math.min(0.1, (now - lastTurn) / 1000);
+      lastTurn = now;
       if (!turned) {
         deg = target;
         turned = true;
         return;
       }
       const d = ((((target - deg) % 360) + 540) % 360) - 180;
-      deg = Math.abs(d) < 0.05 ? target : ((((deg + d * 0.06) % 360) + 540) % 360) - 180;
+      const step = Math.sign(d) * Math.min(Math.abs(d) * Math.min(1, dt * 3), TURN * dt);
+      deg = Math.abs(d) < 0.05 ? target : ((((deg + step) % 360) + 540) % 360) - 180;
     });
   });
-  /** Heading west she'd be upside down: flip her instead. */
   const flip = $derived(Math.abs(deg) > 90 ? -1 : 1);
 </script>
 
