@@ -67,7 +67,7 @@
       return { base: [142 + base[0], y + base[1]] as const, top: [142 - 34 * Math.sin(a) + top[0], y + top[1]] as const };
     }),
   );
-  const puffs = $derived(built.engine ? 11 : 8);
+  const puffs = $derived(built.engine ? 14 : 10);
   /** Where a puff ends up: astern, and up the screen as it rises. */
   const drift = (i: number) => {
     const u = up(1 + (i % 3) * 0.6);
@@ -82,21 +82,27 @@
     <stop offset="0%" stop-color="#fff6d8" stop-opacity="0.9" />
     <stop offset="100%" stop-color="#fff6d8" stop-opacity="0" />
   </radialGradient>
-  <!-- Printed with the survey: lines a little uneven, specks where the ink didn't take -->
-  <filter id="boat-print" x="-10%" y="-20%" width="120%" height="140%">
-    <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="7" result="warp" />
-    <feDisplacementMap in="SourceGraphic" in2="warp" scale="3" xChannelSelector="R" yChannelSelector="G" result="wobbly" />
-    <feTurbulence type="fractalNoise" baseFrequency="0.45" numOctaves="1" seed="3" result="grain" />
-    <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  9 0 0 0 -5.6" result="holes" />
-    <feComposite in="wobbly" in2="holes" operator="out" />
-  </filter>
+  <!--
+    Printed with the survey: lines a little uneven, specks where the ink didn't take.
+    The noise is baked into a small image (public/boat/ink-noise.png: red and green
+    smooth, for the wobble; blue sparse, for the specks) so nothing is generated per
+    frame; each filter lays it over its own part of her.
+  -->
+  {#each [{ id: 'boat-print', x: -40, y: -45, w: 290, h: 90 }, { id: 'boat-print-smoke', x: -40, y: -70, w: 300, h: 140 }] as { id, x, y, w, h } (id)}
+    <filter {id} x="-10%" y="-20%" width="120%" height="140%" color-interpolation-filters="sRGB">
+      <feImage href="/boat/ink-noise.png" {x} {y} width={w} height={h} preserveAspectRatio="none" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" result="wobbly" />
+      <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 1 0 0" result="holes" />
+      <feComposite in="wobbly" in2="holes" operator="out" />
+    </filter>
+  {/each}
   <!-- Hachures: fine parallel strokes for shade, as the survey engraves it -->
-  <pattern id="boat-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-    <line x1="0" y1="0" x2="0" y2="5" stroke="#232323" stroke-width="1.1" />
+  <pattern id="boat-hatch" width="2.6" height="2.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="2.6" stroke="#232323" stroke-width="0.8" />
   </pattern>
-  <pattern id="boat-hatch-light" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
-    <rect width="7" height="7" fill="#e4e4e2" />
-    <line x1="0" y1="0" x2="0" y2="7" stroke="#232323" stroke-width="0.7" />
+  <pattern id="boat-hatch-light" width="2.8" height="2.8" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
+    <rect width="2.8" height="2.8" fill="#e4e4e2" />
+    <line x1="0" y1="0" x2="0" y2="2.8" stroke="#6a6a68" stroke-width="0.45" />
   </pattern>
   <clipPath id="boat-top-wheel"><rect x={wheelAft} y="-16" width={-3 - wheelAft} height="32" /></clipPath>
 </defs>
@@ -198,7 +204,7 @@
     </g>
 
     <!-- The chimneys, standing up out of the picture, and their smoke -->
-    <g filter={printed ? 'url(#boat-print)' : undefined}>
+    <g filter={printed ? 'url(#boat-print-smoke)' : undefined}>
     {#each chimneys as c, i (i)}
       <line class="stack-rim" x1={c.base[0]} y1={c.base[1]} x2={c.top[0]} y2={c.top[1]} />
       <line class="stack" x1={c.base[0]} y1={c.base[1]} x2={c.top[0]} y2={c.top[1]} />
@@ -212,7 +218,7 @@
           class="puff"
           cx={c.top[0]}
           cy={c.top[1]}
-          r={4 + (k % 3) * 1.8}
+          r={4.6 + (k % 3) * 2}
           style="--d: {((k * 0.43 + i * 0.29) % 3.4).toFixed(2)}s; --dx: {dx.toFixed(1)}px; --dy: {dy.toFixed(1)}px"
         />
       {/each}
@@ -281,7 +287,7 @@
     opacity: 0.8;
   }
   .printed .puff {
-    fill: #4a4a48;
+    fill: #333331;
   }
   .shadow {
     fill: #000;

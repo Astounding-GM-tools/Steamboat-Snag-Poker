@@ -139,8 +139,9 @@ cue is weakest: the chimneys lean along her length.
 #e4e4e4, ink #232323), not sepia: the chart is black and white, a cartoon on
 carton. Shade is engraved as hachures, the way the chart shades its banks: light
 strokes on the open boiler deck and foredeck, denser ones for her shadow on the
-water. Her lines are a little uneven and specked where the ink didn’t take (an
-SVG displacement and grain filter), keep a pen’s width on screen whatever the
+water, fine enough at play scale to read as tone, not stripes. Her lines are a little uneven and specked where the ink didn’t take (an
+displacement filter over a small baked noise image, `public/boat/ink-noise.png`,
+so nothing is generated per frame), keep a pen’s width on screen whatever the
 zoom, and the river’s paper is laid under her so the wake and soundings don’t
 show through. She is also broader in the beam there (`BEAM`, 1.3×) for a bit of
 a pudge, the wheel’s slats turn slowly enough to see, and the smoke is heavier.
