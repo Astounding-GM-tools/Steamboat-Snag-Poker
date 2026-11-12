@@ -60,8 +60,8 @@
 
   <section>
     <h2>Side on: the title and the story’s pages</h2>
-    <svg class="side" class:night viewBox="-42 -112 282 126" aria-label="The Best Intentions, side on">
-      <rect class="sky" x="-42" y="-112" width="282" height="126" />
+    <svg class="side" class:night viewBox="-42 -122 282 136" aria-label="The Best Intentions, side on">
+      <rect class="sky" x="-42" y="-122" width="282" height="136" />
       {#if night}
         {#each stars as s, i (i)}<circle class="star" cx={s.x} cy={s.y} r={s.r} style="--d: {s.d}s" />{/each}
         <circle cx="200" cy="-90" r="8" fill="#e5e5e5" />

@@ -22,6 +22,14 @@ export const LEVEL = {
   pilot: -60,
 } as const;
 
+/**
+ * The upper works (the boiler deck and everything on it) stand this much higher than
+ * the levels above, to give the people on the main deck headroom under the name board.
+ * The levels from the boiler deck up, and the stations on them, are in the upper works'
+ * own frame; the side view lifts the whole frame by RISE.
+ */
+export const RISE = 5;
+
 /** The bays: ten slots per deck, numbered from aft. */
 export const BAY = 16;
 export const BAY0 = 20;
@@ -120,7 +128,7 @@ export function stations(built: Built): Record<string, Station | undefined> {
   return {
     stoker: { x: 154, y: LEVEL.main },
     deckhand: { x: 24, y: LEVEL.main, walk: 100 },
-    fisher: { x: 30, y: LEVEL.boiler },
+    fisher: { x: 156, y: LEVEL.boiler },
     pilot: { x: 116, y: LEVEL.texas },
     cards: { x: 9, y: LEVEL.boiler },
     cook: built.galley ? { x: 66, y: LEVEL.main } : undefined,

@@ -9,6 +9,7 @@
     FOREDECK,
     HINGE,
     LEVEL,
+    RISE,
     MODULES,
     STAGE_MAST,
     bayX,
@@ -51,9 +52,10 @@
   /** Roofs: over every cabin, and the fixed porch roof the chimneys come through. */
   const roofs = $derived([...cabins.filter((c) => c.kind !== 'office').map((c) => c.bays), FIXED.porchRoof.bays]);
 
-  const SUITS = ['♠︎', '♡︎', '♢︎', '♣︎'];
+  /** Aft to forward: diamonds, clubs, hearts, spades. */
+  const SUITS = ['♢︎', '♣︎', '♡︎', '♠︎'];
   /** The black suits are drawn smaller in the font; these make all four look one size. */
-  const SUIT_SIZE = [9, 7.4, 7.4, 9];
+  const SUIT_SIZE = [7.4, 10.2, 7.4, 10.2];
   /** Freight where nothing else stands: crates, bales, a barrel. */
   const freight = $derived([
     ...(built.galley ? [] : [bayX(2) + 3, bayX(3) + 2]),
@@ -114,13 +116,13 @@
 
   <!-- Main deck: the engine room aft, the galley, freight, the boilers, Patty on the foredeck -->
   <g class="main">
-    <rect class="paper" x={bayX(0)} y="-21" width={2 * 16} height="13" />
+    <rect class="paper" x={bayX(0)} y="-24" width={2 * 16} height="16" />
     <circle class="ink" cx={bayX(0) + 9} cy="-15" r="2.4" />
     <rect class="ink" x={bayX(0) + 20} y="-18" width="5" height="10" />
 
     {#if built.galley}
       {@const [g0, g1] = span(MODULES.galley.bays!)}
-      <rect class="paper" x={g0} y="-21" width={g1 - g0} height="13" />
+      <rect class="paper" x={g0} y="-24" width={g1 - g0} height="16" />
       <rect class="ink" x={g0 + 11} y="-18.5" width="6.5" height="10.5" />
       <rect class="window" x={g0 + 23} y="-18" width="5" height="4" />
       <text class="sign" x={g0 + 5} y="-17.6" text-anchor="middle">GALLEY</text>
@@ -187,8 +189,10 @@
   {/if}
 
   <!-- The stanchions under the boiler deck guard -->
-  {#each posts as x (x)}<line class="post" x1={x} y1="-8" x2={x} y2="-24" />{/each}
+  {#each posts as x (x)}<line class="post" x1={x} y1="-8" x2={x} y2={LEVEL.boiler - RISE} />{/each}
 
+  <!-- The upper works: the boiler deck and all above it, lifted for headroom on the main deck -->
+  <g transform="translate(0 {-RISE})">
   <!-- The chimneys' lower ends, from the boilers up through the porch -->
   {#each CHIMNEYS as x (x)}<rect class="paper" x={x - 2.75} y={HINGE} width="5.5" height={LEVEL.boiler - HINGE} />{/each}
 
@@ -319,7 +323,7 @@
       />
     {/each}
   {/each}
-
+  </g>
 </g>
 
 <style>

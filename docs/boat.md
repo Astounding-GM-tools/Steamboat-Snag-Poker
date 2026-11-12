@@ -41,6 +41,10 @@ Side-view units: x from the stern (0) to the bow (214), y up from the waterline
 | Texas | −47 | Officers’ cabins |
 | Pilothouse | −60 | The pilot at the wheel |
 
+The upper works (the boiler deck and all above it) are drawn at these heights and
+then lifted 5 units (`RISE`), so the people on the main deck stand clear of the
+name board with room to spare. Stations up there are in the upper works’ frame.
+
 The hull is cut into **ten bays** of 16 units (x 20 to 180), numbered from aft.
 Each deck has its row of bays, and a module fills some of them. Fixed parts are
 Bill’s boat; modules are what you add.
