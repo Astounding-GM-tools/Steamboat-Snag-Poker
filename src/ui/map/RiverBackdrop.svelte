@@ -40,8 +40,8 @@
     });
   });
 
-  /** The main channel shifted (map/tuning.svelte.ts) where the line drawn runs up against the bank; the islands' passages as drawn. */
-  const course = $derived(sidecar ? forked(route(sidecar.path.px[0], sidecar.stops), leg, sidecar.islands ?? [], lanes, [voyage.routeX, voyage.routeY]) : null);
+  /** The channel, round the islands by the passages chosen. */
+  const course = $derived(sidecar ? forked(route(sidecar.path.px[0], sidecar.stops), leg, sidecar.islands ?? [], lanes) : null);
   const boat = $derived(course?.at(t));
   const wake = $derived(course ? course.line(0, t) : []);
 

@@ -84,48 +84,18 @@ function measured(line: readonly Pt[]) {
  * The leg with its islands: round each, she takes the passage chosen (`lanes`, by `islandKey`), or
  * the main channel if none was. Her spot and heading at `t`, and the water she's come through.
  */
-export function course(leg: Route, legId: string, islands: readonly Island[], lanes: Readonly<Record<string, 'left' | 'right'>>, shift: Pt = [0, 0]): Route {
+export function course(leg: Route, legId: string, islands: readonly Island[], lanes: Readonly<Record<string, 'left' | 'right'>>): Route {
   const ways = islands.map((island) => {
     const side = lanes[islandKey(legId, island)] ?? island.passages.find((p) => p.kind === 'main')!.side;
     return { island, way: measured(island.passages.find((p) => p.side === side)!.px) };
   });
   const on = (t: number) => ways.find(({ island }) => t > island.from_t && t < island.to_t);
   const u = (island: Island, t: number) => (t - island.from_t) / (island.to_t - island.from_t);
-  /**
-   * The main channel moved by `shift` (map px) where the line drawn runs off the open water, but not
-   * round the islands, whose passages are drawn true: it fades out over `FADE` coming up to each, and
-   * back in after.
-   */
-  const FADE = 0.012;
-  const weight = (t: number) => {
-    let d = Infinity;
-    for (const i of islands) {
-      if (t >= i.from_t && t <= i.to_t) return 0;
-      d = Math.min(d, t < i.from_t ? i.from_t - t : t - i.to_t);
-    }
-    return Math.min(1, d / FADE);
-  };
-  const moved = (p: Pt, t: number): Pt => {
-    const w = weight(t);
-    return w ? [p[0] + shift[0] * w, p[1] + shift[1] * w] : p;
-  };
-  /** The main channel between two points, as it's sailed (sampled: the shift varies along it). */
-  const main = (a: number, b: number): Pt[] => {
-    if (!shift[0] && !shift[1]) return leg.line(a, b);
-    const n = Math.max(2, Math.ceil((b - a) / 0.0015));
-    return Array.from({ length: n + 1 }, (_, i) => {
-      const t = a + ((b - a) * i) / n;
-      return moved(leg.at(t).p, t);
-    });
-  };
   return {
     ...leg,
     at(t) {
       const w = on(t);
-      if (!w) {
-        const { p, heading } = leg.at(t);
-        return { p: moved(p, t), heading };
-      }
+      if (!w) return leg.at(t);
       const p = w.way.at(u(w.island, t));
       const fwd = leg.at(t).heading;
       const a = w.way.at(u(w.island, t) - 0.02), b = w.way.at(u(w.island, t) + 0.02);
@@ -140,12 +110,12 @@ export function course(leg: Route, legId: string, islands: readonly Island[], la
       let t = lo;
       for (const { island, way } of ways) {
         if (island.to_t <= t || island.from_t >= hi) continue;
-        if (island.from_t > t) pts.push(...main(t, island.from_t));
+        if (island.from_t > t) pts.push(...leg.line(t, island.from_t));
         const a = Math.max(t, island.from_t), b = Math.min(hi, island.to_t);
         pts.push(...way.between(u(island, a), u(island, b)));
         t = b;
       }
-      if (t < hi) pts.push(...main(t, hi));
+      if (t < hi) pts.push(...leg.line(t, hi));
       return from <= to ? pts : pts.reverse();
     },
   };

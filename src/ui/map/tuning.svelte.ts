@@ -13,9 +13,6 @@ export const voyage = $state({
   playZoom: -1.4,
   /** The boat on the map, and her wake's width, as multiples of the first drawing. */
   boatSize: 3,
-  /** Shifts the main channel (not the islands' passages) by map pixels (2 m each), fading out round the islands; none needed since the line was re-centred in the 1890 open water. */
-  routeX: 0,
-  routeY: 0,
   /** Seconds of warning before an island's fork: the call goes up, and port or starboard can be chosen. */
   forkWarning: 12,
   /** A crew member's chatter closes this many seconds before the next comes up (or she arrives). */
