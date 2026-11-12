@@ -10,6 +10,7 @@
    * tiles (they're served apart from the game: public/maptiles in
    * development), it stays the black felt, and nothing else changes.
    */
+  import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicInOut } from 'svelte/easing';
   import TileMap from './TileMap.svelte';
@@ -65,7 +66,25 @@
   const scale = $derived(2 ** zoom.current);
 
   const pts = (p: readonly Pt[]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-  const deg = $derived(boat ? (boat.heading * 180) / Math.PI : 0);
+  /** The way the channel runs where she is (degrees). */
+  const course_deg = $derived(boat ? (boat.heading * 180) / Math.PI : 0);
+  /** The way she faces: she comes round to the channel's heading, never snaps to it. */
+  let deg = $state(0);
+  let turned = false;
+  // Eased as she moves (each step along the river), so she keeps coming round on a straight stretch too.
+  $effect(() => {
+    const target = course_deg;
+    void t;
+    untrack(() => {
+      if (!turned) {
+        deg = target;
+        turned = true;
+        return;
+      }
+      const d = ((((target - deg) % 360) + 540) % 360) - 180;
+      deg = Math.abs(d) < 0.05 ? target : ((((deg + d * 0.06) % 360) + 540) % 360) - 180;
+    });
+  });
   /** Heading west she'd be upside down: flip her instead. */
   const flip = $derived(Math.abs(deg) > 90 ? -1 : 1);
 </script>

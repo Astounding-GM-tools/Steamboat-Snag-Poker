@@ -190,7 +190,8 @@ export function route(line: readonly Pt[], stops: readonly Stop[]): Route {
     at(t) {
       const s = arc(t);
       const p = point(s);
-      const ahead = point(s + (forward ? 40 : -40)), behind = point(s - (forward ? 40 : -40));
+      // Her heading from the channel a good way ahead and behind (a boat's length or so): a bend, not a vertex.
+      const ahead = point(s + (forward ? 150 : -150)), behind = point(s - (forward ? 150 : -150));
       return { p, heading: Math.atan2(ahead[1] - behind[1], ahead[0] - behind[0]) };
     },
     line(from, to) {

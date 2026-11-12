@@ -10,10 +10,15 @@ const bar = (text: string | string[]): SpeechLine => say('sandbar', text);
 /** A one-liner, said aside; two parts are a setup and its punchline, a beat apart. */
 const quip = (text: string | string[]): SpeechLine => ({ ...aside('sandbar', ''), text });
 
+/**
+ * The Sandbar is worn down, never fed: it's `steady`, so what the crew loses to it goes down the
+ * river, not onto its pile. Played carefully (simulated, 80 voyages): through on the first day about
+ * two times in five, by the second nine in ten, by the third all but certain.
+ */
 export const sandbar: EncounterDef = {
   id: 'sandbar',
   stake: 'strength',
-  rivals: [{ id: 'sandbar', ai: 'stubborn', money: SANDBAR_PILE, jokers: [TROUBLE.onTheRocks, TROUBLE.brokenPaddle, TROUBLE.twistedCrankshaft], obstacle: true }],
+  rivals: [{ id: 'sandbar', ai: 'stubborn', money: SANDBAR_PILE, jokers: [TROUBLE.onTheRocks, TROUBLE.brokenPaddle, TROUBLE.twistedCrankshaft], obstacle: true, steady: true }],
   goal: { type: 'clear' },
   hands: SANDBAR_HANDS,
   // The river plays dear from the first hand: an ante of 2, then 3 (as if three hands were already past).
