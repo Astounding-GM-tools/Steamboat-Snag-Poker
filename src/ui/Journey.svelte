@@ -157,19 +157,25 @@
   const chatterIndex = $derived(chatterNow ? chatterAt.findIndex((c) => c.speech === chatterNow) : -1);
 
   // --- Islands: port or starboard ------------------------------------------------
-  /** Willie, opening what came aboard round an island. */
-  const SALVAGE_WORDS: (string | string[])[] = [
-    'Some good stuff in here, Captain.',
-    'What do you know, a box full of chocolates.',
-    ['Crate of stamped steel spoons, more than we’ll ever need.', 'We can unload this at any mercantile dock.'],
+  /** Opening what came aboard round an island: Willie first, and sometimes someone else has a word. */
+  const SALVAGE_WORDS: { who: string; text: string | string[] }[][] = [
+    [{ who: 'willie', text: 'Some good stuff in here, Captain.' }],
+    [{ who: 'willie', text: 'What do you know, a box full of chocolates.' }],
+    [{ who: 'willie', text: ['Crate of stamped steel spoons, more than we’ll ever need.', 'We can unload this at any mercantile dock.'] }],
+    [
+      { who: 'willie', text: 'Yay, beans! They will keep us fed for a full month!' },
+      { who: 'gus', text: 'Why oh why could it not be pork chops and cabbage.' },
+    ],
   ];
-  /** His word on the last salvage, up till it's answered (or the next island comes up). */
-  let salvageSaid = $state<SpeechLine | null>(null);
+  /** What's said about the last salvage, a line at a time: each up till it's answered, or a while has passed. */
+  let salvageTalk = $state<SpeechLine[]>([]);
+  const salvageSaid = $derived(salvageTalk[0] ?? null);
+  const nextSalvageLine = () => (salvageTalk = salvageTalk.slice(1));
   $effect(() => {
-    if (!salvageSaid) return;
     const said = salvageSaid;
+    if (!said) return;
     const timer = setTimeout(() => {
-      if (salvageSaid === said) salvageSaid = null;
+      if (salvageSaid === said) nextSalvageLine();
     }, 7000);
     return () => clearTimeout(timer);
   });
@@ -240,7 +246,7 @@
     const crates = took === done.prize.side ? done.prize.crates : 0;
     untrack(() => {
       journey = passIsland(journey, done.key, crates);
-      if (crates) salvageSaid = { size: 'aside', who: 'willie', auto: false, text: SALVAGE_WORDS[done.word] };
+      if (crates) salvageTalk = SALVAGE_WORDS[done.word].map(({ who, text }) => ({ size: 'aside', who, text, auto: false }));
     });
   });
   /** The middle of an island (between its two passages' midpoints): where the view looks as she comes up to it. */
@@ -438,7 +444,7 @@
       {/key}
     {:else if salvageSaid}
       {#key salvageSaid}
-        <div class="chatter"><Speech line={salvageSaid} name={called('willie')} opponent={false} top={0} bottom={0} onnext={() => (salvageSaid = null)} /></div>
+        <div class="chatter"><Speech line={salvageSaid} name={called(salvageSaid.who)} opponent={false} top={0} bottom={0} onnext={nextSalvageLine} /></div>
       {/key}
     {:else if chatterNow}
       <!-- The crew passing the time as she steams: it closes by itself before the next, or with a tap. -->
@@ -453,7 +459,7 @@
       {:else if salvageSaid || chatterNow}
         <!-- The crew talking: the white button answers them (and closes it), it doesn't skip the river. -->
         <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
-        <button onclick={() => (salvageSaid ? (salvageSaid = null) : (hushed = [...hushed, chatterIndex]))}>{t('river.aye')}</button>
+        <button onclick={() => (salvageSaid ? nextSalvageLine() : (hushed = [...hushed, chatterIndex]))}>{t('river.aye')}</button>
       {:else}
         <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
         <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>
