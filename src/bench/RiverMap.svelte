@@ -13,7 +13,9 @@
   interface Place { id?: string; name: string; px: Pt }
   interface Hub { asset: { variants: Record<string, { label: string; tiles: TileSet }> }; docks: Place[]; landmarks: Place[] }
 
-  let travel = $state<TravelSidecar | null>(null);
+  interface Passage { side: 'left' | 'right'; name: string | null; kind: 'main' | 'chute'; depth_ft: number; width_m: number; px: Pt[] }
+  interface Island { id: string; name: string | null; from_t: number; to_t: number; passages: [Passage, Passage] }
+  let travel = $state<(TravelSidecar & { islands?: Island[] }) | null>(null);
   let hub = $state<Hub | null>(null);
   let error = $state('');
   $effect(() => {
@@ -118,6 +120,14 @@
       <TileMap {base} {tiles} {center} {scale}>
         {#if view === 'travel' && leg && boat}
           <polyline points={pts(ahead)} class="ahead" />
+          {#each travel?.islands ?? [] as isle (isle.id)}
+            {#each isle.passages as p (p.side)}
+              <polyline points={pts(p.px)} class="passage {p.side} {p.kind}" />
+            {/each}
+            <g transform="translate({isle.passages[0].px[0][0]} {isle.passages[0].px[0][1]}) scale({1 / scale})">
+              <text x="6" y="16" class="isle">{isle.id.replace('island-', '#')} {isle.name ?? ''}</text>
+            </g>
+          {/each}
           <polyline points={pts(done)} class="done" />
           {#each leg.stops as s (s.name)}
             <g transform="translate({s.px[0]} {s.px[1]}) scale({1 / scale})">
@@ -185,6 +195,23 @@
     stroke-width: 2;
     stroke-dasharray: 4 6;
     vector-effect: non-scaling-stroke;
+  }
+  .passage {
+    fill: none;
+    stroke-width: 3;
+    vector-effect: non-scaling-stroke;
+  }
+  .passage.left {
+    stroke: #1d5fa8;
+  }
+  .passage.right {
+    stroke: #2f8a3a;
+  }
+  .passage.chute {
+    stroke-dasharray: 6 4;
+  }
+  .isle {
+    font-size: 13px;
   }
   .done {
     fill: none;

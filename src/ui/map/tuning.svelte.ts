@@ -15,7 +15,7 @@ export const voyage = $state({
   boatSize: 3,
   /** Shifts the channel line (and the boat on it) by map pixels (2 m each), until a route traced on the old charts comes. */
   routeX: 0,
-  routeY: 90,
+  routeY: 0,
   /** A crew member's chatter closes this many seconds before the next comes up (or she arrives). */
   chatterGap: 5,
 });
