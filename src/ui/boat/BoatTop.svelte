@@ -12,9 +12,9 @@
    * south of overhead; `lift` is how much (0 is straight down). Her shadow falls the
    * other way.
    *
-   * `printed` draws her as part of the 1890 survey she sails on: sepia ink, the lines a
-   * little uneven, specks where the ink didn't take, and multiplied into the map so the
-   * paper shows through like the chart's own.
+   * `printed` draws her as part of the 1890 survey she sails on, in its own grey paper
+   * and black ink: the lines a little uneven, specks where the ink didn't take, shade
+   * engraved as hachures (her lower deck, her shadow) the way the chart shades its banks.
    */
   let {
     built = {},
@@ -90,6 +90,14 @@
     <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  9 0 0 0 -5.6" result="holes" />
     <feComposite in="wobbly" in2="holes" operator="out" />
   </filter>
+  <!-- Hachures: fine parallel strokes for shade, as the survey engraves it -->
+  <pattern id="boat-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="5" stroke="#232323" stroke-width="1.1" />
+  </pattern>
+  <pattern id="boat-hatch-light" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
+    <rect width="7" height="7" fill="#e4e4e2" />
+    <line x1="0" y1="0" x2="0" y2="7" stroke="#232323" stroke-width="0.7" />
+  </pattern>
   <clipPath id="boat-top-wheel"><rect x={wheelAft} y="-16" width={-3 - wheelAft} height="32" /></clipPath>
 </defs>
 
@@ -147,7 +155,7 @@
 
     <!-- The boiler deck, wider than the hull: the guards overhang her sides -->
     <g transform={tr(upB(0.25))}>
-      <path class="paper" d="M -1 -23 H {BOILER_DECK_END - 6} Q {BOILER_DECK_END} -23 {BOILER_DECK_END} -17 V 17 Q {BOILER_DECK_END} 23 {BOILER_DECK_END - 6} 23 H -1 Z" />
+      <path class="paper boiler-floor" d="M -1 -23 H {BOILER_DECK_END - 6} Q {BOILER_DECK_END} -23 {BOILER_DECK_END} -17 V 17 Q {BOILER_DECK_END} 23 {BOILER_DECK_END - 6} 23 H -1 Z" />
       {#each [-17, -11, 11, 17] as y (y)}<line class="plank" x1="0" y1={y} x2={BOILER_DECK_END - 2} y2={y} />{/each}
       {#if night}<circle class="lantern" cx="9" cy="0" r="22" />{/if}
       <!-- The card table on the promenade -->
@@ -221,14 +229,16 @@
   .top * {
     transform-box: view-box;
   }
-  /* Sepia, multiplied into the chart: her paper is the map's paper, her ink its ink. */
+  /* The chart's own paper and ink (sampled from the tiles), and its hachures for shade. */
   .top.printed {
-    --ink: #2a221a;
-    --paper: #f3ecdc;
-    mix-blend-mode: multiply;
+    --ink: #232323;
+    --paper: #e4e4e2;
   }
   .knockout {
-    fill: #f1ece0;
+    fill: #e4e4e2;
+  }
+  .printed .boiler-floor {
+    fill: url(#boat-hatch-light);
   }
   /* On the map she is small: lines keep a pen's width on screen, whatever the scale. */
   .printed :is(path, rect, line, circle) {
@@ -260,16 +270,18 @@
     stroke-width: 5.5px;
   }
   .printed .deck {
-    fill: #e2d7bf;
+    fill: url(#boat-hatch-light);
   }
   .printed .plank {
-    stroke: #a38f6c;
+    stroke: #232323;
+    stroke-width: 0.5px;
   }
   .printed .shadow {
-    fill: #4a3520;
+    fill: url(#boat-hatch);
+    opacity: 0.8;
   }
   .printed .puff {
-    fill: #3e3226;
+    fill: #4a4a48;
   }
   .shadow {
     fill: #000;

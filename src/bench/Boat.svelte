@@ -18,6 +18,21 @@
   let turning = $state(true);
   let lift = $state(1);
   let printed = $state(true);
+  let chart = $state(true);
+
+  /**
+   * A patch of the real chart behind her (chapter one, above Muscatine), at the game's
+   * proportion: a map pixel is 1/0.48 boat units (voyage.boatSize × TOP_SCALE).
+   */
+  const SPOT = [29653, 3707];
+  const UNITS = 1 / (3 * 0.16);
+  const tiles = [-1, 0, 1].flatMap((dy) =>
+    [-1, 0, 1].map((dx) => {
+      const tx = Math.floor(SPOT[0] / 256) + dx;
+      const ty = Math.floor(SPOT[1] / 256) + dy;
+      return { href: `/maptiles/river-1904/chapter-1/travel/tiles/8/${tx}/${ty}.webp`, x: (tx * 256 - SPOT[0]) * UNITS, y: (ty * 256 - SPOT[1]) * UNITS };
+    }),
+  );
 
   function toggle(id: ModuleId) {
     const next = { ...built, [id]: !built[id] };
@@ -85,18 +100,26 @@
       <label>Heading <input type="range" min="-180" max="180" step="1" bind:value={heading} disabled={turning} /> {Math.round(heading)}°</label>
       <label>Height <input type="range" min="0" max="2" step="0.05" bind:value={lift} /></label>
       <label><input type="checkbox" bind:checked={printed} /> Printed on the map</label>
+      <label><input type="checkbox" bind:checked={chart} /> On the chart</label>
     </div>
     <div class="tops">
       <svg class="map" viewBox="-150 -150 300 300" aria-label="The Best Intentions from above">
         <rect class="chart" x="-150" y="-150" width="300" height="300" />
+        {#if chart}
+          {#each tiles as t (t.href)}<image href={t.href} x={t.x} y={t.y} width={256 * UNITS} height={256 * UNITS} />{/each}
+        {/if}
         <g><BoatTop {built} {heading} {lift} {night} {fold} {printed} /></g>
       </svg>
       <figure>
-        <svg class="map small" viewBox="-60 -60 120 120" aria-label="At the map’s size">
-          <rect class="chart" x="-60" y="-60" width="120" height="120" />
-          <g transform="scale(0.22)"><BoatTop {built} {heading} {lift} {night} {fold} {printed} /></g>
+        <!-- As in play: one screen pixel to a pixel of the chart -->
+        <svg class="map small" viewBox="{-150 * UNITS} {-150 * UNITS} {300 * UNITS} {300 * UNITS}" aria-label="At the map’s size">
+          <rect class="chart" x={-150 * UNITS} y={-150 * UNITS} width={300 * UNITS} height={300 * UNITS} />
+          {#if chart}
+            {#each tiles as t (t.href)}<image href={t.href} x={t.x} y={t.y} width={256 * UNITS} height={256 * UNITS} />{/each}
+          {/if}
+          <g><BoatTop {built} {heading} {lift} {night} {fold} {printed} /></g>
         </svg>
-        <figcaption>At about the map’s size</figcaption>
+        <figcaption>At the map’s size, as in play</figcaption>
       </figure>
     </div>
   </section>
@@ -182,7 +205,7 @@
     border: 1px dashed var(--dim);
   }
   .map.small {
-    width: 160px;
+    width: 300px;
   }
   .chart {
     fill: #e9dfc4;
