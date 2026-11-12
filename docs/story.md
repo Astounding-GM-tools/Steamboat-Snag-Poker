@@ -979,11 +979,13 @@ down: the music is something you carry.
 river). A captain and crew still to be named, met at poker tables all the way up and back down
 again: a running rivalry, not a one-off.
 
-**Every steamboat is a Belle.** Every steamboat on the Mississippi and the Missouri that isn't the
-*Best Intentions* has Belle in her name (declared 2026-11-12): the d'Or Belle, the Jungle Belle I
-and II, and more besides. (The Mathilda of Willie's quip is the Mathilda Belle. The wrecks the
-rapids' chains and rocks are named for, the Brazil, the War Eagle, the St. Louis, the Mary C., are
-real history, kept as they are.)
+**A Belle a chapter.** A running joke, not a rule for every boat (other captains and boats keep
+their names): one Belle per chapter, about. The Thierry Belle is introduced in chapter one (a boat
+in the Davenport queue: chapter one has enough going on), and the race and the rivalry grow in
+chapter two; the d'Or Belle met on the way down; a near collision with the Un Croyeux Belle at the
+mouth of the Missouri (chapter five, probably). Lots of Belles, but not too many. (The Mathilda of
+Willie's quip became the Mathilda Belle; the real wrecks the rapids' chains are named for stay as
+they are.)
 
 **The Belle Line:** the Thierry Belle has sisters, all said aloud for the joke: the
 **L'Orly Belle**, the **Unintellie Belle**, and the **Credie Belle** ("Incroyable, c'est un Credie
