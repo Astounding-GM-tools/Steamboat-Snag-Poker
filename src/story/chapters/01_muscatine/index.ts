@@ -141,11 +141,11 @@ export const muscatineTalk: Record<string, Talk> = {
             ],
           },
           {
-            ...master('Hrmpf. River code, can’t refuse that. But only five rounds, and whoever holds the bill after that settles it. Agreed?'),
+            ...master('Hrmpf. The River Code: can’t refuse that. But only five rounds, and whoever holds the bill after that settles it. Agreed?'),
             id: 'snag',
             branch: true,
             replies: [
-              { label: 'No. I pay', effect: 'pay', end: true },
+              { label: 'Pay', effect: 'pay', end: true },
               { label: 'Deal', effect: 'snag', end: true },
             ],
           },

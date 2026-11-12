@@ -76,7 +76,7 @@ export const depotTalks: Record<string, Talk> = {
     deal: met
       ? [
           {
-            ...say('foreman', 'Back again, Captain? Still no coal. Still on strike. Still got cards.'),
+            ...say('foreman', 'Welcome back, Captain. Strike’s still on. Fancy a game to pass the time?'),
             replies: [
               { label: 'Leave', effect: 'leave', end: true },
               { label: 'Snag?', effect: 'snag', end: true },

@@ -794,6 +794,8 @@ export function choose(prev: JourneyState, story: StoryDef, key: string): Journe
   const choice = step?.type === 'encounter' ? step.choices?.[key] : undefined;
   if (!choice) throw new Error(`No such choice: ${key}`);
   const state = clone(prev);
+  // Answered and gone: met all the same (a choice can end a table before a hand is played).
+  if (prev.encounter && !state.flags.includes(`met:${prev.encounter.def.id}`)) state.flags.push(`met:${prev.encounter.def.id}`);
   state.encounter = null;
   applyEffects(state, choice.effects);
   if (choice.end) {
@@ -810,7 +812,8 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
   if (step?.type !== 'encounter' || !enc?.outcome) throw new Error('No encounter to leave');
   const state = clone(prev);
   state.encounter = null;
-  state.flags = state.flags.includes(`met:${enc.def.id}`) ? state.flags : [...state.flags, `met:${enc.def.id}`];
+  // The table, and everyone at it, met: next time they say so (`met:<id>`).
+  for (const id of [enc.def.id, ...enc.session.seats.map((p) => p.id)]) if (!state.flags.includes(`met:${id}`)) state.flags.push(`met:${id}`);
   const attempt = step.attempt ?? 1;
   if (enc.outcome === 'failed' && step.sweptBack) {
     if (state.coal <= 0) {

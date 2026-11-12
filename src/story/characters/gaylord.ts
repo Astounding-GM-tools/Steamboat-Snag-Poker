@@ -30,7 +30,7 @@ export function quarrel(day: number): SpeechLine[] {
       say('gaylord', 'I signed those captains in good faith, Miss Sawyer. Their companies have lawyers.'),
       say('ellie', 'How many more contracts have you signed?'),
       say('gaylord', 'Three more.'),
-      say('ellie', ['This week only. Show up with a new client next week and I change the game to Bingo.', 'Code says game. It doesn’t say poker. You a professional bingo player, Gaylord? I’ll bring my auntie down from Cordova. She’s a cracking bingoist.']),
+      say('ellie', ['This week only. Bring me a new client next week and the game is bingo.', 'The Code says game, Montague. It doesn’t say Snag. My auntie in Cordova is a cracking bingoist.']),
       say('gaylord', '…This week only.'),
     ];
   if (day <= GAYLORD_LAST_DAY)
@@ -60,7 +60,7 @@ export function breakfastTalk({ day, journey }: TalkContext): RoundScript {
     return {
       deal: [
         {
-          ...say('gaylord', ['Fearless and audacious. I see myself in you, Captain.', `${LOAN} dollars now. Double back when we next meet, shall we say two weeks? It doubles again if the third week begins.`]),
+          ...say('gaylord', ['Fearless and audacious. I see myself in you, Captain.', `${LOAN} dollars now, twice that back in two weeks. Should a third week begin, twice that again.`]),
           replies: [pass, { label: 'Done', effect: 'take', end: true }],
         },
       ],
@@ -77,7 +77,7 @@ const SHOPTALK = {
 export function hiredTalk({ hand, seed }: TalkContext): RoundScript {
   const pick = (lines: string[], k: number) => ({ size: 'aside' as const, who: 'gaylord', text: new Rng(seed + hand + k).pick(lines) });
   return {
-    ...(hand === 1 ? { deal: [say('gaylord', 'Here to watch and learn, I see. Well, wish me luck.'), say('ellie', 'A captain who can’t be bothered to play his own seat. Lovely.')] } : {}),
+    ...(hand === 1 ? { deal: [say('gaylord', 'Here to watch and learn, I see. Well, wish me luck.'), say('ellie', 'Can’t be bothered to play your own seat, Captain? Lovely.')] } : {}),
     flop: [pick(SHOPTALK.flop, 1)],
     turn: [pick(SHOPTALK.turn, 2)],
     river: [pick(SHOPTALK.river, 3)],
@@ -85,11 +85,13 @@ export function hiredTalk({ hand, seed }: TalkContext): RoundScript {
 }
 
 /** Gaylord at the saloon: the week, as it goes, and after. */
-export function gaylordAtTheSaloon(day: number, client: boolean): SpeechLine[] {
+/** Gaylord at the saloon of an evening; `known`: he's sat at a table with you before, and needn't introduce himself. */
+export function gaylordAtTheSaloon(day: number, client: boolean, known = false): SpeechLine[] {
   if (day < GAYLORD_FIRST_HIRE) return [];
   if (client && day > GAYLORD_LAST_HIRE) return [say('gaylord', 'Still afloat, Captain? Somebody must be playing your hand for you.')];
+  if (day <= GAYLORD_LAST_HIRE && known) return [say('gaylord', 'Captain. Breakfast is still served, and I am still at it.')];
   if (day <= GAYLORD_LAST_HIRE)
-    return [say('gaylord', 'Gaylord Montague Esquire, Captain. I play at Davenport of a noon, on behalf of those who’d rather not. You’ll find me at breakfast.')];
+    return [say('gaylord', 'Gaylord Montague, Esquire, Captain. I play at Davenport of a noon, on behalf of those who’d rather not. You’ll find me at breakfast.')];
   if (day <= GAYLORD_LAST_DAY) return [say('gaylord', 'Bingo, Captain. She said bingo. To me.')];
   return [
     say('gaylord', ['You missed a fine week at Davenport. She threatened me with her aunt, you know.', 'A cracking bingoist, I’m told. I shan’t be going back.']),

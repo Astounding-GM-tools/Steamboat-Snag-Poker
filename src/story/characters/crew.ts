@@ -33,8 +33,8 @@ export const stuckNight: Step[] = [{ type: 'caption', lines: [{ text: 'Supper on
 export const NAGS = [
   { who: 'gus', text: 'An engine overhaul would double what I can give you on the rapids, Captain.' },
   { who: 'willie', text: 'Beans again, Captain. I’m sorry. I’m no real cook, and there’s no stove.' },
-  { who: 'gus', text: 'We doubt we can climb the rapids with a single fireman, Captain.' },
-  { who: 'gus', text: 'A real cook, with a real kitchen, would double our strength, Captain. No offence to the boy’s constant bean-slop.' },
+  { who: 'gus', text: 'One fireman won’t get us up the rapids, Captain.' },
+  { who: 'gus', text: 'A real cook in a real galley would double our strength, Captain. No offence to the boy’s beans.' },
   { who: 'gus', text: 'We should upgrade the boiler before even thinking about those rapids, Captain.' },
 ];
 
@@ -51,8 +51,8 @@ const deckQuips = (day: number) => [
   aside('lars', larsSays(day, '♪ ♪ ♫', 'Sjekk.')),
   aside('gus', 'She’s a good boat. Don’t tell her I said so.'),
   aside('willie', 'I think he liked us, Captain. Sandy.'),
-  aside('willie', 'The Mathilda went up yesterday, Captain. Came back down by evening, all washed up, cargo lost.'),
-  aside('willie', 'The Terry Belle the day before. She’s back in the queue at Davenport.'),
+  aside('willie', 'The Mathilda tried the rapids without a pilot, Captain. Came back down by evening, all washed up, cargo lost.'),
+  aside('willie', 'So did the Terry Belle. She’s back in the queue at Davenport.'),
   aside('gus', 'Too early on the thaw to go up. Everyone says so. I say so.'),
   aside('lars', larsSays(day, '♫ ♪ ♫ ♪', 'Fåld.')),
 ];
@@ -95,7 +95,7 @@ export const deckIntelTalk = (context: TalkContext): RoundScript => ({
       ? {
           deal: [
             { ...say('willie', 'I asked around, Captain. There’s one pilot for the rapids this early: Ellie Sawyer, out of Cordova. One boat a day.'), replies: [{ label: 'One?' }] },
-            you('One boat? With all that lot lined up at Davenport?'),
+            you('One boat? With half the river lined up at Davenport?'),
             say('willie', 'They play for it, Captain. Snag, of course. Five dollars in the morning, and the winners sit down with her at noon.'),
             say('gus', 'Anything broken, Captain, lay it on the table. We’ll see to it.'),
           ],

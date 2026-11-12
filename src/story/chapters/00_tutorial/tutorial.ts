@@ -148,7 +148,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['Cleaned out by a deckhand.', 'And I do hold a grudging respect for you, it seems. Well done.'],
-    replies: [{ label: 'Deckhand?', go: 'mate' }, { label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
+    replies: [{ label: 'Deckhand?', go: 'mate' }, { label: 'Again?', go: 'rematch' }, { label: 'Thank you, ma’am' }],
   },
   {
     when: 'wonAll',
@@ -156,7 +156,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['Cleaned out by a deckhand.', 'Yet your snag remains with you.'],
-    replies: [{ label: 'Deckhand?', go: 'mate' }, { label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
+    replies: [{ label: 'Deckhand?', go: 'mate' }, { label: 'Again?', go: 'rematch' }, { label: 'Thank you, ma’am' }],
   },
   {
     when: 'lostAll',
@@ -164,7 +164,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['You are out of buttons.', 'But I do find myself holding a grudging respect for you.'],
-    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
+    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thank you, ma’am' }],
   },
   {
     // Not yet written: the plain loss, Respect still yours.
@@ -173,7 +173,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['You are out of buttons.', 'And your snag remains with you.'],
-    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
+    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thank you, ma’am' }],
   },
   // A little talking back.
   { id: 'mate', branch: true, size: 'scene', who: 'you', text: 'First mate, actually.' },
@@ -182,7 +182,7 @@ const AFTER: SpeechLine[] = [
     size: 'scene',
     who: M,
     text: ['I stand corrected.', 'Cleaned out all the same.'],
-    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thanks, ma’am' }],
+    replies: [{ label: 'Again?', go: 'rematch' }, { label: 'Thank you, ma’am' }],
   },
   {
     holding: [{ snag: OATH, by: 'you' }],
@@ -323,7 +323,7 @@ export const tutorialScript: Script = {
       ],
       // Her cards are face up now: her River lines sit in the pot area too.
       river: [
-        { size: 'aside', who: 'you', text: 'Bah. It’s just number cards.' },
+        { size: 'aside', who: 'you', text: 'Bah. Only number cards.' },
         {
           size: 'aside',
           who: M,
@@ -381,7 +381,7 @@ export const tutorialScript: Script = {
         {
           size: 'aside',
           who: M,
-          text: 'Want to trade in any card, or check up on what comes next?',
+          text: 'Swap a card, or keep them and see what comes?',
           at: 'band',
           require: [],
         },
@@ -398,7 +398,7 @@ export const tutorialScript: Script = {
           size: 'aside',
           who: M,
           at: 'band',
-          text: ['Let me see your cards…', 'Two jacks. Against four hearts on the board and a player that just checked. That’s a folding hand.'],
+          text: ['Let me see your cards…', 'Two jacks. Against four hearts on the board, and a player who just checked. That’s a folding hand.'],
           replies: [{ label: 'Fold?' }],
         },
         { size: 'aside', who: M, at: 'band', text: 'A big part of the game is knowing when to quit.', require: 'fold' },

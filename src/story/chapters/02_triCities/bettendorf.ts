@@ -29,7 +29,7 @@ export const saloon: Step[] = [
     },
     solved: [],
   },
-  { type: 'caption', lines: [{ text: 'The crew stayed aboard, playing among themselves and listening to Lars sing.' }] },
+  { type: 'caption', lines: [{ text: 'The crew stay aboard, playing among themselves while Lars sings.' }] },
   { type: 'dawn' },
 ];
 
@@ -57,7 +57,15 @@ const ODDS = ['Two to one you swap.', 'Evens the River’s red.', 'Eleven to fou
 export function triCitiesTalk({ hand, seed, trips, day, met, journey }: TalkContext): RoundScript {
   const client = journey.flags.includes(FLAG.gaylordsClient);
   return {
-    ...(hand === 1 && met ? { deal: gaylordAtTheSaloon(day, client) } : {}),
+    // Back again: Tripp (when he's at the table) remembers you, and Gaylord needn't introduce himself twice.
+    ...(hand === 1 && met
+      ? {
+          deal: [
+            ...(day < GAYLORD_FIRST_HIRE || day > GAYLORD_LEAVES ? [say('tripp', 'Back again, Captain? Same house rule: three of a kind takes it.')] : []),
+            ...gaylordAtTheSaloon(day, client, journey.flags.includes('met:gaylord')),
+          ],
+        }
+      : {}),
     ...(hand === 1 && !met
       ? {
           deal: [

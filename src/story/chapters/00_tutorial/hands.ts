@@ -42,7 +42,7 @@ export function handsRound(after: SpeechLine[]): RoundScript {
       say({ text: 'That’s the high card. If you play that and I play my king, you win.' }),
       say({ text: 'But I can play my deuce instead, and have a pair. Any pair beats any high card. So what do you do?', names: ['4c'], replies: [{ label: 'Pair' }] }),
       say({ text: 'Right: you play the four. Your pair of fours beats my pair of deuces.', replies: [{ label: 'Ducks!' }] }),
-      say({ text: 'Exactly: a pair of deuces is called ducks. Well done.' }),
+      say({ text: 'Yes: a pair of deuces is called ducks. Well done.' }),
       say({ text: 'But I have a four too. And two pair beats one pair. So what do you do?', replies: [{ label: 'Swap?' }] }),
       say({ text: 'That’s right. These are all weak hands.' }),
       say({ size: 'aside', text: 'Let me rifle the deck for something that suits you better. Throw away the seven and the four.', require: ['7s', '4c'] }),
@@ -71,7 +71,7 @@ export function handsRound(after: SpeechLine[]): RoundScript {
       say({ id: 'weaker', branch: true, text: 'No: mine is weaker. Your house has three threes; mine only three deuces. The bigger three wins.', replies: [{ label: 'I win?', go: 'better' }] }),
       say({ id: 'stronger', branch: true, text: 'You are right: your house is stronger.', replies: [{ label: 'I win?', go: 'better' }] }),
       say({ id: 'better', branch: true, text: 'You do, but you have an even stronger hand waiting for you. Do you see it?', names: ['3', '3'], replies: [{ label: 'Four of a kind' }] }),
-      say({ text: 'Exactly. Four alike, also called quads, is the strongest hand on this board.', replies: [{ label: 'Strongest?' }] }),
+      say({ text: 'Quite so. Four alike, also called quads, is the strongest hand on this board.', replies: [{ label: 'Strongest?' }] }),
       say({ text: 'Well, there are also straight flushes: all the numbers in a row, and in the same suit. Exceedingly rare, so it does not pay to chase them.' }),
       // How it works has them all, best first: she points at the "?" (over your side, so it stays in view), and the lesson goes on once it's been opened and closed.
       say({ at: 'low', text: 'And those are the hands. In case you forget, they’re ranked in How it works: open the question mark and see.', require: 'help' }),

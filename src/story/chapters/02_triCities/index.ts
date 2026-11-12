@@ -31,7 +31,7 @@ export const triCities: Hub = {
     if (troubled && state.time === 'evening') return { who: 'gus', text: `${capital(t(`joker.${troubled.index}`))} wants seeing to, Captain. A night at anchor would do it.` };
     if (state.purse < MORNING_ENTRY) return { who: 'willie', text: 'We’re near broke, Captain. I could wade ashore and ask around.' };
     if (state.flags.includes(FLAG.heardOfPilot) && state.coal < CLIMB_COAL) return { who: 'gus', text: 'She’ll want a full bunker for the rapids, Captain.' };
-    if (state.time === 'evening') return { who: 'willie', text: 'They’re batty about betting in Bettendorf, Captain. Everyone knows that, up and down the river.' };
+    if (state.time === 'evening') return { who: 'willie', text: 'They’ll bet on anything in Bettendorf, Captain. Even on which it’ll be, three or four.' };
     return null;
   },
   options: [
@@ -70,8 +70,8 @@ export const triCities: Hub = {
       times: DAYTIME,
       steps: [],
       menu: [
-        job('timber', 'You herd timber off the bridge piers all day. It’s bigger than the boat.', JOB_PAY.timber, FLAG.jobFound),
-        job('cattle', 'You ferry a herd of cattle across the river, and spend the evening cleaning up the manure.', JOB_PAY.cattle, FLAG.jobFound),
+        job('timber', 'You herd a timber raft off the bridge piers all day. The raft is bigger than the boat.', JOB_PAY.timber, FLAG.jobFound),
+        job('cattle', 'You ferry a herd of cattle across the river, and spend the rest of the day swabbing the deck.', JOB_PAY.cattle, FLAG.jobFound),
         job('mail', 'You run the mail to Moline and back, and Gus counts every shovel.', JOB_PAY.mail),
       ],
     },

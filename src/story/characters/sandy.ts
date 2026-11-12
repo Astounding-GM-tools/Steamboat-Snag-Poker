@@ -87,7 +87,7 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
     verdict: [
       ...(hand === 1 && first
         ? [
-            { size: 'scene' as const, who: 'gus', when: 'won' as const, text: 'That’s our own sweat back, no more. But the sand’s gone with the current.' },
+            { size: 'scene' as const, who: 'gus', when: 'won' as const, text: 'That’s our own sweat back, Captain, no more. What we lose, the river keeps.' },
             { ...bar('Your first one’s on the house. So’s your boat.'), when: 'lost' as const },
           ]
         : []),

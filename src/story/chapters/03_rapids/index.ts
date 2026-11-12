@@ -41,7 +41,7 @@ const turnedBack: Step[] = [
     type: 'caption',
     lines: [
       { who: 'ellie', text: 'Good. That’s the first sensible thing anyone’s said on this river. Back of the queue, Captain.' },
-      { who: 'gus', text: 'We’ll do better next time, Captain.' },
+      { who: 'gus', text: 'We kept the coal, Captain. That counts.' },
     ],
   },
   { type: 'nightfall' },
@@ -122,7 +122,7 @@ export const gaylordPlaysYourSeat: Step[] = [
 
 /** The queue at Davenport. */
 function morningTalk({ met }: TalkContext): RoundScript {
-  return met ? {} : { deal: [say('willie', 'Five dollars in, Captain. Last one with money goes to the saloon at noon.')] };
+  return met ? {} : { deal: [say('willie', 'Five dollars in, Captain. Last one with money sits down with Ellie at noon.')] };
 }
 
 function noonTalk({ met, day }: TalkContext): RoundScript {
@@ -144,7 +144,7 @@ const climbLines = (): Record<string, { first: SpeechLine[]; marks: string[]; cl
   },
   longReach: {
     first: [say('ellie', 'Get a line ashore to the ring. Capstan, every hand. We’ll haul her up if we can’t steam her.')],
-    marks: ['St. Louis chain. She was the heaviest loss on the river.', 'Cabin chain! Mind the Mary C.!', 'Sycamore. Limestone. It doesn’t give.', 'Smith’s. Nearly. Don’t you dare.'],
+    marks: ['St. Louis chain. The St. Louis was the dearest loss on the river.', 'Cabin chain! Mind the Mary C.!', 'Sycamore. Limestone. It doesn’t give.', 'Smith’s. Nearly. Don’t you dare.'],
     cleared: 'That’s the top. That’s LeClaire. You can breathe, Captain.',
   },
 });
@@ -178,7 +178,7 @@ export function pushReading(taken: number): StoryLine {
       taken < 0.25
         ? 'She barely felt that, Captain.'
         : taken < 0.5
-          ? 'A quarter of her, Captain, and that’s a load gone.'
+          ? 'We dented her, Captain. A quarter, no more.'
           : taken < 0.75
             ? 'Half of her, Captain. It wasn’t enough.'
             : 'Nearly, Captain. Another push like that…',
