@@ -91,7 +91,16 @@ export function deckTalk({ hand, seed, fixed, day }: TalkContext): RoundScript {
 /** The evening Willie comes back from ashore: the pilot, the first time. */
 export const deckIntelTalk = (context: TalkContext): RoundScript => ({
     ...deckTalk(context),
-    ...(context.hand === 1
+    // The news about Ellie the first night; after that, the same town, the same work going.
+    ...(context.hand === 1 && context.met
+      ? {
+          deal: [
+            say('willie', ['Same town, same talk, Captain.', 'There’s work ashore, though: a timber raft to herd off the bridge piers, cattle to ferry across, and the mail to Moline.']),
+            say('gus', 'Anything broken, Captain, lay it on the table. We’ll see to it.'),
+          ],
+        }
+      : {}),
+    ...(context.hand === 1 && !context.met
       ? {
           deal: [
             { ...say('willie', 'I asked around, Captain. There’s one pilot for the rapids this early: Ellie Sawyer, out of Cordova. One boat a day.'), replies: [{ label: 'One?' }] },
