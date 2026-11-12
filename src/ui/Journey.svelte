@@ -164,7 +164,7 @@
     [{ who: 'willie', text: ['Crate of stamped steel spoons, more than we’ll ever need.', 'We can unload this at any mercantile dock.'] }],
     [
       { who: 'willie', text: 'Yay, beans! They will keep us fed for a full month!' },
-      { who: 'gus', text: 'Why oh why could it not be pork chops and cabbage.' },
+      { who: 'gus', text: 'More beans? Why oh why could it not be pork chops and cabbage.' },
     ],
   ];
   /** What's said about the last salvage, a line at a time: each up till it's answered, or a while has passed. */
@@ -174,9 +174,10 @@
   $effect(() => {
     const said = salvageSaid;
     if (!said) return;
+    // Closes by itself (its countdown on the speaker's portrait), or with Aye.
     const timer = setTimeout(() => {
       if (salvageSaid === said) nextSalvageLine();
-    }, 7000);
+    }, autoMs(said) ?? 7000);
     return () => clearTimeout(timer);
   });
   let legData = $state<TravelSidecar | null>(null);
@@ -237,16 +238,24 @@
     if (!forkAhead) return;
     journey = chooseLane(journey, forkAhead.key, sides(forkAhead.island, forkAhead.up)[way].side);
   }
-  // Round an island and out the other side: what was adrift along her way is aboard.
+  /** Where along an island the last of its crates drifts (as a fraction of the island, from the fork). */
+  const LAST_CRATE = 0.65;
+  // The last crate picked up, or round the island empty-handed: what was adrift along her way is aboard.
   $effect(() => {
     const t = boatT;
-    const done = isles.find((i) => !passed.includes(i.key) && (i.up ? t >= i.island.to_t : t <= i.island.from_t));
+    const done = isles.find((i) => {
+      if (passed.includes(i.key)) return false;
+      const took = lanes[i.key] ?? i.island.passages.find((p) => p.kind === 'main')!.side;
+      const span = i.island.to_t - i.island.from_t;
+      const at = took === i.prize.side ? (i.prize.crates > 1 ? LAST_CRATE : 0.35) : 1;
+      return i.up ? t >= i.island.from_t + at * span : t <= i.island.to_t - at * span;
+    });
     if (!done) return;
     const took = lanes[done.key] ?? done.island.passages.find((p) => p.kind === 'main')!.side;
     const crates = took === done.prize.side ? done.prize.crates : 0;
     untrack(() => {
       journey = passIsland(journey, done.key, crates);
-      if (crates) salvageTalk = SALVAGE_WORDS[done.word].map(({ who, text }) => ({ size: 'aside', who, text, auto: false }));
+      if (crates) salvageTalk = SALVAGE_WORDS[done.word].map(({ who, text }) => ({ size: 'aside', who, text, auto: true }));
     });
   });
   /** The middle of an island (between its two passages' midpoints): where the view looks as she comes up to it. */
@@ -267,7 +276,7 @@
           const f = k * (px.length - 1) - i;
           return [px[i][0] + f * (px[i + 1][0] - px[i][0]), px[i][1] + f * (px[i + 1][1] - px[i][1])];
         };
-        return Array.from({ length: prize.crates }, (_, k) => 0.35 + (0.3 * k) / Math.max(1, prize.crates - 1))
+        return Array.from({ length: prize.crates }, (_, k) => 0.35 + ((LAST_CRATE - 0.35) * k) / Math.max(1, prize.crates - 1))
           // Gone as she reaches each one, going that way.
           .filter((k) => !(took === prize.side && (up ? boatT > island.from_t + k * (island.to_t - island.from_t) : boatT < island.from_t + k * (island.to_t - island.from_t))))
           .map(mid);
