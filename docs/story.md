@@ -960,6 +960,73 @@ exports still go down it by barge.
 first used the name in 1863. His own story is that he took it from the pilot Isaiah Sellers, on
 thin evidence, and there's a rival story about a bar tab of two drinks.
 
+## The race to Dubuque (later chapters; written down for now)
+
+*Talked through on 2026-11-11 and 12. Not built: for chapter two and on.*
+
+**Calm still holds.** No chase, no villain: a **rival**, liked more than resented. The captain
+needn't want to race. The *passengers* do.
+
+**Bennie Moten's Kansas City Orchestra** comes aboard at Muscatine and plays the whole way up.
+(Wiggle room: this is a 2026 homage to a 1928 cartoon, itself a homage to *Steamboat Bill, Jr.*
+of the same year, itself after the 1910 song, itself after the steamboat races. Bennie's band
+dates from the 1920s, and that's fine. The name can be changed, as fiction.) The band whose
+passengers you carry plays at the tables you pass through, and at the grand steamers on the way
+down: the music is something you carry.
+
+**The Thierry Belle.** The rival boat (say it aloud: "terribly"; a French name with roots on this
+river). A captain and crew still to be named, met at poker tables all the way up and back down
+again: a running rivalry, not a one-off.
+
+- **Chapter one** has no rival. They might be glimpsed on the river.
+- The *Best Intentions* spends a day or two at the Tri-Cities (refuelling, upgrading, Ellie's
+  pilot games), and the Thierry Belle steams past. **At LeClaire** she's tied up ahead of us,
+  and the challenge is made: **a race to Dubuque**. It's on whether the player accepts or not.
+- **Willie's first line needs rewording.** "First boat up the river this year, Captain, and not
+  a soul ahead of us!" is punctured at LeClaire; or reword it before then.
+- The Thierry Belle hits obstacles too (The Sandbar's kin, the Ice Jam): simulate her tries, and
+  arrive to see her still poling, or her wake already gone.
+- **The houseboats.** Taking the floating village in tow is the race lost, and the right thing:
+  the *Best Intentions* living up to her name. Let the player feel it rather than be told (the
+  village pays it back later: fuel at the Ice Jam, the cook, Willie's romance).
+- Lanes (chutes against the main channel) mean most in a race: see the forks, when the map
+  agent's data comes.
+
+**The bands' race.** Really it's the bands racing: the first to Dubuque plays **Theodore
+Roosevelt's rally** (1904 is an election year), with the papers, the publicity and a contract
+that come with it. A cash prize too, which would come in handy for Bill's wife's medicine. And
+something better than money: a handshake with the president, a letter to deliver. Bennie has
+more to say to the president than the player could. If we win, the losing band comes aboard and
+plays all the way down to the World's Fair.
+
+**The table at Dubuque: the high point going up.** Teddy wants a game of real River Snag with a
+real river captain. Four chairs:
+
+- **Theodore Roosevelt:** the grin, "Bully!", delighted by everything.
+- **Mark Twain:** a real Mississippi pilot (the pen name is the leadsman's call, as in the
+  soundings), from Hannibal, and he couldn't stand Roosevelt. He needles him all evening. Perhaps
+  he's a passenger on the Thierry Belle, which would give the rival real prestige.
+- **Annie Oakley:** she shot playing cards (free passes punched with holes were called "Annie
+  Oakleys" after them), she once offered to raise fifty women sharpshooters for the war with
+  Spain, and in 1904 she was suing newspapers for a false story about her, and winning. She reads
+  a bluff.
+- **You.**
+
+Real people: affectionate and bigger than life, never mean; the cartoons' kind of likeness.
+
+**Saved for the Fair (St. Louis), and the grand steamers on the way down:**
+
+- **Edison and Tesla**, across a table in the Palace of Electricity.
+- **Harry Houdini**, where tricks and cards meet: the cards keep changing in his hands.
+- **Sarah Bernhardt** (her American farewell tours began in 1905), at a closing gala.
+- In reserve: Russell Sage (the miser who agonizes over every ante), John D. Rockefeller (dimes;
+  Ida Tarbell's exposé; Teddy's trust-busting), J. P. Morgan (just beaten by Teddy in the
+  Northern Securities case), Anna Pavlova (fame a few years later), Helen Keller (she visited the
+  1904 Fair; only with great care).
+
+A table seats you and three. A grand occasion might rotate its guests between hands: "Mr.
+Rockefeller has been called away; Mr. Tesla takes his seat."
+
 ## The rest of the river
 
 From the drive of 7 November. Drafts, not copy.
