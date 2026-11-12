@@ -1717,6 +1717,39 @@ Next: Gaylord at the final, the council's list of things to do, The Best Intenti
 Still to do alongside: a **character pass** (every name, description and
 voice with the story in mind).
 
+## The house band at The Sandbar (planned)
+
+*Agreed 2026-11-12; not built.* How the *Best Intentions* gets her band, in chapter one.
+
+**Bennie Moten's Kansas City Orchestra is The Sandbar's house band.** Sandy's a bartender, so
+his bar has entertainment ("And tonight, for your listening pleasure…"). They play under the
+whole Sandbar game: chapter one gets its music.
+
+**Day one is hopeless.** The first day against Sandy is meant to be lost, and each day worse as
+his pile grows: the crew alone can't shift her.
+
+**The evening side game.** At the deck game that night, Bennie sits in, and lets on that the
+band's contract is ending, and Sandy pays in sand anyway. They're looking for new employment.
+
+**They join as the boat's band.** Professionals, not passengers to be rescued: they choose the
+*Best Intentions*. In the morning their music adds the strength the crew needed (a work rhythm:
+the pushes land together; Gus: "Never seen poles keep time like that."), and she comes clear.
+
+**No bad feelings.** Sandy relocates anyway ("I'll drift off downstream now…"), and nobody holds
+a grudge. Zany, in the Silly Symphonies spirit, without the racism: the band has agency, skill
+and ambition, and more than pulls its weight. Their real ambition (the race to Roosevelt's rally)
+comes out in chapter two.
+
+**What to avoid:** a band that's stranded and helpless, "rescued" and carried off to new
+opportunities, happy-go-lucky throughout (the minstrel-era picture), and Willie as the spokesman
+for jokes about it. The stranding jokes can be had at Sandy's expense instead.
+
+**Balance, to settle when it's built:** this undoes some of the 2026-11-12 tuning (Sandy worn down,
+never fed: 41% through on day one). Day one hopeless means Sandy feeds (or is simply far too big)
+on the first day, and the band's strength is what turns it. Probably: day one Sandy gains from
+the crew's losses; from the band's arrival he's worn down only, and the band adds strength
+every morning.
+
 ## Sandy's routine
 
 An obstacle's lines are a **routine** (`src/story/mechanics/routine.ts`), sorted by the job
