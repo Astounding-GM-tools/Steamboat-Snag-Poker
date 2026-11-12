@@ -574,7 +574,7 @@ careful captain, through in six loads: strength 18, 22%; 26, 34%; 34, 58%; 44, 8
 complaining: *"We can't climb the rapids with a single fireman, Captain, even one as
 strong as Lars."* An engine overhaul, another fireman, a professional cook.
 Willie apologises for the beans. Rumours on the deck: the *Mathilda* came back
-down by evening, cargo lost; the *Terry Belle* is back in the queue. Lenny sings
+down by evening, cargo lost; the *Thierry Belle* (the rival, later) is back in the queue. Lenny sings
 it at Bettendorf: *everybody knows the thaw's too strong.* Then, at the foot of the
 rapids, *"Just give me all she's got, Mr. Klemm." "It does not work like that,
 Captain."* The Mercantile sells a boiler and an engine overhaul, each doubling that

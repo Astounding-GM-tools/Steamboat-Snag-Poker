@@ -507,7 +507,7 @@ export const en = {
   'joker.5': 'the Travelling Preacher',
   'joker.6': 'the Mail Run',
   'joker.7': 'the Runaway Mule',
-  'joker.8': 'the Sandbar',
+  'joker.8': 'The Sandbar',
   'joker.9': 'the Fog Bank',
   'joker.10': 'the Crate of Live Chickens',
   'joker.11': 'the Unpaid Coal Bill',

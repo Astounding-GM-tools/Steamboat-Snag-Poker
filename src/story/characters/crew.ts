@@ -52,7 +52,7 @@ const deckQuips = (day: number) => [
   aside('gus', 'She’s a good boat. Don’t tell her I said so.'),
   aside('willie', 'I think he liked us, Captain. Sandy.'),
   aside('willie', 'The Mathilda tried the rapids without a pilot, Captain. Came back down by evening, all washed up, cargo lost.'),
-  aside('willie', 'So did the Terry Belle. She’s back in the queue at Davenport.'),
+  aside('willie', 'So did the Thierry Belle. She’s back in the queue at Davenport.'),
   aside('gus', 'Too early on the thaw to go up. Everyone says so. I say so.'),
   aside('lars', larsSays(day, '♫ ♪ ♫ ♪', 'Fåld.')),
 ];
