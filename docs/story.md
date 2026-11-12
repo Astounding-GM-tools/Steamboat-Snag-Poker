@@ -979,6 +979,11 @@ down: the music is something you carry.
 river). A captain and crew still to be named, met at poker tables all the way up and back down
 again: a running rivalry, not a one-off.
 
+**The Belle Line:** the Thierry Belle has sisters, all said aloud for the joke: the
+**L'Orly Belle**, the **Unintellie Belle**, and the **Credie Belle** ("Incroyable, c'est un Credie
+Belle!"). A whole French packet line of them, passed on the river, tied up at landings, or named
+on a bill of lading.
+
 - **Chapter one** has no rival. They might be glimpsed on the river.
 - The *Best Intentions* spends a day or two at the Tri-Cities (refuelling, upgrading, Ellie's
   pilot games), and the Thierry Belle steams past. **At LeClaire** she's tied up ahead of us,
