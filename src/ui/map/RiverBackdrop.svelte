@@ -13,7 +13,8 @@
   import { Tween } from 'svelte/motion';
   import { cubicInOut } from 'svelte/easing';
   import TileMap from './TileMap.svelte';
-  import { route, type Pt, type TravelSidecar } from './route';
+  import { course as forked, route, type Pt, type TravelSidecar } from './route';
+  import { loadLeg, MAP_ROOT as ROOT } from './legs';
   import { voyage } from './tuning.svelte';
 
   interface Props {
@@ -22,31 +23,24 @@
     mode: 'steam' | 'play';
     /** It hits her: the map lurches too. */
     jolt?: boolean;
+    /** Round the islands, the passages chosen (by island key). */
+    lanes?: Record<string, 'left' | 'right'>;
+    /** Crates bobbing in the water, still to be picked up (map px). */
+    crates?: Pt[];
+    /** Something ahead to see before she gets there (an island to choose a way round): the view leans towards it. */
+    ahead?: Pt | null;
   }
-  let { leg, t, mode, jolt = false }: Props = $props();
-
-  const ROOT = (import.meta.env.VITE_MAP_ROOT as string | undefined) ?? '/maptiles/river-1904/';
-  const sidecars = new Map<string, Promise<TravelSidecar | null>>();
-  function load(id: string) {
-    let p = sidecars.get(id);
-    if (!p) {
-      p = fetch(`${ROOT}${id}/travel/travel.json`)
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null);
-      sidecars.set(id, p);
-    }
-    return p;
-  }
+  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
     const id = leg;
-    load(id).then((s) => {
+    loadLeg(id).then((s) => {
       if (leg === id) sidecar = s;
     });
   });
 
-  const course = $derived(sidecar ? route(sidecar.path.px[0], sidecar.stops) : null);
+  const course = $derived(sidecar ? forked(route(sidecar.path.px[0], sidecar.stops), leg, sidecar.islands ?? [], lanes) : null);
   /** The channel as drawn, shifted (map/tuning.svelte.ts): the modern centreline sits off the 1890 channel here and there. */
   const shift = $derived<Pt>([voyage.routeX, voyage.routeY]);
   const boat = $derived(course?.at(t));
@@ -57,7 +51,18 @@
   $effect(() => {
     zoom.target = mode === 'play' ? voyage.playZoom : voyage.steamZoom;
   });
-  const center = $derived<Pt>(boat ? [boat.p[0] + shift[0], boat.p[1] + shift[1]] : [0, 0]);
+  /** How far the view leans towards what's ahead (0: on her). */
+  const lean = new Tween(0, { duration: 1400, easing: cubicInOut });
+  let leanTo = $state<Pt | null>(null);
+  $effect(() => {
+    if (ahead) leanTo = ahead;
+    lean.target = ahead ? 0.65 : 0;
+  });
+  const center = $derived.by<Pt>(() => {
+    if (!boat) return [0, 0];
+    const [bx, by] = boat.p, k = lean.current, a = leanTo ?? boat.p;
+    return [bx + k * (a[0] - bx) + shift[0], by + k * (a[1] - by) + shift[1]];
+  });
   const scale = $derived(2 ** zoom.current);
 
   const pts = (p: readonly Pt[]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
@@ -72,6 +77,13 @@
       <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale}>
         <g transform="translate({shift[0]} {shift[1]})">
         <polyline points={pts(wake)} class="wake" style:stroke-width="{3 * voyage.boatSize}px" />
+        {#each crates as c, i (i)}
+          <!-- A crate adrift: what she picks up if she goes that way. -->
+          <g class="crate" transform="translate({c[0]} {c[1]}) scale({voyage.boatSize / scale})" style:animation-delay="{i * -0.7}s">
+            <rect class="ink" x="-4" y="-4" width="8" height="8" />
+            <path class="paper" d="M -4 -4 L 4 4 M 4 -4 L -4 4" stroke="#f4ecd8" stroke-width="1" />
+          </g>
+        {/each}
         <g class="boat" transform="translate({boat.p[0]} {boat.p[1]}) scale({voyage.boatSize / scale}) rotate({deg}) scale(1 {flip})">
           <!-- A sternwheeler side on, bow to the right: hull, cabin, two chimneys, the wheel astern. -->
           <path class="ink" d="M -17 2 L 16 2 L 19 -1 L 19 3 Q 15 7 -15 7 Z" />
@@ -173,6 +185,18 @@
   }
   .boat {
     transition: opacity 0.8s ease;
+  }
+  .crate {
+    animation: bob 2.2s ease-in-out infinite;
+    transform-box: fill-box;
+  }
+  .play .crate {
+    opacity: 0;
+  }
+  @keyframes bob {
+    50% {
+      translate: 0 1.5px;
+    }
   }
   .play .boat {
     opacity: 0;

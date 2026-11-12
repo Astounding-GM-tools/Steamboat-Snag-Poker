@@ -3,6 +3,9 @@
   import {
     BOAT,
     ITEMS,
+    Rng,
+    chooseLane,
+    passIsland,
     buy,
     canBuy,
     canCastOff,
@@ -36,6 +39,8 @@
   import BoatScene from './BoatScene.svelte';
   import RiverBackdrop from './map/RiverBackdrop.svelte';
   import { voyage } from './map/tuning.svelte';
+  import { loadLeg } from './map/legs';
+  import { islandKey, sides, type Island, type Pt, type TravelSidecar } from './map/route';
   import { heavy } from './heavy';
   import ShipPage from './ShipPage.svelte';
   import Speech, { autoMs, type SpeechLine } from './Speech.svelte';
@@ -150,6 +155,98 @@
     return k < 0 || hushed.includes(k) ? null : chatterAt[k].speech;
   });
   const chatterIndex = $derived(chatterNow ? chatterAt.findIndex((c) => c.speech === chatterNow) : -1);
+
+  // --- Islands: port or starboard ------------------------------------------------
+  let legData = $state<TravelSidecar | null>(null);
+  $effect(() => {
+    const id = leg;
+    if (!id) return;
+    loadLeg(id).then((s) => {
+      if (leg === id) legData = s;
+    });
+  });
+  /** The islands on this stretch, in the order she meets them, each with what's adrift on one of its passages. */
+  const isles = $derived.by(() => {
+    if (step?.type !== 'steam' || !legData?.islands) return [];
+    const from = steamFrom, to = step.to, up = to >= from;
+    return legData.islands
+      .filter((i) => (up ? i.from_t >= from && i.to_t <= to : i.to_t <= from && i.from_t >= to))
+      .sort((a, b) => (up ? a.from_t - b.from_t : b.from_t - a.from_t))
+      .map((island) => {
+        const key = islandKey(leg, island);
+        // Where the crates are, and how many: the same each time this voyage comes by.
+        let h = journey.seed;
+        for (const ch of key) h = (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0;
+        const rng = new Rng(h);
+        const side: 'left' | 'right' = rng.int(2) ? 'left' : 'right';
+        return { island, key, up, prize: { side, buttons: 2 + rng.int(2) } };
+      });
+  });
+  const lanes = $derived(journey.lanes ?? {});
+  const passed = $derived(journey.passed ?? []);
+  /** The island she's coming up to (within warning) or rounding: the view leans towards it till she's past. */
+  const islandNear = $derived.by(() => {
+    if (step?.type !== 'steam') return null;
+    const warn = voyage.forkWarning / voyage.legSeconds;
+    const next = isles.find((i) => !passed.includes(i.key));
+    if (!next) return null;
+    const gap = next.up ? next.island.from_t - boatT : boatT - next.island.to_t;
+    return gap < warn ? next : null;
+  });
+  /** That island, its way not yet chosen and the fork still ahead: the call goes up. */
+  const forkAhead = $derived.by(() => {
+    const near = islandNear;
+    if (!near || racing || lanes[near.key]) return null;
+    return (near.up ? near.island.from_t > boatT : near.island.to_t < boatT) ? near : null;
+  });
+  /** Willie's call, made once per island (a new one every frame would start its words over). */
+  const forkCalls = new Map<string, SpeechLine>();
+  const forkLine = $derived.by((): SpeechLine | null => {
+    if (!forkAhead) return null;
+    let l = forkCalls.get(forkAhead.key);
+    if (!l) {
+      const name = forkAhead.island.name;
+      l = { size: 'aside', who: 'willie', auto: false, text: name ? t('river.namedAhead', { name }) : t('river.islandAhead') };
+      forkCalls.set(forkAhead.key, l);
+    }
+    return l;
+  });
+  function steer(way: 'port' | 'starboard') {
+    if (!forkAhead) return;
+    journey = chooseLane(journey, forkAhead.key, sides(forkAhead.island, forkAhead.up)[way].side);
+  }
+  // Round an island and out the other side: what was adrift along her way is aboard.
+  $effect(() => {
+    const t = boatT;
+    const done = isles.find((i) => !passed.includes(i.key) && (i.up ? t >= i.island.to_t : t <= i.island.from_t));
+    if (!done) return;
+    const took = lanes[done.key] ?? done.island.passages.find((p) => p.kind === 'main')!.side;
+    untrack(() => (journey = passIsland(journey, done.key, took === done.prize.side ? done.prize.buttons : 0)));
+  });
+  /** The middle of an island (between its two passages' midpoints): where the view looks as she comes up to it. */
+  function islandMid(island: Island): Pt {
+    const m = (px: Pt[]) => px[Math.floor(px.length / 2)];
+    const [a, b] = island.passages.map((p) => m(p.px));
+    return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  }
+  /** Crates adrift on the passages ahead: a few along the middle of the way that has them. */
+  const crates = $derived(
+    isles
+      .filter((i) => !passed.includes(i.key))
+      .flatMap(({ island, prize, key, up }) => {
+        const px = island.passages.find((p) => p.side === prize.side)!.px;
+        const took = lanes[key] ?? island.passages.find((p) => p.kind === 'main')!.side;
+        const mid = (k: number): Pt => {
+          const i = Math.min(px.length - 2, Math.floor(k * (px.length - 1)));
+          const f = k * (px.length - 1) - i;
+          return [px[i][0] + f * (px[i + 1][0] - px[i][0]), px[i][1] + f * (px[i + 1][1] - px[i][1])];
+        };
+        return Array.from({ length: prize.buttons }, (_, k) => 0.35 + (0.3 * k) / Math.max(1, prize.buttons - 1))
+          // Gone as she reaches each one, going that way.
+          .filter((k) => !(took === prize.side && (up ? boatT > island.from_t + k * (island.to_t - island.from_t) : boatT < island.from_t + k * (island.to_t - island.from_t))))
+          .map(mid);
+      }),
+  );
 
   /** Leaving a table for the river: the table's things slide off every which way as the felt lifts. */
   let lifting = $state(false);
@@ -290,7 +387,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} {crates} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">
@@ -312,6 +409,7 @@
   <div class="page steaming">
     <div class="status">
       <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
+      {#if journey.haul}<span>{t('river.haul', { n: journey.haul })}</span>{/if}
     </div>
     {#if import.meta.env.DEV}
       <!-- Development only: the pace and the heights, live (settle on numbers, then write them into map/tuning.svelte.ts). -->
@@ -325,15 +423,25 @@
         <label>route y <input type="range" min="-300" max="300" step="10" bind:value={voyage.routeY} /> {voyage.routeY}</label>
       </div>
     {/if}
-    {#if chatterNow}
+    {#if forkLine}
+      <!-- An island ahead: the call goes up, and the two buttons are the helm till she's chosen (or she keeps to the main channel). -->
+      {#key forkLine}
+        <div class="chatter"><Speech line={forkLine} name={called('willie')} opponent={false} top={0} bottom={0} /></div>
+      {/key}
+    {:else if chatterNow}
       <!-- The crew passing the time as she steams: it closes by itself before the next, or with a tap. -->
       {#key chatterIndex}
         <div class="chatter"><Speech line={chatterNow} name={called(chatterNow.who)} opponent={false} top={0} bottom={0} onnext={() => (hushed = [...hushed, chatterIndex])} /></div>
       {/key}
     {/if}
     <div class="dock" use:heavy>
-      <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
-      <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>
+      {#if forkAhead}
+        <button class="ghost" onclick={() => steer('port')}>{t('river.port')}</button>
+        <button onclick={() => steer('starboard')}>{t('river.starboard')}</button>
+      {:else}
+        <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
+        <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>
+      {/if}
     </div>
   </div>
 {:else}

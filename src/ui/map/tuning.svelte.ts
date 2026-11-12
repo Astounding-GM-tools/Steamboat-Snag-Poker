@@ -16,6 +16,8 @@ export const voyage = $state({
   /** Shifts the channel line (and the boat on it) by map pixels (2 m each), until a route traced on the old charts comes. */
   routeX: 0,
   routeY: 0,
+  /** Seconds of warning before an island's fork: the call goes up, and port or starboard can be chosen. */
+  forkWarning: 12,
   /** A crew member's chatter closes this many seconds before the next comes up (or she arrives). */
   chatterGap: 5,
 });

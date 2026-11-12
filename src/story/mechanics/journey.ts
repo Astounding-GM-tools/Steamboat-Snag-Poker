@@ -273,6 +273,12 @@ export interface JourneyState {
   done: boolean;
   /** Out on the river: the leg of the map we're on and where along it (0 to 1). None: at a landing, or not yet cast off. */
   river?: { leg: string; t: number };
+  /** Round each island passed or coming up, the passage chosen (by the map's island key): `left` keeps the Illinois bank, `right` the Iowa. */
+  lanes?: Record<string, 'left' | 'right'>;
+  /** Islands passed (by key): what was in the water there has been picked up, or missed. */
+  passed?: string[];
+  /** Buttons picked up on the river (crates in the water): the crew's strength at the next obstacle, as far as it goes. */
+  haul?: number;
 }
 
 /**
@@ -575,6 +581,18 @@ function drawTables(state: JourneyState, step: Extract<Step, { type: 'draw' }>) 
   state.rngState = rng.state;
 }
 
+/** Round an island ahead, this passage. */
+export function chooseLane(prev: JourneyState, key: string, side: 'left' | 'right'): JourneyState {
+  return { ...prev, lanes: { ...prev.lanes, [key]: side } };
+}
+
+/** An island passed: whatever was in the water along the way she went is aboard (`buttons`), as much as the crew has the strength to carry. */
+export function passIsland(prev: JourneyState, key: string, buttons: number): JourneyState {
+  if (prev.passed?.includes(key)) return prev;
+  const haul = Math.min((prev.haul ?? 0) + buttons, Math.max(prev.strength, buttons));
+  return { ...prev, passed: [...(prev.passed ?? []), key], haul };
+}
+
 /** Never stuck for a stake: come to a table for money with next to none, and there's an odd job to be had. */
 export const ODD_JOB = { below: 6, pays: 10 };
 
@@ -582,6 +600,11 @@ function seat(state: JourneyState, def: EncounterDef) {
   if (def.push) {
     state.coal = Math.max(0, state.coal - 1);
     state.strength = morningStrength(state);
+  }
+  // Against an obstacle on the river, what was picked up on the way joins the crew's strength.
+  if (def.stake === 'strength' && def.rivals !== 'crew' && state.haul) {
+    state.strength += state.haul;
+    state.haul = 0;
   }
   const rng = new Rng(state.rngState);
   const oddJob = def.stake === 'purse' && !def.proxy && def.rules?.pot !== false && state.purse < (def.entry ?? ODD_JOB.below) ? ODD_JOB.pays : 0;
