@@ -11,6 +11,10 @@
    * and the smoke lean a little toward the top of the screen, as if seen from a little
    * south of overhead; `lift` is how much (0 is straight down). Her shadow falls the
    * other way.
+   *
+   * `printed` draws her as part of the 1890 survey she sails on: sepia ink, the lines a
+   * little uneven, specks where the ink didn't take, and multiplied into the map so the
+   * paper shows through like the chart's own.
    */
   let {
     built = {},
@@ -18,7 +22,11 @@
     lift = 1,
     night = false,
     fold = 0,
-  }: { built?: Built; heading?: number; lift?: number; night?: boolean; fold?: number } = $props();
+    printed = false,
+  }: { built?: Built; heading?: number; lift?: number; night?: boolean; fold?: number; printed?: boolean } = $props();
+
+  /** How much broader in the beam than the plan: a bit of a pudge, for character. */
+  const BEAM = 1.3;
 
   const MID = 100;
   const th = $derived((heading * Math.PI) / 180);
@@ -27,11 +35,16 @@
     const L = 10 * lift * h;
     return [-L * Math.sin(th), -L * Math.cos(th)] as const;
   };
+  /** The same, inside the hull's frame, which is stretched by BEAM across. */
+  const upB = (h: number) => {
+    const [x, y] = up(h);
+    return [x, y / BEAM] as const;
+  };
   const tr = ([x, y]: readonly [number, number]) => `translate(${x.toFixed(2)} ${y.toFixed(2)})`;
   /** Her shadow: a fixed offset down and right on the screen, in her own frame. */
   const shadow = $derived.by(() => {
     const [a, b] = [2.5 * lift, 4 * lift];
-    return [a * Math.cos(th) + b * Math.sin(th), -a * Math.sin(th) + b * Math.cos(th)] as const;
+    return [a * Math.cos(th) + b * Math.sin(th), (-a * Math.sin(th) + b * Math.cos(th)) / BEAM] as const;
   });
 
   const w = $derived(wheel(built));
@@ -48,17 +61,20 @@
   /** The chimneys stand abreast; folded, they lie back toward the stern. */
   const a = $derived((fold * FOLD * Math.PI) / 180);
   const chimneys = $derived(
-    [-7, 7].map((y) => {
+    [-7 * BEAM, 7 * BEAM].map((y) => {
       const base = up(0.45);
       const top = up(0.45 + 2.2 * Math.cos(a));
       return { base: [142 + base[0], y + base[1]] as const, top: [142 - 34 * Math.sin(a) + top[0], y + top[1]] as const };
     }),
   );
-  const puffs = $derived(built.engine ? 6 : 4);
+  const puffs = $derived(built.engine ? 11 : 8);
+  /** Where a puff ends up: astern, and up the screen as it rises. */
   const drift = (i: number) => {
-    const u = up(0.8 + (i % 3) * 0.4);
-    return [-18 - i * 5 + u[0], u[1]] as const;
+    const u = up(1 + (i % 3) * 0.6);
+    return [-26 - i * 7 + u[0], u[1] + ((i * 7) % 5) - 2] as const;
   };
+  /** The wheel's slats: far enough apart to see them go round. */
+  const SLAT = 4;
 </script>
 
 <defs>
@@ -66,11 +82,29 @@
     <stop offset="0%" stop-color="#fff6d8" stop-opacity="0.9" />
     <stop offset="100%" stop-color="#fff6d8" stop-opacity="0" />
   </radialGradient>
+  <!-- Printed with the survey: lines a little uneven, specks where the ink didn't take -->
+  <filter id="boat-print" x="-10%" y="-20%" width="120%" height="140%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="2" seed="7" result="warp" />
+    <feDisplacementMap in="SourceGraphic" in2="warp" scale="3" xChannelSelector="R" yChannelSelector="G" result="wobbly" />
+    <feTurbulence type="fractalNoise" baseFrequency="0.45" numOctaves="1" seed="3" result="grain" />
+    <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  9 0 0 0 -5.6" result="holes" />
+    <feComposite in="wobbly" in2="holes" operator="out" />
+  </filter>
   <clipPath id="boat-top-wheel"><rect x={wheelAft} y="-16" width={-3 - wheelAft} height="32" /></clipPath>
 </defs>
 
-<g class="top" class:night transform="rotate({heading})">
+{#if printed}
+  <!-- The river's paper under her, so the wake and the soundings don't show through her decks -->
+  <g class="knockout" transform="rotate({heading}) translate({-MID} 0) scale(1 {BEAM})">
+    <path d={HULL} />
+    <rect x={wheelAft} y="-16" width={-3 - wheelAft} height="32" />
+    <rect x="-1" y="-23" width={BOILER_DECK_END + 1} height="46" rx="6" transform={tr(upB(0.25))} />
+  </g>
+{/if}
+
+<g class="top" class:night class:printed transform="rotate({heading})">
   <g transform="translate({-MID} 0)">
+    <g transform="scale(1 {BEAM})" filter={printed ? 'url(#boat-print)' : undefined}>
     <!-- Her shadow on the water -->
     <path class="shadow" d={HULL} transform={tr(shadow)} />
     <rect class="shadow" x={wheelAft} y="-16" width={-3 - wheelAft} height="32" transform={tr(shadow)} />
@@ -78,9 +112,9 @@
     <!-- The wheel astern: its top slats run forward as she drives -->
     <rect class="paper" x={wheelAft} y="-16" width={-3 - wheelAft} height="32" />
     <g clip-path="url(#boat-top-wheel)">
-      <g class="slats" style="--spin: {w.period / 10}s">
-        {#each Array.from({ length: Math.ceil(-wheelAft / 2.6) + 3 }) as _, i (i)}
-          <line class="slat" x1={wheelAft - 2.6 + i * 2.6} y1="-16" x2={wheelAft - 2.6 + i * 2.6} y2="16" />
+      <g class="slats" style="--spin: {w.period / 3}s; --slat: {SLAT}px">
+        {#each Array.from({ length: Math.ceil(-wheelAft / SLAT) + 3 }) as _, i (i)}
+          <line class="slat" x1={wheelAft - SLAT + i * SLAT} y1="-16" x2={wheelAft - SLAT + i * SLAT} y2="16" />
         {/each}
       </g>
     </g>
@@ -105,14 +139,14 @@
     {/if}
 
     <!-- The landing stage on its boom, raised, and the mast -->
-    <g transform={tr(up(0.35))}>
+    <g transform={tr(upB(0.35))}>
       <rect class="paper" x="196" y="-2.6" width="34" height="5.2" />
       {#each [202, 208, 214, 220, 226] as x (x)}<line class="line" x1={x} y1="-2.6" x2={x} y2="2.6" />{/each}
     </g>
-    <circle class="ink" cx={STAGE_MAST} cy="0" r="1.6" transform={tr(up(0.6))} />
+    <circle class="ink" cx={STAGE_MAST} cy="0" r="1.6" transform={tr(upB(0.6))} />
 
     <!-- The boiler deck, wider than the hull: the guards overhang her sides -->
-    <g transform={tr(up(0.25))}>
+    <g transform={tr(upB(0.25))}>
       <path class="paper" d="M -1 -23 H {BOILER_DECK_END - 6} Q {BOILER_DECK_END} -23 {BOILER_DECK_END} -17 V 17 Q {BOILER_DECK_END} 23 {BOILER_DECK_END - 6} 23 H -1 Z" />
       {#each [-17, -11, 11, 17] as y (y)}<line class="plank" x1="0" y1={y} x2={BOILER_DECK_END - 2} y2={y} />{/each}
       {#if night}<circle class="lantern" cx="9" cy="0" r="22" />{/if}
@@ -121,7 +155,7 @@
     </g>
 
     <!-- The roofs: the hurricane deck over each cabin, with its skylight down the middle -->
-    <g transform={tr(up(0.45))}>
+    <g transform={tr(upB(0.45))}>
       {#each roofs as [r0, r1], i (i)}
         <rect class="roof" x={r0 - 1} y="-17" width={r1 - r0 + 2} height="34" />
       {/each}
@@ -136,7 +170,7 @@
     <!-- The bandstand: a little pavilion on the saloon roof -->
     {#if built.bandstand}
       {@const [s0, s1] = span(MODULES.bandstand.bays!)}
-      <g transform={tr(up(0.75))}>
+      <g transform={tr(upB(0.75))}>
         <rect class="roof" x={s0 + 2} y="-10" width={s1 - s0 - 4} height="20" />
         <path class="line" d="M {s0 + 2} -10 L {(s0 + s1) / 2} 0 L {s1 - 2} -10 M {s0 + 2} 10 L {(s0 + s1) / 2} 0 L {s1 - 2} 10" />
         <circle class="ink" cx={(s0 + s1) / 2} cy="0" r="1" />
@@ -144,16 +178,19 @@
     {/if}
 
     <!-- The texas, and the pilothouse on it -->
-    <g transform={tr(up(0.65))}>
+    <g transform={tr(upB(0.65))}>
       <rect class="roof" x={t0} y="-8" width={t1 - t0} height="16" />
     </g>
-    <g transform={tr(up(0.85))}>
+    <g transform={tr(upB(0.85))}>
       <rect class="roof" x="109" y="-7" width="14" height="14" />
       <path class="line" d="M 109 -7 L 123 7 M 123 -7 L 109 7" />
       <circle class="ink" cx="116" cy="0" r="1.4" />
     </g>
 
+    </g>
+
     <!-- The chimneys, standing up out of the picture, and their smoke -->
+    <g filter={printed ? 'url(#boat-print)' : undefined}>
     {#each chimneys as c, i (i)}
       <line class="stack-rim" x1={c.base[0]} y1={c.base[1]} x2={c.top[0]} y2={c.top[1]} />
       <line class="stack" x1={c.base[0]} y1={c.base[1]} x2={c.top[0]} y2={c.top[1]} />
@@ -167,11 +204,12 @@
           class="puff"
           cx={c.top[0]}
           cy={c.top[1]}
-          r={2.6 + (k % 3) * 0.8}
-          style="--d: {((k * 0.53 + i * 0.31) % 2.4).toFixed(2)}s; --dx: {dx.toFixed(1)}px; --dy: {dy.toFixed(1)}px"
+          r={4 + (k % 3) * 1.8}
+          style="--d: {((k * 0.43 + i * 0.29) % 3.4).toFixed(2)}s; --dx: {dx.toFixed(1)}px; --dy: {dy.toFixed(1)}px"
         />
       {/each}
     {/each}
+    </g>
   </g>
 </g>
 
@@ -182,6 +220,56 @@
   }
   .top * {
     transform-box: view-box;
+  }
+  /* Sepia, multiplied into the chart: her paper is the map's paper, her ink its ink. */
+  .top.printed {
+    --ink: #2a221a;
+    --paper: #f3ecdc;
+    mix-blend-mode: multiply;
+  }
+  .knockout {
+    fill: #f1ece0;
+  }
+  /* On the map she is small: lines keep a pen's width on screen, whatever the scale. */
+  .printed :is(path, rect, line, circle) {
+    vector-effect: non-scaling-stroke;
+  }
+  .printed .roof,
+  .printed .frame {
+    stroke-width: 2px;
+  }
+  .printed .paper,
+  .printed .skylight,
+  .printed .deck {
+    stroke-width: 1.5px;
+  }
+  .printed .line,
+  .printed .plank {
+    stroke-width: 0.9px;
+  }
+  .printed .slat {
+    stroke-width: 1.5px;
+  }
+  .printed .crown {
+    stroke-width: 0.8px;
+  }
+  .printed .stack {
+    stroke-width: 4px;
+  }
+  .printed .stack-rim {
+    stroke-width: 5.5px;
+  }
+  .printed .deck {
+    fill: #e2d7bf;
+  }
+  .printed .plank {
+    stroke: #a38f6c;
+  }
+  .printed .shadow {
+    fill: #4a3520;
+  }
+  .printed .puff {
+    fill: #3e3226;
   }
   .shadow {
     fill: #000;
@@ -251,7 +339,7 @@
   }
   @keyframes slats {
     to {
-      transform: translateX(2.6px);
+      transform: translateX(var(--slat));
     }
   }
   .stack-rim {
@@ -277,12 +365,12 @@
     transform-box: fill-box;
     transform-origin: center;
     opacity: 0;
-    animation: puff 2.4s ease-out var(--d) infinite;
+    animation: puff 3.4s ease-out var(--d) infinite;
   }
   @keyframes puff {
-    0% { transform: translate(0, 0) scale(0.4); opacity: 0.75; }
-    70% { opacity: 0.3; }
-    100% { transform: translate(var(--dx), var(--dy)) scale(2.4); opacity: 0; }
+    0% { transform: translate(0, 0) scale(0.4); opacity: 0.85; }
+    60% { opacity: 0.45; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(2.8); opacity: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     .top * {

@@ -134,6 +134,14 @@ picture, and the smoke rises up the screen. Her shadow falls down and right.
 `lift` sets how much (0 is straight down). Heading north (up the screen), the
 cue is weakest: the chimneys lean along her length.
 
+**Printed on the chart:** on the map she is drawn as part of the 1890 survey
+(`printed`): sepia ink and paper, her lines a little uneven and specked where
+the ink didn’t take (an SVG displacement and grain filter), a pen’s width on
+screen whatever the zoom, and the river’s paper laid under her so the wake and
+soundings don’t show through. She is also broader in the beam there (`BEAM`,
+1.3×) for a bit of a pudge, the wheel’s slats turn slowly enough to see, and
+the smoke is heavier.
+
 A licence: side on, the two chimneys stand one behind the other along her
 length so both show; from above they stand abreast, as they did.
 

@@ -117,7 +117,7 @@
         {/each}
         <!-- The Best Intentions from above (src/ui/boat): she turns to any heading, never flips -->
         <g class="boat" transform="translate({boat.p[0]} {boat.p[1]}) scale({(voyage.boatSize * TOP_SCALE) / scale})">
-          <BoatTop {built} heading={deg} />
+          <BoatTop {built} heading={deg} printed />
         </g>
       </TileMap>
     </div>

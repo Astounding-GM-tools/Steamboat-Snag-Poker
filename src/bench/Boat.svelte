@@ -17,6 +17,7 @@
   let heading = $state(-30);
   let turning = $state(true);
   let lift = $state(1);
+  let printed = $state(true);
 
   function toggle(id: ModuleId) {
     const next = { ...built, [id]: !built[id] };
@@ -83,16 +84,17 @@
       <label><input type="checkbox" bind:checked={turning} /> Turning</label>
       <label>Heading <input type="range" min="-180" max="180" step="1" bind:value={heading} disabled={turning} /> {Math.round(heading)}°</label>
       <label>Height <input type="range" min="0" max="2" step="0.05" bind:value={lift} /></label>
+      <label><input type="checkbox" bind:checked={printed} /> Printed on the map</label>
     </div>
     <div class="tops">
       <svg class="map" viewBox="-150 -150 300 300" aria-label="The Best Intentions from above">
         <rect class="chart" x="-150" y="-150" width="300" height="300" />
-        <g><BoatTop {built} {heading} {lift} {night} {fold} /></g>
+        <g><BoatTop {built} {heading} {lift} {night} {fold} {printed} /></g>
       </svg>
       <figure>
         <svg class="map small" viewBox="-60 -60 120 120" aria-label="At the map’s size">
           <rect class="chart" x="-60" y="-60" width="120" height="120" />
-          <g transform="scale(0.22)"><BoatTop {built} {heading} {lift} {night} {fold} /></g>
+          <g transform="scale(0.22)"><BoatTop {built} {heading} {lift} {night} {fold} {printed} /></g>
         </svg>
         <figcaption>At about the map’s size</figcaption>
       </figure>
