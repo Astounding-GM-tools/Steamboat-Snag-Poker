@@ -1,7 +1,7 @@
 <script lang="ts" module>
   /** What a figure is doing: each is a short loop, drawn at a station on the boat. */
   export const DOINGS = [
-    'walk', 'stroll', 'stoke', 'fish', 'cards', 'deal', 'read', 'cook', 'pilot',
+    'walk', 'stroll', 'stoke', 'fish', 'sound', 'cards', 'deal', 'read', 'cook', 'pilot',
     // The band
     'trumpet', 'sax', 'trombone', 'bass', 'drums',
   ] as const;
@@ -102,6 +102,21 @@
           <line class="thin" x1="2.6" y1="-6.8" x2="15" y2="-13" />
           <line class="hair" x1="15" y1="-13" x2="16" y2={toWater - up} />
           <circle class="pale" cx="16" cy={toWater - up - 0.4} r="0.7" />
+        </g>
+      {:else if doing === 'sound'}
+        <!-- The leadsman: swings the lead, casts it ahead, reads the line, calls the depth -->
+        <polyline points="0,-7.4 -0.6,-5.4 0.8,-4.8" />
+        <circle class="pale" cx="1.2" cy="-4.8" r="1" />
+        <g class="arm haul" style="transform-origin: 0px -7.4px">
+          <polyline points="0,-7.4 1.8,-6.2 3,-6.4" />
+          <g class="lead swinging" style="transform-origin: 3px -6.4px">
+            <line class="hair" x1="3" y1="-6.4" x2="3" y2="-0.8" />
+            <rect class="solid" x="2.5" y="-1" width="1" height="1.6" />
+          </g>
+          <g class="lead cast">
+            <line class="hair" x1="3" y1="-6.4" x2="9" y2={toWater - up - 0.4} />
+            <rect class="solid" x="8.5" y={toWater - up - 0.8} width="1" height="1.6" />
+          </g>
         </g>
       {:else if doing === 'cards' || doing === 'deal'}
         <polyline points="0,-7.4 2,-6.2 3.4,-6.4" />
@@ -298,6 +313,44 @@
     70% { transform: rotate(1deg); }
     74% { transform: rotate(8deg); }
     82% { transform: rotate(-2deg); }
+  }
+
+  /* Sounding, five seconds round: swing the lead, cast it ahead, haul and read the
+     marks on the line, then throw the head back to call the depth to the pilot. */
+  .lead.swinging {
+    animation: swing-lead 5s ease-in-out var(--dl) infinite;
+  }
+  /* Round and round, forward over the top, gathering speed; let go on the way up ahead. */
+  @keyframes swing-lead {
+    0% { transform: rotate(0deg); opacity: 1; animation-timing-function: ease-in; }
+    29% { transform: rotate(-855deg); opacity: 1; }
+    30%, 100% { transform: rotate(-855deg); opacity: 0; }
+  }
+  .lead.cast {
+    opacity: 0;
+    animation: cast-lead 5s linear var(--dl) infinite;
+  }
+  @keyframes cast-lead {
+    0%, 29% { opacity: 0; }
+    30%, 84% { opacity: 1; }
+    85%, 100% { opacity: 0; }
+  }
+  .arm.haul {
+    animation: haul 5s ease-in-out var(--dl) infinite;
+  }
+  @keyframes haul {
+    0%, 30%, 86%, 100% { transform: rotate(0deg); }
+    40% { transform: rotate(-16deg); }
+    48% { transform: rotate(4deg); }
+    56% { transform: rotate(-16deg); }
+    64% { transform: rotate(4deg); }
+  }
+  .sound .head {
+    animation: call 5s ease-in-out var(--dl) infinite;
+  }
+  @keyframes call {
+    0%, 68%, 92%, 100% { transform: rotate(0deg); }
+    74%, 86% { transform: rotate(-22deg); }
   }
 
   /* Cards: heads nod over the hand; the dealer flicks one across. */

@@ -127,6 +127,8 @@ export interface Station {
 export function stations(built: Built): Record<string, Station | undefined> {
   return {
     stoker: { x: 154, y: LEVEL.main },
+    /** The leadsman: soundings were taken forward, ahead of the boat, and called up to the pilot. */
+    leadsman: { x: 168.5, y: LEVEL.main },
     deckhand: { x: 24, y: LEVEL.main, walk: 100 },
     fisher: { x: 156, y: LEVEL.boiler },
     pilot: { x: 116, y: LEVEL.texas },

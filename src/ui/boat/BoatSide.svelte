@@ -181,6 +181,11 @@
     <line class="stage" x1="198.5" y1="-10" x2="233" y2="-29" />
   </g>
 
+  <!-- The leadsman at the rail forward, taking soundings -->
+  {#if at.leadsman}
+    <g transform="translate({at.leadsman.x} {at.leadsman.y})"><Figure doing="sound" hat="cap" toWater={-at.leadsman.y + 1} delay={-0.8} /></g>
+  {/if}
+
   <!-- The deckhand on his beat along the main deck guard -->
   {#if at.deckhand}
     <g transform="translate({at.deckhand.x} {at.deckhand.y})">

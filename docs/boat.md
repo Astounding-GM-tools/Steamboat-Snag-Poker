@@ -81,6 +81,7 @@ so the story can put someone somewhere and both views agree.
 | `stoker` | Lars at the firebox: bends and scoops off the deck, straightens with the load, chucks it in |
 | `deckhand` | walking the main-deck guard, turning about at each end |
 | `fisher` | on the boiler-deck guard, legs over the side, rod dipping |
+| `leadsman` | at the rail forward: swings the lead round, casts it ahead, hauls and reads the line, throws his head back to call the depth |
 | `pilot` | at the wheel, leaning with the river |
 | `cards` | by day a reader in a deck chair; at night two at the card table under a lantern |
 | `cook` | in the galley door, the pan held level, flipping a pancake (with the galley) |
@@ -176,7 +177,11 @@ cabin one bay longer, a chimney folding).
    wheel, so roughly 0.16× for the same size), and drops the flip.
 2. **What she has built** comes from the story’s state (a `Built` record),
    saved with the voyage.
-3. **The tow:** houseboats and rafts on lines astern, in both views.
+3. **The tow:** houseboats and rafts on lines astern, in both views, in a row
+   like ducklings. Raft boats really pushed their rafts ahead; we tow for the
+   look, knowingly. The line is made fast high on the stern, on a towing bitt at
+   the after end of the boiler deck (the promenade), so it clears the wheel;
+   from above, a bridle from both quarters meets behind the wheel.
 4. **More figures and stations:** Willie, Gus and Morag as themselves (a hat or
    a beard each, from their portraits), the band growing as Bennie’s men come
    aboard, a crowd for the arrival at St. Louis.

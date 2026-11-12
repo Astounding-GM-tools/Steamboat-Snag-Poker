@@ -12,6 +12,7 @@
     stroll: 'boater',
     stoke: 'cap',
     fish: 'boater',
+    sound: 'cap',
     cards: 'bowler',
     deal: 'cap',
     read: 'boater',
