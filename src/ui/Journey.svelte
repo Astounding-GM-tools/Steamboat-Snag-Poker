@@ -644,7 +644,9 @@
       transform: none;
     }
   }
+  /* A container, like the table: a caption here (the crew's chatter, a word of advice) is sized by the page, not the screen. */
   .page {
+    container-type: inline-size;
     min-height: 100svh;
     display: grid;
     align-content: space-between;
@@ -654,6 +656,9 @@
     padding: 1rem;
     position: relative;
     z-index: 51;
+  }
+  .page > :global(*) {
+    --u: clamp(1rem, 3.7cqw, 1.7rem);
   }
   .status {
     padding-right: 3rem;
