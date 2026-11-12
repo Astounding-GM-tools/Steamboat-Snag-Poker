@@ -426,6 +426,10 @@
       {#if forkAhead}
         <button class="ghost" onclick={() => steer('port')}>{t('river.port')}</button>
         <button onclick={() => steer('starboard')}>{t('river.starboard')}</button>
+      {:else if chatterNow}
+        <!-- The crew talking: the white button answers them (and closes it), it doesn't skip the river. -->
+        <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
+        <button onclick={() => (hushed = [...hushed, chatterIndex])}>{t('river.aye')}</button>
       {:else}
         <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
         <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>

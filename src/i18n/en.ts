@@ -456,6 +456,7 @@ export const en = {
   'river.menu': 'Menu',
   'river.pause': 'Pause',
   'river.skip': 'Skip',
+  'river.aye': 'Aye',
   'river.port': 'Port',
   'river.starboard': 'Starboard',
   'river.haul': 'Picked up: {n} buttons',
