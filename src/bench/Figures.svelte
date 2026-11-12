@@ -17,8 +17,11 @@
     read: 'boater',
     cook: 'toque',
     pilot: 'cap',
-    horn: 'boater',
-    drum: 'bowler',
+    trumpet: 'boater',
+    sax: 'bowler',
+    trombone: 'boater',
+    bass: 'bowler',
+    drums: 'cap',
   };
   const BACKDROPS = { deck: '#2a2926', sky: '#5f5d57', cabin: '#f2efe6' } as const;
   type Backdrop = keyof typeof BACKDROPS;

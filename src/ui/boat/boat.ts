@@ -74,7 +74,7 @@ export const MODULES: Record<ModuleId, Module> = {
   galley: { id: 'galley', name: 'Galley', deck: 'main', bays: [2, 3] },
   saloon: { id: 'saloon', name: 'Dining saloon', deck: 'boiler', bays: [0, 2] },
   berths: { id: 'berths', name: 'Staterooms', deck: 'boiler', bays: [3, 4] },
-  bandstand: { id: 'bandstand', name: 'Bandstand', deck: 'roof', bays: [1, 2], needs: ['saloon'] },
+  bandstand: { id: 'bandstand', name: 'Bandstand', deck: 'roof', bays: [0, 2], needs: ['saloon'] },
   engine: { id: 'engine', name: 'Bigger engine', deck: 'main' },
   patty: { id: 'patty', name: 'Pretty Patty', deck: 'main' },
 };
@@ -125,6 +125,6 @@ export function stations(built: Built): Record<string, Station | undefined> {
     cards: { x: 9, y: LEVEL.boiler },
     cook: built.galley ? { x: 66, y: LEVEL.main } : undefined,
     stroller: built.berths ? { x: 58, y: LEVEL.boiler, walk: 44 } : undefined,
-    band: built.bandstand ? { x: 52, y: LEVEL.hurricane } : undefined,
+    band: built.bandstand ? { x: 44, y: LEVEL.hurricane } : undefined,
   };
 }

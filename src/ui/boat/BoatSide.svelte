@@ -259,8 +259,9 @@
   {#if built.bandstand}
     {@const [s0, s1] = span(MODULES.bandstand.bays!)}
     {#if at.band}
-      <g transform="translate({s0 + 8} -38)"><Figure doing="horn" hat="boater" /></g>
-      <g transform="translate({s0 + 24} -38)"><Figure doing="drum" hat="bowler" flip delay={-0.2} /></g>
+      {#each [['drums', 5, 'cap'], ['bass', 13, 'bowler'], ['sax', 21, 'bowler'], ['trumpet', 29, 'boater'], ['trombone', 36, 'boater']] as const as [doing, dx, hat], i (doing)}
+        <g transform="translate({s0 + dx} -38)"><Figure {doing} {hat} delay={-i * 0.17} /></g>
+      {/each}
     {/if}
     {#each [s0 + 1, (s0 + s1) / 2, s1 - 1] as x (x)}<line class="post" x1={x} y1="-38" x2={x} y2="-52" />{/each}
     <path class="paper" d="M {s0 - 2} -51 L {(s0 + s1) / 2} -55 L {s1 + 2} -51 Z" />

@@ -54,7 +54,7 @@ Bill’s boat; modules are what you add.
 | **Galley** | main | 2–3 | the cook in the door, steam from the window (the Clinton rafters) |
 | **Dining saloon** | boiler | 0–2 | suit-shaped windows, as on the old vignette |
 | **Staterooms** | boiler | 3–4 | doors with transoms; a passenger promenades the guard |
-| **Bandstand** | roof | 1–2 | needs the saloon under it; Bennie Moten’s band |
+| **Bandstand** | roof | 0–2 | the whole saloon roof, and needs the saloon; Bennie Moten’s band |
 | **Bigger engine** | main | none | a bigger, faster wheel and more smoke |
 | **Pretty Patty** | main | the foredeck | in place of the freight there |
 
@@ -74,14 +74,22 @@ so the story can put someone somewhere and both views agree.
 
 | Station | Who, doing what |
 |---|---|
-| `stoker` | Lars at the firebox, shovelling |
+| `stoker` | Lars at the firebox: bends and scoops off the deck, straightens with the load, chucks it in |
 | `deckhand` | walking the main-deck guard, turning about at each end |
 | `fisher` | on the boiler-deck guard, legs over the side, rod dipping |
 | `pilot` | at the wheel, leaning with the river |
 | `cards` | by day a reader in a deck chair; at night two at the card table under a lantern |
-| `cook` | in the galley door, stirring (with the galley) |
+| `cook` | in the galley door, the pan held level, flipping a pancake (with the galley) |
 | `stroller` | a lady with a parasol along the guard (with the staterooms) |
-| `band` | cornet and bass drum on the bandstand (with the bandstand) |
+| `band` | drum kit, double bass, saxophone, trumpet and trombone on the bandstand (with the bandstand) |
+
+The band is five parts, and a band of any size is drawn from them (three
+trumpets and two saxes are just more figures): the trumpet rocks, the sax dips
+into it, the trombone’s slide runs out and back with the arm stretching after
+it, the bass is plucked, and the drummer sits at a little kit (bass drum,
+snare, cymbal), one stick on the snare and one riding the cymbal.
+
+Hats: a cap, a boater, a bowler, a toque, and a top hat for Gaylord.
 
 They are ink with a paper rim (an SVG dilate filter), so they read on the dark
 main deck and the white cabin alike.
