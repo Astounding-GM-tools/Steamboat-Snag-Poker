@@ -9,8 +9,8 @@ import { DOCK_FEE_AMOUNT, HARBOUR_HANDS, HARBOUR_MASTER_PURSE } from '../../numb
 
 /** The river map's leg (public/maptiles/river-1904/chapter-1/travel), and where on it things happen: Muscatine is 0, LeClaire 1. */
 const CHAPTER_1 = 'chapter-1';
-/** Well up from Muscatine, three quarters of the way to the Tri-Cities: the game has time to settle first (about mile 476 of 455 to 497). */
-export const SANDBAR_AT = 0.5;
+/** Well up from Muscatine, past Horse Island (0.49–0.52 on the map), the game having had time to settle: about mile 478 of 455 to 497. */
+export const SANDBAR_AT = 0.54;
 /** The Tri-Cities landing, as the map's sidecar has it. */
 const TRI_CITIES_AT = 0.6429;
 

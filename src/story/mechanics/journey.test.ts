@@ -220,7 +220,7 @@ describe('the dock fee', () => {
     // Out onto the river: the boat steams up to the sandbar, and Willie talks.
     expect(currentStep(paid, RIVER)?.type).toBe('steam');
     const out = proceed(paid, RIVER);
-    expect(out.river).toEqual({ leg: 'chapter-1', t: 0.5 });
+    expect(out.river).toEqual({ leg: 'chapter-1', t: 0.54 });
     expect(out.encounter?.def.id).toBe('underway');
   });
 

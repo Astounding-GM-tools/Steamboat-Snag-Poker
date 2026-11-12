@@ -10,7 +10,7 @@ stretch they're listed under; a map can place them anywhere plausible along it.
 | # | Stop or encounter | Kind | River mile | Lat, lon (approx.) | Notes |
 |---|---|---|---|---|---|
 | 1 | **Muscatine, Iowa** | Landing (start) | 455 | 41.42, -91.05 | Steamboat Bill hands over the *Best Intentions* |
-| 2 | **The Sandbar** (Sandy) | Encounter | ~470 | a bit past halfway to the Tri-Cities | Aground: the first obstacle |
+| 2 | **The Sandbar** (Sandy) | Encounter | ~478 | just past Horse Island, most of the way to the Tri-Cities | Aground: the first obstacle |
 | 3 | **The Tri-Cities**: Davenport and Bettendorf, Iowa; Rock Island and Moline, Illinois | Landing (hub) | 482 | 41.52, -90.56 | The coal yard (Rock Island), Bettendorf's saloon, the pilot games at Davenport. The Quad Cities on the way down |
 | 4 | **The Rock Island Rapids**: the Moline Chain, Campbell's Chain, the Long Reach | Encounter (gate) | 482–497 | Moline to LeClaire | Fourteen miles of rapids, climbed in three stages |
 | 5 | **LeClaire, Iowa** (Rapids City, Illinois, across the river) | Landing | 497 | 41.60, -90.34 | Top of the rapids: Ellie Sawyer's saloon |
