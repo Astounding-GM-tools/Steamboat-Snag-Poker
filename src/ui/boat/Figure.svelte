@@ -31,6 +31,11 @@
   /** Where the hip is: standing, on a stool, on the edge of the deck. */
   const hip = $derived(perched ? -0.6 : seated ? -3.4 : -4.5);
   const up = $derived(hip + 4.5);
+  /** The leadsman's cast: from his hand to where the lead goes in, ahead of him. */
+  const cast = $derived.by(() => {
+    const dx = 6, dy = toWater - up - 0.4 + 6.4;
+    return { len: Math.hypot(dx, dy), deg: (Math.atan2(dy, dx) * 180) / Math.PI };
+  });
 </script>
 
 <g class="figure" filter="url(#boat-halo)" style:--dl="{delay}s" transform={flip ? 'scale(-1 1)' : undefined}>
@@ -113,9 +118,12 @@
             <line class="hair" x1="3" y1="-6.4" x2="3" y2="-0.8" />
             <rect class="solid" x="2.5" y="-1" width="1" height="1.6" />
           </g>
-          <g class="lead cast">
-            <line class="hair" x1="3" y1="-6.4" x2="9" y2={toWater - up - 0.4} />
-            <rect class="solid" x="8.5" y={toWater - up - 0.8} width="1" height="1.6" />
+          <!-- The cast: the lead flies out and up ahead, arcs over and drops in, the line paying out after it -->
+          <g class="lead cast" style="--len: {cast.len.toFixed(2)}; --deg: {cast.deg.toFixed(1)}deg">
+            <g transform="translate(3 -6.4)">
+              <g class="cast-line"><line class="hair" x1="0" y1="0" x2={cast.len} y2="0" /></g>
+              <g class="cast-turn"><g class="cast-out"><rect class="solid" x="-0.5" y="-0.8" width="1" height="1.6" /></g></g>
+            </g>
           </g>
         </g>
       {:else if doing === 'cards' || doing === 'deal'}
@@ -334,6 +342,41 @@
     0%, 29% { opacity: 0; }
     30%, 84% { opacity: 1; }
     85%, 100% { opacity: 0; }
+  }
+  /* The line's angle and reach through the cast, as a fraction of its full length: let go
+     up and ahead at the swing's own length, out and over, then down into the water. */
+  .cast-line,
+  .cast-turn,
+  .cast-out {
+    transform-origin: 0 0;
+    animation: 5s linear var(--dl) infinite;
+  }
+  .cast-line {
+    animation-name: cast-line;
+  }
+  .cast-turn {
+    animation-name: cast-turn;
+  }
+  .cast-out {
+    animation-name: cast-out;
+  }
+  @keyframes cast-line {
+    0%, 30% { transform: rotate(-45deg) scaleX(calc(5.6 / var(--len))); animation-timing-function: ease-out; }
+    35% { transform: rotate(-38deg) scaleX(0.55); animation-timing-function: ease-in; }
+    40% { transform: rotate(5deg) scaleX(0.85); animation-timing-function: ease-in; }
+    44%, 100% { transform: rotate(var(--deg)) scaleX(1); }
+  }
+  @keyframes cast-turn {
+    0%, 30% { transform: rotate(-45deg); animation-timing-function: ease-out; }
+    35% { transform: rotate(-38deg); animation-timing-function: ease-in; }
+    40% { transform: rotate(5deg); animation-timing-function: ease-in; }
+    44%, 100% { transform: rotate(var(--deg)); }
+  }
+  @keyframes cast-out {
+    0%, 30% { transform: translateX(5.6px); animation-timing-function: ease-out; }
+    35% { transform: translateX(calc(var(--len) * 0.55px)); animation-timing-function: ease-in; }
+    40% { transform: translateX(calc(var(--len) * 0.85px)); animation-timing-function: ease-in; }
+    44%, 100% { transform: translateX(calc(var(--len) * 1px)); }
   }
   .arm.haul {
     animation: haul 5s ease-in-out var(--dl) infinite;
