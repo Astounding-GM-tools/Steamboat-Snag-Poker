@@ -884,8 +884,9 @@ who owes what, who gives up the cutting board, the windowsill, the shutter.
   even if the art style is 1926.
 - **Lars** could get a note from her that nobody else can read.
 
-**The stove and cook move to Dubuque.** They come out of the Tri-Cities' trader (the $15 stove
-and $6 cook, in `boat.ts`) and go on sale at Dubuque at a comparable cost, showing what great
+**The stove and cook move to Dubuque.** They're out of the Tri-Cities' trader (done 2026-11-12;
+the $15 stove and $6 cook stay in `boat.ts`): the galley comes with the Clinton rafters' cook.
+They go on sale at Dubuque at a comparable cost, showing what great
 value the village's cook is. **Pfund goes:** the name, not the hire. The Dubuque cook could
 be just "Cookie".
 

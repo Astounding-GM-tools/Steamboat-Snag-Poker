@@ -48,7 +48,7 @@ const larsSays = (day: number, tune: string, word: string) => (day > A_WEEK ? wo
 const deckQuips = (day: number) => [
   aside('willie', 'Real son of a beach, that sandbar.'),
   aside('gus', 'Old Hildegard doesn’t care for sand, Captain. Not one bit.'),
-  aside('willie', 'Beans again tomorrow, Captain! Good beans.'),
+  aside('willie', 'Beans again tomorrow, Captain! Cold beans.'),
   aside('lars', larsSays(day, '♪ ♪ ♫', 'Sjekk.')),
   aside('gus', 'She’s a good boat. Don’t tell her I said so.'),
   aside('willie', 'I think he liked us, Captain. Sandy.'),
