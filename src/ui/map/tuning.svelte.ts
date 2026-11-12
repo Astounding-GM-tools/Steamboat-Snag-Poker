@@ -1,7 +1,7 @@
 /**
  * How the river map moves: the boat's pace and the map's heights, steaming and at play.
- * One place for them, so the dev sliders (on the steaming screen, in development) can turn
- * them live; settle on numbers there, then write them in here.
+ * One place for them. (Live sliders for them sat on the steaming screen in development, till the
+ * numbers settled: commit 33a7372 has them, to bring back.)
  */
 export const voyage = $state({
   /** Seconds for a whole leg (0 to 1) at a leisurely pace. */

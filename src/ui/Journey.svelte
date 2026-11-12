@@ -411,18 +411,6 @@
       <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
       {#if journey.haul}<span>{t('river.haul', { n: journey.haul })}</span>{/if}
     </div>
-    {#if import.meta.env.DEV}
-      <!-- Development only: the pace and the heights, live (settle on numbers, then write them into map/tuning.svelte.ts). -->
-      <div class="tune">
-        <label>speed <input type="range" min="10" max="300" step="5" bind:value={voyage.legSeconds} /> {voyage.legSeconds}s</label>
-        <label>skip speed <input type="range" min="2" max="40" step="1" bind:value={voyage.race} /> ×{voyage.race}</label>
-        <label>zoomMin <input type="range" min="-6" max="0" step="0.1" bind:value={voyage.steamZoom} /> {voyage.steamZoom}</label>
-        <label>zoomMax <input type="range" min="-6" max="1" step="0.1" bind:value={voyage.playZoom} /> {voyage.playZoom}</label>
-        <label>boat size <input type="range" min="1" max="6" step="0.5" bind:value={voyage.boatSize} /> ×{voyage.boatSize}</label>
-        <label>route x <input type="range" min="-300" max="300" step="10" bind:value={voyage.routeX} /> {voyage.routeX}</label>
-        <label>route y <input type="range" min="-300" max="300" step="10" bind:value={voyage.routeY} /> {voyage.routeY}</label>
-      </div>
-    {/if}
     {#if forkLine}
       <!-- An island ahead: the call goes up, and the two buttons are the helm till she's chosen (or she keeps to the main channel). -->
       {#key forkLine}
@@ -619,24 +607,6 @@
   .chatter :global(.speech) {
     top: auto !important;
     bottom: 0;
-  }
-  /* Up under the status line, clear of the boat in the middle. */
-  .tune {
-    position: absolute;
-    top: 2.6rem;
-    left: 1rem;
-    right: 1rem;
-    display: grid;
-    gap: 0.2rem;
-    padding: 0.5rem;
-    background: rgba(0, 0, 0, 0.6);
-    font: 0.75rem monospace;
-  }
-  .tune label {
-    display: grid;
-    grid-template-columns: 6.5em 1fr 4em;
-    align-items: center;
-    gap: 0.5rem;
   }
   .steaming .dock {
     animation: fade-in 0.6s ease 0.4s both;
