@@ -6,7 +6,9 @@ channel), and a boat that is built out as the story goes on.
 
 **See her:** `npm run dev`, then `/boat.html`. Side on and from above, with
 toggles for the modules, night, ink wobble, the chimneys down, and her
-heading. Nothing is wired into the game yet.
+heading. In the game she is on the title (and between encounters,
+`BoatScene`) and on the river map (`RiverBackdrop`), as Bill’s bare boat until
+the story passes what she has built (`built`).
 
 ## What she is
 
@@ -171,10 +173,9 @@ cabin one bay longer, a chimney folding).
 
 ## Next
 
-1. **Wire her in:** the title’s `BoatScene` draws `BoatSide` in place of its
-   boat; `RiverBackdrop` draws `BoatTop` in place of the flipped side view
-   (today’s boat is about 40 units long, hers about 250 with the stage and
-   wheel, so roughly 0.16× for the same size), and drops the flip.
+1. **Wired in:** `BoatScene` draws `BoatSide` (at night, 0.75×, waterline at
+   the scene’s river) in place of its old boat; `RiverBackdrop` draws `BoatTop`
+   (0.16× of `boatSize`, `TOP_SCALE`) in place of the flipped side view.
 2. **What she has built** comes from the story’s state (a `Built` record),
    saved with the voyage.
 3. **The tow:** houseboats and rafts on lines astern, in both views, in a row

@@ -17,6 +17,11 @@
   import { course as forked, route, type Pt, type TravelSidecar } from './route';
   import { loadLeg, MAP_ROOT as ROOT } from './legs';
   import { voyage } from './tuning.svelte';
+  import BoatTop from '../boat/BoatTop.svelte';
+  import type { Built } from '../boat/boat';
+
+  /** The top view is drawn about 260 boat units long; the first map boat was about 40. */
+  const TOP_SCALE = 0.16;
 
   interface Props {
     leg: string;
@@ -30,8 +35,10 @@
     crates?: Pt[];
     /** Something ahead to see before she gets there (an island to choose a way round): the view leans towards it. */
     ahead?: Pt | null;
+    /** What she has built so far: Bill's bare boat until the story says otherwise. */
+    built?: Built;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null, built = {} }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -94,7 +101,6 @@
       deg = Math.abs(d) < 0.05 ? target : ((((deg + step) % 360) + 540) % 360) - 180;
     });
   });
-  const flip = $derived(Math.abs(deg) > 90 ? -1 : 1);
 </script>
 
 <div class="backdrop" class:play={mode === 'play'} class:jolt aria-hidden="true">
@@ -109,20 +115,9 @@
             <path class="paper" d="M -4 -4 L 4 4 M 4 -4 L -4 4" stroke="#f4ecd8" stroke-width="1" />
           </g>
         {/each}
-        <g class="boat" transform="translate({boat.p[0]} {boat.p[1]}) scale({voyage.boatSize / scale}) rotate({deg}) scale(1 {flip})">
-          <!-- A sternwheeler side on, bow to the right: hull, cabin, two chimneys, the wheel astern. -->
-          <path class="ink" d="M -17 2 L 16 2 L 19 -1 L 19 3 Q 15 7 -15 7 Z" />
-          <rect class="ink" x="-12" y="-4" width="20" height="6" />
-          <rect class="paper" x="-10" y="-3" width="2" height="2" />
-          <rect class="paper" x="-6" y="-3" width="2" height="2" />
-          <rect class="paper" x="-2" y="-3" width="2" height="2" />
-          <rect class="paper" x="2" y="-3" width="2" height="2" />
-          <rect class="ink" x="-8" y="-8" width="12" height="4" />
-          <rect class="ink" x="5" y="-15" width="2.2" height="11" />
-          <rect class="ink" x="9" y="-15" width="2.2" height="11" />
-          <circle class="wheel" cx="-19" cy="1" r="4.5" />
-          <circle class="puff one" cx="8" cy="-19" r="2.5" />
-          <circle class="puff two" cx="6" cy="-22" r="3.2" />
+        <!-- The Best Intentions from above (src/ui/boat): she turns to any heading, never flips -->
+        <g class="boat" transform="translate({boat.p[0]} {boat.p[1]}) scale({(voyage.boatSize * TOP_SCALE) / scale})">
+          <BoatTop {built} heading={deg} />
         </g>
       </TileMap>
     </div>
@@ -234,36 +229,8 @@
   .paper {
     fill: #f4ecd8;
   }
-  .wheel {
-    fill: none;
-    stroke: #15130f;
-    stroke-width: 2;
-    stroke-dasharray: 2 1.5;
-  }
-  .puff {
-    fill: #f4ecd8;
-    stroke: #15130f;
-    stroke-width: 0.8;
-    animation: puff 1.6s ease-out infinite;
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-  .puff.two {
-    animation-delay: 0.8s;
-  }
-  @keyframes puff {
-    from {
-      opacity: 0.9;
-      transform: translate(0, 0) scale(0.6);
-    }
-    to {
-      opacity: 0;
-      transform: translate(-10px, -8px) scale(1.5);
-    }
-  }
   @media (prefers-reduced-motion: reduce) {
     .felt,
-    .puff,
     .jolt .map {
       animation: none;
     }

@@ -1,4 +1,10 @@
 <script lang="ts">
+  import BoatSide from './boat/BoatSide.svelte';
+  import type { Built } from './boat/boat';
+
+  /** What she has built so far: Bill's bare boat until the story says otherwise. */
+  let { built = {} }: { built?: Built } = $props();
+
   /** Suit-shaped clouds of very different sizes; each gets a random tilt per visit. */
   const clouds = [
     { s: '♥\uFE0E', y: -6, size: 56, dur: 70, delay: 0 },
@@ -61,55 +67,9 @@
     </g>
   </g>
 
+  <!-- The Best Intentions herself (src/ui/boat, docs/boat.md), at night, as built so far -->
   <g class="bob">
-    <!-- Smoke: particles rising from each stack, drifting astern -->
-    {#each [{ x: 88, y: 50, n: 4 }, { x: 106, y: 28, n: 6 }, { x: 124, y: 40, n: 5 }] as stack, s (s)}
-      {#each Array.from({ length: stack.n }) as _, i (i)}
-        <circle
-          class="puff"
-          cx={stack.x}
-          cy={stack.y}
-          r={2.6 + (i % 3) * 0.8}
-          fill={['#d9d6cd', '#b9b6ad', '#9a978f'][i % 3]}
-          style="--d: {((i * 0.47 + s * 0.31) % 2.4).toFixed(2)}s; --dx: {-18 - i * 4}px; --dy: {-26 - (i % 3) * 6}px"
-        />
-      {/each}
-    {/each}
-
-    <!-- Stacks: short, tall, medium; each breathes on its own beat -->
-    <g class="stack" style="--b: 0s"><rect x="83" y="52" width="10" height="24" fill="#f2efe6" stroke="#111" stroke-width="2.5" /><rect x="81" y="49" width="14" height="5" fill="#111" /></g>
-    <g class="stack" style="--b: 0.5s"><rect x="101" y="30" width="10" height="46" fill="#f2efe6" stroke="#111" stroke-width="2.5" /><rect x="99" y="27" width="14" height="5" fill="#111" /></g>
-    <g class="stack" style="--b: 1s"><rect x="119" y="42" width="10" height="34" fill="#f2efe6" stroke="#111" stroke-width="2.5" /><rect x="117" y="39" width="14" height="5" fill="#111" /></g>
-
-    <!-- Pilot house -->
-    <rect x="150" y="62" width="30" height="14" fill="#f2efe6" stroke="#111" stroke-width="2.5" />
-    <rect x="160" y="65" width="10" height="6" fill="#111" />
-
-    <!-- Main cabin with suit windows -->
-    <rect x="66" y="76" width="124" height="20" fill="#f2efe6" stroke="#111" stroke-width="2.5" />
-    {#each ['♠\uFE0E', '♡\uFE0E', '♢\uFE0E', '♣\uFE0E'] as suit, i (suit)}
-      <text x={86 + i * 28} y="91" text-anchor="middle" font-size="13" fill="#111">{suit}</text>
-    {/each}
-
-    <!-- Stern wheel, partly hidden behind the hull -->
-    <g class="wheel">
-      <circle cx="52" cy="97" r="20" fill="none" stroke="#f2efe6" stroke-width="2.5" />
-      <circle cx="52" cy="97" r="4" fill="#f2efe6" />
-      {#each Array.from({ length: 8 }) as _, i (i)}
-        <line x1="52" y1="97" x2={52 + 20 * Math.cos((i * Math.PI) / 4)} y2={97 + 20 * Math.sin((i * Math.PI) / 4)} stroke="#f2efe6" stroke-width="2" />
-        <rect
-          x={52 + 20 * Math.cos((i * Math.PI) / 4) - 3}
-          y={97 + 20 * Math.sin((i * Math.PI) / 4) - 3}
-          width="6"
-          height="6"
-          fill="#f2efe6"
-          transform="rotate({i * 45} {52 + 20 * Math.cos((i * Math.PI) / 4)} {97 + 20 * Math.sin((i * Math.PI) / 4)})"
-        />
-      {/each}
-    </g>
-    <!-- Hull, bow to the right -->
-    <path d="M52 96 H206 L224 86 L208 116 H58 Z" fill="#111" stroke="#f2efe6" stroke-width="2.5" />
-
+    <g transform="translate(45 112) scale(0.75)"><BoatSide {built} night /></g>
   </g>
 
   <!-- The river, over the hull and the bottom of the wheel (clipped to the picture) -->
@@ -144,22 +104,6 @@
     transform-origin: center;
     animation: bob 1.6s ease-in-out infinite;
   }
-  .wheel {
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: spin 6s linear infinite;
-  }
-  .stack {
-    transform-box: fill-box;
-    transform-origin: bottom center;
-    animation: breathe 1.5s ease-in-out var(--b) infinite;
-  }
-  .puff {
-    transform-box: fill-box;
-    transform-origin: center;
-    opacity: 0;
-    animation: puff 2.4s ease-out var(--d) infinite;
-  }
   .waves.front {
     animation: waves 2.8s linear infinite;
   }
@@ -192,18 +136,6 @@
   @keyframes cloud { to { transform: translateX(-300px); } }
   @keyframes bank { to { transform: translateX(-180px); } }
   @keyframes bob { 50% { transform: translateY(3px) rotate(-1deg); } }
-  /* Clockwise: the lower paddles sweep left, pushing the water astern as the boat goes right. */
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes breathe {
-    0%, 100% { transform: scale(1, 1); }
-    40% { transform: scale(1.12, 0.92); }
-    60% { transform: scale(0.94, 1.06); }
-  }
-  @keyframes puff {
-    0% { transform: translate(0, 0) scale(0.4); opacity: 0.95; }
-    70% { opacity: 0.5; }
-    100% { transform: translate(var(--dx), var(--dy)) scale(2.4); opacity: 0; }
-  }
   /* One full wavelength per loop, so the last frame matches the first. */
   @keyframes waves { to { transform: translateX(-60px); } }
 </style>
