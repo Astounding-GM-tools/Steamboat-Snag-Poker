@@ -36,8 +36,8 @@ Side-view units: x from the stern (0) to the bow (214), y up from the waterline
 | Level | y | What’s there |
 |---|---|---|
 | Main deck | −8 | Engine room aft, galley, freight, boilers, cordwood, Patty, the stage |
-| Boiler deck | −24 | The promenade aft, the cabins, the guards and railing |
-| Hurricane deck | −38 | The cabins’ roofs, the bandstand, the name on the fascia |
+| Boiler deck | −24 | The promenade aft, the cabins, the guards and railing; her name, big, along its edge |
+| Hurricane deck | −38 | The cabins’ roofs, the bandstand |
 | Texas | −47 | Officers’ cabins |
 | Pilothouse | −60 | The pilot at the wheel |
 
@@ -52,7 +52,7 @@ Bill’s boat; modules are what you add.
 | Office | boiler | 5–6 | fixed |
 | Porch roof, texas | roof | 5–7, 5–6 | fixed; the chimneys come up through the porch |
 | **Galley** | main | 2–3 | the cook in the door, steam from the window (the Clinton rafters) |
-| **Dining saloon** | boiler | 0–2 | suit-shaped windows, as on the old vignette |
+| **Dining saloon** | boiler | 0–2 | the four suits, one each, as on the old vignette; painted over the railing too, so they read whole |
 | **Staterooms** | boiler | 3–4 | doors with transoms; a passenger promenades the guard |
 | **Bandstand** | roof | 0–2 | the whole saloon roof, and needs the saloon; Bennie Moten’s band |
 | **Bigger engine** | main | none | a bigger, faster wheel and more smoke |

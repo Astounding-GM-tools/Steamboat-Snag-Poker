@@ -120,7 +120,7 @@ export function stations(built: Built): Record<string, Station | undefined> {
   return {
     stoker: { x: 154, y: LEVEL.main },
     deckhand: { x: 24, y: LEVEL.main, walk: 100 },
-    fisher: { x: 92, y: LEVEL.boiler },
+    fisher: { x: 30, y: LEVEL.boiler },
     pilot: { x: 116, y: LEVEL.texas },
     cards: { x: 9, y: LEVEL.boiler },
     cook: built.galley ? { x: 66, y: LEVEL.main } : undefined,

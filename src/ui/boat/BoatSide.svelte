@@ -52,6 +52,8 @@
   const roofs = $derived([...cabins.filter((c) => c.kind !== 'office').map((c) => c.bays), FIXED.porchRoof.bays]);
 
   const SUITS = ['♠︎', '♡︎', '♢︎', '♣︎'];
+  /** The black suits are drawn smaller in the font; these make all four look one size. */
+  const SUIT_SIZE = [9, 7.4, 7.4, 9];
   /** Freight where nothing else stands: crates, bales, a barrel. */
   const freight = $derived([
     ...(built.galley ? [] : [bayX(2) + 3, bayX(3) + 2]),
@@ -190,23 +192,20 @@
   <!-- The chimneys' lower ends, from the boilers up through the porch -->
   {#each CHIMNEYS as x (x)}<rect class="paper" x={x - 2.75} y={HINGE} width="5.5" height={LEVEL.boiler - HINGE} />{/each}
 
-  <!-- The boiler deck floor -->
-  <rect class="paper" x="-1" y="-25.2" width={BOILER_DECK_END + 1} height="2.2" />
+  <!-- The boiler deck's edge, deep enough to carry her name the length of her -->
+  <rect class="paper" x="-1" y="-25.2" width={BOILER_DECK_END + 1} height="6.2" />
+  <text class="name" x="99" y="-20.3" text-anchor="middle" textLength="96" lengthAdjust="spacing">BEST INTENTIONS</text>
 
   <!-- Cabins on the boiler deck -->
   {#each cabins as c (c.kind)}
     {@const [c0, c1] = span(c.bays)}
     <rect class="wall" x={c0} y="-36.5" width={c1 - c0} height="11.4" />
-    {#if c.kind === 'saloon'}
-      {#each Array.from({ length: (c1 - c0) / 8 }) as _, i (i)}
-        <text class="suit" x={c0 + 4 + i * 8} y="-27.6" text-anchor="middle">{SUITS[i % 4]}</text>
-      {/each}
-    {:else if c.kind === 'berths'}
+    {#if c.kind === 'berths'}
       {#each Array.from({ length: (c1 - c0) / 8 }) as _, i (i)}
         <rect class="ink" x={c0 + 2.3 + i * 8} y="-33.4" width="3.4" height="8.2" />
         <rect class="window" x={c0 + 2.3 + i * 8} y="-35.6" width="3.4" height="1.4" />
       {/each}
-    {:else}
+    {:else if c.kind === 'office'}
       <rect class="window" x={c0 + 3} y="-33.6" width="4" height="4.6" />
       <rect class="window" x={c0 + 11} y="-33.6" width="4" height="4.6" />
       <rect class="ink" x={c0 + 19} y="-34" width="4" height="8.8" />
@@ -239,6 +238,14 @@
   <line class="balusters" x1="0" y1="-27.2" x2={BOILER_DECK_END} y2="-27.2" />
   <line class="rail" x1="0" y1="-29.8" x2={BOILER_DECK_END} y2="-29.8" />
 
+  <!-- The saloon's suits, one of each, painted over the railing too so they read whole -->
+  {#if built.saloon}
+    {@const [c0, c1] = span(MODULES.saloon.bays!)}
+    {#each SUITS as suit, i (suit)}
+      <text class="suit" x={c0 + ((c1 - c0) * (i + 0.5)) / 4} y="-30.4" font-size={SUIT_SIZE[i]} text-anchor="middle" dominant-baseline="central">{suit}</text>
+    {/each}
+  {/if}
+
   <!-- The fisherman on the guard, legs over the side -->
   {#if at.fisher}
     <g transform="translate({at.fisher.x} {at.fisher.y})"><Figure doing="fish" hat="boater" toWater={-at.fisher.y + 1} delay={-1.3} /></g>
@@ -250,24 +257,24 @@
     <line class="fringe" x1={r0} y1="-36.4" x2={r1} y2="-36.4" />
     <rect class="paper" x={r0 - 1} y="-39.4" width={r1 - r0 + 2} height="2.6" />
   {/each}
-  <!-- The porch roof's fascia carries her name -->
+  <!-- The porch roof's fascia -->
   <line class="post" x1={n1} y1="-24" x2={n1} y2="-37" />
   <rect class="paper" x={n0 - 1} y="-42" width={n1 - n0 + 2} height="3" />
-  <text class="name" x={(n0 + n1) / 2 - 6} y="-39.75" text-anchor="middle">BEST INTENTIONS</text>
 
   <!-- The bandstand on the saloon roof, and the band -->
   {#if built.bandstand}
     {@const [s0, s1] = span(MODULES.bandstand.bays!)}
     {#if at.band}
-      {#each [['drums', 5, 'cap'], ['bass', 13, 'bowler'], ['sax', 21, 'bowler'], ['trumpet', 29, 'boater'], ['trombone', 36, 'boater']] as const as [doing, dx, hat], i (doing)}
+      <!-- Drawn back to front: the bass behind the drums, the trombone behind the trumpet -->
+      {#each [['bass', 13, 'bowler'], ['drums', 5, 'cap'], ['sax', 21, 'bowler'], ['trombone', 36, 'boater'], ['trumpet', 29, 'boater']] as const as [doing, dx, hat], i (doing)}
         <g transform="translate({s0 + dx} -38)"><Figure {doing} {hat} delay={-i * 0.17} /></g>
       {/each}
     {/if}
-    {#each [s0 + 1, (s0 + s1) / 2, s1 - 1] as x (x)}<line class="post" x1={x} y1="-38" x2={x} y2="-52" />{/each}
-    <path class="paper" d="M {s0 - 2} -51 L {(s0 + s1) / 2} -55 L {s1 + 2} -51 Z" />
-    <path class="fringe-scallop" d="M {s0 - 2} -51 {Array.from({ length: 9 }, (_, i) => `q ${(s1 - s0 + 4) / 18} 1.6 ${(s1 - s0 + 4) / 9} 0`).join(' ')}" />
-    <line class="spar" x1={(s0 + s1) / 2} y1="-55" x2={(s0 + s1) / 2} y2="-58.5" />
-    <path class="pennant" d="M {(s0 + s1) / 2} -58.5 l 5 1 l -5 1 Z" />
+    {#each [s0 + 1, (s0 + s1) / 2, s1 - 1] as x (x)}<line class="post" x1={x} y1="-38" x2={x} y2="-57" />{/each}
+    <path class="paper" d="M {s0 - 2} -56 L {(s0 + s1) / 2} -60 L {s1 + 2} -56 Z" />
+    <path class="fringe-scallop" d="M {s0 - 2} -56 {Array.from({ length: 9 }, (_, i) => `q ${(s1 - s0 + 4) / 18} 1.6 ${(s1 - s0 + 4) / 9} 0`).join(' ')}" />
+    <line class="spar" x1={(s0 + s1) / 2} y1="-60" x2={(s0 + s1) / 2} y2="-63.5" />
+    <path class="pennant" d="M {(s0 + s1) / 2} -63.5 l 5 1 l -5 1 Z" />
   {/if}
 
   <!-- The texas, and the pilothouse on top with the pilot at the wheel -->
@@ -404,7 +411,6 @@
     stroke-width: 0.6;
   }
   .suit {
-    font-size: 7px;
     font-family: Georgia, 'Times New Roman', serif;
     fill: var(--ink);
   }
@@ -418,8 +424,7 @@
     fill: var(--ink);
   }
   .name {
-    font-size: 2.3px;
-    letter-spacing: 0.3px;
+    font-size: 5.2px;
     font-family: var(--title-font, Georgia, serif);
     fill: var(--ink);
   }
