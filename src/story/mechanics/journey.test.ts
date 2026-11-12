@@ -203,17 +203,11 @@ describe('round the islands', () => {
   it('remembers the passage chosen', () => {
     expect(chooseLane(out(), 'leg:0.3', 'left').lanes).toEqual({ 'leg:0.3': 'left' });
   });
-  it('picks up what was adrift once per island, as much as the crew can carry', () => {
-    const once = passIsland(out(), 'leg:0.3', 3);
-    expect(once.haul).toBe(3);
-    expect(passIsland(once, 'leg:0.3', 3).haul).toBe(3);
-    expect(passIsland(passIsland(once, 'leg:0.4', 5), 'leg:0.5', 5).haul).toBe(10);
-  });
-  it('brings the haul to the next obstacle, as strength', () => {
-    const s = { ...out(), haul: 4 };
-    const at = jumpTo(s, RIVER, [RIVER.days[0].steps.find((x) => x.type === 'encounter' && x.encounter.id === 'sandbar')!]);
-    expect(at.haul).toBe(0);
-    expect(at.encounter!.session.seats[0].money).toBe(14);
+  it('takes aboard what was adrift as salvage, once per island', () => {
+    const once = passIsland(out(), 'leg:0.3', 2);
+    expect(once.salvage).toBe(2);
+    expect(passIsland(once, 'leg:0.3', 2).salvage).toBe(2);
+    expect(passIsland(once, 'leg:0.4', 1).salvage).toBe(3);
   });
 });
 

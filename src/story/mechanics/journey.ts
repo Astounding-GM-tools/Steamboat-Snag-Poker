@@ -277,8 +277,8 @@ export interface JourneyState {
   lanes?: Record<string, 'left' | 'right'>;
   /** Islands passed (by key): what was in the water there has been picked up, or missed. */
   passed?: string[];
-  /** Buttons picked up on the river (crates in the water): the crew's strength at the next obstacle, as far as it goes. */
-  haul?: number;
+  /** Crates of salvage picked up on the river: a couple of dollars apiece at a mercantile. */
+  salvage?: number;
 }
 
 /**
@@ -507,6 +507,7 @@ export function canBuy(state: JourneyState, story: StoryDef, itemId: string): bo
   if (step?.type !== 'council' || !item || !step.trader.includes(itemId) || state.purse < item.price) return false;
   if (item.once && state.upgrades.includes(itemId)) return false;
   if (item.effect.coal && (state.coal + item.effect.coal > BOAT.bunker || state.coal + item.effect.coal < 0)) return false;
+  if (item.effect.salvage && (state.salvage ?? 0) + item.effect.salvage < 0) return false;
   if (item.effect.hire && state.crew.includes(item.effect.hire)) return false;
   if (item.effect.needs && state.parts[item.effect.needs.name] < item.effect.needs.tier) return false;
   return true;
@@ -520,6 +521,7 @@ export function buy(prev: JourneyState, story: StoryDef, itemId: string): Journe
   state.purse -= item.price;
   if (item.once) state.upgrades.push(itemId);
   if (e.coal) state.coal += e.coal;
+  if (e.salvage) state.salvage = (state.salvage ?? 0) + e.salvage;
   if (e.comfort) {
     state.comfort += e.comfort;
     state.strength += e.comfort;
@@ -586,11 +588,10 @@ export function chooseLane(prev: JourneyState, key: string, side: 'left' | 'righ
   return { ...prev, lanes: { ...prev.lanes, [key]: side } };
 }
 
-/** An island passed: whatever was in the water along the way she went is aboard (`buttons`), as much as the crew has the strength to carry. */
-export function passIsland(prev: JourneyState, key: string, buttons: number): JourneyState {
+/** An island passed: the crates adrift along the way she went are aboard, as salvage. */
+export function passIsland(prev: JourneyState, key: string, crates: number): JourneyState {
   if (prev.passed?.includes(key)) return prev;
-  const haul = Math.min((prev.haul ?? 0) + buttons, Math.max(prev.strength, buttons));
-  return { ...prev, passed: [...(prev.passed ?? []), key], haul };
+  return { ...prev, passed: [...(prev.passed ?? []), key], salvage: (prev.salvage ?? 0) + crates };
 }
 
 /** Never stuck for a stake: come to a table for money with next to none, and there's an odd job to be had. */
@@ -600,11 +601,6 @@ function seat(state: JourneyState, def: EncounterDef) {
   if (def.push) {
     state.coal = Math.max(0, state.coal - 1);
     state.strength = morningStrength(state);
-  }
-  // Against an obstacle on the river, what was picked up on the way joins the crew's strength.
-  if (def.stake === 'strength' && def.rivals !== 'crew' && state.haul) {
-    state.strength += state.haul;
-    state.haul = 0;
   }
   const rng = new Rng(state.rngState);
   const oddJob = def.stake === 'purse' && !def.proxy && def.rules?.pot !== false && state.purse < (def.entry ?? ODD_JOB.below) ? ODD_JOB.pays : 0;

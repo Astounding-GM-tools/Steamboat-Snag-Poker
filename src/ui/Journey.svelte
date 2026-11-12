@@ -157,6 +157,22 @@
   const chatterIndex = $derived(chatterNow ? chatterAt.findIndex((c) => c.speech === chatterNow) : -1);
 
   // --- Islands: port or starboard ------------------------------------------------
+  /** Willie, opening what came aboard round an island. */
+  const SALVAGE_WORDS: (string | string[])[] = [
+    'Some good stuff in here, Captain.',
+    'What do you know, a box full of chocolates.',
+    ['Crate of stamped steel spoons, more than we’ll ever need.', 'We can unload this at any mercantile dock.'],
+  ];
+  /** His word on the last salvage, up till it's answered (or the next island comes up). */
+  let salvageSaid = $state<SpeechLine | null>(null);
+  $effect(() => {
+    if (!salvageSaid) return;
+    const said = salvageSaid;
+    const timer = setTimeout(() => {
+      if (salvageSaid === said) salvageSaid = null;
+    }, 7000);
+    return () => clearTimeout(timer);
+  });
   let legData = $state<TravelSidecar | null>(null);
   $effect(() => {
     const id = leg;
@@ -179,7 +195,7 @@
         for (const ch of key) h = (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0;
         const rng = new Rng(h);
         const side: 'left' | 'right' = rng.int(2) ? 'left' : 'right';
-        return { island, key, up, prize: { side, buttons: 2 + rng.int(2) } };
+        return { island, key, up, prize: { side, crates: 1 + rng.int(2) }, word: rng.int(SALVAGE_WORDS.length) };
       });
   });
   const lanes = $derived(journey.lanes ?? {});
@@ -221,7 +237,11 @@
     const done = isles.find((i) => !passed.includes(i.key) && (i.up ? t >= i.island.to_t : t <= i.island.from_t));
     if (!done) return;
     const took = lanes[done.key] ?? done.island.passages.find((p) => p.kind === 'main')!.side;
-    untrack(() => (journey = passIsland(journey, done.key, took === done.prize.side ? done.prize.buttons : 0)));
+    const crates = took === done.prize.side ? done.prize.crates : 0;
+    untrack(() => {
+      journey = passIsland(journey, done.key, crates);
+      if (crates) salvageSaid = { size: 'aside', who: 'willie', auto: false, text: SALVAGE_WORDS[done.word] };
+    });
   });
   /** The middle of an island (between its two passages' midpoints): where the view looks as she comes up to it. */
   function islandMid(island: Island): Pt {
@@ -241,7 +261,7 @@
           const f = k * (px.length - 1) - i;
           return [px[i][0] + f * (px[i + 1][0] - px[i][0]), px[i][1] + f * (px[i + 1][1] - px[i][1])];
         };
-        return Array.from({ length: prize.buttons }, (_, k) => 0.35 + (0.3 * k) / Math.max(1, prize.buttons - 1))
+        return Array.from({ length: prize.crates }, (_, k) => 0.35 + (0.3 * k) / Math.max(1, prize.crates - 1))
           // Gone as she reaches each one, going that way.
           .filter((k) => !(took === prize.side && (up ? boatT > island.from_t + k * (island.to_t - island.from_t) : boatT < island.from_t + k * (island.to_t - island.from_t))))
           .map(mid);
@@ -409,12 +429,16 @@
   <div class="page steaming">
     <div class="status">
       <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
-      {#if journey.haul}<span>{t('river.haul', { n: journey.haul })}</span>{/if}
+      {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
     </div>
     {#if forkLine}
       <!-- An island ahead: the call goes up, and the two buttons are the helm till she's chosen (or she keeps to the main channel). -->
       {#key forkLine}
         <div class="chatter"><Speech line={forkLine} name={called('willie')} opponent={false} top={0} bottom={0} /></div>
+      {/key}
+    {:else if salvageSaid}
+      {#key salvageSaid}
+        <div class="chatter"><Speech line={salvageSaid} name={called('willie')} opponent={false} top={0} bottom={0} onnext={() => (salvageSaid = null)} /></div>
       {/key}
     {:else if chatterNow}
       <!-- The crew passing the time as she steams: it closes by itself before the next, or with a tap. -->
@@ -426,10 +450,10 @@
       {#if forkAhead}
         <button class="ghost" onclick={() => steer('port')}>{t('river.port')}</button>
         <button onclick={() => steer('starboard')}>{t('river.starboard')}</button>
-      {:else if chatterNow}
+      {:else if salvageSaid || chatterNow}
         <!-- The crew talking: the white button answers them (and closes it), it doesn't skip the river. -->
         <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
-        <button onclick={() => (hushed = [...hushed, chatterIndex])}>{t('river.aye')}</button>
+        <button onclick={() => (salvageSaid ? (salvageSaid = null) : (hushed = [...hushed, chatterIndex]))}>{t('river.aye')}</button>
       {:else}
         <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
         <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>

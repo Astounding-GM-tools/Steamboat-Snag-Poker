@@ -90,6 +90,8 @@ export function shipStrength(crew: string[], stations: Stations, parts: BoatPart
 export interface ItemEffect {
   /** Loads of coal (not more than the bunker holds). */
   coal?: number;
+  /** Crates of salvage (picked up on the river): sold off, a crate at a time. */
+  salvage?: number;
   /** Strength every morning from now on. */
   comfort?: number;
   /** Strength tomorrow morning only. */
@@ -116,6 +118,7 @@ export const ITEMS: Record<string, ItemDef> = {
   /** Black-market prices, while the strike's on. */
   coal: { id: 'coal', price: 10, effect: { coal: 1 } },
   sellCoal: { id: 'sellCoal', price: -8, effect: { coal: -1 } },
+  sellSalvage: { id: 'sellSalvage', price: -2, effect: { salvage: -1 } },
   food: { id: 'food', price: 4, effect: { tomorrow: 4 } },
   hammocks: { id: 'hammocks', price: 12, effect: { comfort: 3 }, once: true },
   sparePole: { id: 'sparePole', price: 6, effect: { spare: TROUBLE.brokenPole }, once: true },
