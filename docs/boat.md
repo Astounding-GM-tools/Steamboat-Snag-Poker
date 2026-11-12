@@ -81,7 +81,7 @@ so the story can put someone somewhere and both views agree.
 | `stoker` | Lars at the firebox: bends and scoops off the deck, straightens with the load, chucks it in |
 | `deckhand` | walking the main-deck guard, turning about at each end |
 | `fisher` | on the boiler-deck guard, legs over the side, rod dipping |
-| `leadsman` | right up in the bow: swings the lead round, lets it fly out ahead in an arc, hauls and reads the line, throws his head back to call the depth |
+| `leadsman` | right up in the bow: whirls the lead round, lets it fly far out ahead, it falls in, he hauls and reads the line, calls the depth, and reels it back up to hang ready; the lead never vanishes |
 | `pilot` | at the wheel, leaning with the river |
 | `cards` | by day a reader in a deck chair; at night two at the card table under a lantern |
 | `cook` | in the galley door, the pan held level, flipping a pancake (with the galley) |

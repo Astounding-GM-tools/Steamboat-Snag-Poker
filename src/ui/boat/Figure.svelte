@@ -323,33 +323,36 @@
     82% { transform: rotate(-2deg); }
   }
 
-  /* Sounding, five seconds round: swing the lead, cast it ahead, haul and read the
-     marks on the line, then throw the head back to call the depth to the pilot. */
+  /* Sounding, six seconds round, and the lead never vanishes: it hangs, whirls round
+     twice, flies out ahead (the line paying out, past where it will land), falls in,
+     is hauled and read and the depth called, and is reeled back up to hang again.
+     Two pieces of line: the short one he whirls (hanging and swinging), and the long
+     one that flies (thrown, in the water, reeled in); each takes over where the other
+     leaves off, at the same angle and length. */
   .lead.swinging {
-    animation: swing-lead 5s ease-in-out var(--dl) infinite;
+    animation: swing-lead 6s var(--dl) infinite;
   }
-  /* Round and round, forward over the top, gathering speed; let go on the way up ahead. */
   @keyframes swing-lead {
     0% { transform: rotate(0deg); opacity: 1; animation-timing-function: ease-in; }
-    29% { transform: rotate(-855deg); opacity: 1; }
-    30%, 100% { transform: rotate(-855deg); opacity: 0; }
+    29.9% { transform: rotate(-855deg); opacity: 1; }
+    30%, 81.9% { transform: rotate(-855deg); opacity: 0; }
+    82% { transform: rotate(0deg); opacity: 1; animation-timing-function: ease-in-out; }
+    91% { transform: rotate(-14deg); opacity: 1; animation-timing-function: ease-in-out; }
+    100% { transform: rotate(0deg); opacity: 1; }
   }
   .lead.cast {
-    opacity: 0;
-    animation: cast-lead 5s linear var(--dl) infinite;
+    animation: cast-lead 6s linear var(--dl) infinite;
   }
   @keyframes cast-lead {
-    0%, 29% { opacity: 0; }
-    30%, 84% { opacity: 1; }
-    85%, 100% { opacity: 0; }
+    0%, 29.9% { opacity: 0; }
+    30%, 81.9% { opacity: 1; }
+    82%, 100% { opacity: 0; }
   }
-  /* The line's angle and reach through the cast, as a fraction of its full length: let go
-     up and ahead at the swing's own length, out and over, then down into the water. */
   .cast-line,
   .cast-turn,
   .cast-out {
     transform-origin: 0 0;
-    animation: 5s linear var(--dl) infinite;
+    animation: 6s linear var(--dl) infinite;
   }
   .cast-line {
     animation-name: cast-line;
@@ -360,40 +363,45 @@
   .cast-out {
     animation-name: cast-out;
   }
+  /* Angle and reach (a fraction of the line to the water) through the throw and back. */
   @keyframes cast-line {
-    0%, 30% { transform: rotate(-45deg) scaleX(calc(5.6 / var(--len))); animation-timing-function: ease-out; }
-    35% { transform: rotate(-38deg) scaleX(0.55); animation-timing-function: ease-in; }
-    40% { transform: rotate(5deg) scaleX(0.85); animation-timing-function: ease-in; }
-    44%, 100% { transform: rotate(var(--deg)) scaleX(1); }
+    0%, 30% { transform: rotate(-45deg) scaleX(calc(5.6 / var(--len))); }
+    35% { transform: rotate(-22deg) scaleX(0.95); }
+    40% { transform: rotate(4deg) scaleX(1.3); animation-timing-function: ease-in; }
+    45% { transform: rotate(var(--deg)) scaleX(1.05); }
+    48%, 62% { transform: rotate(var(--deg)) scaleX(1); animation-timing-function: ease-in-out; }
+    82%, 100% { transform: rotate(90deg) scaleX(calc(5.6 / var(--len))); }
   }
   @keyframes cast-turn {
-    0%, 30% { transform: rotate(-45deg); animation-timing-function: ease-out; }
-    35% { transform: rotate(-38deg); animation-timing-function: ease-in; }
-    40% { transform: rotate(5deg); animation-timing-function: ease-in; }
-    44%, 100% { transform: rotate(var(--deg)); }
+    0%, 30% { transform: rotate(-45deg); }
+    35% { transform: rotate(-22deg); }
+    40% { transform: rotate(4deg); animation-timing-function: ease-in; }
+    45%, 62% { transform: rotate(var(--deg)); animation-timing-function: ease-in-out; }
+    82%, 100% { transform: rotate(90deg); }
   }
   @keyframes cast-out {
-    0%, 30% { transform: translateX(5.6px); animation-timing-function: ease-out; }
-    35% { transform: translateX(calc(var(--len) * 0.55px)); animation-timing-function: ease-in; }
-    40% { transform: translateX(calc(var(--len) * 0.85px)); animation-timing-function: ease-in; }
-    44%, 100% { transform: translateX(calc(var(--len) * 1px)); }
+    0%, 30% { transform: translateX(5.6px); }
+    35% { transform: translateX(calc(var(--len) * 0.95px)); }
+    40% { transform: translateX(calc(var(--len) * 1.3px)); animation-timing-function: ease-in; }
+    45% { transform: translateX(calc(var(--len) * 1.05px)); }
+    48%, 62% { transform: translateX(calc(var(--len) * 1px)); animation-timing-function: ease-in-out; }
+    82%, 100% { transform: translateX(5.6px); }
   }
+  /* Hauling hand over hand, from the moment it's in to when it's back up. */
   .arm.haul {
-    animation: haul 5s ease-in-out var(--dl) infinite;
+    animation: haul 6s ease-in-out var(--dl) infinite;
   }
   @keyframes haul {
-    0%, 30%, 86%, 100% { transform: rotate(0deg); }
-    40% { transform: rotate(-16deg); }
-    48% { transform: rotate(4deg); }
-    56% { transform: rotate(-16deg); }
-    64% { transform: rotate(4deg); }
+    0%, 46%, 82%, 100% { transform: rotate(0deg); }
+    51%, 61%, 71% { transform: rotate(-16deg); }
+    56%, 66%, 76% { transform: rotate(4deg); }
   }
   .sound .head {
-    animation: call 5s ease-in-out var(--dl) infinite;
+    animation: call 6s ease-in-out var(--dl) infinite;
   }
   @keyframes call {
-    0%, 68%, 92%, 100% { transform: rotate(0deg); }
-    74%, 86% { transform: rotate(-22deg); }
+    0%, 50%, 64%, 100% { transform: rotate(0deg); }
+    54%, 60% { transform: rotate(-22deg); }
   }
 
   /* Cards: heads nod over the hand; the dealer flicks one across. */

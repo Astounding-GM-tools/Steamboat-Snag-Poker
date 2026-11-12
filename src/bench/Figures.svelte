@@ -60,15 +60,15 @@
   <div class="gallery" bind:this={gallery} style:--size="{size}px">
     {#each DOINGS as doing (doing)}
       <figure>
-        <svg viewBox="-13 -19 32 27" aria-label={doing}>
-          <rect x="-13" y="-19" width="32" height="27" fill={BACKDROPS[backdrop]} />
+        <svg viewBox="-13 -19 36 27" aria-label={doing}>
+          <rect x="-13" y="-19" width="36" height="27" fill={BACKDROPS[backdrop]} />
           {#if guides}
             <!-- The deck, a window's height (the figure's own), and the water for the fisherman -->
-            <line class="guide" x1="-13" y1="0" x2="19" y2="0" />
-            <line class="guide faint" x1="-13" y1="-11" x2="19" y2="-11" />
+            <line class="guide" x1="-13" y1="0" x2="23" y2="0" />
+            <line class="guide faint" x1="-13" y1="-11" x2="23" y2="-11" />
             <line class="guide faint" x1="0" y1="-19" x2="0" y2="8" />
           {/if}
-          {#if doing === 'fish'}<line class="water" x1="-13" y1="6.4" x2="19" y2="6.4" />{/if}
+          {#if doing === 'fish'}<line class="water" x1="-13" y1="6.4" x2="23" y2="6.4" />{/if}
           <Figure {doing} hat={hats[doing]} {flip} toWater={6} />
         </svg>
         <figcaption>
