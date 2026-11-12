@@ -371,7 +371,7 @@ export const tutorialScript: Script = {
         {
           size: 'scene',
           who: M,
-          text: 'I forgot to show you. Here, look.',
+          text: 'Better shown than told. Another hand.',
           replies: [{ label: 'Next' }],
         },
       ],

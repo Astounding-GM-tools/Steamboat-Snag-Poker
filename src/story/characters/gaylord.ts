@@ -51,7 +51,7 @@ export function breakfastTalk({ day, journey }: TalkContext): RoundScript {
     return {
       deal: [
         {
-          ...say('gaylord', ['I play at Davenport of a noon, Captain, on behalf of those who’d rather not. I’m all but booked: I’ve the last day of the week left, and no other.', 'Ten dollars covers my breakfast, my stay and the entry. I take the noon entry out of the winnings, and I keep the rest. You get a boat up the rapids. Watch and learn.']),
+          ...say('gaylord', ['I’m all but booked this week, Captain: I’ve the last day left, and no other.', 'Ten dollars covers my breakfast, my room and the morning’s entry. The winnings are mine; the boat up the rapids is yours. Watch and learn.']),
           replies: [pass, { label: 'Done', effect: 'hire', end: true }],
         },
       ],

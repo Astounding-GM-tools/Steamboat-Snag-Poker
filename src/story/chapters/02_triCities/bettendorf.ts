@@ -64,14 +64,18 @@ export function triCitiesTalk({ hand, seed, trips, day, met, journey }: TalkCont
             say('willie', 'Here we are, at Bettendorf. They’re batty about betting here, Captain.'),
             { ...say('tripp', 'House rule: we play till somebody wins with three of a kind. Three cities, three of a kind.'), replies: [{ label: 'Three?' }] },
             you('I counted four cities on the way in.'),
-            say('odds', 'Aye, we are four cities now, really, so we should hold out for four of a kind. I bet we´ll upgrade the name and the game and play for quads.'),
+            say('odds', ['Four, if you ask Bettendorf. Bettendorf says hold out for four of a kind.', 'Three to one they win the argument by summer.']),
             ...gaylordAtTheSaloon(day, client),
           ],
         }
       : hand === 3
-        ? { flop: [{ size: 'aside', who: 'lenny', text: '♪ Everybody knows that the thaw is flowing, everybody knows that the river´s strong ♪' }] }
+        ? { flop: [{ size: 'aside', who: 'lenny', text: '♪ Everybody knows that the thaw is flowing, everybody knows that the river’s strong ♪' }] }
         : { flop: [{ size: 'aside', who: 'odds', text: new Rng(seed).shuffle(ODDS)[hand % ODDS.length] }] }),
-    verdict: trips || hand === TRI_CITIES_HANDS ? [say('tripp', 'Three of a kind wins the game. That settles it for tonight.')] : [],
+    verdict: trips
+      ? [say('tripp', 'Three of a kind wins the game. That settles it for tonight.')]
+      : hand === TRI_CITIES_HANDS
+        ? [say('tripp', 'No three of a kind tonight. We’ll call it a draw, and argue about it tomorrow.')]
+        : [],
   };
 }
 

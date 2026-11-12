@@ -34,7 +34,7 @@ export const NAGS = [
   { who: 'gus', text: 'An engine overhaul would double what I can give you on the rapids, Captain.' },
   { who: 'willie', text: 'Beans again, Captain. I’m sorry. I’m no real cook, and there’s no stove.' },
   { who: 'gus', text: 'We doubt we can climb the rapids with a single fireman, Captain.' },
-  { who: 'gus', text: 'A real cook, with a real kitchen, would double our strength, Captain. No offence to the boy´s constant bean-slop.' },
+  { who: 'gus', text: 'A real cook, with a real kitchen, would double our strength, Captain. No offence to the boy’s constant bean-slop.' },
   { who: 'gus', text: 'We should upgrade the boiler before even thinking about those rapids, Captain.' },
 ];
 
@@ -46,7 +46,6 @@ const larsSays = (day: number, tune: string, word: string) => (day > A_WEEK ? wo
 
 /** Round the lantern, after supper. */
 const deckQuips = (day: number) => [
-  aside('willie', 'Real son of a beach, that sandbar.'),
   aside('gus', 'Old Hildegard doesn’t care for sand, Captain. Not one bit.'),
   aside('willie', 'Beans again tomorrow, Captain! Cold beans.'),
   aside('lars', larsSays(day, '♪ ♪ ♫', 'Sjekk.')),

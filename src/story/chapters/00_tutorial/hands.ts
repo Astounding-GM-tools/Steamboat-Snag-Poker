@@ -37,7 +37,7 @@ const say = (line: Omit<SpeechLine, 'who' | 'size'> & Partial<SpeechLine>): Spee
 export function handsRound(after: SpeechLine[]): RoundScript {
   return {
     flop: [
-      say({ text: 'Hands it is, then. I’ll rig the deck and we´ll play cards open: you see my cards, I see yours.', show: true, replies: [{ label: 'Yes, ma’am' }] }),
+      say({ text: 'Hands it is, then. I’ll rig the deck and we’ll play cards open: you see my cards, I see yours.', show: true, replies: [{ label: 'Yes, ma’am' }] }),
       say({ text: 'We share these cards in the middle. See your ace?', names: ['Ah'], replies: [{ label: 'High card' }] }),
       say({ text: 'That’s the high card. If you play that and I play my king, you win.' }),
       say({ text: 'But I can play my deuce instead, and have a pair. Any pair beats any high card. So what do you do?', names: ['4c'], replies: [{ label: 'Pair' }] }),
@@ -65,7 +65,7 @@ export function handsRound(after: SpeechLine[]): RoundScript {
       say({ size: 'aside', text: 'Throw away the five and the six. I’ll find you something better still.', require: ['5h', '6h'] }),
     ],
     river: [
-      say({ text: 'Oh! Two pair on the board now. Do you see them?', replies: [{ label: 'Crabs over ducks' }] }),
+      say({ text: 'Oh! Two pair on the board now: threes, which we call crabs, and our ducks. Do you see them?', replies: [{ label: 'Crabs over ducks' }] }),
       say({ text: 'Very good! So everyone at the table has two pair now. Tap one of your threes. What do you have now?', names: ['3'], replies: [{ label: 'Full house!' }] }),
       say({ text: 'Exactly! And so do I: ducks full of crabs. Whose hand is stronger?', replies: [{ label: 'Yours', go: 'weaker' }, { label: 'Mine', go: 'stronger' }] }),
       say({ id: 'weaker', branch: true, text: 'No: mine is weaker. Your house has three threes; mine only three deuces. The bigger three wins.', replies: [{ label: 'I win?', go: 'better' }] }),

@@ -126,7 +126,7 @@ function morningTalk({ met }: TalkContext): RoundScript {
 }
 
 function noonTalk({ met, day }: TalkContext): RoundScript {
-  const intro = [say('ellie', ['Ellie Sawyer, out of Cordova. I take one boat up the rapids today.', 'Whoever wins this table. Or if I win it myself, the runner-up.']), say('willie', 'They say you’re crazy, taking boats up on the thaw.'), say('ellie', 'I prefer adventurous.')];
+  const intro = [say('ellie', ['Ellie Sawyer, out of Cordova. I take one boat up the rapids today.', 'Whoever wins this table. Or if I win it myself, the runner-up.']), say('willie', 'They say you’re crazy, taking boats up on the thaw.'), say('ellie', 'Crazy is going up without me.')];
   return { deal: [...(met ? [] : intro), ...quarrel(day)] };
 }
 

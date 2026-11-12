@@ -39,10 +39,12 @@ export const depot: Step[] = [
 /** What the strike chest hears, hand by hand. Nobody says what it's for. */
 const CHEST_UP = ['More for the strike chest! That should last us another day or two.', 'That’s the week’s bread and beans. Much obliged, Captain.', 'The union thanks you, Captain.'];
 const CHEST_DOWN = ['Plenty more where that came from. Union sends it up by the sack.', 'Take it, take it. It’s only the strike chest.', 'Easy come, Captain. Tuesday’s post brings more.'];
-const RIVER_LIFE = [
-  { who: 'foreman', text: 'You load sixteen tons, and what do you get?' },
-  { who: 'foreman', text: 'Bill still cheat at patience?' },
-  { who: 'rourke', text: 'Coal’s dear upriver, I hear.' },
+const RIVER_LIFE: SpeechLine[] = [
+  { size: 'aside', who: 'foreman', text: 'You load sixteen tons, and what do you get?' },
+  // The joke is the captain's answer.
+  { size: 'aside', who: 'rourke', text: 'How do I look, Captain?', replies: [{ label: 'Good' }, { label: 'Striking' }] },
+  { size: 'aside', who: 'foreman', text: 'Bill still cheat at patience?' },
+  { size: 'aside', who: 'rourke', text: 'Coal’s dear upriver, I hear.' },
 ];
 const FOLDED = 'Folding, Cap’n? You wouldn’t be… letting us win, now would you?';
 
@@ -52,7 +54,7 @@ function depotTalk({ hand, lost, foldedOut, fixed, met, seed }: TalkContext): Ro
   const chat = new Rng(seed).shuffle(RIVER_LIFE)[hand % RIVER_LIFE.length];
   const sorted = fixed.map(({ id, snag }): SpeechLine => ({ size: 'scene', who: id, text: `I’ll sort out ${t(`joker.${snag}`)}, Captain. Got nothing better to do.` }));
   return {
-    ...(hand % 2 === 0 ? { flop: [{ size: 'aside' as const, ...chat }] } : {}),
+    ...(hand % 2 === 0 ? { flop: [chat] } : {}),
     verdict: [
       ...sorted,
       ...(paid
@@ -82,7 +84,7 @@ export const depotTalks: Record<string, Talk> = {
           },
         ]
       : [
-          { ...say('foreman', 'Been a while! Ain’t seen The Best Intentions since last summer. Where’s Bill?'), replies: [{ label: 'Family' }] },
+          { ...say('foreman', 'Been a while! Ain’t seen the Best Intentions since last summer. Where’s Bill?'), replies: [{ label: 'Family' }] },
           you('Family business.'),
           {
             ...say('foreman', 'Left you in charge, did he? Wise man. Alas, ain’t got no coal to sell you. Strike’s on, see.'),
