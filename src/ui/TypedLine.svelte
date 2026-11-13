@@ -22,8 +22,10 @@
     from?: number;
     /** Each line as it's finished, so whoever shows this can say where he'd got to. */
     online?: (line: number) => void;
+    /** Hold off (she's racing: nobody types at full steam); he goes on when it's lifted. */
+    paused?: boolean;
   }
-  let { text, fresh = false, ontyped, wrap = false, from = 0, online }: Props = $props();
+  let { text, fresh = false, ontyped, wrap = false, from = 0, online, paused = false }: Props = $props();
 
   /** The lines of an entry, blanks (a paragraph's end) dropped. */
   const linesOf = (t: string) => t.split('\n').filter((l) => l.trim());
@@ -55,7 +57,7 @@
   const readingTime = (l: string) => 5000 + l.length * 110;
   /** The roll of the paper, and the pause between sections and before an entry. */
   const ROLL_MS = 700;
-  const SECTION_MS = 6000;
+  const SECTION_MS = 10000;
   const ENTRY_MS = 4000;
   /** The line rolling up out of view (header only). */
   let rolling = $state(false);
@@ -93,6 +95,7 @@
       }, ROLL_MS);
     };
     const key = () => {
+      if (paused) return later(key, 300);
       const whole = lines[l];
       if (i === 0) clack('line');
       const c = whole[i++];
@@ -103,7 +106,8 @@
       if (i < whole.length) return later(key, delay(c));
       // The line's typed: left to be read, then on.
       untrack(() => online?.(l + 1));
-      later(() => {
+      const next = () => {
+        if (paused) return later(next, 300);
         if (l + 1 >= lines.length) {
           done = settled(entry);
           line = struck = '';
@@ -119,7 +123,8 @@
           line = struck = '';
           later(key, pause);
         } else roll(() => later(key, pause));
-      }, wrap ? 500 : readingTime(whole));
+      };
+      later(next, wrap ? 500 : readingTime(whole));
     };
     typing = true;
     // A new entry: what's there rolls away, a pause, and he starts. (Read untracked: the typing itself

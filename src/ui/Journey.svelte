@@ -73,6 +73,8 @@
   const enc = $derived(journey.encounter);
   const playing = $derived(step?.type === 'encounter' && !!enc && !enc.outcome);
 
+  /** She steams this long before Willie writes her getting under way: the river first, then the words. */
+  const CAST_OFF_QUIET_MS = 15_000;
   /** How often she moves while steaming (ms): thirty times a second is smooth at a riverboat's pace. */
   const STEP_MS = 1000 / 30;
 
@@ -124,8 +126,9 @@
     }
     const to = step.to;
     racing = false;
-    // Willie logs her getting under way (once: a reload mid-stretch doesn't log it again).
-    untrack(() => {
+    // Willie logs her getting under way (once: a reload mid-stretch doesn't log it again), after she's
+    // been steaming a while: first the river, then the words.
+    const settle = setTimeout(() => untrack(() => {
       // Leaving Muscatine is Willie's first musing (how the dock fee went); elsewhere, a line.
       const first = steamFrom === 0 && journey.place === 'muscatine';
       const line = first
@@ -133,8 +136,10 @@
         : steamFrom === 0
           ? castOffRecord(t(`place.${journey.place}`), t(`river.${bound}`))
           : UNDER_WAY_AGAIN;
-      if (journey.log?.at(-1)?.text !== line) journey = writeLog(journey, line, first ? 'musing' : 'record');
-    });
+      // A musing is written once; a plain line, unless it's the last thing written (a reload).
+      const written = first ? journey.log?.some((e) => e.text === line) : journey.log?.at(-1)?.text === line;
+      if (!written) journey = writeLog(journey, line, first ? 'musing' : 'record');
+    }), CAST_OFF_QUIET_MS);
     let last = performance.now(), raf = 0;
     const tick = (now: number) => {
       if (now - last < STEP_MS) {
@@ -151,7 +156,10 @@
       else raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(settle);
+    };
   });
 
   /** A table just come up on the river: its things slide in over the map (and only then: a jolt after mustn't replay it). */
@@ -532,7 +540,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="status opens" role="button" tabindex="0" aria-label={t('log.open')} onclick={() => (logOpen = !logOpen)}>
       <span class="day">{heading}</span>
-      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} />{/if}
+      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} paused={racing} />{/if}
       {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
     </div>
     {#if logOpen && journey.log?.length}<LogView entries={journey.log} today={Math.max(1, journey.mornings)} onclose={() => (logOpen = false)} />{/if}
@@ -572,7 +580,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="status opens" class:unseen={!journey.mornings} role="button" tabindex="0" aria-label={t('log.open')} onclick={() => journey.log?.length && (logOpen = !logOpen)}>
       <span class="day">{heading}{#if step.type === 'hub'} · {t(`river.slot.${journey.time}`)}{/if}</span>
-      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} />{/if}
+      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} paused={racing} />{/if}
       <span>{t('river.purse')} ${journey.purse}</span>
       <span>{t('river.strength')} {journey.strength}</span>
       <span>{t('river.coal')} {t('river.coalLoads', { n: journey.coal, max: BOAT.bunker })}</span>

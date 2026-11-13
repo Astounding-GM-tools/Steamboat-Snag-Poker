@@ -5,7 +5,7 @@
  */
 export const voyage = $state({
   /** Seconds for a whole leg (0 to 1) at a leisurely pace. */
-  legSeconds: 230,
+  legSeconds: 320,
   /** How much quicker she goes with Skip held. */
   race: 12,
   /** The map's height as log2 of its scale (screen px per map px; a map px is 2 m): steaming, and at play. */
