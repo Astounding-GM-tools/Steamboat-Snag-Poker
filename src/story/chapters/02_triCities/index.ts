@@ -53,7 +53,7 @@ export const triCities: Hub = {
           type: 'council',
           title: 'hub.mercantile.name',
           advice: [{ who: 'gus', text: 'An overhaul gets twice the work from the same coal, Captain.' }],
-          trader: ['coal', 'sellCoal', 'sellSalvage', 'food', 'fireman', 'hammocks', 'boilerOverhaul', 'engineOverhaul'],
+          trader: ['coal', 'sellCoal', 'sellSalvage', 'food', 'fireman', 'boilerOverhaul'],
           coal: 0,
           leave: 'Done',
         },

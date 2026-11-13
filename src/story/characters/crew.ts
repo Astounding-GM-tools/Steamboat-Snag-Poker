@@ -31,7 +31,7 @@ export const stuckNight: Step[] = [{ type: 'caption', lines: [{ text: 'Supper on
 
 /** What Gus has been saying all along, and Willie's apologies. */
 export const NAGS = [
-  { who: 'gus', text: 'An engine overhaul would double what I can give you on the rapids, Captain.' },
+  { who: 'gus', text: 'A boiler overhaul would get us the steam for the rapids, Captain.' },
   { who: 'willie', text: 'Beans again, Captain. I’m sorry. I’m no real cook, and there’s no stove.' },
   { who: 'gus', text: 'One fireman won’t get us up the rapids, Captain.' },
   { who: 'gus', text: 'A real cook in a real galley would double our strength, Captain. No offence to the boy’s beans.' },

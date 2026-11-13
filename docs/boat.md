@@ -66,8 +66,7 @@ Bill’s boat; modules are what you add.
 
 Where nothing is built, freight fills the main deck (crates and bales).
 
-**More to come**, by the same rule: a ballroom (the saloon grown aft, or the
-bandstand roofed in), more staterooms (the berths spill into bays 7–9 forward
+**More to come**, by the same rule (but no ballroom: see below): more staterooms (the berths spill into bays 7–9 forward
 of the office), the houseboat tow and the rafts on lines astern (map and side
 view both), Willie’s and Gus’s chimney crank.
 
@@ -205,6 +204,30 @@ the freight until one is built for them (it needs the dining saloon under it).
 So in the tow, some rafts must be drawn as installable boat modules (a galley house, a row of
 stateroom cabins) sitting on rafts, recognisably the same parts as on the boat, and moved
 aboard when the story says.
+
+## What she can have, and where
+
+*Agreed 2026-11-13.* Slim early, richer as she goes; nobody gets everything (the purse won't run
+to it), so each is a choice.
+
+| Module | Comes from | Where |
+|---|---|---|
+| Boiler overhaul | The Mercantile (the upgrade that matters on the way up: the steam for the rapids) | Tri-Cities |
+| Galley | The village: the cook's raft, installed aboard | Clinton to Dubuque |
+| Staterooms | The village: another raft's cabins | Clinton to Dubuque |
+| Dining saloon | The Mercantile (a place to eat and play cards) | Dubuque |
+| Bandstand | Built on top of the staterooms, so not before them | Dubuque, or after |
+| Pretty Patty | The story: she's fetched from Dubuque | Dubuque, for the way down |
+| Engine overhaul | The dry dock | The Quad Cities, on the way down |
+
+- **The Tri-Cities is slim:** coal, supper, a second fireman, salvage sold, and the boiler
+  overhaul. The engine overhaul and the hammocks are off (the hammocks were filler: crew comfort
+  isn't thought out yet).
+- **The band** joins at The Sandbar, long before a bandstand: they play on the foredeck among the
+  freight until one is built.
+- **No ballroom:** a dining saloon for meals and cards, and a bandstand, are as grand as the
+  *Best Intentions* gets.
+- **The stove and cook** stay on sale at Dubuque for anyone who passed the village by.
 
 ## Next
 
