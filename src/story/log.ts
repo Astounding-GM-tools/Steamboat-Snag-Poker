@@ -4,10 +4,9 @@
  * longer entries, come later.
  */
 
-/** What's written when an encounter is over, by its id and how it went. */
+/** What's written when an encounter is over, by its id and how it went. (The dock fee isn't here: Willie tells it as she leaves Muscatine.) */
 export const ENCOUNTER_RECORDS: Record<string, { solved?: string; failed?: string }> = {
   bill: { solved: 'Took command of the Best Intentions from Captain Bill, at Muscatine.' },
-  harbourMaster: { solved: 'Dock fee settled with the harbour master.', failed: 'Dock fee settled with the harbour master. Dear.' },
   sandbar: { solved: 'Off The Sandbar at last. All hands sore.', failed: 'Aground on The Sandbar. We stay the night.' },
   deck: { solved: 'Cards on deck by lantern light. Repairs seen to.' },
   deckIntel: { solved: 'Anchored downstream of the dock. Went ashore for news.' },
@@ -39,13 +38,12 @@ export function leavingMuscatine(flags: readonly string[], purse: number, fee: n
   ];
   if (flags.includes(DOCK_FEE_FLAG.dodged)) lines.push('The Captain played the harbour master for the docking fee.', `Dodged the fee: $${fee} saved for coal. We'll need it.`);
   else if (flags.includes(DOCK_FEE_FLAG.snagged)) lines.push('The Captain played the harbour master for the docking fee.', `Snagged the fee, and the ante. $${purse} left for expenses.`);
-  else lines.push(`Docking fee: $${fee}.`, `$${purse} left for the river.`);
+  else lines.push(`Captain paid the dock fee. $${fee}.`, `$${purse} left for the river.`);
   return lines.join('\n');
 }
 
 /** What's written when an answer at the table ends it, by the answer's effect. */
 export const CHOICE_RECORDS: Record<string, string> = {
-  pay: 'Paid the harbour master the dock fee, cash.',
   aground: 'Struck a sandbar, a few miles below the Tri-Cities.',
 };
 
