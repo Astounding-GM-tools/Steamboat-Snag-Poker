@@ -97,6 +97,13 @@
   let boatT = $state(untrack(() => journey.river?.t ?? 0));
   /** Skip held: she races on to wherever she's bound, or till something stops her. */
   let racing = $state(false);
+  /**
+   * How hard her engine's working, for the steam: upstream against the current at her pace is 1;
+   * racing (Skip held) far harder; downstream, with the current, she barely has to try. (The
+   * rapids' pushes are played at the table, where the steam isn't drawn.)
+   */
+  const EFFORT = { upstream: 1, downstream: 0.55, racing: 2.5 };
+  const engineEffort = $derived(racing ? EFFORT.racing : bound === 'southbound' ? EFFORT.downstream : EFFORT.upstream);
   $effect(() => {
     if (step?.type !== 'steam') {
       if (journey.river) boatT = journey.river.t;
@@ -468,7 +475,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} {crates} {racing} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} {crates} {racing} effort={engineEffort} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">

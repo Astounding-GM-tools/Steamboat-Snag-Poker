@@ -39,8 +39,10 @@
     built?: Built;
     /** Skip held: the view stays on her rather than letting her steam across it. */
     racing?: boolean;
+    /** How hard the engine's working (1: steaming upstream at her pace): she chuffs this much more, or less. */
+    effort?: number;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null, built = {}, racing = false }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null, built = {}, racing = false, effort = 1 }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -257,16 +259,42 @@
     steamAlpha: 1,
     /** How much of the wind the steam rides. */
     steamDrift: 0.45,
-    /** Going hard (Skip held): chuffs this much more often. */
-    hard: 2.5,
   };
   /** Where the chimneys stand, from her middle in the top view's units (BoatTop: chimneys at 142, middle at 100). */
   const CHIMNEYS: Pt[] = [
     [42, -9],
     [42, 9],
   ];
-  /** How many cloudlet shapes are drawn (each puff picks one). */
+  /** How many lumpy cloudlet shapes are drawn (each chuff picks one). */
   const CLOUDLETS = 5;
+  type Puffs = [number, number, number][];
+  /**
+   * Now and then a cloudlet comes out in the shape of a suit: the white steam's are hearts and
+   * diamonds (clubs and spades will be the dark wood-fired smoke's, when she burns wood). Puffs are
+   * [x, y, radius] in half-widths, y down; they stand upright on the screen whatever her heading.
+   */
+  const SUITS: Puffs[] = [
+    // A heart: two lobes, tapering to a point below.
+    [[-0.19, -0.14, 0.25], [0.19, -0.14, 0.25], [0, 0.04, 0.24], [-0.12, 0.17, 0.17], [0.12, 0.17, 0.17], [0, 0.3, 0.12], [0, 0.4, 0.06]],
+    // A diamond: puffs along its four edges, small at the four tips, with its middle filled.
+    diamond(),
+  ];
+  function diamond(): Puffs {
+    const tips: [number, number][] = [[0, -0.44], [0.3, 0], [0, 0.44], [-0.3, 0]];
+    const puffs: Puffs = [[0, 0, 0.19], [0, -0.17, 0.13], [0, 0.17, 0.13]];
+    for (let e = 0; e < 4; e++) {
+      const [ax, ay] = tips[e], [bx, by] = tips[(e + 1) % 4];
+      for (let k = 0; k <= 4; k++) {
+        const f = k / 4;
+        // Pulled in a little from the edge, so the outline runs along it; small at the tips.
+        const r = 0.035 + 0.085 * Math.sin(Math.PI * f);
+        puffs.push([(ax + (bx - ax) * f) * (1 - r * 1.2), (ay + (by - ay) * f) * (1 - r * 1.2), r]);
+      }
+    }
+    return puffs;
+  }
+  /** One cloudlet in this many is a suit. */
+  const SUIT_EVERY = 9;
 
   function sprite(draw: (c: CanvasRenderingContext2D, n: number) => void, n: number): HTMLCanvasElement {
     const img = document.createElement('canvas');
@@ -285,16 +313,19 @@
      * Cel-shaded cloudlets: a lumpy cluster of round puffs, an ink outline round the whole, flat white,
      * and a flat grey where the puffs turn away from the light (down and to the right).
      */
-    const cloudlet = (seed: number) =>
+    const lumpy = (seed: number): Puffs => {
+      let x = seed * 9301 + 49297;
+      const rand = () => ((x = (x * 9301 + 49297) % 233280) / 233280);
+      const puffs: Puffs = [[0, 0, 0.42]];
+      for (let i = 0; i < 6; i++) {
+        const a = rand() * Math.PI * 2, d = 0.18 + rand() * 0.22;
+        puffs.push([Math.cos(a) * d, Math.sin(a) * d * 0.8, 0.2 + rand() * 0.16]);
+      }
+      return puffs;
+    };
+    const cloudlet = (puffs: Puffs) =>
       sprite((c, n) => {
-        let x = seed * 9301 + 49297;
-        const rand = () => ((x = (x * 9301 + 49297) % 233280) / 233280);
         const R = n / 2;
-        const puffs: [number, number, number][] = [[0, 0, 0.42]];
-        for (let i = 0; i < 6; i++) {
-          const a = rand() * Math.PI * 2, d = 0.18 + rand() * 0.22;
-          puffs.push([Math.cos(a) * d, Math.sin(a) * d * 0.8, 0.2 + rand() * 0.16]);
-        }
         const ink = 0.045;
         const disc = (ctx: CanvasRenderingContext2D, grow: number, dx = 0, dy = 0) => {
           ctx.beginPath();
@@ -318,7 +349,8 @@
         disc(c, ink);
         c.drawImage(body, 0, 0);
       }, 160);
-    const steam = Array.from({ length: CLOUDLETS }, (_, k) => cloudlet(k + 1));
+    // The lumpy ones first, then the suits.
+    const steam = [...Array.from({ length: CLOUDLETS }, (_, k) => cloudlet(lumpy(k + 1))), ...SUITS.map(cloudlet)];
     const motes: Mote[] = [];
     let raf = 0, last = performance.now(), steamClock = 0;
     let was: Pt | null = null;
@@ -342,7 +374,8 @@
       const b = boat;
       // Units of the top view, in map px, at this zoom.
       const u = (voyage.boatSize * TOP_SCALE) / scale;
-      const hard = racing ? EXHAUST.hard : 1;
+      // How hard she's working: chuffs come oftener, and bigger, the harder it is.
+      const hard = effort;
       const moving = !!b && !!was && Math.hypot(b.p[0] - was[0], b.p[1] - was[1]) > 0.01;
       if (b) was = b.p;
       if (b && moving) {
@@ -353,7 +386,7 @@
           steamClock -= EXHAUST.steamEvery * (0.8 + Math.random() * 0.4);
           const [x, y] = at(CHIMNEYS[Math.floor(Math.random() * CHIMNEYS.length)]);
           const k = EXHAUST.steamDrift;
-          motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * u, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * u, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * u, r1: EXHAUST.steamSize[1] * u * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, shape: Math.floor(Math.random() * CLOUDLETS) });
+          motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * u, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * u, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * u, r1: EXHAUST.steamSize[1] * u * Math.sqrt(hard) * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, shape: Math.random() < 1 / SUIT_EVERY ? CLOUDLETS + Math.floor(Math.random() * SUITS.length) : Math.floor(Math.random() * CLOUDLETS) });
         }
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
