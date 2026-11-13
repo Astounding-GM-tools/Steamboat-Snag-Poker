@@ -112,13 +112,6 @@
     const { along } = sailed;
     return i >= SAMPLES ? along[SAMPLES] : along[i] + (x - i) * (along[i + 1] - along[i]);
   });
-  /** Her spot, and the way the line runs there (looked along a good way ahead and behind: a bend, not a corner). */
-  const boat = $derived.by(() => {
-    if (!sailed) return null;
-    const p = sailed.point(distance);
-    const a = sailed.point(distance - 120), b = sailed.point(distance + 120);
-    return { p, heading: Math.atan2(b[1] - a[1], b[0] - a[0]) };
-  });
 
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
   const zoom = new Tween(voyage.steamZoom, { duration: 1100, easing: cubicInOut });
@@ -135,12 +128,52 @@
   });
 
   /**
-   * The view holds still and lets her steam across it, then catches up: when she's gone a way from
-   * the middle, it pans (gently, a couple of seconds) to a spot a little ahead of her. Holding still,
-   * only she is drawn anew; the chart and her wake stay as they are. Racing (Skip held), or at play,
-   * it stays on her.
+   * How she moves: she glides. Drawn far bigger than the map would make her, she can't follow every
+   * wiggle of the channel without sliding sideways, so she steers instead: she aims at a spot on the
+   * channel a good way ahead (`LOOK` boat lengths), turns towards it no tighter than her length
+   * allows (`TURN_RADIUS`), and moves the way she points, as far as she's steamed. On a straight she
+   * runs straight; at a bend she swings round in an arc, cutting it a little, as a pilot would.
+   * Should she ever stray far from her spot (a reload, a race), she's set back on it.
    */
-  const cam = new Tween<Pt>([0, 0], { duration: 2000, easing: cubicInOut });
+  const LOOK = 1.6;
+  const TURN_RADIUS = 1.1;
+  let boat = $state<{ p: Pt; heading: number } | null>(null);
+  let lastDistance = 0;
+  $effect(() => {
+    const d = distance, s = sailed;
+    if (!s) return;
+    untrack(() => {
+      const length = boatOnScreen / scale;
+      const moved = d - lastDistance;
+      lastDistance = d;
+      /** The spot she aims for: the channel a good way ahead of where she's got to. */
+      const mark = s.point(d + Math.sign(moved || 1) * LOOK * length);
+      const there = s.point(d);
+      if (!boat || Math.abs(moved) > 3 * length || Math.hypot(boat.p[0] - there[0], boat.p[1] - there[1]) > 1.5 * length) {
+        boat = { p: there, heading: Math.atan2(mark[1] - there[1], mark[0] - there[0]) };
+        return;
+      }
+      if (!moved) return;
+      const want = Math.atan2(mark[1] - boat.p[1], mark[0] - boat.p[0]);
+      const turn = ((((want - boat.heading) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
+      const most = Math.abs(moved) / (TURN_RADIUS * length);
+      const heading = boat.heading + Math.max(-most, Math.min(most, turn));
+      const step = Math.abs(moved);
+      boat = { p: [boat.p[0] + Math.cos(heading) * step, boat.p[1] + Math.sin(heading) * step], heading };
+    });
+  });
+  const deg = $derived(boat ? (boat.heading * 180) / Math.PI : 0);
+
+  /**
+   * The chart, moved like a chart on a table: it holds still while she steams across it, and when
+   * she nears the edge she's heading for, it's slid back (gently, a few seconds) so she's near the
+   * opposite edge again, with the whole screen ahead of her. Any heading: north, south, east or
+   * west. Racing (Skip held), or at play, the view stays on her.
+   */
+  /** Clear of the heading above and the buttons below (px), and a margin inside that. */
+  const CLEAR_TOP = 80;
+  const CLEAR_BOTTOM = 130;
+  const cam = new Tween<Pt>([0, 0], { duration: 2800, easing: cubicInOut });
   let camReady = false;
   $effect(() => {
     const b = boat;
@@ -156,13 +189,20 @@
         if (cam.target[0] !== b.p[0] || cam.target[1] !== b.p[1]) cam.set(b.p, { duration: mode === 'play' ? 1100 : 0 });
         return;
       }
-      // Room to steam: she crosses the middle from `room` behind to `room` ahead before the view moves.
-      const room = 0.3 * Math.min(innerWidth, innerHeight);
+      const W = innerWidth, H = innerHeight;
+      const margin = 0.6 * boatOnScreen;
+      // The open water of the screen: inside the margin, clear of the heading and the buttons.
+      const x0 = margin, x1 = W - margin, y0 = CLEAR_TOP + margin, y1 = H - CLEAR_BOTTOM - margin;
       const [cx, cy] = cam.target;
-      if (Math.hypot((b.p[0] - cx) * scale, (b.p[1] - cy) * scale) > room) {
-        const lead = room / scale;
-        cam.target = [b.p[0] + Math.cos(b.heading) * lead, b.p[1] + Math.sin(b.heading) * lead];
-      }
+      const sx = W / 2 + (b.p[0] - cx) * scale, sy = H / 2 + (b.p[1] - cy) * scale;
+      const ux = Math.cos(b.heading), uy = Math.sin(b.heading);
+      const leaving = (ux > 0.25 && sx > x1) || (ux < -0.25 && sx < x0) || (uy > 0.25 && sy > y1) || (uy < -0.25 && sy < y0) || sx < 0 || sx > W || sy < 0 || sy > H;
+      if (!leaving) return;
+      // Where she should land: from the middle of the open water, back against her heading to its edge.
+      const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, hw = (x1 - x0) / 2, hh = (y1 - y0) / 2;
+      const reach = Math.min(Math.abs(ux) > 1e-6 ? hw / Math.abs(ux) : Infinity, Math.abs(uy) > 1e-6 ? hh / Math.abs(uy) : Infinity);
+      const bx = mx - ux * reach, by = my - uy * reach;
+      cam.target = [b.p[0] - (bx - W / 2) / scale, b.p[1] - (by - H / 2) / scale];
     });
   });
   /** How far the view leans towards what's ahead (0: on her). */
@@ -178,34 +218,6 @@
   });
 
   const pts = (p: readonly Pt[]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
-  /** The way the channel runs where she is (degrees). */
-  const course_deg = $derived(boat ? (boat.heading * 180) / Math.PI : 0);
-  /**
-   * The way she faces: the line she sails is already rounded, so this only softens what's left:
-   * at most TURN degrees a second, easing in as she lines up.
-   */
-  const TURN = 45;
-  let deg = $state(0);
-  let turned = false;
-  let lastTurn = 0;
-  // Eased as she moves (each step along the river), so she keeps coming round on a straight stretch too.
-  $effect(() => {
-    const target = course_deg;
-    void t;
-    untrack(() => {
-      const now = performance.now();
-      const dt = Math.min(0.1, (now - lastTurn) / 1000);
-      lastTurn = now;
-      if (!turned) {
-        deg = target;
-        turned = true;
-        return;
-      }
-      const d = ((((target - deg) % 360) + 540) % 360) - 180;
-      const step = Math.sign(d) * Math.min(Math.abs(d) * Math.min(1, dt * 3), TURN * dt);
-      deg = Math.abs(d) < 0.05 ? target : ((((deg + step) % 360) + 540) % 360) - 180;
-    });
-  });
 </script>
 
 <div class="backdrop" class:play={mode === 'play'} class:jolt aria-hidden="true">
