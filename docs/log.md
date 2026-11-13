@@ -77,6 +77,20 @@ sanity: loyalty over understanding.
 
 The log is saved with the voyage.
 
+## The look
+
+- **Special Elite** (the typewriter face we already have): Willie types the log.
+- **The header types itself:** a new entry appears in the header character by character, in real
+  time, as if being typed: that's what draws the eye to the log, and to the reading view.
+- **The reading view doesn't:** what's there is there. Only an entry written while it's open, and in
+  view, types itself out.
+
+**A later musing: the typewriter itself.** By 1904 typewriters were common in offices (the
+Remington, the Underwood), but dear (a hundred dollars, months of a deckhand's wages), heavy, and
+no thing for a riverboat; the light portables came later (the Corona, 1912). Yet here is Willie,
+typing out every sounding and every sighting. Where did it come from? Who paid for it? Why is the
+ribbon never dry?
+
 ## To refine next
 
 - The header: how the latest entry sits under the heading, its "…", the tap target.
