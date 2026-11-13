@@ -176,7 +176,6 @@
 </script>
 
 <div class="film">
-  <div class="flicker" aria-hidden="true"></div>
   {#if river}
     {#key river}<Journey fresh={river.fresh} onmenu={leaveRiver} />{/key}
   {:else if passPlay}

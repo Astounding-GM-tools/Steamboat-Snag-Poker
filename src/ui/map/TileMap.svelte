@@ -40,7 +40,7 @@
     for (let x = x0; x <= x1; x++)
       for (let y = y0; y <= y1; y++) {
         const url = base + tiles.url.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y));
-        if (!missing.has(url)) out.push({ url, left: ox + x * span * scale, top: oy + y * span * scale, size: span * scale });
+        if (!missing.has(url)) out.push({ url, left: x * span * scale, top: y * span * scale, size: span * scale });
       }
     return out;
   }
@@ -54,12 +54,15 @@
 </script>
 
 <div class="map" bind:clientWidth={width} bind:clientHeight={height}>
+  <!-- The tiles sit still in their own layer; the layer moves (a transform, done by the compositor). -->
+  <div class="tiles" style:transform="translate3d({ox}px, {oy}px, 0)">
   {#each under as t (t.url)}
     <img src={t.url} alt="" style:left="{t.left}px" style:top="{t.top}px" style:width="{t.size + 0.5}px" style:height="{t.size + 0.5}px" onerror={() => gone(t.url)} />
   {/each}
   {#each top as t (t.url)}
     <img src={t.url} alt="" style:left="{t.left}px" style:top="{t.top}px" style:width="{t.size + 0.5}px" style:height="{t.size + 0.5}px" onerror={() => gone(t.url)} />
   {/each}
+  </div>
   <svg width={width} height={height}>
     <g transform="translate({ox} {oy}) scale({scale})">
       {@render children?.()}
@@ -74,6 +77,11 @@
     width: 100%;
     height: 100%;
     background: #ece4cf;
+  }
+  .tiles {
+    position: absolute;
+    inset: 0;
+    will-change: transform;
   }
   img {
     position: absolute;

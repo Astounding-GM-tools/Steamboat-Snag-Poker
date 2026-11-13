@@ -43,7 +43,7 @@
   import { loadLeg } from './map/legs';
   import TypedLine from './TypedLine.svelte';
   import LogView from './LogView.svelte';
-  import { CHOICE_RECORDS, ENCOUNTER_RECORDS, islandRecord, tradeRecord } from '../story/log';
+  import { CHOICE_RECORDS, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, castOffRecord, islandRecord, tradeRecord } from '../story/log';
   import { islandKey, sides, type Island, type Pt, type TravelSidecar } from './map/route';
   import { heavy } from './heavy';
   import ShipPage from './ShipPage.svelte';
@@ -70,6 +70,9 @@
   const step = $derived(currentStep(journey, RIVER));
   const enc = $derived(journey.encounter);
   const playing = $derived(step?.type === 'encounter' && !!enc && !enc.outcome);
+
+  /** How often she moves while steaming (ms): thirty times a second is smooth at a riverboat's pace. */
+  const STEP_MS = 1000 / 30;
 
   /** Development only: she steams the leg over and over, with nothing to stop her (no islands, chatter or encounters): something running while we work. */
   const endless = $derived(import.meta.env.DEV && journey.flags.includes('dev:endless'));
@@ -101,8 +104,17 @@
     }
     const to = step.to;
     racing = false;
+    // Willie logs her getting under way (once: a reload mid-stretch doesn't log it again).
+    untrack(() => {
+      const line = steamFrom === 0 ? castOffRecord(t(`place.${journey.place}`), t(`river.${bound}`)) : UNDER_WAY_AGAIN;
+      if (journey.log?.at(-1)?.text !== line) journey = writeLog(journey, line);
+    });
     let last = performance.now(), raf = 0;
     const tick = (now: number) => {
+      if (now - last < STEP_MS) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       const dir = Math.sign(to - boatT);

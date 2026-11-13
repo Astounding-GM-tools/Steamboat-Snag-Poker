@@ -15,6 +15,10 @@ export const ENCOUNTER_RECORDS: Record<string, { solved?: string; failed?: strin
   triCities: { solved: 'An evening at the Bettendorf saloon.' },
 };
 
+/** Getting under way: from a landing, and again after a stop on the river. */
+export const castOffRecord = (place: string, bound: string) => `Cast off from ${place}, ${bound}.`;
+export const UNDER_WAY_AGAIN = 'Under way again.';
+
 /** What's written when an answer at the table ends it, by the answer's effect. */
 export const CHOICE_RECORDS: Record<string, string> = {
   pay: 'Paid the harbour master the dock fee, cash.',
