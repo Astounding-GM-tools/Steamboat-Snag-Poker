@@ -51,7 +51,36 @@
   /** The channel, round the islands by the passages chosen. */
   const course = $derived(sidecar ? forked(route(sidecar.path.px[0], sidecar.stops), leg, sidecar.islands ?? [], lanes) : null);
   const boat = $derived(course?.at(t));
-  const wake = $derived(course ? course.line(0, t) : []);
+  /**
+   * Her wake: the whole leg's course drawn once (rebuilt only when a passage is chosen), and only
+   * as much of it shown as she's steamed, by its dash. As she moves, one number changes, not the
+   * path. `along` turns her progress (t) into distance along the drawn line: sampled once with
+   * the line, read off as she goes.
+   */
+  const SAMPLES = 2000;
+  const wakeLine = $derived.by(() => {
+    if (!course) return null;
+    const line = course.line(0, 1);
+    let drawn = 0;
+    for (let i = 1; i < line.length; i++) drawn += Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]);
+    const along = new Float64Array(SAMPLES + 1);
+    let prev = course.at(0).p;
+    for (let i = 1; i <= SAMPLES; i++) {
+      const p = course.at(i / SAMPLES).p;
+      along[i] = along[i - 1] + Math.hypot(p[0] - prev[0], p[1] - prev[1]);
+      prev = p;
+    }
+    // The samples cut corners a hair; stretched to the drawn line's length, so the dash meets her.
+    const k = along[SAMPLES] ? drawn / along[SAMPLES] : 1;
+    for (let i = 0; i <= SAMPLES; i++) along[i] *= k;
+    return { points: pts(line), drawn, along };
+  });
+  const wakeLength = $derived.by(() => {
+    if (!wakeLine) return 0;
+    const x = Math.max(0, Math.min(1, t)) * SAMPLES, i = Math.floor(x);
+    const { along } = wakeLine;
+    return i >= SAMPLES ? along[SAMPLES] : along[i] + (x - i) * (along[i + 1] - along[i]);
+  });
 
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
   const zoom = new Tween(voyage.steamZoom, { duration: 1100, easing: cubicInOut });
@@ -107,7 +136,10 @@
   {#if sidecar && boat}
     <div class="map">
       <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale}>
-        <polyline points={pts(wake)} class="wake" style:stroke-width="{3 * voyage.boatSize}px" />
+        {#if wakeLine}
+          <!-- In map units, width and dash alike (a non-scaling stroke would measure its dash on screen). -->
+          <polyline points={wakeLine.points} class="wake" stroke-width={(3 * voyage.boatSize) / scale} stroke-dasharray="{wakeLength} {wakeLine.drawn + 1}" />
+        {/if}
         {#each crates as c, i (i)}
           <!-- A crate adrift: what she picks up if she goes that way. -->
           <g class="crate" transform="translate({c[0]} {c[1]}) scale({voyage.boatSize / scale})" style:animation-delay="{i * -0.7}s">
@@ -196,11 +228,9 @@
   .wake {
     fill: none;
     stroke: #6b2a1c;
-    stroke-width: 3;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-opacity: 0.8;
-    vector-effect: non-scaling-stroke;
   }
   .boat {
     transition: opacity 0.8s ease;
