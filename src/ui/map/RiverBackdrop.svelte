@@ -211,24 +211,38 @@
     return [cx + k * (a[0] - cx), cy + k * (a[1] - cy)];
   });
 
+  /** The chart's size on screen, and a spot on the chart (map px) on the screen. */
+  let mapW = $state(0);
+  let mapH = $state(0);
+  const onScreen = (p: Pt): Pt => [mapW / 2 + (p[0] - center[0]) * scale, mapH / 2 + (p[1] - center[1]) * scale];
+  /** The boat's own layer: a square of the top view's units, room for her at any heading and her smoke. */
+  const BOAT_BOX = 460;
+  const boatBox = $derived(BOAT_BOX * voyage.boatSize * TOP_SCALE);
+  const boatAt = $derived(boat ? onScreen(boat.p) : ([0, 0] as Pt));
 </script>
 
 <div class="backdrop" class:play={mode === 'play'} class:jolt aria-hidden="true">
   {#if sidecar && boat}
-    <div class="map">
-      <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale}>
-        {#each crates as c, i (i)}
-          <!-- A crate adrift: what she picks up if she goes that way. -->
-          <g class="crate" transform="translate({c[0]} {c[1]}) scale({voyage.boatSize / scale})" style:animation-delay="{i * -0.7}s">
+    <div class="map" bind:clientWidth={mapW} bind:clientHeight={mapH}>
+      <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale} />
+      <!--
+        What's on the chart, each in a small layer of its own, placed by a transform: their smoke and
+        bobbing repaint only themselves, not a drawing the size of the screen.
+      -->
+      {#each crates as c, i (i)}
+        {@const [x, y] = onScreen(c)}
+        <!-- A crate adrift: what she picks up if she goes that way. -->
+        <svg class="mark" viewBox="-6 -6 12 12" width={12 * voyage.boatSize} height={12 * voyage.boatSize} style:transform="translate3d({x - 6 * voyage.boatSize}px, {y - 6 * voyage.boatSize}px, 0)">
+          <g class="crate" style:animation-delay="{i * -0.7}s">
             <rect class="ink" x="-4" y="-4" width="8" height="8" />
             <path class="paper" d="M -4 -4 L 4 4 M 4 -4 L -4 4" stroke="#f4ecd8" stroke-width="1" />
           </g>
-        {/each}
-        <!-- The Best Intentions from above (src/ui/boat): she turns to any heading, never flips -->
-        <g class="boat" transform="translate({boat.p[0]} {boat.p[1]}) scale({(voyage.boatSize * TOP_SCALE) / scale})">
-          <BoatTop {built} heading={deg} printed />
-        </g>
-      </TileMap>
+        </svg>
+      {/each}
+      <!-- The Best Intentions from above (src/ui/boat): she turns to any heading, never flips -->
+      <svg class="mark boat" viewBox="{-BOAT_BOX / 2} {-BOAT_BOX / 2} {BOAT_BOX} {BOAT_BOX}" width={boatBox} height={boatBox} style:transform="translate3d({boatAt[0] - boatBox / 2}px, {boatAt[1] - boatBox / 2}px, 0)">
+        <BoatTop {built} heading={deg} printed />
+      </svg>
     </div>
   {/if}
   <!-- The projector's lamp: bright in the middle, falling away to black at the edges, so the chart's own edges never show hard. -->
@@ -301,6 +315,15 @@
     55% {
       transform: translate(-6px, 3px) rotate(-0.4deg);
     }
+  }
+  /* A mark on the chart: a small layer of its own, moved by the compositor. */
+  .mark {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+    pointer-events: none;
+    will-change: transform;
   }
   .boat {
     transition: opacity 0.8s ease;
