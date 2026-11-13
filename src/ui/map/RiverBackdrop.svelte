@@ -322,9 +322,16 @@
     const motes: Mote[] = [];
     let raf = 0, last = performance.now(), steamClock = 0;
     let was: Pt | null = null;
+    let drawnAt: Pt = [NaN, NaN], drawnScale = NaN;
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
-      if (now - last < 1000 / 30) return;
+      // Thirty times a second while the chart holds still; every frame while it's moving (a pan, a lean,
+      // a zoom), so the steam moves with the chart and doesn't judder against it.
+      const view = center, zoomed = scale;
+      const panning = view[0] !== drawnAt[0] || view[1] !== drawnAt[1] || zoomed !== drawnScale;
+      if (!panning && now - last < 1000 / 30) return;
+      drawnAt = view;
+      drawnScale = zoomed;
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       const dpr = Math.min(2, devicePixelRatio || 1);
