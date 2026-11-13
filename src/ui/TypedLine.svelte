@@ -2,7 +2,7 @@
   /**
    * A line of the First Mate's Log, in Willie's typewriter. A new entry types itself out a key at a
    * time, as Willie does: he's new at it, so unevenly, slow, a pause now and then to find the next
-   * key, each key struck (it lands with a little jolt, and a clack). In the header, an entry of
+   * key, each key struck at once, with a clack (a typewriter shows no cursor, and eases nothing in). In the header, an entry of
    * several lines is typed a line at a time, each replacing the one before, and its last line stays.
    * In the open log (`wrap`) the lines build up below each other.
    *
@@ -169,32 +169,8 @@
     opacity: 1;
     white-space: pre-line;
   }
-  /* The key just struck lands: a hair high and pale, then settles. */
+  /* The key lands at once, sudden and unannounced: a thwack of metal type on the paper, nothing eased. */
   .struck {
-    display: inline-block;
     white-space: pre;
-    animation: strike 0.12s ease-out;
-  }
-  @keyframes strike {
-    from {
-      translate: 0 -0.12em;
-      opacity: 0.4;
-    }
-  }
-  /* The carriage, at the end of the line while he types. */
-  .typing .paper::after {
-    content: '▌';
-    opacity: 0.6;
-    animation: caret 0.6s steps(2) infinite;
-  }
-  @keyframes caret {
-    50% {
-      opacity: 0;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .struck {
-      animation: none;
-    }
   }
 </style>
