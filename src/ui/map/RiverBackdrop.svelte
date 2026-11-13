@@ -219,6 +219,142 @@
   const BOAT_BOX = 460;
   const boatBox = $derived(BOAT_BOX * voyage.boatSize * TOP_SCALE);
   const boatAt = $derived(boat ? onScreen(boat.p) : ([0, 0] as Pt));
+
+  /**
+   * Smoke and wake, as particles on one canvas over the chart, drawn thirty times a second while she
+   * steams (and not at all otherwise). They live on the chart, not on her: smoke puffed from her
+   * chimneys hangs where it was puffed, drifts on the wind, spreads and thins; her wake is a trail
+   * of bubbles left where she passed, fading, so it stays in the water she sailed (it never washes
+   * up on a bank). Each mote is one stamp of a small soft image drawn once: about the cheapest thing
+   * a canvas does. How heavy the smoke is comes from how hard she's going (racing, for now; the fuel
+   * and the engine later: see EXHAUST).
+   */
+  let canvas = $state<HTMLCanvasElement>();
+  interface Mote {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    age: number;
+    life: number;
+    r0: number;
+    r1: number;
+    alpha: number;
+    smoke: boolean;
+  }
+  /** How she smokes and stirs the water, in the top view's units (her length is about 260) and seconds. */
+  const EXHAUST = {
+    /** A puff from each chimney this often; how long it hangs; its size as it leaves and as it spreads; how dark. */
+    puffEvery: 0.28,
+    puffLife: 9,
+    puffSize: [16, 80] as const,
+    puffAlpha: 0.55,
+    /** The wind the smoke drifts on (units a second). */
+    wind: [10, -14] as const,
+    /** A bubble this often; how long it lasts; its size; how plain. */
+    bubbleEvery: 0.06,
+    bubbleLife: 3.2,
+    bubbleSize: [5, 9] as const,
+    bubbleAlpha: 0.75,
+    /** Going hard (Skip held): puffs this much more often, bigger and darker. */
+    hard: 2.5,
+  };
+  /** Where the chimneys stand and the wheel turns, from her middle in the top view's units (BoatTop: chimneys at 142, middle at 100). */
+  const CHIMNEYS: Pt[] = [
+    [42, -9],
+    [42, 9],
+  ];
+  const STERN = -112;
+
+  function sprite(draw: (c: CanvasRenderingContext2D, n: number) => void, n: number): HTMLCanvasElement {
+    const img = document.createElement('canvas');
+    img.width = img.height = n;
+    draw(img.getContext('2d')!, n);
+    return img;
+  }
+  $effect(() => {
+    const cv = canvas;
+    if (!cv || mode !== 'steam') {
+      cv?.getContext('2d')?.clearRect(0, 0, cv.width, cv.height);
+      return;
+    }
+    const ctx = cv.getContext('2d')!;
+    const puff = sprite((c, n) => {
+      const g = c.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
+      g.addColorStop(0, 'rgba(38, 36, 32, 1)');
+      g.addColorStop(0.55, 'rgba(38, 36, 32, 0.45)');
+      g.addColorStop(1, 'rgba(38, 36, 32, 0)');
+      c.fillStyle = g;
+      c.fillRect(0, 0, n, n);
+    }, 64);
+    const bubble = sprite((c, n) => {
+      c.strokeStyle = 'rgba(30, 30, 28, 1)';
+      c.lineWidth = n / 8;
+      c.beginPath();
+      c.arc(n / 2, n / 2, n / 2 - c.lineWidth, 0, Math.PI * 2);
+      c.stroke();
+    }, 16);
+    const motes: Mote[] = [];
+    let raf = 0, last = performance.now(), puffClock = 0, bubbleClock = 0;
+    let was: Pt | null = null;
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (now - last < 1000 / 30) return;
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      const dpr = Math.min(2, devicePixelRatio || 1);
+      if (cv.width !== Math.round(mapW * dpr) || cv.height !== Math.round(mapH * dpr)) {
+        cv.width = Math.round(mapW * dpr);
+        cv.height = Math.round(mapH * dpr);
+      }
+      const b = boat;
+      // Units of the top view, in map px, at this zoom.
+      const u = (voyage.boatSize * TOP_SCALE) / scale;
+      const hard = racing ? EXHAUST.hard : 1;
+      const moving = !!b && !!was && Math.hypot(b.p[0] - was[0], b.p[1] - was[1]) > 0.01;
+      if (b) was = b.p;
+      if (b && moving) {
+        const cos = Math.cos(b.heading), sin = Math.sin(b.heading);
+        const at = ([fx, fy]: Pt): Pt => [b.p[0] + (fx * cos - fy * sin) * u, b.p[1] + (fx * sin + fy * cos) * u];
+        puffClock += dt * hard;
+        while (puffClock > EXHAUST.puffEvery) {
+          puffClock -= EXHAUST.puffEvery;
+          for (const c of CHIMNEYS) {
+            const [x, y] = at(c);
+            motes.push({ x, y, vx: (EXHAUST.wind[0] + (Math.random() - 0.5) * 8) * u, vy: (EXHAUST.wind[1] + (Math.random() - 0.5) * 8) * u, age: 0, life: EXHAUST.puffLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.puffSize[0] * u * Math.sqrt(hard), r1: EXHAUST.puffSize[1] * u * Math.sqrt(hard), alpha: Math.min(0.85, EXHAUST.puffAlpha * Math.sqrt(hard)), smoke: true });
+          }
+        }
+        bubbleClock += dt;
+        while (bubbleClock > EXHAUST.bubbleEvery) {
+          bubbleClock -= EXHAUST.bubbleEvery;
+          const [x, y] = at([STERN - Math.random() * 6, (Math.random() - 0.5) * 22]);
+          const r = (EXHAUST.bubbleSize[0] + Math.random() * (EXHAUST.bubbleSize[1] - EXHAUST.bubbleSize[0])) * u;
+          motes.push({ x, y, vx: 0, vy: 0, age: 0, life: EXHAUST.bubbleLife * (0.7 + Math.random() * 0.6), r0: r, r1: r * 1.4, alpha: EXHAUST.bubbleAlpha, smoke: false });
+        }
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, mapW, mapH);
+      for (let k = motes.length - 1; k >= 0; k--) {
+        const m = motes[k];
+        m.age += dt;
+        if (m.age >= m.life) {
+          motes.splice(k, 1);
+          continue;
+        }
+        m.x += m.vx * dt;
+        m.y += m.vy * dt;
+        const f = m.age / m.life;
+        const r = (m.r0 + (m.r1 - m.r0) * Math.sqrt(f)) * scale;
+        const [sx, sy] = onScreen([m.x, m.y]);
+        if (sx < -r || sy < -r || sx > mapW + r || sy > mapH + r) continue;
+        // Smoke thickens a moment as it leaves, then thins away; bubbles simply fade.
+        ctx.globalAlpha = m.alpha * (m.smoke ? Math.min(1, f * 6) * (1 - f) : 1 - f);
+        ctx.drawImage(m.smoke ? puff : bubble, sx - r, sy - r, 2 * r, 2 * r);
+      }
+    };
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
+  });
 </script>
 
 <div class="backdrop" class:play={mode === 'play'} class:jolt aria-hidden="true">
@@ -239,6 +375,8 @@
           </g>
         </svg>
       {/each}
+      <!-- Smoke and wake (particles, under her: the smoke drifts away astern and the bubbles trail her) -->
+      <canvas class="exhaust" bind:this={canvas} style:width="{mapW}px" style:height="{mapH}px"></canvas>
       <!-- The Best Intentions from above (src/ui/boat): she turns to any heading, never flips -->
       <svg class="mark boat" viewBox="{-BOAT_BOX / 2} {-BOAT_BOX / 2} {BOAT_BOX} {BOAT_BOX}" width={boatBox} height={boatBox} style:transform="translate3d({boatAt[0] - boatBox / 2}px, {boatAt[1] - boatBox / 2}px, 0)">
         <BoatTop {built} heading={deg} printed />
@@ -315,6 +453,15 @@
     55% {
       transform: translate(-6px, 3px) rotate(-0.4deg);
     }
+  }
+  .exhaust {
+    position: absolute;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+  }
+  .play .exhaust {
+    opacity: 0;
   }
   /* A mark on the chart: a small layer of its own, moved by the compositor. */
   .mark {

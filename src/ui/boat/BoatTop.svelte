@@ -212,7 +212,8 @@
     {#each chimneys as c, i (i)}
       <circle class="crown" cx={c.top[0]} cy={c.top[1]} r="3.8" />
       <circle class="mouth" cx={c.top[0]} cy={c.top[1]} r="2" />
-      {#each Array.from({ length: puffs }) as _, k (k)}
+      <!-- On the chart her smoke is the particle layer's (RiverBackdrop): here only off it. -->
+      {#each Array.from({ length: printed ? 0 : puffs }) as _, k (k)}
         {@const [dx, dy] = drift(k)}
         <circle
           class="puff"
@@ -354,6 +355,10 @@
   }
   .slats {
     animation: slats var(--spin) linear infinite;
+  }
+  /* On the chart the wheel is too small to see turn: it holds still, and costs nothing. */
+  .printed .slats {
+    animation: none;
   }
   @keyframes slats {
     to {
