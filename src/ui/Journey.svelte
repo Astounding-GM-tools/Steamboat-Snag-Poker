@@ -67,6 +67,11 @@
   const enc = $derived(journey.encounter);
   const playing = $derived(step?.type === 'encounter' && !!enc && !enc.outcome);
 
+  /** Which way she's bound: up the river to Dubuque, then down (chapter one is all northbound). */
+  const bound = $derived(journey.flags.includes('southbound') ? 'southbound' : 'northbound');
+  /** The voyage's heading: "Day 2: Muscatine, northbound". */
+  const heading = $derived(t('river.heading', { day: journey.mornings, place: t(`place.${journey.place}`), bound: t(`river.${bound}`) }));
+
   /** Out on the river (or setting out on it): the map is beneath the felt. */
   const onRiver = $derived(!!journey.river || step?.type === 'steam');
   const leg = $derived(journey.river?.leg ?? (step?.type === 'steam' ? step.leg : ''));
@@ -443,7 +448,7 @@
   <!-- Under way: the map is the picture; Pause for the menu, or hold Skip to race on. -->
   <div class="page steaming">
     <div class="status">
-      <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
+      <span class="day">{heading}</span>
       {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
     </div>
     {#if forkLine}
@@ -480,7 +485,7 @@
     <!-- Where the boat stands: the day, the place, the purse, the crew's strength, the coal. -->
     {#if shipOpen}<ShipPage {journey} onrehire={(id, on) => (journey = setRehire(journey, id, on))} onstation={(id, station) => (journey = setStation(journey, id, station))} onclose={() => (shipOpen = false)} />{/if}
     <div class="status" class:unseen={!journey.mornings}>
-      <span class="day">{t('river.day', { day: journey.mornings })} · {t(`place.${journey.place}`)} · {t(`river.slot.${journey.time}`)}</span>
+      <span class="day">{heading}{#if step.type === 'hub'} · {t(`river.slot.${journey.time}`)}{/if}</span>
       <span>{t('river.purse')} ${journey.purse}</span>
       <span>{t('river.strength')} {journey.strength}</span>
       <span>{t('river.coal')} {t('river.coalLoads', { n: journey.coal, max: BOAT.bunker })}</span>

@@ -385,7 +385,11 @@ export const en = {
   'character.eliza.boat': 'High roller on the grand steamers',
   'character.eliza.blurb': 'Charming, patient and terribly polite. Those who lose to her tend to stay lost.',
 
-  'river.day': 'Days gone: {day}',
+  'river.day': 'Day {day}',
+  /** The heading over the voyage's pages: the day, where she is, and which way she's bound. */
+  'river.heading': 'Day {day}: {place}, {bound}',
+  'river.northbound': 'northbound',
+  'river.southbound': 'southbound',
   'hub.anchor.name': 'Anchor downstream',
   'hub.anchor.desc': 'Free. Willie wades ashore.',
   'hub.bettendorf.name': 'Bettendorf Saloon',
