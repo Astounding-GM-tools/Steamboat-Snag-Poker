@@ -240,7 +240,7 @@
     r0: number;
     r1: number;
     alpha: number;
-    smoke: boolean;
+    kind: 'smoke' | 'steam' | 'bubble';
   }
   /** How she smokes and stirs the water, in the top view's units (her length is about 260) and seconds. */
   const EXHAUST = {
@@ -256,6 +256,17 @@
     bubbleLife: 3.2,
     bubbleSize: [5, 9] as const,
     bubbleAlpha: 0.75,
+    /**
+     * Steam from the escape pipe: thick, white, billowing, in chuffs as the engine breathes, rising
+     * slowly and spreading wide before it goes home to the clouds. Drawn white with a soft grey under
+     * it, so it reads on the pale paper.
+     */
+    steamEvery: 0.55,
+    steamLife: 6.5,
+    steamSize: [22, 120] as const,
+    steamAlpha: 0.95,
+    /** The steam rides the wind more lazily than the smoke. */
+    steamDrift: 0.45,
     /** Going hard (Skip held): puffs this much more often, bigger and darker. */
     hard: 2.5,
   };
@@ -265,6 +276,8 @@
     [42, 9],
   ];
   const STERN = -112;
+  /** The escape pipe, between and a little aft of the chimneys. */
+  const ESCAPE: Pt = [30, 0];
 
   function sprite(draw: (c: CanvasRenderingContext2D, n: number) => void, n: number): HTMLCanvasElement {
     const img = document.createElement('canvas');
@@ -287,6 +300,16 @@
       c.fillStyle = g;
       c.fillRect(0, 0, n, n);
     }, 64);
+    const steam = sprite((c, n) => {
+      const g = c.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
+      // A firm white body with a soft edge: a billow, not a blur.
+      g.addColorStop(0, 'rgba(253, 252, 247, 1)');
+      g.addColorStop(0.55, 'rgba(250, 248, 241, 0.97)');
+      g.addColorStop(0.8, 'rgba(246, 244, 236, 0.55)');
+      g.addColorStop(1, 'rgba(246, 244, 236, 0)');
+      c.fillStyle = g;
+      c.fillRect(0, 0, n, n);
+    }, 64);
     const bubble = sprite((c, n) => {
       c.strokeStyle = 'rgba(30, 30, 28, 1)';
       c.lineWidth = n / 8;
@@ -295,7 +318,7 @@
       c.stroke();
     }, 16);
     const motes: Mote[] = [];
-    let raf = 0, last = performance.now(), puffClock = 0, bubbleClock = 0;
+    let raf = 0, last = performance.now(), puffClock = 0, bubbleClock = 0, steamClock = 0;
     let was: Pt | null = null;
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
@@ -321,7 +344,7 @@
           puffClock -= EXHAUST.puffEvery;
           for (const c of CHIMNEYS) {
             const [x, y] = at(c);
-            motes.push({ x, y, vx: (EXHAUST.wind[0] + (Math.random() - 0.5) * 8) * u, vy: (EXHAUST.wind[1] + (Math.random() - 0.5) * 8) * u, age: 0, life: EXHAUST.puffLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.puffSize[0] * u * Math.sqrt(hard), r1: EXHAUST.puffSize[1] * u * Math.sqrt(hard), alpha: Math.min(0.85, EXHAUST.puffAlpha * Math.sqrt(hard)), smoke: true });
+            motes.push({ x, y, vx: (EXHAUST.wind[0] + (Math.random() - 0.5) * 8) * u, vy: (EXHAUST.wind[1] + (Math.random() - 0.5) * 8) * u, age: 0, life: EXHAUST.puffLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.puffSize[0] * u * Math.sqrt(hard), r1: EXHAUST.puffSize[1] * u * Math.sqrt(hard), alpha: Math.min(0.85, EXHAUST.puffAlpha * Math.sqrt(hard)), kind: 'smoke' });
           }
         }
         bubbleClock += dt;
@@ -329,7 +352,14 @@
           bubbleClock -= EXHAUST.bubbleEvery;
           const [x, y] = at([STERN - Math.random() * 6, (Math.random() - 0.5) * 22]);
           const r = (EXHAUST.bubbleSize[0] + Math.random() * (EXHAUST.bubbleSize[1] - EXHAUST.bubbleSize[0])) * u;
-          motes.push({ x, y, vx: 0, vy: 0, age: 0, life: EXHAUST.bubbleLife * (0.7 + Math.random() * 0.6), r0: r, r1: r * 1.4, alpha: EXHAUST.bubbleAlpha, smoke: false });
+          motes.push({ x, y, vx: 0, vy: 0, age: 0, life: EXHAUST.bubbleLife * (0.7 + Math.random() * 0.6), r0: r, r1: r * 1.4, alpha: EXHAUST.bubbleAlpha, kind: 'bubble' });
+        }
+        steamClock += dt * hard;
+        while (steamClock > EXHAUST.steamEvery) {
+          steamClock -= EXHAUST.steamEvery * (0.8 + Math.random() * 0.4);
+          const [x, y] = at(ESCAPE);
+          const k = EXHAUST.steamDrift;
+          motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * u, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * u, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * u, r1: EXHAUST.steamSize[1] * u * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, kind: 'steam' });
         }
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -347,9 +377,15 @@
         const r = (m.r0 + (m.r1 - m.r0) * Math.sqrt(f)) * scale;
         const [sx, sy] = onScreen([m.x, m.y]);
         if (sx < -r || sy < -r || sx > mapW + r || sy > mapH + r) continue;
-        // Smoke thickens a moment as it leaves, then thins away; bubbles simply fade.
-        ctx.globalAlpha = m.alpha * (m.smoke ? Math.min(1, f * 6) * (1 - f) : 1 - f);
-        ctx.drawImage(m.smoke ? puff : bubble, sx - r, sy - r, 2 * r, 2 * r);
+        // Smoke and steam thicken a moment as they leave, then thin away; bubbles simply fade.
+        const fade = m.kind === 'bubble' ? 1 - f : Math.min(1, f * 6) * (1 - f) * (m.kind === 'steam' ? 1 - f * 0.5 : 1);
+        if (m.kind === 'steam') {
+          // A soft grey under the white, a little down-light, so the billow has body on the pale paper.
+          ctx.globalAlpha = m.alpha * fade * 0.42;
+          ctx.drawImage(puff, sx - r + r * 0.12, sy - r + r * 0.18, 2 * r, 2 * r);
+        }
+        ctx.globalAlpha = m.alpha * fade;
+        ctx.drawImage(m.kind === 'smoke' ? puff : m.kind === 'steam' ? steam : bubble, sx - r, sy - r, 2 * r, 2 * r);
       }
     };
     raf = requestAnimationFrame(frame);
