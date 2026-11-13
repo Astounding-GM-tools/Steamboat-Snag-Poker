@@ -42,7 +42,7 @@
     return Math.random() < 0.08 ? base + 500 + Math.random() * 800 : base;
   }
   /** How long a typed line stays to be read: a few seconds, longer for a longer line. */
-  const readingTime = (l: string) => 2600 + l.length * 70;
+  const readingTime = (l: string) => 5000 + l.length * 110;
   /** The roll of the paper, and the pause between sections and before an entry. */
   const ROLL_MS = 700;
   const SECTION_MS = 6000;
