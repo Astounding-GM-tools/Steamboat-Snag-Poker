@@ -13,7 +13,17 @@
   import { untrack } from 'svelte';
   import { clack } from './typewriter';
 
-  let { text, fresh = false, ontyped, wrap = false }: { text: string; fresh?: boolean; ontyped?: () => void; wrap?: boolean } = $props();
+  interface Props {
+    text: string;
+    fresh?: boolean;
+    ontyped?: () => void;
+    wrap?: boolean;
+    /** The line of the entry to start at: he picks up where he left off (the header was away at a table). */
+    from?: number;
+    /** Each line as it's finished, so whoever shows this can say where he'd got to. */
+    online?: (line: number) => void;
+  }
+  let { text, fresh = false, ontyped, wrap = false, from = 0, online }: Props = $props();
 
   /** The lines of an entry, blanks (a paragraph's end) dropped. */
   const linesOf = (t: string) => t.split('\n').filter((l) => l.trim());
@@ -70,7 +80,7 @@
       return;
     }
     let timer: ReturnType<typeof setTimeout>;
-    let l = 0, i = 0;
+    let l = Math.min(untrack(() => from), lines.length - 1), i = 0;
     const later = (fn: () => void, ms: number) => (timer = setTimeout(fn, ms));
     /** The paper rolls up: what's showing goes up under the heading, then `then`. */
     const roll = (then: () => void) => {
@@ -92,6 +102,7 @@
       clack(c === ' ' ? 'space' : 'key');
       if (i < whole.length) return later(key, delay(c));
       // The line's typed: left to be read, then on.
+      untrack(() => online?.(l + 1));
       later(() => {
         if (l + 1 >= lines.length) {
           done = settled(entry);

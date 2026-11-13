@@ -92,7 +92,12 @@
     return log.length ? log[Math.min(seenLog, log.length - 1)].text : null;
   });
   const freshEntry = $derived((journey.log?.length ?? 0) > seenLog);
-  const typed = () => (seenLog = Math.min(seenLog + 1, journey.log?.length ?? 0));
+  const typed = () => {
+    seenLog = Math.min(seenLog + 1, journey.log?.length ?? 0);
+    typedLines = 0;
+  };
+  /** How far into the entry he'd typed (lines): away at a table, he picks up there, not from the top. */
+  let typedLines = $state(0);
   /** The log open over the river (the header opens it). */
   let logOpen = $state(false);
   /** The voyage's heading: "Day 2: Muscatine, upbound". */
@@ -527,7 +532,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="status opens" role="button" tabindex="0" aria-label={t('log.open')} onclick={() => (logOpen = !logOpen)}>
       <span class="day">{heading}</span>
-      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} />{/if}
+      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} />{/if}
       {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
     </div>
     {#if logOpen && journey.log?.length}<LogView entries={journey.log} today={Math.max(1, journey.mornings)} onclose={() => (logOpen = false)} />{/if}
@@ -567,7 +572,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="status opens" class:unseen={!journey.mornings} role="button" tabindex="0" aria-label={t('log.open')} onclick={() => journey.log?.length && (logOpen = !logOpen)}>
       <span class="day">{heading}{#if step.type === 'hub'} · {t(`river.slot.${journey.time}`)}{/if}</span>
-      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} />{/if}
+      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} />{/if}
       <span>{t('river.purse')} ${journey.purse}</span>
       <span>{t('river.strength')} {journey.strength}</span>
       <span>{t('river.coal')} {t('river.coalLoads', { n: journey.coal, max: BOAT.bunker })}</span>
