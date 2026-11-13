@@ -79,8 +79,8 @@
   /** Development only: she steams the leg over and over, with nothing to stop her (no islands, chatter or encounters): something running while we work. */
   const endless = $derived(import.meta.env.DEV && journey.flags.includes('dev:endless'));
 
-  /** Which way she's bound: up the river to Dubuque, then down (chapter one is all northbound). */
-  const bound = $derived(journey.flags.includes('southbound') ? 'southbound' : 'northbound');
+  /** Which way she's bound, as the river says it: up to Dubuque, then down (the first leg is all upbound). */
+  const bound = $derived(journey.flags.includes('downbound') ? 'downbound' : 'upbound');
   /** The log's latest line, under the heading: typed out as it's written. */
   const lastEntry = $derived(journey.log?.at(-1)?.text ?? null);
   /** How much of the log has been seen typed (or was there already when the voyage was opened): what's beyond is typed out when it shows. */
@@ -89,7 +89,7 @@
   const typed = () => (seenLog = journey.log?.length ?? 0);
   /** The log open over the river (the header opens it). */
   let logOpen = $state(false);
-  /** The voyage's heading: "Day 2: Muscatine, northbound". */
+  /** The voyage's heading: "Day 2: Muscatine, upbound". */
   const heading = $derived(t('river.heading', { day: journey.mornings, place: t(`place.${journey.place}`), bound: t(`river.${bound}`) }));
 
   /** Out on the river (or setting out on it): the map is beneath the felt. */
@@ -105,7 +105,7 @@
    * rapids' pushes are played at the table, where the steam isn't drawn.)
    */
   const EFFORT = { upstream: 1, downstream: 0.55, racing: 2.5 };
-  const engineEffort = $derived(racing ? EFFORT.racing : bound === 'southbound' ? EFFORT.downstream : EFFORT.upstream);
+  const engineEffort = $derived(racing ? EFFORT.racing : bound === 'downbound' ? EFFORT.downstream : EFFORT.upstream);
   $effect(() => {
     if (step?.type !== 'steam') {
       if (journey.river) boatT = journey.river.t;
@@ -118,7 +118,7 @@
       // Leaving Muscatine is Willie's first musing (how the dock fee went); elsewhere, a line.
       const first = steamFrom === 0 && journey.place === 'muscatine';
       const line = first
-        ? leavingMuscatine(journey.flags, journey.purse, DOCK_FEE_AMOUNT)
+        ? leavingMuscatine(journey.flags, journey.purse, DOCK_FEE_AMOUNT, journey.coal, BOAT.bunker)
         : steamFrom === 0
           ? castOffRecord(t(`place.${journey.place}`), t(`river.${bound}`))
           : UNDER_WAY_AGAIN;

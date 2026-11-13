@@ -65,7 +65,7 @@ sanity: loyalty over understanding.
 ## Where it's read
 
 1. **The header** (over the voyage's pages and the river): the day's heading, "Day 2: Muscatine,
-   northbound", and under it **the latest entry**, cut off with "…" when it's long. Tap to open the
+   upbound", and under it **the latest entry**, cut off with "…" when it's long. Tap to open the
    reading view.
 2. **The reading view** overlays the map with good contrast, while **the river keeps going behind
    it**:
