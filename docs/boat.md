@@ -185,6 +185,27 @@ cabin one bay longer, a chimney folding).
 | `src/bench/Boat.svelte` | The bench page, `/boat.html` |
 | `src/bench/Figures.svelte` | The people one by one, on the same page |
 
+## Where modules come from
+
+*Agreed 2026-11-13.* Two sources:
+
+- **Upgrades** bought at the Mercantile docks along the river (the engine overhaul is the bigger
+  engine, and so on).
+- **Story events.** Above all the floating village on the way to Dubuque: some of the rafts in
+  tow are cabins built to fit a boat, and the rafters take one off its raft and install it aboard.
+  The cook's raft becomes **the galley**, stove and all; another's cabins can become **the
+  staterooms**. **The tail shrinks while the body grows:** each raft installed is one fewer on
+  the line astern.
+
+**People and fittings are separate.** The cook comes with the village and the stove comes with
+her raft, but they're two things: a hire (who's aboard) and a module (what's built). The band
+joins at The Sandbar before there's a bandstand to put them on; they play on the foredeck among
+the freight until one is built for them (it needs the dining saloon under it).
+
+So in the tow, some rafts must be drawn as installable boat modules (a galley house, a row of
+stateroom cabins) sitting on rafts, recognisably the same parts as on the boat, and moved
+aboard when the story says.
+
 ## Next
 
 1. **Wired in:** `BoatScene` draws `BoatSide` (at night, 0.75×, waterline at
