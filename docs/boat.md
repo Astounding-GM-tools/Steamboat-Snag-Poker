@@ -216,7 +216,7 @@ to it), so each is a choice.
 | Galley | The village: the cook's raft, installed aboard | Clinton to Dubuque |
 | Staterooms | The village: another raft's cabins | Clinton to Dubuque |
 | Dining saloon | The Mercantile (a place to eat and play cards) | Dubuque |
-| Bandstand | Built on top of the staterooms, so not before them | Dubuque, or after |
+| Bandstand | Built on top of the dining saloon, so not before it | Dubuque, or after |
 | Pretty Patty | The story: she's fetched from Dubuque | Dubuque, for the way down |
 | Engine overhaul | The dry dock | The Quad Cities, on the way down |
 
