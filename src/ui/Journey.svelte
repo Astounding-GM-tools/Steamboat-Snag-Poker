@@ -468,7 +468,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} {crates} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} {crates} {racing} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">

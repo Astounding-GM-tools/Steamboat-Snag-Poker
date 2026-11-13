@@ -37,8 +37,10 @@
     ahead?: Pt | null;
     /** What she has built so far: Bill's bare boat until the story says otherwise. */
     built?: Built;
+    /** Skip held: the view stays on her rather than letting her steam across it. */
+    racing?: boolean;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null, built = {} }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null, built = {}, racing = false }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -50,42 +52,118 @@
 
   /** The channel, round the islands by the passages chosen. */
   const course = $derived(sidecar ? forked(route(sidecar.path.px[0], sidecar.stops), leg, sidecar.islands ?? [], lanes) : null);
-  const boat = $derived(course?.at(t));
+
+  /** Corners cut off a line (Chaikin's), `rounds` times: the chart's channel as a boat would sail it, in curves. */
+  function rounded(line: readonly Pt[], rounds: number): Pt[] {
+    let out = line.slice();
+    for (let r = 0; r < rounds; r++) {
+      const next: Pt[] = [out[0]];
+      for (let i = 0; i < out.length - 1; i++) {
+        const [a, b] = [out[i], out[i + 1]];
+        next.push([0.75 * a[0] + 0.25 * b[0], 0.75 * a[1] + 0.25 * b[1]], [0.25 * a[0] + 0.75 * b[0], 0.25 * a[1] + 0.75 * b[1]]);
+      }
+      next.push(out[out.length - 1]);
+      out = next;
+    }
+    return out;
+  }
+
   /**
-   * Her wake: the whole leg's course drawn once (rebuilt only when a passage is chosen), and only
-   * as much of it shown as she's steamed, by its dash. As she moves, one number changes, not the
-   * path. `along` turns her progress (t) into distance along the drawn line: sampled once with
-   * the line, read off as she goes.
+   * The way she sails: the whole leg's course, rounded, drawn once (rebuilt only when a passage
+   * is chosen). She is on it and faces along it, so she always moves the way she points: forward,
+   * never sliding sideways. Her wake is the same line, shown as far as she's steamed by its dash.
+   * `along` turns her progress (t) into distance along it: sampled once with the line.
    */
   const SAMPLES = 2000;
-  const wakeLine = $derived.by(() => {
+  const sailed = $derived.by(() => {
     if (!course) return null;
-    const line = course.line(0, 1);
-    let drawn = 0;
-    for (let i = 1; i < line.length; i++) drawn += Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]);
+    const line = rounded(course.line(0, 1), 3);
+    const cum = new Float64Array(line.length);
+    for (let i = 1; i < line.length; i++) cum[i] = cum[i - 1] + Math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1]);
+    const drawn = cum[line.length - 1];
     const along = new Float64Array(SAMPLES + 1);
     let prev = course.at(0).p;
     for (let i = 1; i <= SAMPLES; i++) {
-      const p = course.at(i / SAMPLES).p;
-      along[i] = along[i - 1] + Math.hypot(p[0] - prev[0], p[1] - prev[1]);
-      prev = p;
+      const q = course.at(i / SAMPLES).p;
+      along[i] = along[i - 1] + Math.hypot(q[0] - prev[0], q[1] - prev[1]);
+      prev = q;
     }
-    // The samples cut corners a hair; stretched to the drawn line's length, so the dash meets her.
+    // Stretched to the rounded line's length, so progress and the line agree.
     const k = along[SAMPLES] ? drawn / along[SAMPLES] : 1;
     for (let i = 0; i <= SAMPLES; i++) along[i] *= k;
-    return { points: pts(line), drawn, along };
+    /** The point at distance `d` along the line. */
+    const point = (d: number): Pt => {
+      d = Math.max(0, Math.min(drawn, d));
+      let lo = 0, hi = line.length - 1;
+      while (hi - lo > 1) {
+        const mid = (lo + hi) >> 1;
+        if (cum[mid] < d) lo = mid;
+        else hi = mid;
+      }
+      const f = (d - cum[lo]) / (cum[hi] - cum[lo] || 1);
+      return [line[lo][0] + f * (line[hi][0] - line[lo][0]), line[lo][1] + f * (line[hi][1] - line[lo][1])];
+    };
+    return { points: pts(line), drawn, along, point };
   });
-  const wakeLength = $derived.by(() => {
-    if (!wakeLine) return 0;
+  /** How far along the line she is. */
+  const distance = $derived.by(() => {
+    if (!sailed) return 0;
     const x = Math.max(0, Math.min(1, t)) * SAMPLES, i = Math.floor(x);
-    const { along } = wakeLine;
+    const { along } = sailed;
     return i >= SAMPLES ? along[SAMPLES] : along[i] + (x - i) * (along[i + 1] - along[i]);
+  });
+  /** Her spot, and the way the line runs there (looked along a good way ahead and behind: a bend, not a corner). */
+  const boat = $derived.by(() => {
+    if (!sailed) return null;
+    const p = sailed.point(distance);
+    const a = sailed.point(distance - 120), b = sailed.point(distance + 120);
+    return { p, heading: Math.atan2(b[1] - a[1], b[0] - a[0]) };
   });
 
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
   const zoom = new Tween(voyage.steamZoom, { duration: 1100, easing: cubicInOut });
   $effect(() => {
     zoom.target = mode === 'play' ? voyage.playZoom : voyage.steamZoom;
+  });
+  const scale = $derived(2 ** zoom.current);
+  /** Her length on the screen (the top view is drawn about 260 units long). */
+  const boatOnScreen = $derived(260 * voyage.boatSize * TOP_SCALE);
+  /** Her wake, grown a step at a time under her hull: it changes every few seconds, not every frame, and the steps don't show. */
+  const wakeLength = $derived.by(() => {
+    const step = (0.3 * boatOnScreen) / scale;
+    return Math.floor(distance / step) * step;
+  });
+
+  /**
+   * The view holds still and lets her steam across it, then catches up: when she's gone a way from
+   * the middle, it pans (gently, a couple of seconds) to a spot a little ahead of her. Holding still,
+   * only she is drawn anew; the chart and her wake stay as they are. Racing (Skip held), or at play,
+   * it stays on her.
+   */
+  const cam = new Tween<Pt>([0, 0], { duration: 2000, easing: cubicInOut });
+  let camReady = false;
+  $effect(() => {
+    const b = boat;
+    if (!b) return;
+    const follow = racing || mode === 'play';
+    untrack(() => {
+      if (!camReady) {
+        cam.set(b.p, { duration: 0 });
+        camReady = true;
+        return;
+      }
+      if (follow) {
+        if (cam.target[0] !== b.p[0] || cam.target[1] !== b.p[1]) cam.set(b.p, { duration: mode === 'play' ? 1100 : 0 });
+        return;
+      }
+      // Room to steam: she crosses the middle from `room` behind to `room` ahead before the view moves.
+      const room = 0.3 * Math.min(innerWidth, innerHeight);
+      const [cx, cy] = cam.target;
+      if (Math.hypot((b.p[0] - cx) * scale, (b.p[1] - cy) * scale) > room) {
+        const lead = room / scale;
+        cam.target = [b.p[0] + Math.cos(b.heading) * lead, b.p[1] + Math.sin(b.heading) * lead];
+      }
+    });
   });
   /** How far the view leans towards what's ahead (0: on her). */
   const lean = new Tween(0, { duration: 1400, easing: cubicInOut });
@@ -95,20 +173,18 @@
     lean.target = ahead ? 0.65 : 0;
   });
   const center = $derived.by<Pt>(() => {
-    if (!boat) return [0, 0];
-    const [bx, by] = boat.p, k = lean.current, a = leanTo ?? boat.p;
-    return [bx + k * (a[0] - bx), by + k * (a[1] - by)];
+    const [cx, cy] = cam.current, k = lean.current, a = leanTo ?? cam.current;
+    return [cx + k * (a[0] - cx), cy + k * (a[1] - cy)];
   });
-  const scale = $derived(2 ** zoom.current);
 
   const pts = (p: readonly Pt[]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
   /** The way the channel runs where she is (degrees). */
   const course_deg = $derived(boat ? (boat.heading * 180) / Math.PI : 0);
   /**
-   * The way she faces: she comes round to the channel's heading, never snaps to it. A riverboat
-   * turns slowly: at most TURN degrees a second, easing in as she lines up.
+   * The way she faces: the line she sails is already rounded, so this only softens what's left:
+   * at most TURN degrees a second, easing in as she lines up.
    */
-  const TURN = 25;
+  const TURN = 45;
   let deg = $state(0);
   let turned = false;
   let lastTurn = 0;
@@ -136,9 +212,9 @@
   {#if sidecar && boat}
     <div class="map">
       <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale}>
-        {#if wakeLine}
+        {#if sailed}
           <!-- In map units, width and dash alike (a non-scaling stroke would measure its dash on screen). -->
-          <polyline points={wakeLine.points} class="wake" stroke-width={(3 * voyage.boatSize) / scale} stroke-dasharray="{wakeLength} {wakeLine.drawn + 1}" />
+          <polyline points={sailed.points} class="wake" stroke-width={(3 * voyage.boatSize) / scale} stroke-dasharray="{wakeLength} {sailed.drawn + 1}" />
         {/if}
         {#each crates as c, i (i)}
           <!-- A crate adrift: what she picks up if she goes that way. -->
