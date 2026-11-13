@@ -279,6 +279,8 @@ export interface JourneyState {
   passed?: string[];
   /** Crates of salvage picked up on the river: a couple of dollars apiece at a mercantile. */
   salvage?: number;
+  /** The First Mate's Log: Willie's record of the voyage, a line at a time (docs/log.md). */
+  log?: LogEntry[];
 }
 
 /**
@@ -581,6 +583,19 @@ function drawTables(state: JourneyState, step: Extract<Step, { type: 'draw' }>) 
   const engaged = step.regular?.engaged && state.mornings === step.regular.until && state.flags.includes(step.regular.engaged);
   if (step.regular && state.mornings <= step.regular.until && !engaged) state.finalists[0] = { id: step.regular.id, ai: step.regular.ai };
   state.rngState = rng.state;
+}
+
+/** A line in the First Mate's Log: a terse record of what happened, or one of Willie's musings. */
+export interface LogEntry {
+  /** The morning it was written on (the day in the heading). */
+  day: number;
+  text: string;
+  kind: 'record' | 'musing';
+}
+
+/** Willie writes a line in the log. */
+export function writeLog(prev: JourneyState, text: string, kind: LogEntry['kind'] = 'record'): JourneyState {
+  return { ...prev, log: [...(prev.log ?? []), { day: prev.mornings, text, kind }] };
 }
 
 /** Round an island ahead, this passage. */

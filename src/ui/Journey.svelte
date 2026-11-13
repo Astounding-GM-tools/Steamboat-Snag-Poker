@@ -6,6 +6,7 @@
     Rng,
     chooseLane,
     passIsland,
+    writeLog,
     buy,
     canBuy,
     canCastOff,
@@ -40,6 +41,8 @@
   import RiverBackdrop from './map/RiverBackdrop.svelte';
   import { voyage } from './map/tuning.svelte';
   import { loadLeg } from './map/legs';
+  import TypedLine from './TypedLine.svelte';
+  import { CHOICE_RECORDS, ENCOUNTER_RECORDS, islandRecord, tradeRecord } from '../story/log';
   import { islandKey, sides, type Island, type Pt, type TravelSidecar } from './map/route';
   import { heavy } from './heavy';
   import ShipPage from './ShipPage.svelte';
@@ -72,6 +75,12 @@
 
   /** Which way she's bound: up the river to Dubuque, then down (chapter one is all northbound). */
   const bound = $derived(journey.flags.includes('southbound') ? 'southbound' : 'northbound');
+  /** The log's latest line, under the heading: typed out as it's written. */
+  const lastEntry = $derived(journey.log?.at(-1)?.text ?? null);
+  /** How much of the log has been seen typed (or was there already when the voyage was opened): what's beyond is typed out when it shows. */
+  let seenLog = $state(untrack(() => journey.log?.length ?? 0));
+  const freshEntry = $derived((journey.log?.length ?? 0) > seenLog);
+  const typed = () => (seenLog = journey.log?.length ?? 0);
   /** The voyage's heading: "Day 2: Muscatine, northbound". */
   const heading = $derived(t('river.heading', { day: journey.mornings, place: t(`place.${journey.place}`), bound: t(`river.${bound}`) }));
 
@@ -177,6 +186,8 @@
       { who: 'gus', text: 'More beans? Why oh why could it not be pork chops and cabbage.' },
     ],
   ];
+  /** What each of those was, as the log has it. */
+  const SALVAGE_FOUND = ['odds and ends, some good', 'a box of chocolates', 'stamped steel spoons', 'beans, a month of them'];
   /** What's said about the last salvage, a line at a time: each up till it's answered, or a while has passed. */
   let salvageTalk = $state<SpeechLine[]>([]);
   const salvageSaid = $derived(salvageTalk[0] ?? null);
@@ -263,8 +274,10 @@
     if (!done) return;
     const took = lanes[done.key] ?? done.island.passages.find((p) => p.kind === 'main')!.side;
     const crates = took === done.prize.side ? done.prize.crates : 0;
+    const { port } = sides(done.island, done.up);
+    const way = took === port.side ? 'port' : 'starboard';
     untrack(() => {
-      journey = passIsland(journey, done.key, crates);
+      journey = writeLog(passIsland(journey, done.key, crates), islandRecord(done.island.name, way, crates, crates ? SALVAGE_FOUND[done.word] : undefined));
       if (crates) salvageTalk = SALVAGE_WORDS[done.word].map(({ who, text }) => ({ size: 'aside', who, text, auto: true }));
     });
   });
@@ -378,7 +391,13 @@
     const after = handDone(journey, RIVER);
     // Nothing to read after it (all said at the table): straight on.
     const outcome = after.encounter?.outcome;
-    journey = outcome && step?.type === 'encounter' && !closingLines(after, step, outcome).length ? leaveEncounter(after, RIVER) : after;
+    journey = outcome && step?.type === 'encounter' && !closingLines(after, step, outcome).length ? leave(after) : after;
+  }
+  /** Up from the table: Willie logs how it went, and on. */
+  function leave(j: JourneyState): JourneyState {
+    const e = j.encounter;
+    const record = e?.outcome ? ENCOUNTER_RECORDS[e.def.id]?.[e.outcome] : undefined;
+    return leaveEncounter(record ? writeLog(j, record) : j, RIVER);
   }
   /** What's said at this table, as the hand stands. */
   function talkNow() {
@@ -409,16 +428,18 @@
 
   /** A reply at the table that decides what happens next. */
   function talked(effect: string) {
-    if (step?.type === 'encounter' && step.choices?.[effect]) journey = choose(journey, RIVER, effect);
+    if (step?.type !== 'encounter' || !step.choices?.[effect]) return;
+    const record = CHOICE_RECORDS[effect];
+    journey = choose(record ? writeLog(journey, record) : journey, RIVER, effect);
   }
   function onwards() {
     if (!step) return;
     if (step.type === 'caption') journey = proceed(journey, RIVER);
     else if (step.type === 'council' && canCastOff(journey, RIVER)) journey = castOff(journey, RIVER);
-    else if (step.type === 'encounter' && enc?.outcome) journey = leaveEncounter(journey, RIVER);
+    else if (step.type === 'encounter' && enc?.outcome) journey = leave(journey);
   }
   function purchase(id: string) {
-    if (canBuy(journey, RIVER, id)) journey = buy(journey, RIVER, id);
+    if (canBuy(journey, RIVER, id)) journey = writeLog(buy(journey, RIVER, id), tradeRecord(t(`item.${id}.name`), ITEMS[id].price));
   }
 
   /** What the encounter left you: troubles taken on (against an obstacle). */
@@ -454,6 +475,7 @@
   <div class="page steaming">
     <div class="status">
       <span class="day">{heading}</span>
+      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} />{/if}
       {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
     </div>
     {#if forkLine}
@@ -491,6 +513,7 @@
     {#if shipOpen}<ShipPage {journey} onrehire={(id, on) => (journey = setRehire(journey, id, on))} onstation={(id, station) => (journey = setStation(journey, id, station))} onclose={() => (shipOpen = false)} />{/if}
     <div class="status" class:unseen={!journey.mornings}>
       <span class="day">{heading}{#if step.type === 'hub'} · {t(`river.slot.${journey.time}`)}{/if}</span>
+      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} />{/if}
       <span>{t('river.purse')} ${journey.purse}</span>
       <span>{t('river.strength')} {journey.strength}</span>
       <span>{t('river.coal')} {t('river.coalLoads', { n: journey.coal, max: BOAT.bunker })}</span>
