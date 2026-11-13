@@ -389,6 +389,13 @@ export const en = {
   /** The heading over the voyage's pages: the day, where she is, and which way she's bound. */
   'river.heading': 'Day {day}: {place}, {bound}',
   'river.northbound': 'northbound',
+  'log.title': 'The First Mate’s Log',
+  'log.page': 'Day {day}',
+  'log.earlier': 'The day before',
+  'log.later': 'The day after',
+  'log.close': 'Close the log',
+  'log.open': 'Open the log',
+  'log.empty': 'Nothing written yet.',
   'river.southbound': 'southbound',
   'hub.anchor.name': 'Anchor downstream',
   'hub.anchor.desc': 'Free. Willie wades ashore.',

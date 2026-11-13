@@ -595,7 +595,8 @@ export interface LogEntry {
 
 /** Willie writes a line in the log. */
 export function writeLog(prev: JourneyState, text: string, kind: LogEntry['kind'] = 'record'): JourneyState {
-  return { ...prev, log: [...(prev.log ?? []), { day: prev.mornings, text, kind }] };
+  // Before the first dawn (Bill's handover) counts as day one.
+  return { ...prev, log: [...(prev.log ?? []), { day: Math.max(1, prev.mornings), text, kind }] };
 }
 
 /** Round an island ahead, this passage. */

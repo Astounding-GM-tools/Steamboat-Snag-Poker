@@ -8,7 +8,7 @@
    */
   import { untrack } from 'svelte';
 
-  let { text, fresh = false, ontyped }: { text: string; fresh?: boolean; ontyped?: () => void } = $props();
+  let { text, fresh = false, ontyped, wrap = false }: { text: string; fresh?: boolean; ontyped?: () => void; wrap?: boolean } = $props();
 
   /** Milliseconds a character; a space or a stop takes a beat longer, as typing does. */
   const KEY_MS = 38;
@@ -47,7 +47,7 @@
   });
 </script>
 
-<span class="typed" class:typing aria-live="polite">{shown}</span>
+<span class="typed" class:typing class:wrap aria-live="polite">{shown}</span>
 
 <style>
   .typed {
@@ -61,6 +61,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  /* In the open log: the page's own type, wrapping as it goes. */
+  .wrap {
+    display: inline;
+    font-size: inherit;
+    color: inherit;
+    opacity: 1;
+    white-space: normal;
   }
   /* The carriage, at the end of the line while he types. */
   .typing::after {

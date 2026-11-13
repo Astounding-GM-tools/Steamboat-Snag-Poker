@@ -42,6 +42,7 @@
   import { voyage } from './map/tuning.svelte';
   import { loadLeg } from './map/legs';
   import TypedLine from './TypedLine.svelte';
+  import LogView from './LogView.svelte';
   import { CHOICE_RECORDS, ENCOUNTER_RECORDS, islandRecord, tradeRecord } from '../story/log';
   import { islandKey, sides, type Island, type Pt, type TravelSidecar } from './map/route';
   import { heavy } from './heavy';
@@ -81,6 +82,8 @@
   let seenLog = $state(untrack(() => journey.log?.length ?? 0));
   const freshEntry = $derived((journey.log?.length ?? 0) > seenLog);
   const typed = () => (seenLog = journey.log?.length ?? 0);
+  /** The log open over the river (the header opens it). */
+  let logOpen = $state(false);
   /** The voyage's heading: "Day 2: Muscatine, northbound". */
   const heading = $derived(t('river.heading', { day: journey.mornings, place: t(`place.${journey.place}`), bound: t(`river.${bound}`) }));
 
@@ -473,21 +476,23 @@
 {:else if step.type === 'steam'}
   <!-- Under way: the map is the picture; Pause for the menu, or hold Skip to race on. -->
   <div class="page steaming">
-    <div class="status">
+    <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+    <div class="status opens" role="button" tabindex="0" aria-label={t('log.open')} onclick={() => (logOpen = !logOpen)}>
       <span class="day">{heading}</span>
       {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} />{/if}
       {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
     </div>
-    {#if forkLine}
+    {#if logOpen && journey.log?.length}<LogView entries={journey.log} today={Math.max(1, journey.mornings)} onclose={() => (logOpen = false)} />{/if}
+    {#if forkLine && !logOpen}
       <!-- An island ahead: the call goes up, and the two buttons are the helm till she's chosen (or she keeps to the main channel). -->
       {#key forkLine}
         <div class="chatter"><Speech line={forkLine} name={called('willie')} opponent={false} top={0} bottom={0} /></div>
       {/key}
-    {:else if salvageSaid}
+    {:else if salvageSaid && !logOpen}
       {#key salvageSaid}
         <div class="chatter"><Speech line={salvageSaid} name={called(salvageSaid.who)} opponent={false} top={0} bottom={0} onnext={nextSalvageLine} /></div>
       {/key}
-    {:else if chatterNow}
+    {:else if chatterNow && !logOpen}
       <!-- The crew passing the time as she steams: it closes by itself before the next, or with a tap. -->
       {#key chatterIndex}
         <div class="chatter"><Speech line={chatterNow} name={called(chatterNow.who)} opponent={false} top={0} bottom={0} onnext={() => (hushed = [...hushed, chatterIndex])} /></div>
@@ -511,7 +516,8 @@
   <div class="page">
     <!-- Where the boat stands: the day, the place, the purse, the crew's strength, the coal. -->
     {#if shipOpen}<ShipPage {journey} onrehire={(id, on) => (journey = setRehire(journey, id, on))} onstation={(id, station) => (journey = setStation(journey, id, station))} onclose={() => (shipOpen = false)} />{/if}
-    <div class="status" class:unseen={!journey.mornings}>
+    <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+    <div class="status opens" class:unseen={!journey.mornings} role="button" tabindex="0" aria-label={t('log.open')} onclick={() => journey.log?.length && (logOpen = !logOpen)}>
       <span class="day">{heading}{#if step.type === 'hub'} · {t(`river.slot.${journey.time}`)}{/if}</span>
       {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} />{/if}
       <span>{t('river.purse')} ${journey.purse}</span>
@@ -583,6 +589,7 @@
       {/if}
     </div>
 
+    {#if logOpen && journey.log?.length}<LogView entries={journey.log} today={Math.max(1, journey.mornings)} onclose={() => (logOpen = false)} />{/if}
     <div class="dock">
       {#if step.type === 'fork'}
         <button class="ghost" onclick={() => (journey = turnBack(journey, RIVER))}>{t('river.turnBack')}</button>
@@ -683,6 +690,10 @@
   .chatter :global(.speech) {
     top: auto !important;
     bottom: 0;
+  }
+  /* The heading opens the log. */
+  .opens {
+    cursor: pointer;
   }
   .steaming .dock {
     animation: fade-in 0.6s ease 0.4s both;
