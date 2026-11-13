@@ -41,8 +41,9 @@ Afterwards the map zooms out and the journey goes on.
 - a slight blur on the zoomed-in map, so the survey's linework doesn't fight the card faces.
 
 **The boat:** a small ink-drawn sternwheeler silhouette with a puff of smoke, in the cartoon's
-style, not a game marker. It fades when the cards come in. The travelled line stays, faintly,
-as the voyage's memory.
+style, not a game marker. It fades when the cards come in. No line is drawn behind her (there was a
+red one, before she was drawn properly): she shows the way herself, and the log records which way she
+went. A faint pencil track may come back for a whole-voyage view.
 
 **Where each kind of game is played:**
 
