@@ -73,6 +73,8 @@
   const enc = $derived(journey.encounter);
   const playing = $derived(step?.type === 'encounter' && !!enc && !enc.outcome);
 
+  /** Seconds she takes to gather way from a standstill (casting off, getting off The Sandbar). */
+  const GATHER_WAY_S = 10;
   /** She steams this long before Willie writes her getting under way: the river first, then the words. */
   const CAST_OFF_QUIET_MS = 8_000;
   /** How often she moves while steaming (ms): thirty times a second is smooth at a riverboat's pace. */
@@ -141,6 +143,7 @@
       if (!written) journey = writeLog(journey, line, first ? 'musing' : 'record');
     }), CAST_OFF_QUIET_MS);
     let last = performance.now(), raf = 0;
+    const began = last;
     const tick = (now: number) => {
       if (now - last < STEP_MS) {
         raf = requestAnimationFrame(tick);
@@ -149,7 +152,10 @@
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       const dir = Math.sign(to - boatT);
-      boatT += dir * Math.min(Math.abs(to - boatT), (dt / voyage.legSeconds) * (racing ? voyage.race : 1));
+      // From a standstill she gathers way: up to her pace over the first few seconds (eased), not all at once.
+      const way = Math.min(1, (now - began) / 1000 / GATHER_WAY_S);
+      const gathered = way * way * (3 - 2 * way);
+      boatT += dir * Math.min(Math.abs(to - boatT), (dt / voyage.legSeconds) * Math.max(0.02, gathered) * (racing ? voyage.race : 1));
       // Endless (development): back to where she started, and round again.
       if (boatT === to && endless) boatT = steamFrom;
       if (boatT === to) journey = proceed(journey, RIVER);

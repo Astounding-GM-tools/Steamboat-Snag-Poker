@@ -42,16 +42,16 @@
   let first = true;
 
   /**
-   * River speed. A beginner's pace at the keys: a key every sixth to third of a second, never even, a
+   * River speed. A beginner's pace at the keys: a key every tenth to fifth of a second, never even, a
    * hunt for the next one now and then. Each line held long enough to read, then (in the header) the
    * paper rolls up and it goes, under the heading, before he types the next. Between sections (a
    * blank line in the entry) and between entries, a good long pause: this is the river.
    */
   function delay(c: string): number {
-    const base = 140 + Math.random() * 180;
-    if (c === ' ') return base + 90;
-    if (/[.,:;!?]/.test(c)) return base + 400 + Math.random() * 450;
-    return Math.random() < 0.08 ? base + 500 + Math.random() * 800 : base;
+    const base = 100 + Math.random() * 130;
+    if (c === ' ') return base + 70;
+    if (/[.,:;!?]/.test(c)) return base + 300 + Math.random() * 350;
+    return Math.random() < 0.06 ? base + 400 + Math.random() * 600 : base;
   }
   /** How long a typed line stays to be read: a few seconds, longer for a longer line. */
   const readingTime = (l: string) => 5000 + l.length * 110;
