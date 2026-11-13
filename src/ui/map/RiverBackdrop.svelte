@@ -241,6 +241,8 @@
     r1: number;
     alpha: number;
     kind: 'smoke' | 'steam' | 'bubble';
+    /** Which cloudlet (steam): a few drawn, each its own lumpy shape. */
+    shape: number;
   }
   /** How she smokes and stirs the water, in the top view's units (her length is about 260) and seconds. */
   const EXHAUST = {
@@ -257,14 +259,14 @@
     bubbleSize: [5, 9] as const,
     bubbleAlpha: 0.75,
     /**
-     * Steam from the escape pipe: thick, white, billowing, in chuffs as the engine breathes, rising
-     * slowly and spreading wide before it goes home to the clouds. Drawn white with a soft grey under
-     * it, so it reads on the pale paper.
+     * Steam from the chimneys: big, portly cloudlets, cel-shaded as the cartoons drew them (flat white,
+     * a flat grey shade on the side away from the light, an ink outline), in chuffs as the engine
+     * breathes. Each swells out fast, then slowly, and drifts lazily off before thinning away.
      */
-    steamEvery: 0.55,
-    steamLife: 6.5,
-    steamSize: [22, 120] as const,
-    steamAlpha: 0.95,
+    steamEvery: 0.6,
+    steamLife: 6,
+    steamSize: [14, 70] as const,
+    steamAlpha: 1,
     /** The steam rides the wind more lazily than the smoke. */
     steamDrift: 0.45,
     /** Going hard (Skip held): puffs this much more often, bigger and darker. */
@@ -276,8 +278,8 @@
     [42, 9],
   ];
   const STERN = -112;
-  /** The escape pipe, between and a little aft of the chimneys. */
-  const ESCAPE: Pt = [30, 0];
+  /** How many cloudlet shapes are drawn (each puff picks one). */
+  const CLOUDLETS = 5;
 
   function sprite(draw: (c: CanvasRenderingContext2D, n: number) => void, n: number): HTMLCanvasElement {
     const img = document.createElement('canvas');
@@ -300,16 +302,44 @@
       c.fillStyle = g;
       c.fillRect(0, 0, n, n);
     }, 64);
-    const steam = sprite((c, n) => {
-      const g = c.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
-      // A firm white body with a soft edge: a billow, not a blur.
-      g.addColorStop(0, 'rgba(253, 252, 247, 1)');
-      g.addColorStop(0.55, 'rgba(250, 248, 241, 0.97)');
-      g.addColorStop(0.8, 'rgba(246, 244, 236, 0.55)');
-      g.addColorStop(1, 'rgba(246, 244, 236, 0)');
-      c.fillStyle = g;
-      c.fillRect(0, 0, n, n);
-    }, 64);
+    /**
+     * Cel-shaded cloudlets: a lumpy cluster of round puffs, an ink outline round the whole, flat white,
+     * and a flat grey where the puffs turn away from the light (down and to the right).
+     */
+    const cloudlet = (seed: number) =>
+      sprite((c, n) => {
+        let x = seed * 9301 + 49297;
+        const rand = () => ((x = (x * 9301 + 49297) % 233280) / 233280);
+        const R = n / 2;
+        const puffs: [number, number, number][] = [[0, 0, 0.42]];
+        for (let i = 0; i < 6; i++) {
+          const a = rand() * Math.PI * 2, d = 0.18 + rand() * 0.22;
+          puffs.push([Math.cos(a) * d, Math.sin(a) * d * 0.8, 0.2 + rand() * 0.16]);
+        }
+        const ink = 0.045;
+        const disc = (ctx: CanvasRenderingContext2D, grow: number, dx = 0, dy = 0) => {
+          ctx.beginPath();
+          for (const [px, py, pr] of puffs) {
+            ctx.moveTo(R + (px + dx) * R + (pr + grow) * R, R + (py + dy) * R);
+            ctx.arc(R + (px + dx) * R, R + (py + dy) * R, (pr + grow) * R, 0, Math.PI * 2);
+          }
+          ctx.fill();
+        };
+        // The body: grey where it turns away, white where the light falls (the same puffs, nudged up-left).
+        const body = document.createElement('canvas');
+        body.width = body.height = n;
+        const b = body.getContext('2d')!;
+        b.fillStyle = '#c9c5b8';
+        disc(b, 0);
+        b.globalCompositeOperation = 'source-atop';
+        b.fillStyle = '#fbf9f2';
+        disc(b, -0.03, -0.07, -0.08);
+        // The outline under it all, then the body.
+        c.fillStyle = '#1d1a14';
+        disc(c, ink);
+        c.drawImage(body, 0, 0);
+      }, 160);
+    const steam = Array.from({ length: CLOUDLETS }, (_, k) => cloudlet(k + 1));
     const bubble = sprite((c, n) => {
       c.strokeStyle = 'rgba(30, 30, 28, 1)';
       c.lineWidth = n / 8;
@@ -344,7 +374,7 @@
           puffClock -= EXHAUST.puffEvery;
           for (const c of CHIMNEYS) {
             const [x, y] = at(c);
-            motes.push({ x, y, vx: (EXHAUST.wind[0] + (Math.random() - 0.5) * 8) * u, vy: (EXHAUST.wind[1] + (Math.random() - 0.5) * 8) * u, age: 0, life: EXHAUST.puffLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.puffSize[0] * u * Math.sqrt(hard), r1: EXHAUST.puffSize[1] * u * Math.sqrt(hard), alpha: Math.min(0.85, EXHAUST.puffAlpha * Math.sqrt(hard)), kind: 'smoke' });
+            motes.push({ x, y, vx: (EXHAUST.wind[0] + (Math.random() - 0.5) * 8) * u, vy: (EXHAUST.wind[1] + (Math.random() - 0.5) * 8) * u, age: 0, life: EXHAUST.puffLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.puffSize[0] * u * Math.sqrt(hard), r1: EXHAUST.puffSize[1] * u * Math.sqrt(hard), alpha: Math.min(0.85, EXHAUST.puffAlpha * Math.sqrt(hard)), kind: 'smoke', shape: 0 });
           }
         }
         bubbleClock += dt;
@@ -352,14 +382,14 @@
           bubbleClock -= EXHAUST.bubbleEvery;
           const [x, y] = at([STERN - Math.random() * 6, (Math.random() - 0.5) * 22]);
           const r = (EXHAUST.bubbleSize[0] + Math.random() * (EXHAUST.bubbleSize[1] - EXHAUST.bubbleSize[0])) * u;
-          motes.push({ x, y, vx: 0, vy: 0, age: 0, life: EXHAUST.bubbleLife * (0.7 + Math.random() * 0.6), r0: r, r1: r * 1.4, alpha: EXHAUST.bubbleAlpha, kind: 'bubble' });
+          motes.push({ x, y, vx: 0, vy: 0, age: 0, life: EXHAUST.bubbleLife * (0.7 + Math.random() * 0.6), r0: r, r1: r * 1.4, alpha: EXHAUST.bubbleAlpha, kind: 'bubble', shape: 0 });
         }
         steamClock += dt * hard;
         while (steamClock > EXHAUST.steamEvery) {
           steamClock -= EXHAUST.steamEvery * (0.8 + Math.random() * 0.4);
-          const [x, y] = at(ESCAPE);
+          const [x, y] = at(CHIMNEYS[Math.floor(Math.random() * CHIMNEYS.length)]);
           const k = EXHAUST.steamDrift;
-          motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * u, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * u, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * u, r1: EXHAUST.steamSize[1] * u * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, kind: 'steam' });
+          motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * u, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * u, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * u, r1: EXHAUST.steamSize[1] * u * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, kind: 'steam', shape: Math.floor(Math.random() * CLOUDLETS) });
         }
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -374,18 +404,16 @@
         m.x += m.vx * dt;
         m.y += m.vy * dt;
         const f = m.age / m.life;
-        const r = (m.r0 + (m.r1 - m.r0) * Math.sqrt(f)) * scale;
+        // Steam swells out fast, then slowly; smoke and bubbles spread steadily.
+        const grow = m.kind === 'steam' ? 1 - (1 - f) ** 3 : Math.sqrt(f);
+        const r = (m.r0 + (m.r1 - m.r0) * grow) * scale;
         const [sx, sy] = onScreen([m.x, m.y]);
         if (sx < -r || sy < -r || sx > mapW + r || sy > mapH + r) continue;
-        // Smoke and steam thicken a moment as they leave, then thin away; bubbles simply fade.
-        const fade = m.kind === 'bubble' ? 1 - f : Math.min(1, f * 6) * (1 - f) * (m.kind === 'steam' ? 1 - f * 0.5 : 1);
-        if (m.kind === 'steam') {
-          // A soft grey under the white, a little down-light, so the billow has body on the pale paper.
-          ctx.globalAlpha = m.alpha * fade * 0.42;
-          ctx.drawImage(puff, sx - r + r * 0.12, sy - r + r * 0.18, 2 * r, 2 * r);
-        }
+        // Smoke thickens a moment as it leaves, then thins away; a cloudlet holds solid, then thins in its
+        // last third (a cel drawing doesn't blur); bubbles simply fade.
+        const fade = m.kind === 'bubble' ? 1 - f : m.kind === 'steam' ? Math.min(1, (1 - f) * 3) : Math.min(1, f * 6) * (1 - f);
         ctx.globalAlpha = m.alpha * fade;
-        ctx.drawImage(m.kind === 'smoke' ? puff : m.kind === 'steam' ? steam : bubble, sx - r, sy - r, 2 * r, 2 * r);
+        ctx.drawImage(m.kind === 'smoke' ? puff : m.kind === 'steam' ? steam[m.shape] : bubble, sx - r, sy - r, 2 * r, 2 * r);
       }
     };
     raf = requestAnimationFrame(frame);
@@ -411,12 +439,12 @@
           </g>
         </svg>
       {/each}
-      <!-- Smoke and wake (particles, under her: the smoke drifts away astern and the bubbles trail her) -->
-      <canvas class="exhaust" bind:this={canvas} style:width="{mapW}px" style:height="{mapH}px"></canvas>
       <!-- The Best Intentions from above (src/ui/boat): she turns to any heading, never flips -->
       <svg class="mark boat" viewBox="{-BOAT_BOX / 2} {-BOAT_BOX / 2} {BOAT_BOX} {BOAT_BOX}" width={boatBox} height={boatBox} style:transform="translate3d({boatAt[0] - boatBox / 2}px, {boatAt[1] - boatBox / 2}px, 0)">
         <BoatTop {built} heading={deg} printed />
       </svg>
+      <!-- Smoke, steam and wake (particles), over her: the steam billows out of her chimneys, on top of everything -->
+      <canvas class="exhaust" bind:this={canvas} style:width="{mapW}px" style:height="{mapH}px"></canvas>
     </div>
   {/if}
   <!-- The projector's lamp: bright in the middle, falling away to black at the edges, so the chart's own edges never show hard. -->
