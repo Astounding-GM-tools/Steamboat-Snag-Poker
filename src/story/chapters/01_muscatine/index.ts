@@ -14,6 +14,20 @@ export const SANDBAR_AT = 0.54;
 /** The Tri-Cities landing, as the map's sidecar has it. */
 const TRI_CITIES_AT = 0.6429;
 
+/** Willie's second musing, a little way out of Muscatine: the chain of command, and Bill's missus. */
+const NEW_FIRST_MATE = [
+  'Captain Bill stayed behind, to care for Missus Bill, who is poorly.',
+  'So we have a new captain, and I am the First Mate now.',
+  'Gus says that means to write everything down, and to do any job that someone else hasn’t already done.',
+  '',
+  'I hope Bill’s missus will be all right.',
+  'She’s always been kind to me.',
+  'She’ll need medicine.',
+  'I hope we’ll make good money on the run.',
+  'Find prime salvage along the way.',
+  'And not leave it all at the table.',
+].join('\n');
+
 const harbourMaster: Rival = { id: 'harbourMaster', ai: 'stubborn', money: HARBOUR_MASTER_PURSE };
 
 export const muscatine: Step[] = [
@@ -56,12 +70,8 @@ export const muscatine: Step[] = [
     type: 'steam',
     leg: CHAPTER_1,
     to: SANDBAR_AT,
-    // Placeholders, to be written.
-    chatter: [
-      { who: 'willie', text: 'Chatter 1' },
-      { who: 'willie', text: 'Chatter 2' },
-      { who: 'willie', text: 'Chatter 3' },
-    ],
+    // Willie's log, not the crew's chatter: a musing a little way out, then the river and the islands.
+    musings: [{ at: 0.5, text: NEW_FIRST_MATE }],
   },
   {
     type: 'encounter',

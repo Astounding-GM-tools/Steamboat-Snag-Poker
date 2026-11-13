@@ -139,7 +139,14 @@ export type Step =
   /** Under way: it burns the coal, and you arrive. */
   | { type: 'travel'; coal: number; to: string }
   /** Steaming up a leg of the river on the map (`leg`), to `to` (0 the leg's start, 1 its end): the felt lifts and the boat goes on until she gets there, or something stops her. The crew's `chatter` comes up along the way, evenly spaced, each line closing a little before the next. */
-  | { type: 'steam'; leg: string; to: number; chatter?: StoryLine[] }
+  | {
+      type: 'steam';
+      leg: string;
+      to: number;
+      chatter?: StoryLine[];
+      /** Willie's musings on the way, written into the log as she gets `at` that far along the stretch (0 to 1). */
+      musings?: { at: number; text: string }[];
+    }
   | {
       type: 'encounter';
       encounter: EncounterDef;

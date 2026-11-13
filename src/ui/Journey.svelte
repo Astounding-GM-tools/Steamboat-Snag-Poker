@@ -81,12 +81,18 @@
 
   /** Which way she's bound, as the river says it: up to Dubuque, then down (the first leg is all upbound). */
   const bound = $derived(journey.flags.includes('downbound') ? 'downbound' : 'upbound');
-  /** The log's latest line, under the heading: typed out as it's written. */
-  const lastEntry = $derived(journey.log?.at(-1)?.text ?? null);
-  /** How much of the log has been seen typed (or was there already when the voyage was opened): what's beyond is typed out when it shows. */
+  /**
+   * The log under the heading: entries are typed one after another, in turn, each in full before the
+   * next begins (Willie types slowly). `seenLog` counts the entries typed (or there already when the
+   * voyage was opened); the header shows the next one to type, or the last.
+   */
   let seenLog = $state(untrack(() => journey.log?.length ?? 0));
+  const lastEntry = $derived.by(() => {
+    const log = journey.log ?? [];
+    return log.length ? log[Math.min(seenLog, log.length - 1)].text : null;
+  });
   const freshEntry = $derived((journey.log?.length ?? 0) > seenLog);
-  const typed = () => (seenLog = journey.log?.length ?? 0);
+  const typed = () => (seenLog = Math.min(seenLog + 1, journey.log?.length ?? 0));
   /** The log open over the river (the header opens it). */
   let logOpen = $state(false);
   /** The voyage's heading: "Day 2: Muscatine, upbound". */
@@ -335,6 +341,17 @@
           .map(mid);
       }),
   );
+
+  // Willie's musings on this stretch: each written into the log as she gets that far along it.
+  $effect(() => {
+    if (step?.type !== 'steam' || !step.musings?.length) return;
+    const from = steamFrom, to = step.to, t = boatT;
+    const due = step.musings.find((m) => {
+      const at = from + m.at * (to - from);
+      return (to >= from ? t >= at : t <= at) && !untrack(() => journey.log?.some((e) => e.text === m.text));
+    });
+    if (due) untrack(() => (journey = writeLog(journey, due.text, 'musing')));
+  });
 
   /** Leaving a table for the river: the table's things slide off every which way as the felt lifts. */
   let lifting = $state(false);
@@ -775,6 +792,7 @@
     --u: clamp(1rem, 3.7cqw, 1.7rem);
   }
   .status {
+    min-width: 0;
     padding-right: 3rem;
     display: flex;
     flex-wrap: wrap;
