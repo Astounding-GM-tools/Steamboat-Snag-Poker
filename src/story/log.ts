@@ -28,7 +28,7 @@ const MUSCATINE_TO_DUBUQUE = 125;
 /** Willie's first musing: leaving Muscatine, the river ahead, and how the dock fee went. */
 export function leavingMuscatine(flags: readonly string[], purse: number, fee: number, coal: number, bunker: number): string {
   const lines = [
-    'Muscatine, upbound.',
+    // (Where she is and which way she's bound is in the heading above it.)
     'First day of spring.',
     'Cargo waiting at Dubuque.',
     '',

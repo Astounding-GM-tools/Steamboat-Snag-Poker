@@ -74,7 +74,7 @@
   const playing = $derived(step?.type === 'encounter' && !!enc && !enc.outcome);
 
   /** She steams this long before Willie writes her getting under way: the river first, then the words. */
-  const CAST_OFF_QUIET_MS = 15_000;
+  const CAST_OFF_QUIET_MS = 8_000;
   /** How often she moves while steaming (ms): thirty times a second is smooth at a riverboat's pace. */
   const STEP_MS = 1000 / 30;
 
