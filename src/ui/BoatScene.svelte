@@ -14,10 +14,32 @@
     { s: '♥\uFE0E', y: 30, size: 16, dur: 44, delay: -26 },
     { s: '♦\uFE0E', y: -10, size: 44, dur: 76, delay: -60 },
   ].map((c) => ({ ...c, tilt: Math.round(Math.random() * 70 - 35) }));
+
+  /**
+   * Left alone a minute (no touch, no key), the scene holds still: waves, clouds, stars and the
+   * people aboard pause where they are, so a game left open on the title costs nothing. The first
+   * touch or key sets it going again.
+   */
+  const IDLE_MS = 60_000;
+  let still = $state(false);
+  $effect(() => {
+    let timer = setTimeout(() => (still = true), IDLE_MS);
+    const wake = () => {
+      still = false;
+      clearTimeout(timer);
+      timer = setTimeout(() => (still = true), IDLE_MS);
+    };
+    const events = ['pointerdown', 'pointermove', 'keydown', 'wheel'] as const;
+    for (const e of events) window.addEventListener(e, wake, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      for (const e of events) window.removeEventListener(e, wake);
+    };
+  });
 </script>
 
 <!-- The Best Intentions under way: on the title, and between encounters. -->
-<svg class="boat" viewBox="0 -34 240 184" aria-hidden="true">
+<svg class="boat" class:still viewBox="0 -34 240 184" aria-hidden="true">
   <!-- The whole scene fades softly into the dark at its edges -->
   <defs>
     <radialGradient id="scene-fade-gradient" cx="50%" cy="45%" r="62%">
@@ -90,6 +112,11 @@
 </svg>
 
 <style>
+  /* Left alone: everything in the scene pauses where it is. */
+  .still,
+  .still :global(*) {
+    animation-play-state: paused !important;
+  }
   .boat {
     width: var(--boat-width, min(380px, 84vw));
     margin: 0 auto;

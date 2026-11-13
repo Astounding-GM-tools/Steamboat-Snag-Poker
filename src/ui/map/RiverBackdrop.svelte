@@ -354,7 +354,7 @@
     const motes: Mote[] = [];
     let raf = 0, last = performance.now(), steamClock = 0;
     let was: Pt | null = null;
-    let drawnAt: Pt = [NaN, NaN], drawnScale = NaN;
+    let drawnAt: Pt = [NaN, NaN], drawnScale = NaN, blank = false;
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
       // Thirty times a second while the chart holds still; every frame while it's moving (a pan, a lean,
@@ -389,6 +389,13 @@
           motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * u, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * u, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * u, r1: EXHAUST.steamSize[1] * u * Math.sqrt(hard) * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, shape: Math.random() < 1 / SUIT_EVERY ? CLOUDLETS + Math.floor(Math.random() * SUITS.length) : Math.floor(Math.random() * CLOUDLETS) });
         }
       }
+      // Nothing in the air: cleared once, then left alone till there is.
+      if (!motes.length) {
+        if (!blank) ctx.clearRect(0, 0, cv.width, cv.height);
+        blank = true;
+        return;
+      }
+      blank = false;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, mapW, mapH);
       for (let k = motes.length - 1; k >= 0; k--) {

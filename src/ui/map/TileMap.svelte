@@ -2,9 +2,9 @@
   /**
    * A tiled map (tiles cut in the map's own pixels, z/x/y, the top zoom level at native
    * size), looked at from `center` (map pixels) at `scale` (screen pixels per map pixel).
-   * Only the tiles in view are fetched; a coarser level sits under them while they load.
-   * `children` draws over the map in map pixels (an SVG `<g>`): `scale` is there to keep
-   * markers a steady size.
+   * Only the tiles in view are fetched; a coarser level sits under them while they load, and
+   * goes once they're all in. `children` (if any) draws over the map in map pixels (an SVG
+   * `<g>`): `scale` is there to keep markers a steady size.
    */
   import type { Snippet } from 'svelte';
   import type { Pt, TileSet } from './route';
@@ -23,6 +23,8 @@
   let height = $state(0);
   /** Tiles that aren't there: a sparse set skips the empty ones. */
   let missing = $state(new Set<string>());
+  /** Sharp tiles loaded: once every one in view is, the coarse layer under them goes. */
+  let loaded = $state(new Set<string>());
 
   const ts = $derived(tiles.tile_size);
   /** The finest level the screen can use, never upscaling a coarser one. */
@@ -45,11 +47,15 @@
     return out;
   }
 
-  const under = $derived(width ? layer(Math.max(tiles.min_zoom, level - 3)) : []);
   const top = $derived(width ? layer(level) : []);
+  const sharp = $derived(top.every((t) => loaded.has(t.url)));
+  const under = $derived(width && !sharp ? layer(Math.max(tiles.min_zoom, level - 3)) : []);
 
   function gone(url: string) {
     missing = new Set(missing).add(url);
+  }
+  function arrived(url: string) {
+    loaded = new Set(loaded).add(url);
   }
 </script>
 
@@ -60,14 +66,16 @@
     <img src={t.url} alt="" style:left="{t.left}px" style:top="{t.top}px" style:width="{t.size + 0.5}px" style:height="{t.size + 0.5}px" onerror={() => gone(t.url)} />
   {/each}
   {#each top as t (t.url)}
-    <img src={t.url} alt="" style:left="{t.left}px" style:top="{t.top}px" style:width="{t.size + 0.5}px" style:height="{t.size + 0.5}px" onerror={() => gone(t.url)} />
+    <img src={t.url} alt="" style:left="{t.left}px" style:top="{t.top}px" style:width="{t.size + 0.5}px" style:height="{t.size + 0.5}px" onload={() => arrived(t.url)} onerror={() => gone(t.url)} />
   {/each}
   </div>
-  <svg width={width} height={height}>
-    <g transform="translate({ox} {oy}) scale({scale})">
-      {@render children?.()}
-    </g>
-  </svg>
+  {#if children}
+    <svg width={width} height={height}>
+      <g transform="translate({ox} {oy}) scale({scale})">
+        {@render children()}
+      </g>
+    </svg>
+  {/if}
 </div>
 
 <style>
