@@ -69,10 +69,9 @@
   }
 
   /**
-   * The way she sails: the whole leg's course, rounded, drawn once (rebuilt only when a passage
-   * is chosen). She is on it and faces along it, so she always moves the way she points: forward,
-   * never sliding sideways. Her wake is the same line, shown as far as she's steamed by its dash.
-   * `along` turns her progress (t) into distance along it: sampled once with the line.
+   * The way she sails: the whole leg's course, rounded, worked out once (again only when a passage
+   * is chosen). She steers along it (see `boat`). No line is drawn behind her: she shows the way
+   * herself. `along` turns her progress (t) into distance along it: sampled once with the line.
    */
   const SAMPLES = 2000;
   const sailed = $derived.by(() => {
@@ -103,7 +102,7 @@
       const f = (d - cum[lo]) / (cum[hi] - cum[lo] || 1);
       return [line[lo][0] + f * (line[hi][0] - line[lo][0]), line[lo][1] + f * (line[hi][1] - line[lo][1])];
     };
-    return { points: pts(line), drawn, along, point };
+    return { drawn, along, point };
   });
   /** How far along the line she is. */
   const distance = $derived.by(() => {
@@ -121,11 +120,6 @@
   const scale = $derived(2 ** zoom.current);
   /** Her length on the screen (the top view is drawn about 260 units long). */
   const boatOnScreen = $derived(260 * voyage.boatSize * TOP_SCALE);
-  /** Her wake, grown a step at a time under her hull: it changes every few seconds, not every frame, and the steps don't show. */
-  const wakeLength = $derived.by(() => {
-    const step = (0.3 * boatOnScreen) / scale;
-    return Math.floor(distance / step) * step;
-  });
 
   /**
    * How she moves: she glides. Drawn far bigger than the map would make her, she can't follow every
@@ -217,17 +211,12 @@
     return [cx + k * (a[0] - cx), cy + k * (a[1] - cy)];
   });
 
-  const pts = (p: readonly Pt[]) => p.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
 </script>
 
 <div class="backdrop" class:play={mode === 'play'} class:jolt aria-hidden="true">
   {#if sidecar && boat}
     <div class="map">
       <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale}>
-        {#if sailed}
-          <!-- In map units, width and dash alike (a non-scaling stroke would measure its dash on screen). -->
-          <polyline points={sailed.points} class="wake" stroke-width={(3 * voyage.boatSize) / scale} stroke-dasharray="{wakeLength} {sailed.drawn + 1}" />
-        {/if}
         {#each crates as c, i (i)}
           <!-- A crate adrift: what she picks up if she goes that way. -->
           <g class="crate" transform="translate({c[0]} {c[1]}) scale({voyage.boatSize / scale})" style:animation-delay="{i * -0.7}s">
@@ -312,13 +301,6 @@
     55% {
       transform: translate(-6px, 3px) rotate(-0.4deg);
     }
-  }
-  .wake {
-    fill: none;
-    stroke: #6b2a1c;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-opacity: 0.8;
   }
   .boat {
     transition: opacity 0.8s ease;
