@@ -29,13 +29,26 @@
   let typing = $state(false);
   let first = true;
 
-  /** A beginner's pace: a key about every eighth of a second, never even, and now and then a hunt for the next one. */
+  /**
+   * River speed. A beginner's pace at the keys: a key every sixth to third of a second, never even, a
+   * hunt for the next one now and then. Each line held long enough to read, then (in the header) the
+   * paper rolls up and it goes, under the heading, before he types the next. Between sections (a
+   * blank line in the entry) and between entries, a good long pause: this is the river.
+   */
   function delay(c: string): number {
-    const base = 90 + Math.random() * 110;
-    if (c === ' ') return base + 60;
-    if (/[.,:;!?]/.test(c)) return base + 280 + Math.random() * 300;
-    return Math.random() < 0.07 ? base + 350 + Math.random() * 600 : base;
+    const base = 140 + Math.random() * 180;
+    if (c === ' ') return base + 90;
+    if (/[.,:;!?]/.test(c)) return base + 400 + Math.random() * 450;
+    return Math.random() < 0.08 ? base + 500 + Math.random() * 800 : base;
   }
+  /** How long a typed line stays to be read: a few seconds, longer for a longer line. */
+  const readingTime = (l: string) => 2600 + l.length * 70;
+  /** The roll of the paper, and the pause between sections and before an entry. */
+  const ROLL_MS = 700;
+  const SECTION_MS = 6000;
+  const ENTRY_MS = 4000;
+  /** The line rolling up out of view (header only). */
+  let rolling = $state(false);
 
   $effect(() => {
     const entry = text;
@@ -44,7 +57,12 @@
       return;
     }
     first = false;
-    const lines = linesOf(entry);
+    // Sections kept apart: a blank line marks where one ends.
+    const parts = entry.split('\n');
+    const lines = parts.filter((p) => p.trim());
+    const sectionAfter = new Set<number>();
+    let n = -1;
+    for (const p of parts) (p.trim() ? n++ : n >= 0 && sectionAfter.add(n));
     if (matchMedia('(prefers-reduced-motion: reduce)').matches || !lines.length) {
       done = settled(entry);
       line = struck = '';
@@ -53,8 +71,17 @@
     }
     let timer: ReturnType<typeof setTimeout>;
     let l = 0, i = 0;
-    typing = true;
-    done = line = struck = '';
+    const later = (fn: () => void, ms: number) => (timer = setTimeout(fn, ms));
+    /** The paper rolls up: what's showing goes up under the heading, then `then`. */
+    const roll = (then: () => void) => {
+      if (wrap || !(done || line || struck)) return then();
+      rolling = true;
+      later(() => {
+        rolling = false;
+        done = line = struck = '';
+        then();
+      }, ROLL_MS);
+    };
     const key = () => {
       const whole = lines[l];
       if (i === 0) clack('line');
@@ -63,34 +90,43 @@
       struck = c;
       strikes++;
       clack(c === ' ' ? 'space' : 'key');
-      if (i < whole.length) {
-        timer = setTimeout(key, delay(c));
-        return;
-      }
-      // The line's done: a pause, then the next line (below it in the log; in its place in the header).
-      timer = setTimeout(
-        () => {
+      if (i < whole.length) return later(key, delay(c));
+      // The line's typed: left to be read, then on.
+      later(() => {
+        if (l + 1 >= lines.length) {
+          done = settled(entry);
           line = struck = '';
-          if (++l >= lines.length) {
-            done = settled(entry);
-            typing = false;
-            untrack(() => ontyped?.());
-            return;
-          }
-          done = wrap ? lines.slice(0, l).join('\n') : '';
-          i = 0;
-          timer = setTimeout(key, 350);
-        },
-        wrap ? 500 : 1600,
-      );
+          typing = false;
+          untrack(() => ontyped?.());
+          return;
+        }
+        const pause = sectionAfter.has(l) ? SECTION_MS : 350;
+        l++;
+        i = 0;
+        if (wrap) {
+          done = lines.slice(0, l).join('\n');
+          line = struck = '';
+          later(key, pause);
+        } else roll(() => later(key, pause));
+      }, wrap ? 500 : readingTime(whole));
     };
-    timer = setTimeout(key, 400);
+    typing = true;
+    // A new entry: what's there rolls away, a pause, and he starts. (Read untracked: the typing itself
+    // changes what's showing, and mustn't start the entry over.)
+    untrack(() =>
+      roll(() => {
+        done = wrap ? '' : done;
+        later(key, wrap ? 400 : ENTRY_MS);
+      }),
+    );
     return () => clearTimeout(timer);
   });
 </script>
 
 <span class="typed" class:typing class:wrap aria-live="polite"
-  >{done}{#if typing}{#if wrap && done}{'\n'}{/if}{line}{#key strikes}<span class="struck">{struck}</span>{/key}{/if}</span
+  ><span class="paper" class:rolling
+    >{done}{#if typing}{#if wrap && done}{'\n'}{/if}{line}{#key strikes}<span class="struck">{struck}</span>{/key}{/if}</span
+  ></span
 >
 
 <style>
@@ -107,6 +143,23 @@
     opacity: 0.85;
     white-space: normal;
     overflow-wrap: anywhere;
+    overflow: hidden;
+  }
+  .paper {
+    display: block;
+  }
+  /* The paper rolls up: the line goes up and out of view, under the heading. */
+  .rolling {
+    animation: roll 0.7s ease-in forwards;
+  }
+  @keyframes roll {
+    to {
+      translate: 0 -110%;
+      opacity: 0;
+    }
+  }
+  .wrap .paper {
+    display: inline;
   }
   /* In the open log: the page's own type, wrapping as it goes, a line to each thought. */
   .wrap {
@@ -129,7 +182,7 @@
     }
   }
   /* The carriage, at the end of the line while he types. */
-  .typing::after {
+  .typing .paper::after {
     content: '▌';
     opacity: 0.6;
     animation: caret 0.6s steps(2) infinite;
