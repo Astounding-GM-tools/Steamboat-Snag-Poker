@@ -221,13 +221,12 @@
   const boatAt = $derived(boat ? onScreen(boat.p) : ([0, 0] as Pt));
 
   /**
-   * Steam and wake, as particles on one canvas over the chart, drawn thirty times a second while she
-   * steams (and not at all otherwise). They live on the chart, not on her: steam chuffed from her
-   * chimneys hangs where it came out, drifts on the wind, swells and thins; her wake is a trail of
-   * bubbles left where she passed, fading, so it stays in the water she sailed (it never washes up on
-   * a bank). Each mote is one stamp of a small image drawn once: about the cheapest thing a canvas
-   * does. How hard she chuffs comes from how hard she's going (racing, for now; the engine later:
-   * see EXHAUST). A steamboat: steam, no smoke.
+   * Steam, as particles on one canvas over the chart, drawn thirty times a second while she steams
+   * (and not at all otherwise). It lives on the chart, not on her: chuffed from her chimneys, it
+   * hangs where it came out, drifts on the wind, swells and thins. Each cloudlet is one stamp of a
+   * small image drawn once: about the cheapest thing a canvas does. How hard she chuffs comes from
+   * how hard she's going (racing, for now; the engine later: see EXHAUST). A steamboat: steam, no
+   * smoke, and no wake to speak of (the steam covers her track).
    */
   let canvas = $state<HTMLCanvasElement>();
   interface Mote {
@@ -240,19 +239,13 @@
     r0: number;
     r1: number;
     alpha: number;
-    kind: 'steam' | 'bubble';
-    /** Which cloudlet (steam): a few drawn, each its own lumpy shape. */
+    /** Which cloudlet: a few drawn, each its own lumpy shape. */
     shape: number;
   }
-  /** How she steams and stirs the water, in the top view's units (her length is about 260) and seconds. */
+  /** How she steams, in the top view's units (her length is about 260) and seconds. */
   const EXHAUST = {
     /** The wind (units a second); the steam rides it lazily (`steamDrift`). */
     wind: [10, -14] as const,
-    /** A bubble this often; how long it lasts; its size; how plain. */
-    bubbleEvery: 0.06,
-    bubbleLife: 3.2,
-    bubbleSize: [5, 9] as const,
-    bubbleAlpha: 0.75,
     /**
      * Steam from the chimneys: big, portly cloudlets, cel-shaded as the cartoons drew them (flat white,
      * a flat grey shade on the side away from the light, an ink outline), in chuffs as the engine
@@ -267,12 +260,11 @@
     /** Going hard (Skip held): chuffs this much more often. */
     hard: 2.5,
   };
-  /** Where the chimneys stand and the wheel turns, from her middle in the top view's units (BoatTop: chimneys at 142, middle at 100). */
+  /** Where the chimneys stand, from her middle in the top view's units (BoatTop: chimneys at 142, middle at 100). */
   const CHIMNEYS: Pt[] = [
     [42, -9],
     [42, 9],
   ];
-  const STERN = -112;
   /** How many cloudlet shapes are drawn (each puff picks one). */
   const CLOUDLETS = 5;
 
@@ -327,15 +319,8 @@
         c.drawImage(body, 0, 0);
       }, 160);
     const steam = Array.from({ length: CLOUDLETS }, (_, k) => cloudlet(k + 1));
-    const bubble = sprite((c, n) => {
-      c.strokeStyle = 'rgba(30, 30, 28, 1)';
-      c.lineWidth = n / 8;
-      c.beginPath();
-      c.arc(n / 2, n / 2, n / 2 - c.lineWidth, 0, Math.PI * 2);
-      c.stroke();
-    }, 16);
     const motes: Mote[] = [];
-    let raf = 0, last = performance.now(), bubbleClock = 0, steamClock = 0;
+    let raf = 0, last = performance.now(), steamClock = 0;
     let was: Pt | null = null;
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
@@ -356,19 +341,12 @@
       if (b && moving) {
         const cos = Math.cos(b.heading), sin = Math.sin(b.heading);
         const at = ([fx, fy]: Pt): Pt => [b.p[0] + (fx * cos - fy * sin) * u, b.p[1] + (fx * sin + fy * cos) * u];
-        bubbleClock += dt;
-        while (bubbleClock > EXHAUST.bubbleEvery) {
-          bubbleClock -= EXHAUST.bubbleEvery;
-          const [x, y] = at([STERN - Math.random() * 6, (Math.random() - 0.5) * 22]);
-          const r = (EXHAUST.bubbleSize[0] + Math.random() * (EXHAUST.bubbleSize[1] - EXHAUST.bubbleSize[0])) * u;
-          motes.push({ x, y, vx: 0, vy: 0, age: 0, life: EXHAUST.bubbleLife * (0.7 + Math.random() * 0.6), r0: r, r1: r * 1.4, alpha: EXHAUST.bubbleAlpha, kind: 'bubble', shape: 0 });
-        }
         steamClock += dt * hard;
         while (steamClock > EXHAUST.steamEvery) {
           steamClock -= EXHAUST.steamEvery * (0.8 + Math.random() * 0.4);
           const [x, y] = at(CHIMNEYS[Math.floor(Math.random() * CHIMNEYS.length)]);
           const k = EXHAUST.steamDrift;
-          motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * u, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * u, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * u, r1: EXHAUST.steamSize[1] * u * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, kind: 'steam', shape: Math.floor(Math.random() * CLOUDLETS) });
+          motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * u, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * u, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * u, r1: EXHAUST.steamSize[1] * u * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, shape: Math.floor(Math.random() * CLOUDLETS) });
         }
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -383,14 +361,14 @@
         m.x += m.vx * dt;
         m.y += m.vy * dt;
         const f = m.age / m.life;
-        // Steam swells out fast, then slowly; bubbles spread steadily.
-        const grow = m.kind === 'steam' ? 1 - (1 - f) ** 3 : Math.sqrt(f);
+        // It swells out fast, then slowly.
+        const grow = 1 - (1 - f) ** 3;
         const r = (m.r0 + (m.r1 - m.r0) * grow) * scale;
         const [sx, sy] = onScreen([m.x, m.y]);
         if (sx < -r || sy < -r || sx > mapW + r || sy > mapH + r) continue;
-        // A cloudlet holds solid, then thins in its last third (a cel drawing doesn't blur); bubbles simply fade.
-        ctx.globalAlpha = m.alpha * (m.kind === 'steam' ? Math.min(1, (1 - f) * 3) : 1 - f);
-        ctx.drawImage(m.kind === 'steam' ? steam[m.shape] : bubble, sx - r, sy - r, 2 * r, 2 * r);
+        // It holds solid, then thins in its last third (a cel drawing doesn't blur).
+        ctx.globalAlpha = m.alpha * Math.min(1, (1 - f) * 3);
+        ctx.drawImage(steam[m.shape], sx - r, sy - r, 2 * r, 2 * r);
       }
     };
     raf = requestAnimationFrame(frame);
@@ -420,7 +398,7 @@
       <svg class="mark boat" viewBox="{-BOAT_BOX / 2} {-BOAT_BOX / 2} {BOAT_BOX} {BOAT_BOX}" width={boatBox} height={boatBox} style:transform="translate3d({boatAt[0] - boatBox / 2}px, {boatAt[1] - boatBox / 2}px, 0)">
         <BoatTop {built} heading={deg} printed />
       </svg>
-      <!-- Steam and wake (particles), over her: the steam billows out of her chimneys, on top of everything -->
+      <!-- Steam (particles), over her: it billows out of her chimneys, on top of everything -->
       <canvas class="exhaust" bind:this={canvas} style:width="{mapW}px" style:height="{mapH}px"></canvas>
     </div>
   {/if}
