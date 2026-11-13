@@ -123,9 +123,11 @@
     margin: 0 0 0 0;
     font-size: 0.92rem;
   }
+  /* A musing: set apart, a line to each thought. */
   .musing {
     margin: 0.8rem 0;
     font-size: 1rem;
+    white-space: pre-line;
   }
   .empty {
     opacity: 0.55;

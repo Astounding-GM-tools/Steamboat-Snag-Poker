@@ -19,6 +19,18 @@ export const ENCOUNTER_RECORDS: Record<string, { solved?: string; failed?: strin
 export const castOffRecord = (place: string, bound: string) => `Cast off from ${place}, ${bound}.`;
 export const UNDER_WAY_AGAIN = 'Under way again.';
 
+/** How the dock fee went at Muscatine: paid outright, played for and dodged, or played for and snagged (flags). */
+export const DOCK_FEE_FLAG = { paid: 'dockFee:paid', dodged: 'dockFee:dodged', snagged: 'dockFee:snagged' } as const;
+
+/** Willie's first musing: leaving Muscatine, and how the dock fee went. */
+export function leavingMuscatine(flags: readonly string[], purse: number, fee: number): string {
+  const lines = ['Left Muscatine.', 'Northbound for Dubuque, cargo to pick up.'];
+  if (flags.includes(DOCK_FEE_FLAG.dodged)) lines.push('The Captain played the harbour master for the docking fee.', `Dodged the fee: $${fee} saved for coal. We'll need it.`);
+  else if (flags.includes(DOCK_FEE_FLAG.snagged)) lines.push('The Captain played the harbour master for the docking fee.', `Snagged the fee, and the ante. $${purse} left for expenses.`);
+  else lines.push(`Docking fee: $${fee}.`, `$${purse} left for the river.`);
+  return lines.join('\n');
+}
+
 /** What's written when an answer at the table ends it, by the answer's effect. */
 export const CHOICE_RECORDS: Record<string, string> = {
   pay: 'Paid the harbour master the dock fee, cash.',

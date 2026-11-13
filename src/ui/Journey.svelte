@@ -2,6 +2,7 @@
   import { untrack } from 'svelte';
   import {
     BOAT,
+    DOCK_FEE,
     ITEMS,
     Rng,
     chooseLane,
@@ -43,7 +44,8 @@
   import { loadLeg } from './map/legs';
   import TypedLine from './TypedLine.svelte';
   import LogView from './LogView.svelte';
-  import { CHOICE_RECORDS, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, castOffRecord, islandRecord, tradeRecord } from '../story/log';
+  import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, castOffRecord, islandRecord, leavingMuscatine, tradeRecord } from '../story/log';
+  import { DOCK_FEE_AMOUNT } from '../story/numbers';
   import { islandKey, sides, type Island, type Pt, type TravelSidecar } from './map/route';
   import { heavy } from './heavy';
   import ShipPage from './ShipPage.svelte';
@@ -113,8 +115,14 @@
     racing = false;
     // Willie logs her getting under way (once: a reload mid-stretch doesn't log it again).
     untrack(() => {
-      const line = steamFrom === 0 ? castOffRecord(t(`place.${journey.place}`), t(`river.${bound}`)) : UNDER_WAY_AGAIN;
-      if (journey.log?.at(-1)?.text !== line) journey = writeLog(journey, line);
+      // Leaving Muscatine is Willie's first musing (how the dock fee went); elsewhere, a line.
+      const first = steamFrom === 0 && journey.place === 'muscatine';
+      const line = first
+        ? leavingMuscatine(journey.flags, journey.purse, DOCK_FEE_AMOUNT)
+        : steamFrom === 0
+          ? castOffRecord(t(`place.${journey.place}`), t(`river.${bound}`))
+          : UNDER_WAY_AGAIN;
+      if (journey.log?.at(-1)?.text !== line) journey = writeLog(journey, line, first ? 'musing' : 'record');
     });
     let last = performance.now(), raf = 0;
     const tick = (now: number) => {
@@ -419,7 +427,10 @@
   function leave(j: JourneyState): JourneyState {
     const e = j.encounter;
     const record = e?.outcome ? ENCOUNTER_RECORDS[e.def.id]?.[e.outcome] : undefined;
-    return leaveEncounter(record ? writeLog(j, record) : j, RIVER);
+    // The dock fee played for: whoever holds the bill when the hands are done settles it.
+    const fee = e?.def.id === 'harbourMaster' ? (j.snags.some((s) => s.index === DOCK_FEE) ? DOCK_FEE_FLAG.snagged : DOCK_FEE_FLAG.dodged) : null;
+    const marked = fee ? { ...j, flags: [...j.flags, fee] } : j;
+    return leaveEncounter(record ? writeLog(marked, record) : marked, RIVER);
   }
   /** What's said at this table, as the hand stands. */
   function talkNow() {
@@ -452,7 +463,8 @@
   function talked(effect: string) {
     if (step?.type !== 'encounter' || !step.choices?.[effect]) return;
     const record = CHOICE_RECORDS[effect];
-    journey = choose(record ? writeLog(journey, record) : journey, RIVER, effect);
+    const marked = effect === 'pay' ? { ...journey, flags: [...journey.flags, DOCK_FEE_FLAG.paid] } : journey;
+    journey = choose(record ? writeLog(marked, record) : marked, RIVER, effect);
   }
   function onwards() {
     if (!step) return;
