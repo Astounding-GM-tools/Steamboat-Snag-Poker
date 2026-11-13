@@ -181,7 +181,7 @@
       {/each}
     </g>
 
-    <!-- The bandstand: a little pavilion on the saloon roof -->
+    <!-- The bandstand: a little pavilion on the staterooms' roof -->
     {#if built.bandstand}
       {@const [s0, s1] = span(MODULES.bandstand.bays!)}
       <g transform={tr(upB(0.75))}>
