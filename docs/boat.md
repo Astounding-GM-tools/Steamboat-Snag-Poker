@@ -58,9 +58,9 @@ Bill’s boat; modules are what you add.
 | Office | boiler | 5–6 | fixed |
 | Porch roof, texas | roof | 5–7, 5–6 | fixed; the chimneys come up through the porch |
 | **Galley** | main | 2–3 | the cook in the door, steam from the window (the cook’s raft, from the village) |
-| **Dining saloon** | boiler | 0–1 | the four suits, one each, as on the old vignette; painted over the railing too, so they read whole |
-| **Staterooms** | boiler | 2–4 | a raft’s row of cabins: doors with transoms; a passenger promenades the guard |
-| **Bandstand** | roof | 2–4 | on the staterooms’ roof, so it needs them; three bays, room for the five-piece band and the trombone’s slide; Bennie Moten’s band |
+| **Dining saloon** | boiler | 0–2 | the four suits, one each, as on the old vignette; painted over the railing too, so they read whole |
+| **Staterooms** | boiler | 3–4 | doors with transoms; a passenger promenades the guard |
+| **Bandstand** | roof | 0–2 | the whole saloon roof, and needs the saloon; Bennie Moten’s band |
 | **Engine overhaul** | main | none | a bigger, faster wheel and more smoke |
 | **Pretty Patty** | main | the foredeck | in place of the freight there |
 
@@ -199,7 +199,7 @@ cabin one bay longer, a chimney folding).
 **People and fittings are separate.** The cook comes with the village and the stove comes with
 her raft, but they're two things: a hire (who's aboard) and a module (what's built). The band
 joins at The Sandbar before there's a bandstand to put them on; they play on the foredeck among
-the freight until one is built for them (it needs the staterooms under it).
+the freight until one is built for them (it needs the dining saloon under it).
 
 So in the tow, some rafts must be drawn as installable boat modules (a galley house, a row of
 stateroom cabins) sitting on rafts, recognisably the same parts as on the boat, and moved

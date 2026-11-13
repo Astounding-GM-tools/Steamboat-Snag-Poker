@@ -11,8 +11,7 @@ describe('the Best Intentions', () => {
 
   it('builds nothing before what it stands on', () => {
     expect(canBuild('bandstand', {})).toBe(false);
-    expect(canBuild('bandstand', { saloon: true })).toBe(false);
-    expect(canBuild('bandstand', { berths: true })).toBe(true);
+    expect(canBuild('bandstand', { saloon: true })).toBe(true);
     for (const id of Object.keys(MODULES) as ModuleId[]) expect(canBuild(id, everything)).toBe(true);
   });
 });

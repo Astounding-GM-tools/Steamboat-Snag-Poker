@@ -74,16 +74,15 @@ export interface Module {
   deck: Deck;
   /** Bays it fills; none for a module that changes a part (the engine) or has its own slot (Patty). */
   bays?: readonly [number, number];
-  /** What must be built first (the bandstand stands on the staterooms' roof). */
+  /** What must be built first (a bandstand stands on the saloon's roof). */
   needs?: readonly ModuleId[];
 }
 
 export const MODULES: Record<ModuleId, Module> = {
   galley: { id: 'galley', name: 'Galley', deck: 'main', bays: [2, 3] },
-  saloon: { id: 'saloon', name: 'Dining saloon', deck: 'boiler', bays: [0, 1] },
-  /** A raft's row of cabins, three bays long: wide enough for the band on its roof. */
-  berths: { id: 'berths', name: 'Staterooms', deck: 'boiler', bays: [2, 4] },
-  bandstand: { id: 'bandstand', name: 'Bandstand', deck: 'roof', bays: [2, 4], needs: ['berths'] },
+  saloon: { id: 'saloon', name: 'Dining saloon', deck: 'boiler', bays: [0, 2] },
+  berths: { id: 'berths', name: 'Staterooms', deck: 'boiler', bays: [3, 4] },
+  bandstand: { id: 'bandstand', name: 'Bandstand', deck: 'roof', bays: [0, 2], needs: ['saloon'] },
   engine: { id: 'engine', name: 'Engine overhaul', deck: 'main' },
   patty: { id: 'patty', name: 'Pretty Patty', deck: 'main' },
 };
@@ -135,8 +134,7 @@ export function stations(built: Built): Record<string, Station | undefined> {
     pilot: { x: 116, y: LEVEL.texas },
     cards: { x: 9, y: LEVEL.boiler },
     cook: built.galley ? { x: 66, y: LEVEL.main } : undefined,
-    stroller: built.berths ? { x: span(MODULES.berths.bays!)[0] + 4, y: LEVEL.boiler, walk: 40 } : undefined,
-    /** The bandstand's aft end; the players stand along it (BoatSide). */
-    band: built.bandstand ? { x: span(MODULES.bandstand.bays!)[0], y: LEVEL.hurricane } : undefined,
+    stroller: built.berths ? { x: 58, y: LEVEL.boiler, walk: 44 } : undefined,
+    band: built.bandstand ? { x: 44, y: LEVEL.hurricane } : undefined,
   };
 }

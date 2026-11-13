@@ -270,13 +270,13 @@
   <line class="post" x1={n1} y1="-24" x2={n1} y2="-37" />
   <rect class="paper" x={n0 - 1} y="-42" width={n1 - n0 + 2} height="3" />
 
-  <!-- The bandstand on the staterooms' roof, and the band -->
+  <!-- The bandstand on the saloon roof, and the band -->
   {#if built.bandstand}
     {@const [s0, s1] = span(MODULES.bandstand.bays!)}
     {#if at.band}
       <!-- Drawn back to front: the bass behind the drums, the trombone behind the trumpet -->
       {#each [['bass', 13, 'bowler'], ['drums', 5, 'cap'], ['sax', 21, 'bowler'], ['trombone', 36, 'boater'], ['trumpet', 29, 'boater']] as const as [doing, dx, hat], i (doing)}
-        <g transform="translate({at.band.x + dx} {at.band.y})"><Figure {doing} {hat} delay={-i * 0.17} /></g>
+        <g transform="translate({s0 + dx} -38)"><Figure {doing} {hat} delay={-i * 0.17} /></g>
       {/each}
     {/if}
     {#each [s0 + 1, (s0 + s1) / 2, s1 - 1] as x (x)}<line class="post" x1={x} y1="-38" x2={x} y2="-57" />{/each}
