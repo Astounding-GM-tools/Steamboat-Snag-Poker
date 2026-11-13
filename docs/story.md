@@ -1717,6 +1717,17 @@ Next: Gaylord at the final, the council's list of things to do, The Best Intenti
 Still to do alongside: a **character pass** (every name, description and
 voice with the story in mind).
 
+## The First Mate's Log: anachronitis (planned)
+
+*Agreed 2026-11-13; the design is in `docs/log.md`.* Willie, promoted from deckhand to first mate
+(the job the player held under Bill), keeps the log: a record of the voyage and a novelette.
+Through it, Willie slowly notices that the *Best Intentions* is a ship out of time (the band's
+music twenty years early, Bennie's birth year, Skip, reloads, the view from above), takes it up
+with the Captain, and worries. In chapter five he confronts the Captain, who explains it's all a
+game after a cartoon after a silent film after a 1910 song after an 1870 race; Willie decides the
+Captain has lost their mind, and stays to steer them back. Lovecraftian in shape, wholesome in
+content; the joke is never on Willie.
+
 ## The house band at The Sandbar (planned)
 
 *Agreed 2026-11-12; not built.* How the *Best Intentions* gets her band, in chapter one.
