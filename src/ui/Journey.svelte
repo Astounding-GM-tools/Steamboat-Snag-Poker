@@ -67,6 +67,9 @@
   const enc = $derived(journey.encounter);
   const playing = $derived(step?.type === 'encounter' && !!enc && !enc.outcome);
 
+  /** Development only: she steams the leg over and over, with nothing to stop her (no islands, chatter or encounters): something running while we work. */
+  const endless = $derived(import.meta.env.DEV && journey.flags.includes('dev:endless'));
+
   /** Which way she's bound: up the river to Dubuque, then down (chapter one is all northbound). */
   const bound = $derived(journey.flags.includes('southbound') ? 'southbound' : 'northbound');
   /** The voyage's heading: "Day 2: Muscatine, northbound". */
@@ -92,6 +95,8 @@
       last = now;
       const dir = Math.sign(to - boatT);
       boatT += dir * Math.min(Math.abs(to - boatT), (dt / voyage.legSeconds) * (racing ? voyage.race : 1));
+      // Endless (development): back to where she started, and round again.
+      if (boatT === to && endless) boatT = steamFrom;
       if (boatT === to) journey = proceed(journey, RIVER);
       else raf = requestAnimationFrame(tick);
     };
@@ -195,7 +200,7 @@
   });
   /** The islands on this stretch, in the order she meets them, each with what's adrift on one of its passages. */
   const isles = $derived.by(() => {
-    if (step?.type !== 'steam' || !legData?.islands) return [];
+    if (step?.type !== 'steam' || !legData?.islands || endless) return [];
     const from = steamFrom, to = step.to, up = to >= from;
     return legData.islands
       .filter((i) => (up ? i.from_t >= from && i.to_t <= to : i.to_t <= from && i.from_t >= to))
