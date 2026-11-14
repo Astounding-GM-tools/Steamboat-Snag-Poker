@@ -462,13 +462,13 @@
     back: [5.5, 14] as const,
     ahead: 15.5,
     /** How far she backs out, and drifts down, in her lengths. */
-    out: 0.5,
-    drift: 0.9,
+    out: 0.7,
+    drift: 0.6,
     /** The share of the backing spent pushing off the bank, before the current takes her and she comes round. */
     push: 0.45,
   };
-  /** How far her stern lies swung downstream at the landing, off square to the river (radians). */
-  const MOORED_ANGLE = (40 * Math.PI) / 180;
+  /** How far her stern lies swung downstream at the landing, off square to the river (radians): she lies at 70° to the bank. */
+  const MOORED_ANGLE = (20 * Math.PI) / 180;
   let departEffort = $state(0);
   let departWheel = $state<'ahead' | 'astern' | 'still'>('still');
   /** The old film's scratches and specks, over the fade-in, gone once the picture's settled. */
