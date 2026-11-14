@@ -2,7 +2,7 @@
   /**
    * A line of the First Mate's Log, in Willie's typewriter. A new entry types itself out a key at a
    * time, as Willie does: he's new at it, so unevenly, slow, a pause now and then to find the next
-   * key, each key struck at once, with a clack (a typewriter shows no cursor, and eases nothing in). In the header, an entry of
+   * key, each key struck at once, silently (a typewriter shows no cursor, and eases nothing in). In the header, an entry of
    * several lines is typed a line at a time, each replacing the one before, and its last line stays.
    * In the open log (`wrap`) the lines build up below each other.
    *
@@ -11,7 +11,6 @@
    * (`fresh`). It wraps within the page, never widening it.
    */
   import { untrack } from 'svelte';
-  import { clack } from './typewriter';
 
   interface Props {
     text: string;
@@ -97,12 +96,10 @@
     const key = () => {
       if (paused) return later(key, 300);
       const whole = lines[l];
-      if (i === 0) clack('line');
       const c = whole[i++];
       line = whole.slice(0, i - 1);
       struck = c;
       strikes++;
-      clack(c === ' ' ? 'space' : 'key');
       if (i < whole.length) return later(key, delay(c));
       // The line's typed: left to be read, then on.
       untrack(() => online?.(l + 1));

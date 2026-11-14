@@ -20,7 +20,7 @@ const NEW_FIRST_MATE = [
   'First Mate made Captain, and I am the new First Mate.',
   'Gus says that means to write everything down, and to tell the captain everything he needs to know. I will do my best at both.',
   '',
-  'I hope this will be a good run.',
+  'I hope this will be a smooth run.',
   'Pick up prime salvage',
   'Make good money on the haul',
   'And not leave it all at the tables along the way',
