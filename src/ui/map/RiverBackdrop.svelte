@@ -161,6 +161,12 @@
   const TURN_RADIUS = 1.1;
   let boat = $state<{ p: Pt; heading: number } | null>(null);
   let lastDistance = 0;
+  /**
+   * Off a landing, the channel starts where the departure left her, not where the chart's course
+   * begins: the difference (`join`), fading out over her first `JOIN_LENGTHS` lengths of the way.
+   */
+  let join: Pt | null = null;
+  const JOIN_LENGTHS = 6;
   $effect(() => {
     const d = distance, s = sailed;
     if (!s || departure) return;
@@ -168,9 +174,16 @@
       const length = boatOnScreen / scale;
       const moved = d - lastDistance;
       lastDistance = d;
+      const fade = (x: number) => (join ? Math.max(0, 1 - x / (JOIN_LENGTHS * length)) ** 2 : 0);
+      /** Her spot on the way at distance `x`: the channel, and off a landing, where she joined it. */
+      const at = (x: number): Pt => {
+        const q = s.point(x), k = fade(x);
+        return k ? [q[0] + join![0] * k, q[1] + join![1] * k] : q;
+      };
+      if (join && !fade(d)) join = null;
       /** The spot she aims for: the channel a good way ahead of where she's got to. */
-      const mark = s.point(d + Math.sign(moved || 1) * LOOK * length);
-      const there = s.point(d);
+      const mark = at(d + Math.sign(moved || 1) * LOOK * length);
+      const there = at(d);
       if (!boat || Math.abs(moved) > 3 * length || Math.hypot(boat.p[0] - there[0], boat.p[1] - there[1]) > 1.5 * length) {
         boat = { p: there, heading: Math.atan2(mark[1] - there[1], mark[0] - there[0]) };
         return;
@@ -528,6 +541,9 @@
       if (t >= DEPART.ahead + 0.6 && !done) {
         done = true;
         lastDistance = 0;
+        // The way on starts here, where she is: it joins the channel over her first few lengths.
+        const o = s.point(0);
+        join = [boat!.p[0] - o[0], boat!.p[1] - o[1]];
         untrack(() => ondeparted?.());
         return;
       }

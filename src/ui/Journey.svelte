@@ -78,6 +78,8 @@
 
   /** Seconds she takes to gather way from a standstill (casting off, getting off The Sandbar). */
   const GATHER_WAY_S = 10;
+  /** Off a landing, her wheel's already been driving ahead as she came round: she's that far into gathering way. */
+  const DEPARTED_WAY_S = 4;
   /** She steams this long before Willie writes her getting under way: the river first, then the words. */
   const CAST_OFF_QUIET_MS = 8_000;
   /** After she's backed out and got under way from a landing, a moment before Willie writes. */
@@ -188,7 +190,7 @@
       last = now;
       const dir = Math.sign(to - boatT);
       // From a standstill she gathers way: up to her pace over the first few seconds (eased), not all at once.
-      const way = Math.min(1, (now - began) / 1000 / GATHER_WAY_S);
+      const way = Math.min(1, ((now - began) / 1000 + (step.landing ? DEPARTED_WAY_S : 0)) / GATHER_WAY_S);
       const gathered = way * way * (3 - 2 * way);
       boatT += dir * Math.min(Math.abs(to - boatT), (dt / voyage.legSeconds) * Math.max(0.02, gathered) * (racing ? voyage.race : 1));
       // Debris called earlier, reached: she stops for its hand.
