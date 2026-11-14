@@ -18,7 +18,8 @@ const TRI_CITIES_AT = 0.6429;
 const NEW_FIRST_MATE = [
   'Captain Bill is not coming with us.',
   'First Mate made Captain, and I am the new First Mate.',
-  'Gus says that means to write everything down, and to tell the captain everything he needs to know. I will do my best at both.',
+  'Gus says being First Mate means doing tasks before anyone realises they need doing, and to write down everything the captain should know and that I should remember.',
+  'So that is what I’ll do, although I don’t yet know where to begin.',
   '',
   'I hope this will be a smooth run.',
   'Pick up prime salvage',
