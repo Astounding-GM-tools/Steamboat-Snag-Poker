@@ -16,16 +16,14 @@ const TRI_CITIES_AT = 0.6429;
 
 /** Willie's second musing, a little way out of Muscatine: the chain of command, and Bill's missus. */
 const NEW_FIRST_MATE = [
-  'Captain Bill stayed behind, to care for Missus Bill, who is poorly.',
-  'So we have a new captain, and I am the First Mate now.',
-  'Gus says that means to write everything down, and to do any job that someone else hasn’t already done.',
+  'Captain Bill is not coming with us.',
+  'First Mate made Captain, and I am the new First Mate.',
+  'Gus says that means to write everything down, and to tell the captain everything he needs to know. I will do my best at both.',
   '',
-  'I hope Bill’s missus will be all right.',
-  'She’s always been kind to me.',
-  'She’ll need medicine.',
-  'I hope we’ll make good money on the run.',
-  'Find prime salvage along the way.',
-  'And not leave it all at the table.',
+  'I hope this will be a good run.',
+  'Pick up prime salvage',
+  'Make good money on the haul',
+  'And not leave it all at the tables along the way',
 ].join('\n');
 
 const harbourMaster: Rival = { id: 'harbourMaster', ai: 'stubborn', money: HARBOUR_MASTER_PURSE };
