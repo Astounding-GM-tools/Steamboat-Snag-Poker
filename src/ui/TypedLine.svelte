@@ -168,8 +168,10 @@
     overflow: hidden;
     /* The rule under the heading: the line rolls up under it and is gone. */
     border-top: 1px solid rgba(242, 239, 230, 0.4);
-    margin-top: 0.2rem;
-    padding-top: 0.15rem;
+    /* Halfway between the heading and the typed line: as much room above the rule as below it. */
+    margin-top: -0.05rem;
+    padding-top: 0.4rem;
+    line-height: 1.4;
   }
   .paper {
     display: block;
