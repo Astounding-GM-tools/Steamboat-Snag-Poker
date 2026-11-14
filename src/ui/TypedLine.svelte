@@ -48,15 +48,15 @@
    * blank line in the entry) and between entries, a good long pause: this is the river.
    */
   function delay(c: string): number {
-    const base = 100 + Math.random() * 130;
-    if (c === ' ') return base + 70;
-    if (/[.,:;!?]/.test(c)) return base + 300 + Math.random() * 350;
-    return Math.random() < 0.06 ? base + 400 + Math.random() * 600 : base;
+    const base = 85 + Math.random() * 110;
+    if (c === ' ') return base + 60;
+    if (/[.,:;!?]/.test(c)) return base + 260 + Math.random() * 300;
+    return Math.random() < 0.06 ? base + 350 + Math.random() * 550 : base;
   }
   /** How long a typed line stays to be read: a few seconds, longer for a longer line. */
   const readingTime = (l: string) => 5000 + l.length * 110;
   /** The roll of the paper, and the pause between sections and before an entry. */
-  const ROLL_MS = 700;
+  const ROLL_MS = 450;
   const SECTION_MS = 10000;
   const ENTRY_MS = 4000;
   /** The line rolling up out of view (header only). */
@@ -115,25 +115,31 @@
           untrack(() => ontyped?.());
           return;
         }
-        const pause = sectionAfter.has(l) ? SECTION_MS : 350;
+        // The line stays while he pauses (a long pause at a section's end), then the carriage
+        // return: the paper rolls it up under the rule, and he types the next.
+        const pause = sectionAfter.has(l) ? SECTION_MS : 0;
         l++;
         i = 0;
         if (wrap) {
           done = lines.slice(0, l).join('\n');
           line = struck = '';
-          later(key, pause);
-        } else roll(() => later(key, pause));
+          later(key, pause + 350);
+        } else later(() => roll(() => later(key, 150)), pause);
       };
       later(next, wrap ? 500 : readingTime(whole));
     };
     typing = true;
-    // A new entry: what's there rolls away, a pause, and he starts. (Read untracked: the typing itself
-    // changes what's showing, and mustn't start the entry over.)
-    untrack(() =>
-      roll(() => {
-        done = wrap ? '' : done;
-        later(key, wrap ? 400 : ENTRY_MS);
-      }),
+    // A new entry: what's there stays a while yet, then rolls away and he starts. (Read untracked: the
+    // typing itself changes what's showing, and mustn't start the entry over.)
+    later(
+      () =>
+        untrack(() =>
+          roll(() => {
+            done = wrap ? '' : done;
+            later(key, 150);
+          }),
+        ),
+      wrap ? 400 : ENTRY_MS,
     );
     return () => clearTimeout(timer);
   });
@@ -160,18 +166,21 @@
     white-space: normal;
     overflow-wrap: anywhere;
     overflow: hidden;
+    /* The rule under the heading: the line rolls up under it and is gone. */
+    border-top: 1px solid rgba(242, 239, 230, 0.4);
+    margin-top: 0.2rem;
+    padding-top: 0.15rem;
   }
   .paper {
     display: block;
   }
-  /* The paper rolls up: the line goes up and out of view, under the heading. */
+  /* The paper rolls up: the line goes up and out of view, cut off by the rule, not faded. */
   .rolling {
-    animation: roll 0.7s ease-in forwards;
+    animation: roll 0.45s ease-in forwards;
   }
   @keyframes roll {
     to {
-      translate: 0 -110%;
-      opacity: 0;
+      translate: 0 -130%;
     }
   }
   .wrap .paper {
@@ -179,6 +188,9 @@
   }
   /* In the open log: the page's own type, wrapping as it goes, a line to each thought. */
   .wrap {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
     display: inline;
     font-size: inherit;
     color: inherit;

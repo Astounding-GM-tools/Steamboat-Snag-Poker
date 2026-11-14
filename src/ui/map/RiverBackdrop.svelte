@@ -455,7 +455,7 @@
     ahead: 15.5,
     /** How far she backs out, and drifts down, in her lengths. */
     out: 0.3,
-    drift: 0.45,
+    drift: 0.9,
   };
   let departEffort = $state(0);
   let departWheel = $state<'ahead' | 'astern' | 'still'>('still');
@@ -477,7 +477,9 @@
     const up = Math.atan2(ahead[1] - start[1], ahead[0] - start[0]);
     // Coming round: the stern swings downstream, so the bow turns the short way past the bank's normal.
     const swing = ((((up - into) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
-    const away: Pt = [moored[0] + nx * DEPART.out * length - Math.cos(up) * DEPART.drift * length, moored[1] + ny * DEPART.out * length - Math.sin(up) * DEPART.drift * length];
+    /** Off the levee, and down the river: she backs out over the backing, and drifts down until the wheel turns ahead. */
+    const off: Pt = [nx * DEPART.out * length, ny * DEPART.out * length];
+    const down: Pt = [-Math.cos(up) * DEPART.drift * length, -Math.sin(up) * DEPART.drift * length];
     const ease = (f: number) => f * f * (3 - 2 * f);
     untrack(() => {
       boat = { p: moored, heading: into };
@@ -494,8 +496,11 @@
       departWheel = t < DEPART.astern ? 'still' : t < DEPART.back[1] ? 'astern' : t < DEPART.ahead ? 'still' : 'ahead';
       const f = Math.max(0, Math.min(1, (t - DEPART.back[0]) / (DEPART.back[1] - DEPART.back[0])));
       const e = ease(f);
+      // The drift runs on past the backing, slowing, until she's driving ahead.
+      const g = Math.max(0, Math.min(1, (t - DEPART.back[0]) / (DEPART.ahead + 0.6 - DEPART.back[0])));
+      const drifted = 1 - (1 - g) ** 2;
       boat = {
-        p: [moored[0] + (away[0] - moored[0]) * e, moored[1] + (away[1] - moored[1]) * e],
+        p: [moored[0] + off[0] * e + down[0] * drifted, moored[1] + off[1] * e + down[1] * drifted],
         // She comes round a little behind her backing: the swing lags the move, then catches up.
         heading: into + swing * ease(Math.min(1, f * 1.15)),
       };
