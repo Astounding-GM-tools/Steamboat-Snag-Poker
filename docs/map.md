@@ -60,3 +60,20 @@ drawer.
 **Annotations** (the sidecars' `annotations: []`): the map becomes the voyage's diary.
 Corrections scrawled in as the story earns them: "Tri-Cities" to "Quad Cities" on the way
 down; "Gilbert" to "Bettendorf" (the town renamed in 1903; the sheets still read the old name).
+
+## Next: the river as the game (2026-11-14)
+
+The meat of the game is on the river, not between landings: steaming is slow, and it's full.
+Encounters break it up; between them there's always something happening, at river speed.
+
+- **Timing, orchestrated.** Willie's log entries, the island calls (port or starboard), salvage
+  talk, obstacles adrift, one-hand Snag games and the encounters must never crash into each other.
+  One scheduler for the stretch (a "river director") that knows what's coming and spaces it: an
+  entry waits for a fork call to be answered, a fork isn't called while a hand is on, and so on.
+- **Slower still.** With hands to play on the way, her speed matters less: there's no rush to get
+  anywhere, because you're already playing.
+- **Everything leads to Snag:** one-hand games on the river for the value of a crate, the price of
+  an upgrade, debris to clear, the timber raft; the manure chores as a deck game.
+- **Obstacles adrift** in the lanes, making port or starboard a real choice.
+- Watch for repetition: dense, but never the same thing twice in a row.
+
