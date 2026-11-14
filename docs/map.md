@@ -82,3 +82,39 @@ Encounters break it up; between them there's always something happening, at rive
   "First day of spring.": under steam, and under way, and the game has properly started. (The same
   move, shorter, wherever she lies at a landing.)
 
+## The syncopated event stream (agreed 2026-11-15)
+
+Tuning moments by hand is a never-ending nightmare; the river decides as it goes instead, by rules:
+a fixed beat, and everything else falls around it, played only where there's room. Tight, never
+rushed; never quiet for long, with gentle intermissions.
+
+**Kinds of event**
+- **Fixed:** the departure from a landing (with Willie's first section), and the island forks
+  (they're on the map: they can't move).
+- **Main:** one per leg, never skipped (The Sandbar). By default around the leg's halfway mark, in a
+  window (say 40 to 60 percent): it happens at the first gap in the window (not in a fork, not on top
+  of a hand); if none, at the window's far end, and a fill is dropped instead. (Sandbars really did
+  shift from season to season: a Sandbar in a slightly different spot each voyage is true.)
+- **Fill:** debris or salvage (one item, settled with one hand of Snag; skippable), and Willie's log
+  sections (the calm breathers; never dropped, they wait for a gap).
+
+**Room.** At each decision point: how long, at her pace, to the next fork's warning, or to the main
+event's window? Each fill has a rough length (a debris hand about 30 to 45 seconds, a log section its
+typing time and a beat); a fill happens only if it fits with a margin, else a shorter one, else the
+river. Intensity alternates: after a busy one, a calm one, and never the same twice running if
+something else fits.
+
+**Debris slows the river.** While a hand is on she slows to a crawl; nearing a fork's warning with
+the hand still open, she stops altogether (the player may have stepped away), and goes on when it's
+settled. A fork's zone (warning to rejoin) is never interrupted by a new fill; a lane can hold its own
+debris, hit or dodged.
+
+**Willie types through anything.** His typing is in the header: it can run under a fork's call or a
+debris hand. It's a leisurely game.
+
+**A fast player** squeezes in more debris than a leisurely one: fine for balance.
+
+**Build, in steps:** (1) the stream itself, plain TypeScript with tests (what comes next, given where
+she is, what's ahead and how long things take: "never collides" checked, not hoped for); (2) wire in
+what exists (departure, forks, The Sandbar, the log); (3) the debris event and its one-hand Snag.
+
