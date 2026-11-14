@@ -135,7 +135,7 @@
    * In close (at a landing) she's drawn bigger, so her wheel can be seen turning, but not as much bigger
    * as the map is (she'd fill the river): at the river's height, her usual size.
    */
-  const GROWTH = 0.55;
+  const GROWTH = 0.35;
   const growth = $derived(Math.max(1, 2 ** ((zoom.current - voyage.steamZoom) * GROWTH)));
   const scale = $derived(2 ** zoom.current);
   /** Her length on the screen (the top view is drawn about 260 units long). */
