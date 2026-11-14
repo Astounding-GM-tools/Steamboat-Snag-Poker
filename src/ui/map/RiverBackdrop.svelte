@@ -111,7 +111,7 @@
       const f = (d - cum[lo]) / (cum[hi] - cum[lo] || 1);
       return [line[lo][0] + f * (line[hi][0] - line[lo][0]), line[lo][1] + f * (line[hi][1] - line[lo][1])];
     };
-    return { drawn, along, point };
+    return { drawn, along, point, line };
   });
   /** How far along the line a spot on the leg (t) is. */
   function distanceAt(at: number): number {
@@ -154,11 +154,20 @@
    * wiggle of the channel without sliding sideways, so she steers instead: she aims at a spot on the
    * channel a good way ahead (`LOOK` boat lengths), turns towards it no tighter than her length
    * allows (`TURN_RADIUS`), and moves the way she points, as far as she's steamed. On a straight she
-   * runs straight; at a bend she swings round in an arc, cutting it a little, as a pilot would.
-   * Should she ever stray far from her spot (a reload, a race), she's set back on it.
+   * runs straight; at a bend she swings round in an arc, and she's drawn back towards her spot on the
+   * channel as she goes (`PULL`), so the arc stays close to it. Should she ever stray far from her spot
+   * (a reload, a race), she's set back on it.
    */
   const LOOK = 1.6;
   const TURN_RADIUS = 1.1;
+  /** Development only (`?path` in the address): her course drawn on the chart, and her spot on it. */
+  const SHOW_PATH = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('path');
+  /**
+   * How hard she's drawn back to her spot on the way: for every length she steams, this share of the gap
+   * closes. Steering alone, as big as she's drawn, she'd swing half a length wide of the channel at a
+   * bend (over a bank, or an island), and never quite come back to it.
+   */
+  const PULL = 2.5;
   let boat = $state<{ p: Pt; heading: number } | null>(null);
   let lastDistance = 0;
   /**
@@ -194,7 +203,10 @@
       const most = Math.abs(moved) / (TURN_RADIUS * length);
       const heading = boat.heading + Math.max(-most, Math.min(most, turn));
       const step = Math.abs(moved);
-      boat = { p: [boat.p[0] + Math.cos(heading) * step, boat.p[1] + Math.sin(heading) * step], heading };
+      const ahead: Pt = [boat.p[0] + Math.cos(heading) * step, boat.p[1] + Math.sin(heading) * step];
+      // Then drawn back towards her spot on the way, a little for every bit of way she makes.
+      const k = Math.min(1, (PULL * step) / length);
+      boat = { p: [ahead[0] + (there[0] - ahead[0]) * k, ahead[1] + (there[1] - ahead[1]) * k], heading };
     });
   });
   const deg = $derived(boat ? (boat.heading * 180) / Math.PI : 0);
@@ -554,10 +566,18 @@
   });
 </script>
 
+<!-- Development (`?path`): the course she steers by, drawn on the chart. -->
+{#snippet coursePath()}
+  {#if sailed}
+    <polyline points={sailed.line.map((q) => `${q[0]},${q[1]}`).join(' ')} fill="none" stroke="#d0301e" stroke-width="2" vector-effect="non-scaling-stroke" />
+    {#if boat}<circle cx={sailed.point(distance)[0]} cy={sailed.point(distance)[1]} r={4 / scale} fill="#d0301e" />{/if}
+  {/if}
+{/snippet}
+
 <div class="backdrop" class:play={mode === 'play'} class:jolt aria-hidden="true">
   {#if sidecar && boat}
     <div class="map" bind:clientWidth={mapW} bind:clientHeight={mapH}>
-      <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale} />
+      <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale} children={SHOW_PATH ? coursePath : undefined} />
       <!--
         What's on the chart, each in a small layer of its own, placed by a transform: their smoke and
         bobbing repaint only themselves, not a drawing the size of the screen.
