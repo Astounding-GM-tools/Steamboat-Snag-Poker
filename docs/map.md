@@ -76,4 +76,9 @@ Encounters break it up; between them there's always something happening, at rive
   an upgrade, debris to clear, the timber raft; the manure chores as a deck game.
 - **Obstacles adrift** in the lanes, making port or starboard a real choice.
 - Watch for repetition: dense, but never the same thing twice in a row.
+- **Backing out from the landing.** The first leg opens with her bow-first against the Muscatine
+  landing. She backs out, swings round to face the river, drifts down a little on the current while
+  the steam comes up, then gathers way forward and comes up to speed. Only then does Willie type
+  "First day of spring.": under steam, and under way, and the game has properly started. (The same
+  move, shorter, wherever she lies at a landing.)
 
