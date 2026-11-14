@@ -235,7 +235,9 @@ describe('the dock fee', () => {
     // Out onto the river: the boat steams up to the sandbar, and Willie talks.
     expect(currentStep(paid, RIVER)?.type).toBe('steam');
     const out = proceed(paid, RIVER);
-    expect(out.river).toEqual({ leg: 'chapter-1', t: 0.54 });
+    // She meets the stretch's main event (The Sandbar) at the middle of its window, without the river shown.
+    expect(out.river?.leg).toBe('chapter-1');
+    expect(out.river!.t).toBeCloseTo(0.6429 * 0.5);
     expect(out.encounter?.def.id).toBe('underway');
   });
 

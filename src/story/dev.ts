@@ -10,13 +10,20 @@ import { SANDBAR_AT } from './chapters/01_muscatine';
 
 const start = () => ({ ...newJourney(Date.now() >>> 0, RIVER, RIVER_START), mornings: 1, strength: 18 });
 const isEncounter = (s: Step, id: string) => s.type === 'encounter' && s.encounter.id === id;
-/** Day one from the encounter `id` (inside a scene, the scene's steps from there), and the day's steps after it to follow. */
+/** The steps an encounter sits among: a scene's, or a stretch's main event's. */
+const inner = (s: Step): Step[] | null => (s.type === 'scene' ? s.steps : s.type === 'steam' && s.main ? s.main.steps : null);
+/**
+ * Day one from the encounter `id` (inside a scene or a stretch's main event, its steps from there; after
+ * a main event, the rest of its stretch), and the day's steps after it to follow.
+ */
 const dayOne = (id: string, state: JourneyState): JourneyState => {
   const steps = RIVER.days[0].steps;
-  const i = steps.findIndex((s) => (s.type === 'scene' ? s.steps.some((x) => isEncounter(x, id)) : isEncounter(s, id)));
+  const i = steps.findIndex((s) => (inner(s) ?? [s]).some((x) => isEncounter(x, id)));
   const s = steps[i];
-  const from = s.type === 'scene' ? s.steps.slice(s.steps.findIndex((x) => isEncounter(x, id))) : [s];
-  return jumpTo({ ...state, step: i + 1 }, RIVER, from);
+  const within = inner(s);
+  const from = within ? within.slice(within.findIndex((x) => isEncounter(x, id))) : [s];
+  const rest: Step[] = s.type === 'steam' ? [{ type: 'steam', leg: s.leg, to: s.to }] : [];
+  return jumpTo({ ...state, step: i + 1 }, RIVER, [...from, ...rest]);
 };
 const hubIndex = RIVER.days[0].steps.findIndex((s) => s.type === 'hub');
 const hub = (time: Slot, flags: string[] = [], coal = 2): JourneyState => ({ ...start(), step: hubIndex, pending: [], encounter: null, place: 'triCities', time, flags, coal, purse: 30, mornings: 3 });

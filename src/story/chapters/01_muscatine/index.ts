@@ -9,8 +9,8 @@ import { DOCK_FEE_AMOUNT, HARBOUR_HANDS, HARBOUR_MASTER_PURSE } from '../../numb
 
 /** The river map's leg (public/maptiles/river-1904/chapter-1/travel), and where on it things happen: Muscatine is 0, LeClaire 1. */
 const CHAPTER_1 = 'chapter-1';
-/** Well up from Muscatine, past Horse Island (0.49–0.52 on the map), the game having had time to settle: about mile 478 of 455 to 497. */
-export const SANDBAR_AT = 0.54;
+/** Where the dev jumps put her for The Sandbar (in play the event stream picks the spot, in the middle of the way to the Tri-Cities). */
+export const SANDBAR_AT = 0.3;
 /** The Tri-Cities landing, as the map's sidecar has it. */
 const TRI_CITIES_AT = 0.6429;
 
@@ -65,31 +65,36 @@ export const muscatine: Step[] = [
       },
     ],
   },
-  // The felt lifts: the map beneath it, and the Best Intentions steaming up from Muscatine.
+  // The felt lifts: the map beneath it, and the Best Intentions steaming up from Muscatine to the Tri-Cities.
   {
     type: 'steam',
     leg: CHAPTER_1,
-    to: SANDBAR_AT,
+    to: TRI_CITIES_AT,
     // Made fast bow-first at the Muscatine levee, below the town and above the bridge, on the 1890 chart.
     landing: [2708, 13058],
     // Willie's log, not the crew's chatter: a musing a little way out, then the river and the islands.
-    musings: [{ at: 0.5, text: NEW_FIRST_MATE }],
+    musings: [{ at: 0.3, text: NEW_FIRST_MATE }],
+    // The Sandbar, somewhere around the middle (sandbars shift from season to season): the event stream picks the moment.
+    main: {
+      window: [0.4, 0.6],
+      steps: [
+        {
+          type: 'encounter',
+          // Under way, Willie talking (RIVER_TALK.underway), and then not.
+          encounter: { id: 'underway', stake: 'purse', rivals: [{ id: 'willie', ai: 'loose', money: 50 }], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
+          solved: [],
+          choices: { aground: {} },
+        },
+        {
+          type: 'encounter',
+          encounter: sandbar,
+          solved: [],
+          failed: [],
+          stuck: true,
+        },
+      ],
+    },
   },
-  {
-    type: 'encounter',
-    // Under way, Willie talking (RIVER_TALK.underway), and then not.
-    encounter: { id: 'underway', stake: 'purse', rivals: [{ id: 'willie', ai: 'loose', money: 50 }], goal: { type: 'evening' }, hands: 1, rules: { pot: false } },
-    solved: [],
-    choices: { aground: {} },
-  },
-  {
-    type: 'encounter',
-    encounter: sandbar,
-    solved: [],
-    failed: [],
-    stuck: true,
-  },
-  { type: 'steam', leg: CHAPTER_1, to: TRI_CITIES_AT },
   { type: 'travel', coal: 2, to: 'triCities' },
   { type: 'nightfall' },
   { type: 'hub', hub: 'triCities' },

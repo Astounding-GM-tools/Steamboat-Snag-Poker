@@ -6,6 +6,7 @@
     ITEMS,
     Rng,
     chooseLane,
+    meetOnRiver,
     passIsland,
     writeLog,
     buy,
@@ -42,6 +43,7 @@
   import RiverBackdrop from './map/RiverBackdrop.svelte';
   import { voyage } from './map/tuning.svelte';
   import { loadLeg } from './map/legs';
+  import { nextOnRiver } from '../story/mechanics/stream';
   import TypedLine from './TypedLine.svelte';
   import LogView from './LogView.svelte';
   import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, castOffRecord, islandRecord, leavingMuscatine, tradeRecord } from '../story/log';
@@ -158,7 +160,7 @@
       const written = first ? journey.log?.some((e) => e.text === line) : journey.log?.at(-1)?.text === line;
       if (!written) journey = writeLog(journey, line, first ? 'musing' : 'record');
     }), step.landing ? AFTER_DEPARTURE_MS : CAST_OFF_QUIET_MS);
-    let last = performance.now(), raf = 0;
+    let last = performance.now(), raf = 0, asked = 0;
     const began = last;
     const tick = (now: number) => {
       if (now - last < STEP_MS) {
@@ -172,6 +174,23 @@
       const way = Math.min(1, (now - began) / 1000 / GATHER_WAY_S);
       const gathered = way * way * (3 - 2 * way);
       boatT += dir * Math.min(Math.abs(to - boatT), (dt / voyage.legSeconds) * Math.max(0.02, gathered) * (racing ? voyage.race : 1));
+      // The event stream (stream.ts), asked twice a second: is this the moment for the stretch's main event?
+      if (step.main && now - asked > 500) {
+        asked = now;
+        const from = steamFrom, at = (share: number) => from + share * (to - from);
+        const call = nextOnRiver({
+          t: boatT,
+          to,
+          pace: 1 / voyage.legSeconds,
+          forks: isles.filter((i) => !passed.includes(i.key)).map((i) => ({ from: i.island.from_t, to: i.island.to_t })),
+          main: { window: [at(step.main.window[0]), at(step.main.window[1])] },
+          sinceFill: Infinity,
+        });
+        if (call.kind === 'main') {
+          journey = meetOnRiver(journey, RIVER, boatT);
+          return;
+        }
+      }
       // Endless (development): back to where she started, and round again.
       if (boatT === to && endless) boatT = steamFrom;
       if (boatT === to) journey = proceed(journey, RIVER);

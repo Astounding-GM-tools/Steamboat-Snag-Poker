@@ -151,6 +151,12 @@ export type Step =
        * with her backing out, swinging round and getting up steam before she's under way.
        */
       landing?: [number, number];
+      /**
+       * The stretch's main event (The Sandbar): never skipped, met somewhere in `window` (shares of the
+       * stretch, 0 to 1), where the event stream finds the right moment (stream.ts). Its steps play
+       * there, and the stretch goes on after them.
+       */
+      main?: { window: [number, number]; steps: Step[] };
     }
   | {
       type: 'encounter';
@@ -429,10 +435,37 @@ function applyEffects(state: JourneyState, effects: Effects | undefined) {
   }
 }
 
-/** A caption read, or a stretch of river steamed: on. */
+/**
+ * The stretch's main event, met where she is (`t`): she stops there, its steps play, and the rest of
+ * the stretch follows them (with the musings still to come on it).
+ */
+export function meetOnRiver(prev: JourneyState, story: StoryDef, t: number): JourneyState {
+  const step = currentStep(prev, story);
+  if (step?.type !== 'steam' || !step.main) throw new Error('No main event on this stretch');
+  const state = clone(prev);
+  const from = prev.river?.t ?? 0;
+  const at = (share: number) => from + share * (step.to - from);
+  const rest: Step = {
+    type: 'steam',
+    leg: step.leg,
+    to: step.to,
+    ...(step.musings ? { musings: step.musings.filter((m) => at(m.at) > t).map((m) => ({ ...m, at: (at(m.at) - t) / (step.to - t || 1) })) } : {}),
+  };
+  state.river = { leg: step.leg, t };
+  if (state.pending.length) state.pending.shift();
+  else state.step++;
+  state.pending = [...clone(step.main.steps), rest, ...state.pending];
+  return arrive(state, story);
+}
+
+/** A caption read, or a stretch of river steamed: on. (Steamed without the river shown, she meets its main event at the middle of its window.) */
 export function proceed(prev: JourneyState, story: StoryDef): JourneyState {
   const step = currentStep(prev, story);
   if (step?.type !== 'caption' && step?.type !== 'steam') throw new Error('Not a caption or a stretch of river');
+  if (step.type === 'steam' && step.main) {
+    const from = prev.river?.t ?? 0;
+    return meetOnRiver(prev, story, from + ((step.main.window[0] + step.main.window[1]) / 2) * (step.to - from));
+  }
   const state = clone(prev);
   if (step.type === 'steam') state.river = { leg: step.leg, t: step.to };
   else applyEffects(state, step.effects);
