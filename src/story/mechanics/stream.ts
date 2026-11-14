@@ -37,7 +37,7 @@ export const STREAM_RULES: StreamRules = {
   debrisLeadSeconds: 8,
   crawl: 0.15,
   marginSeconds: 6,
-  restSeconds: 14,
+  restSeconds: 35,
 };
 
 /** Where she is, and what's ahead on the stretch. */

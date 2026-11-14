@@ -24,21 +24,22 @@ export const DOCK_FEE_FLAG = { paid: 'dockFee:paid', dodged: 'dockFee:dodged', s
 /** River miles from Muscatine up to Dubuque (455 to 580). */
 const MUSCATINE_TO_DUBUQUE = 125;
 
-/** Willie's first musing: leaving Muscatine, the river ahead, and how the dock fee went. */
-export function leavingMuscatine(flags: readonly string[], purse: number, fee: number, coal: number, bunker: number): string {
-  const lines = [
-    // (Where she is and which way she's bound is in the heading above it.)
-    'The first day of spring.',
-    'Cargo waiting at Dubuque.',
-    '',
-    `${MUSCATINE_TO_DUBUQUE} miles of river to get there.`,
-    `Strong current, four miles an hour. Coal at ${coal}/${bunker}.`,
-    'Bunker at Rock Island.',
-    '',
-  ];
+/**
+ * Leaving Muscatine, Willie's first entries, timed to the departure: as she backs out, the day; as the
+ * wheel turns ahead, the run; under way, how the dock fee went and the coal.
+ */
+export const LEAVING_MUSCATINE = {
+  backingOut: 'The first day of spring.',
+  turning: [`Cargo run for Dubuque, ${MUSCATINE_TO_DUBUQUE} miles upriver.`, 'Strong spring-thaw current, four miles an hour.'].join('\n'),
+};
+
+/** Under way from Muscatine: how the dock fee went (paid, played for and dodged, or snagged: flags), and the coal. */
+export function leftMuscatine(flags: readonly string[], purse: number, fee: number, coal: number, bunker: number): string {
+  const lines: string[] = [];
   if (flags.includes(DOCK_FEE_FLAG.dodged)) lines.push('The Captain played the harbour master for the docking fee.', `Dodged the fee: $${fee} saved for coal. We'll need it.`);
   else if (flags.includes(DOCK_FEE_FLAG.snagged)) lines.push('The Captain played the harbour master for the docking fee.', `Snagged the fee, and the ante. $${purse} left for expenses.`);
   else lines.push(`Captain paid the dock fee. $${fee}.`, `$${purse} left for the river.`);
+  lines.push(`Coal at ${coal}/${bunker}.`, 'Need to bunker up before we reach the rapids.');
   return lines.join('\n');
 }
 

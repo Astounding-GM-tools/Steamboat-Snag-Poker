@@ -46,8 +46,10 @@
     /** She lies at a landing (its spot on the map): the departure plays, and `ondeparted` when she's under way. */
     departure?: Pt | null;
     ondeparted?: () => void;
+    /** Departing, the wheel turns ahead: she's about to get under way. */
+    onturn?: () => void;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, crates = [], adrift = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, crates = [], adrift = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted, onturn }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -141,7 +143,7 @@
    * In close (at a landing) she's drawn bigger, so her wheel can be seen turning, but not as much bigger
    * as the map is (she'd fill the river): at the river's height, her usual size.
    */
-  const GROWTH = 0.35;
+  const GROWTH = 0.15;
   const growth = $derived(Math.max(1, 2 ** ((zoom.current - voyage.steamZoom) * GROWTH)));
   const scale = $derived(2 ** zoom.current);
   /** Her length on the screen (the top view is drawn about 260 units long). */
@@ -460,9 +462,13 @@
     back: [5.5, 14] as const,
     ahead: 15.5,
     /** How far she backs out, and drifts down, in her lengths. */
-    out: 0.3,
+    out: 0.5,
     drift: 0.9,
+    /** The share of the backing spent pushing off the bank, before the current takes her and she comes round. */
+    push: 0.45,
   };
+  /** How far her stern lies swung downstream at the landing, off square to the river (radians). */
+  const MOORED_ANGLE = (40 * Math.PI) / 180;
   let departEffort = $state(0);
   let departWheel = $state<'ahead' | 'astern' | 'still'>('still');
   /** The old film's scratches and specks, over the fade-in, gone once the picture's settled. */
@@ -472,15 +478,18 @@
     if (!landing || !s) return;
     // Her length on the map, as she's drawn at the landing (in close, she's shorter on the map than at the river's height).
     const length = untrack(() => (boatOnScreen * growth) / scale);
-    // Her bow on the bank: she lies out from the landing, along the line from the bank to the channel.
+    // Her bow on the bank, and the current dragging her stern downstream: she lies out from the landing
+    // towards the channel, angled down the river (MOORED_ANGLE off square to it).
     const start = s.point(0);
-    const nx0 = start[0] - landing[0], ny0 = start[1] - landing[1];
-    const nl = Math.hypot(nx0, ny0) || 1;
-    const nx = nx0 / nl, ny = ny0 / nl;
-    const moored: Pt = [landing[0] + nx * 0.5 * length, landing[1] + ny * 0.5 * length];
-    const into = Math.atan2(-ny, -nx);
     const ahead = s.point(length);
     const up = Math.atan2(ahead[1] - start[1], ahead[0] - start[0]);
+    const ux = Math.cos(up), uy = Math.sin(up);
+    // Square off the river, on the channel's side of the landing.
+    const side = Math.sign(-uy * (start[0] - landing[0]) + ux * (start[1] - landing[1])) || 1;
+    const px = -uy * side, py = ux * side;
+    const nx = px * Math.cos(MOORED_ANGLE) - ux * Math.sin(MOORED_ANGLE), ny = py * Math.cos(MOORED_ANGLE) - uy * Math.sin(MOORED_ANGLE);
+    const moored: Pt = [landing[0] + nx * 0.5 * length, landing[1] + ny * 0.5 * length];
+    const into = Math.atan2(-ny, -nx);
     // Coming round: the stern swings downstream, so the bow turns the short way past the bank's normal.
     const swing = ((((up - into) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
     /** Off the levee, and down the river: she backs out over the backing, and drifts down until the wheel turns ahead. */
@@ -494,21 +503,27 @@
       departWheel = 'still';
     });
     const t0 = performance.now();
-    let raf = 0, done = false;
+    let raf = 0, done = false, turned = false;
     const frame = (now: number) => {
       const t = (now - t0) / 1000;
+      if (t >= DEPART.ahead && !turned) {
+        turned = true;
+        untrack(() => onturn?.());
+      }
       if (t > 4.5) oldFilm = false;
       departEffort = t < DEPART.steam ? 0 : t < DEPART.back[1] ? 0.35 : t < DEPART.ahead ? 0.2 : 1.1;
       departWheel = t < DEPART.astern ? 'still' : t < DEPART.back[1] ? 'astern' : t < DEPART.ahead ? 'still' : 'ahead';
-      const f = Math.max(0, Math.min(1, (t - DEPART.back[0]) / (DEPART.back[1] - DEPART.back[0])));
-      const e = ease(f);
-      // The drift runs on past the backing, slowing, until she's driving ahead.
-      const g = Math.max(0, Math.min(1, (t - DEPART.back[0]) / (DEPART.ahead + 0.6 - DEPART.back[0])));
-      const drifted = 1 - (1 - g) ** 2;
+      const clamp = (x: number) => Math.max(0, Math.min(1, x));
+      const span = DEPART.back[1] - DEPART.back[0];
+      // First she pushes off the bank, straight back along her length (quick, then easing off)...
+      const pushed = 1 - (1 - clamp((t - DEPART.back[0]) / (span * DEPART.push))) ** 2;
+      // ...then, clear of it, the current takes her: she drifts down as she comes round, until she's driving ahead.
+      const turning = DEPART.back[0] + span * DEPART.push * 0.7;
+      const drifted = ease(clamp((t - turning) / (DEPART.ahead + 0.6 - turning)));
+      const swung = ease(clamp((t - turning) / (DEPART.back[1] - turning)));
       boat = {
-        p: [moored[0] + off[0] * e + down[0] * drifted, moored[1] + off[1] * e + down[1] * drifted],
-        // She comes round a little behind her backing: the swing lags the move, then catches up.
-        heading: into + swing * ease(Math.min(1, f * 1.15)),
+        p: [moored[0] + off[0] * pushed + down[0] * drifted, moored[1] + off[1] * pushed + down[1] * drifted],
+        heading: into + swing * swung,
       };
       if (t >= DEPART.ahead + 0.6 && !done) {
         done = true;

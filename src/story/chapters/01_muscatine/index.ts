@@ -70,13 +70,13 @@ export const muscatine: Step[] = [
     type: 'steam',
     leg: CHAPTER_1,
     to: TRI_CITIES_AT,
-    // Made fast bow-first at the Muscatine levee, below the town and above the bridge, on the 1890 chart.
-    landing: [2708, 13058],
+    // Made fast bow-first at the Muscatine levee, below the town and the bridge, where the river opens out, on the 1890 chart.
+    landing: [2320, 13275],
     // Willie's log, not the crew's chatter: a musing a little way out, then the river and the islands.
     musings: [{ at: 0.3, text: NEW_FIRST_MATE }],
-    // The Sandbar, somewhere around the middle (sandbars shift from season to season): the event stream picks the moment.
+    // The Sandbar, around two thirds of the way (sandbars shift from season to season), after Willie's had his say: the event stream picks the moment.
     main: {
-      window: [0.4, 0.6],
+      window: [0.55, 0.75],
       steps: [
         {
           type: 'encounter',

@@ -47,7 +47,7 @@
   import { crateAnte, crateAnteFor, debrisAt, debrisRecord, debrisStep, type Debris } from '../story/characters/debris';
   import TypedLine from './TypedLine.svelte';
   import LogView from './LogView.svelte';
-  import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, castOffRecord, islandRecord, leavingMuscatine, tradeRecord } from '../story/log';
+  import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, LEAVING_MUSCATINE, castOffRecord, islandRecord, leftMuscatine, tradeRecord } from '../story/log';
   import { DOCK_FEE_AMOUNT } from '../story/numbers';
   import { islandKey, sides, type Island, type Pt, type TravelSidecar } from './map/route';
   import { heavy } from './heavy';
@@ -104,7 +104,12 @@
   const typed = () => {
     seenLog = Math.min(seenLog + 1, journey.log?.length ?? 0);
     typedLines = 0;
+    typedAt = performance.now();
   };
+  /** When Willie last finished typing an entry: the river is quiet a while after, before anything's in the water. */
+  let typedAt = 0;
+  /** Seconds of quiet after he's done typing, before the stream puts debris in the water. */
+  const AFTER_TYPING_S = 12;
   /** How far into the entry he'd typed (lines): away at a table, he picks up there, not from the top. */
   let typedLines = $state(0);
   /** The log open over the river (the header opens it). */
@@ -118,6 +123,14 @@
   function departed() {
     if (!journey.flags.includes(departedFlag)) journey = { ...journey, flags: [...journey.flags, departedFlag] };
   }
+  /** Willie writes as she leaves Muscatine, each entry once (a reload replays the departure, not the words). */
+  function departureEntry(text: string) {
+    if (journey.place === 'muscatine' && !journey.log?.some((e) => e.text === text)) journey = writeLog(journey, text, 'musing');
+  }
+  // As she backs out: the day.
+  $effect(() => {
+    if (departing) untrack(() => departureEntry(LEAVING_MUSCATINE.backingOut));
+  });
   /** The voyage's heading: "Day 2: Muscatine, upbound". */
   const heading = $derived(
     departing
@@ -150,10 +163,10 @@
     // Willie logs her getting under way (once: a reload mid-stretch doesn't log it again), after she's
     // been steaming a while: first the river, then the words.
     const settle = setTimeout(() => untrack(() => {
-      // Leaving Muscatine is Willie's first musing (how the dock fee went); elsewhere, a line.
+      // Leaving Muscatine, Willie's third entry (how the dock fee went, and the coal); elsewhere, a line.
       const first = steamFrom === 0 && journey.place === 'muscatine';
       const line = first
-        ? leavingMuscatine(journey.flags, journey.purse, DOCK_FEE_AMOUNT, journey.coal, BOAT.bunker)
+        ? leftMuscatine(journey.flags, journey.purse, DOCK_FEE_AMOUNT, journey.coal, BOAT.bunker)
         : steamFrom === 0
           ? castOffRecord(t(`place.${journey.place}`), t(`river.${bound}`))
           : UNDER_WAY_AGAIN;
@@ -203,7 +216,10 @@
           journey = meetOnRiver(journey, RIVER, boatT);
           return;
         }
-        if (call.kind === 'debris' && !adrift && !racing && journey.strength > 0 && up) {
+        // Not while Willie's typing (an entry still to finish), nor straight after: his words first, then the river.
+        const typing = (journey.log?.length ?? 0) > seenLog;
+        const quiet = typing || now - typedAt < AFTER_TYPING_S * 1000;
+        if (call.kind === 'debris' && !quiet && !adrift && !racing && journey.strength > 0 && up) {
           const key = `${step.leg}:${call.at.toFixed(4)}`;
           adrift = { t: call.at, debris: debrisAt(journey.seed, key) };
         }
@@ -282,6 +298,7 @@
   });
   const chatterIndex = $derived(chatterNow ? chatterAt.findIndex((c) => c.speech === chatterNow) : -1);
 
+  const NO_LANES: Record<string, 'left' | 'right'> = {};
   /** Debris the stream has put in the water ahead on open river (stream.ts): where, and what it is. */
   let adrift = $state<{ t: number; debris: Debris } | null>(null);
 
@@ -308,7 +325,8 @@
         return { island, key, up, debris };
       });
   });
-  const lanes = $derived(journey.lanes ?? {});
+  // (The same empty table each time: a new one would have the map work out her course again, and start a departure over.)
+  const lanes = $derived(journey.lanes ?? NO_LANES);
   const passed = $derived(journey.passed ?? []);
   /** The island she's coming up to (within warning) or rounding: the view leans towards it till she's past. */
   const islandNear = $derived.by(() => {
@@ -549,7 +567,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} {crates} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} {crates} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onturn={() => departureEntry(LEAVING_MUSCATINE.turning)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">

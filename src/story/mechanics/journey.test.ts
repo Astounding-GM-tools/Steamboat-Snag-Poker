@@ -253,8 +253,8 @@ describe('debris on the river', () => {
       // Its window is where it was on the river, as shares of what's left of the stretch.
       const at = (s: number) => 0.1 + s * (rest.to - 0.1);
       // (Her stretch began where she was, 0.05.)
-      expect(at(rest.main!.window[0])).toBeCloseTo(0.05 + 0.4 * (0.6429 - 0.05));
-      expect(at(rest.main!.window[1])).toBeCloseTo(0.05 + 0.6 * (0.6429 - 0.05));
+      expect(at(rest.main!.window[0])).toBeCloseTo(0.05 + 0.55 * (0.6429 - 0.05));
+      expect(at(rest.main!.window[1])).toBeCloseTo(0.05 + 0.75 * (0.6429 - 0.05));
     }
     // Won, the crate is salvage worth its ante; lost, nothing.
     expect(on.salvage ?? 0).toBe(after.encounter!.outcome === 'solved' ? CRATE_ANTE : 0);
@@ -298,7 +298,7 @@ describe('the dock fee', () => {
     const out = proceed(paid, RIVER);
     // She meets the stretch's main event (The Sandbar) at the middle of its window, without the river shown.
     expect(out.river?.leg).toBe('chapter-1');
-    expect(out.river!.t).toBeCloseTo(0.6429 * 0.5);
+    expect(out.river!.t).toBeCloseTo(0.6429 * 0.65);
     expect(out.encounter?.def.id).toBe('underway');
   });
 
