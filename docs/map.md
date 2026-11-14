@@ -106,8 +106,8 @@ something else fits.
 
 **Debris slows the river.** While a hand is on she slows to a crawl; nearing a fork's warning with
 the hand still open, she stops altogether (the player may have stepped away), and goes on when it's
-settled. A fork's zone (warning to rejoin) is never interrupted by a new fill; a lane can hold its own
-debris, hit or dodged.
+settled. A fork's zone (warning to rejoin) is never interrupted by a new fill, and nothing's in the
+passages themselves (see below).
 
 **Willie types through anything.** His typing is in the header: it can run under a fork's call or a
 debris hand. It's a leisurely game.
@@ -128,10 +128,12 @@ river):
 - **An obstacle** (a sawyer, a deadhead, a drift pile) carries one snag, a trouble with a fixer: the
   Stove-in Plank (Lars), the Fouled Rudder (Willie), the Fouled Wheel (Lars), the Sprung Plank (Gus),
   Scraped Paint (Willie). It leaves her with it only if it wins the hand with it played.
-- **Round an island** there's something in each passage, halfway along, and no telling which from the
-  wheelhouse: the way she goes, she plays for what's there. On open water the stream puts a piece in
-  the water ahead (`debrisLeadSeconds`), after a rest, where there's room. None while she races, with
-  no strength left to play, or downbound (yet).
+- **Where:** on open water only. The stream puts a piece in the water ahead (`debrisLeadSeconds`),
+  after a rest, where there's room. None while she races, with no strength left to play, or downbound
+  (yet).
+- **Round an island, nothing** (tried, and taken out: with the open river's debris it was too much). Port
+  or starboard picks the way round, and Willie logs it: for now a cosmetic call. Later it should be
+  about time: one passage shorter or quicker than the other, the time saved (or lost) the point of it.
 
 For now she stops for the hand rather than crawling (`paceDuringHand` is unused): simpler, and safe.
 Later: faces for the debris, what's in the crates, the full-house bonus, and selling salvage properly

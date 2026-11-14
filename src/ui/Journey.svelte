@@ -208,8 +208,7 @@
           t: boatT,
           to,
           pace: 1 / voyage.legSeconds,
-          // Every island she hasn't got past yet, the one she's rounding too (its debris met, it's passed
-          // for the log, but she's still in among it).
+          // Every island she hasn't got past yet, the one she's rounding too.
           forks: (legData?.islands ?? []).filter((i) => i.to_t > boatT && i.from_t < to).map((i) => ({ from: i.from_t, to: i.to_t })),
           ...(step.main ? { main: { window: [at(step.main.window[0]), at(step.main.window[1])] as [number, number] } } : {}),
           // Under way again (off a landing, or after a hand): a rest before anything's in the water.
@@ -314,19 +313,14 @@
       if (leg === id) legData = s;
     });
   });
-  /** The islands on this stretch, in the order she meets them, each with what's adrift in its passages (one thing in each). */
+  /** The islands on this stretch, in the order she meets them. (Port or starboard picks the way round: nothing's in the passages.) */
   const isles = $derived.by(() => {
     if (step?.type !== 'steam' || !legData?.islands || endless) return [];
     const from = steamFrom, to = step.to, up = to >= from;
     return legData.islands
       .filter((i) => (up ? i.from_t >= from && i.to_t <= to : i.to_t <= from && i.from_t >= to))
       .sort((a, b) => (up ? a.from_t - b.from_t : b.from_t - a.from_t))
-      .map((island) => {
-        const key = islandKey(leg, island);
-        // What's in each passage: a coin flip, the same each time this voyage comes by.
-        const debris = { left: debrisAt(journey.seed, `${key}:left`), right: debrisAt(journey.seed, `${key}:right`) };
-        return { island, key, up, debris };
-      });
+      .map((island) => ({ island, key: islandKey(leg, island), up }));
   });
   // (The same empty table each time: a new one would have the map work out her course again, and start a departure over.)
   const lanes = $derived(journey.lanes ?? NO_LANES);
@@ -362,27 +356,15 @@
     if (!forkAhead) return;
     journey = chooseLane(journey, forkAhead.key, sides(forkAhead.island, forkAhead.up)[way].side);
   }
-  /** Where along an island its debris lies, in each passage (as a fraction of the island, from the fork). */
-  const DEBRIS_AT = 0.5;
-  // Halfway round an island, she comes on what's in the passage she took: the way she went is logged,
-  // and she stops for its hand (or, with no strength left to play for it, it drifts by).
+  // Round an island: the way she went is logged.
   $effect(() => {
     const t = boatT;
-    const done = isles.find((i) => {
-      if (passed.includes(i.key)) return false;
-      const span = i.island.to_t - i.island.from_t;
-      return i.up ? t >= i.island.from_t + DEBRIS_AT * span : t <= i.island.to_t - DEBRIS_AT * span;
-    });
+    const done = isles.find((i) => !passed.includes(i.key) && (i.up ? t >= i.island.to_t : t <= i.island.from_t));
     if (!done || step?.type !== 'steam') return;
     const took = lanes[done.key] ?? done.island.passages.find((p) => p.kind === 'main')!.side;
     const { port } = sides(done.island, done.up);
     const way = took === port.side ? 'port' : 'starboard';
-    const leg = step.leg;
-    untrack(() => {
-      const passedBy = writeLog(passIsland(journey, done.key), islandRecord(done.island.name, way));
-      const debris = done.debris[took];
-      journey = passedBy.strength > 0 && !endless ? meetDebris(passedBy, RIVER, t, debrisStep(debris, crateAnteFor(passedBy, leg)), debris.kind === 'crate') : passedBy;
-    });
+    untrack(() => (journey = writeLog(passIsland(journey, done.key), islandRecord(done.island.name, way))));
   });
   /** The middle of an island (between its two passages' midpoints): where the view looks as she comes up to it. */
   function islandMid(island: Island): Pt {
@@ -390,17 +372,6 @@
     const [a, b] = island.passages.map((p) => m(p.px));
     return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
   }
-  /** Debris in the passages ahead: something in the middle of each, no telling what from here. */
-  const crates = $derived(
-    isles
-      .filter((i) => !passed.includes(i.key))
-      .flatMap(({ island }) =>
-        island.passages.map(({ px }): Pt => {
-          const k = DEBRIS_AT * (px.length - 1), i = Math.min(px.length - 2, Math.floor(k)), f = k - i;
-          return [px[i][0] + f * (px[i + 1][0] - px[i][0]), px[i][1] + f * (px[i + 1][1] - px[i][1])];
-        }),
-      ),
-  );
 
   // Willie's musings on this stretch: each written into the log as she gets that far along it.
   $effect(() => {
@@ -570,7 +541,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} {crates} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onturn={() => departureEntry(LEAVING_MUSCATINE.turning)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onturn={() => departureEntry(LEAVING_MUSCATINE.turning)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">
