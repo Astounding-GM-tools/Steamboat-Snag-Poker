@@ -29,6 +29,8 @@ export interface StreamRules {
   marginSeconds: number;
   /** Quiet between one fill and the next, in seconds: the gentle intermission. */
   restSeconds: number;
+  /** Quiet after a hand before the main event, in seconds: it never comes straight on the heels of one. */
+  mainRestSeconds: number;
 }
 
 export const STREAM_RULES: StreamRules = {
@@ -38,6 +40,7 @@ export const STREAM_RULES: StreamRules = {
   crawl: 0.15,
   marginSeconds: 6,
   restSeconds: 35,
+  mainRestSeconds: 15,
 };
 
 /** Where she is, and what's ahead on the stretch. */
@@ -52,7 +55,7 @@ export interface StreamState {
   forks: readonly Fork[];
   /** The stretch's main event, if it hasn't happened yet: where it may happen. */
   main?: { window: readonly [number, number] };
-  /** Seconds since the last fill was settled (Infinity: none yet on this stretch). */
+  /** Seconds since the last hand was settled, or she got under way (Infinity: none yet on this stretch). */
   sinceFill: number;
 }
 
@@ -100,8 +103,10 @@ export function nextOnRiver(s: StreamState, rules = STREAM_RULES): StreamCall {
   const needs = rules.debrisLeadSeconds + rules.debrisSeconds * rules.crawl + rules.marginSeconds;
   const fits = roomAhead(s, rules) >= needs;
   // The main event, aiming for its window's middle: there, or sooner in the window if no more fill would
-  // fit before the middle; never inside a fork (held till she's round it, past the window's end if need be).
-  if (s.main && !forking && s.t >= s.main.window[0] && (s.t >= aim(s.main.window) || !fits)) return { kind: 'main' };
+  // fit before the middle; never inside a fork, nor straight after a hand (held till she's round it, and
+  // had a breather, past the window's end if need be).
+  const ready = !forking && s.sinceFill >= rules.mainRestSeconds;
+  if (s.main && ready && s.t >= s.main.window[0] && (s.t >= aim(s.main.window) || !fits)) return { kind: 'main' };
   if (s.main && s.t >= aim(s.main.window)) return { kind: 'river' };
   // A fill: only out of a fork, after a rest, and with room for it before whatever's next.
   if (forking || s.sinceFill < rules.restSeconds) return { kind: 'river' };

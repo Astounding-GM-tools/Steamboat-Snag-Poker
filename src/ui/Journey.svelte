@@ -208,7 +208,9 @@
           t: boatT,
           to,
           pace: 1 / voyage.legSeconds,
-          forks: isles.filter((i) => !passed.includes(i.key)).map((i) => ({ from: i.island.from_t, to: i.island.to_t })),
+          // Every island she hasn't got past yet, the one she's rounding too (its debris met, it's passed
+          // for the log, but she's still in among it).
+          forks: (legData?.islands ?? []).filter((i) => i.to_t > boatT && i.from_t < to).map((i) => ({ from: i.from_t, to: i.to_t })),
           ...(step.main ? { main: { window: [at(step.main.window[0]), at(step.main.window[1])] as [number, number] } } : {}),
           // Under way again (off a landing, or after a hand): a rest before anything's in the water.
           sinceFill: (now - began) / 1000,

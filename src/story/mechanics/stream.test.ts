@@ -103,6 +103,12 @@ describe('the syncopated event stream', () => {
     expect(roomAhead(state(mid - 10 * PACE, { forks: [] }))).toBeCloseTo(10);
   });
 
+  it('never brings the main event straight after a hand: a breather first', () => {
+    const mid = (WINDOW[0] + WINDOW[1]) / 2;
+    expect(nextOnRiver(state(mid, { forks: [], sinceFill: 2 })).kind).toBe('river');
+    expect(nextOnRiver(state(mid, { forks: [], sinceFill: STREAM_RULES.mainRestSeconds })).kind).toBe('main');
+  });
+
   it('crawls during a hand, and stops short of what she must keep clear for', () => {
     expect(paceDuringHand(state(0.05, { main: undefined }))).toBe(STREAM_RULES.crawl);
     const [a] = busy(FORKS[0], { pace: PACE });
@@ -118,6 +124,8 @@ describe('the syncopated event stream', () => {
       expect(run.main, `seed ${seed}`).not.toBeNull();
       expect(run.main!).toBeGreaterThanOrEqual(WINDOW[0]);
       for (const z of zones()) expect(run.main! > z[0] && run.main! < z[1], `seed ${seed}: main in a fork`).toBe(false);
+      // Never straight after a hand.
+      for (const h of run.hands) expect(run.main! > h.end && run.main! < h.end + STREAM_RULES.mainRestSeconds * PACE * 0.99, `seed ${seed}: main on a hand's heels`).toBe(false);
       // No hand ever runs into a fork's busy stretch.
       for (const h of run.hands) for (const z of zones()) expect(overlaps(h.start, h.end, z), `seed ${seed}: hand ${h.start}-${h.end} in a fork`).toBe(false);
       // Something happens: a stretch this long has room for a few.
