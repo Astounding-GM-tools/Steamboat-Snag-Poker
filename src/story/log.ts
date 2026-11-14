@@ -28,7 +28,7 @@ const MUSCATINE_TO_DUBUQUE = 125;
 export function leavingMuscatine(flags: readonly string[], purse: number, fee: number, coal: number, bunker: number): string {
   const lines = [
     // (Where she is and which way she's bound is in the heading above it.)
-    'First day of spring.',
+    'The first day of spring.',
     'Cargo waiting at Dubuque.',
     '',
     `${MUSCATINE_TO_DUBUQUE} miles of river to get there.`,

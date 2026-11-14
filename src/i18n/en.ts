@@ -389,6 +389,8 @@ export const en = {
   /** The heading over the voyage's pages: the day, where she is, and which way she's bound. */
   'river.heading': 'Day {day}: {place}, {bound}',
   'river.upbound': 'upbound',
+  /** The heading while she lies at the landing, before she's under way. */
+  'river.moored': 'Day {day}: {place}, on the Mississippi',
   'log.title': 'The First Mate’s Log',
   'log.page': 'Day {day}',
   'log.earlier': 'The day before',

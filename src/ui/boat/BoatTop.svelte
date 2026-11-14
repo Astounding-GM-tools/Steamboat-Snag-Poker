@@ -23,7 +23,17 @@
     night = false,
     fold = 0,
     printed = false,
-  }: { built?: Built; heading?: number; lift?: number; night?: boolean; fold?: number; printed?: boolean } = $props();
+    paddle = 'ahead',
+  }: {
+    built?: Built;
+    heading?: number;
+    lift?: number;
+    night?: boolean;
+    fold?: number;
+    printed?: boolean;
+    /** The wheel: turning ahead, astern (backing out), or still. On the chart it turns only when asked (she's close enough to see it). */
+    paddle?: 'ahead' | 'astern' | 'still';
+  } = $props();
 
   /** How much broader in the beam than the plan: a bit of a pudge, for character. */
   const BEAM = 1.3;
@@ -126,7 +136,7 @@
     <!-- The wheel astern: its top slats run forward as she drives -->
     <rect class="paper" x={wheelAft} y="-16" width={-3 - wheelAft} height="32" />
     <g clip-path="url(#boat-top-wheel)">
-      <g class="slats" style="--spin: {w.period / 3}s; --slat: {SLAT}px">
+      <g class="slats" class:turning={paddle !== 'still'} class:astern={paddle === 'astern'} style="--spin: {w.period / 3}s; --slat: {SLAT}px">
         {#each Array.from({ length: Math.ceil(-wheelAft / SLAT) + 3 }) as _, i (i)}
           <line class="slat" x1={wheelAft - SLAT + i * SLAT} y1="-16" x2={wheelAft - SLAT + i * SLAT} y2="16" />
         {/each}
@@ -356,9 +366,13 @@
   .slats {
     animation: slats var(--spin) linear infinite;
   }
-  /* On the chart the wheel is too small to see turn: it holds still, and costs nothing. */
-  .printed .slats {
+  /* On the chart the wheel is too small to see turn: it holds still, and costs nothing, unless it's asked to turn. */
+  .printed .slats:not(.turning),
+  .slats:not(.turning) {
     animation: none;
+  }
+  .astern {
+    animation-direction: reverse;
   }
   @keyframes slats {
     to {

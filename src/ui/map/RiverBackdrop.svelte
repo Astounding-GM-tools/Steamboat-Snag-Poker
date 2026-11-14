@@ -41,8 +41,11 @@
     racing?: boolean;
     /** How hard the engine's working (1: steaming upstream at her pace): she chuffs this much more, or less. */
     effort?: number;
+    /** She lies at a landing (its spot on the map): the departure plays, and `ondeparted` when she's under way. */
+    departure?: Pt | null;
+    ondeparted?: () => void;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null, built = {}, racing = false, effort = 1 }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -115,10 +118,25 @@
   });
 
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
-  const zoom = new Tween(voyage.steamZoom, { duration: 1100, easing: cubicInOut });
+  const zoom = new Tween(untrack(() => (departure ? voyage.dockZoom : voyage.steamZoom)), { duration: 1100, easing: cubicInOut });
+  let wasDeparting = untrack(() => !!departure);
   $effect(() => {
-    zoom.target = mode === 'play' ? voyage.playZoom : voyage.steamZoom;
+    const at = !!departure;
+    untrack(() => {
+      if (at) zoom.set(voyage.dockZoom, { duration: 0 });
+      // Under way from the landing: the camera draws back slowly to the river's height.
+      else if (wasDeparting) zoom.set(voyage.steamZoom, { duration: 7000 });
+      else zoom.target = mode === 'play' ? voyage.playZoom : voyage.steamZoom;
+      wasDeparting = at;
+    });
+    void mode;
   });
+  /**
+   * In close (at a landing) she's drawn bigger, so her wheel can be seen turning, but not as much bigger
+   * as the map is (she'd fill the river): at the river's height, her usual size.
+   */
+  const GROWTH = 0.55;
+  const growth = $derived(Math.max(1, 2 ** ((zoom.current - voyage.steamZoom) * GROWTH)));
   const scale = $derived(2 ** zoom.current);
   /** Her length on the screen (the top view is drawn about 260 units long). */
   const boatOnScreen = $derived(260 * voyage.boatSize * TOP_SCALE);
@@ -137,7 +155,7 @@
   let lastDistance = 0;
   $effect(() => {
     const d = distance, s = sailed;
-    if (!s) return;
+    if (!s || departure) return;
     untrack(() => {
       const length = boatOnScreen / scale;
       const moved = d - lastDistance;
@@ -174,7 +192,7 @@
   $effect(() => {
     const b = boat;
     if (!b) return;
-    const follow = racing || mode === 'play';
+    const follow = racing || mode === 'play' || !!departure;
     untrack(() => {
       if (!camReady) {
         cam.set(b.p, { duration: 0 });
@@ -219,7 +237,7 @@
   const onScreen = (p: Pt): Pt => [mapW / 2 + (p[0] - center[0]) * scale, mapH / 2 + (p[1] - center[1]) * scale];
   /** The boat's own layer: a square of the top view's units, room for her at any heading. */
   const BOAT_BOX = 460;
-  const boatBox = $derived(BOAT_BOX * voyage.boatSize * TOP_SCALE);
+  const boatBox = $derived(BOAT_BOX * voyage.boatSize * TOP_SCALE * growth);
   const boatAt = $derived(boat ? onScreen(boat.p) : ([0, 0] as Pt));
 
   /**
@@ -373,12 +391,12 @@
       }
       const b = boat;
       // Units of the top view, in map px, at this zoom.
-      const u = (voyage.boatSize * TOP_SCALE) / scale;
+      const u = (voyage.boatSize * TOP_SCALE * growth) / scale;
       // How hard she's working: chuffs come oftener, and bigger, the harder it is.
-      const hard = effort;
+      const hard = departure ? departEffort : effort;
       const moving = !!b && !!was && Math.hypot(b.p[0] - was[0], b.p[1] - was[1]) > 0.01;
       if (b) was = b.p;
-      if (b && moving) {
+      if (b && (moving || (departure && departEffort > 0))) {
         const cos = Math.cos(b.heading), sin = Math.sin(b.heading);
         const at = ([fx, fy]: Pt): Pt => [b.p[0] + (fx * cos - fy * sin) * u, b.p[1] + (fx * sin + fy * cos) * u];
         steamClock += dt * hard;
@@ -421,6 +439,77 @@
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
   });
+
+  /**
+   * The departure, from a landing: the picture fades in on her made fast bow-first at the levee, close
+   * enough to see her wheel. A moment, then light puffs of steam; the wheel turns astern; she backs
+   * out, swinging her stern downstream so her bow comes round upstream, drifting down a little on the
+   * current; the wheel stops, then turns ahead, the steam comes up, and she's under way (`ondeparted`):
+   * from there she steers up the channel as always, and the camera draws back to the river's height.
+   */
+  const DEPART = {
+    /** Seconds from the start: the first steam, the wheel astern, backing out (from, to), the wheel ahead. */
+    steam: 3.5,
+    astern: 4.5,
+    back: [5.5, 14] as const,
+    ahead: 15.5,
+    /** How far she backs out, and drifts down, in her lengths. */
+    out: 0.3,
+    drift: 0.45,
+  };
+  let departEffort = $state(0);
+  let departWheel = $state<'ahead' | 'astern' | 'still'>('still');
+  /** The old film's scratches and specks, over the fade-in, gone once the picture's settled. */
+  let oldFilm = $state(false);
+  $effect(() => {
+    const landing = departure, s = sailed;
+    if (!landing || !s) return;
+    // Her length on the map, as she's drawn at the landing (in close, she's shorter on the map than at the river's height).
+    const length = untrack(() => (boatOnScreen * growth) / scale);
+    // Her bow on the bank: she lies out from the landing, along the line from the bank to the channel.
+    const start = s.point(0);
+    const nx0 = start[0] - landing[0], ny0 = start[1] - landing[1];
+    const nl = Math.hypot(nx0, ny0) || 1;
+    const nx = nx0 / nl, ny = ny0 / nl;
+    const moored: Pt = [landing[0] + nx * 0.5 * length, landing[1] + ny * 0.5 * length];
+    const into = Math.atan2(-ny, -nx);
+    const ahead = s.point(length);
+    const up = Math.atan2(ahead[1] - start[1], ahead[0] - start[0]);
+    // Coming round: the stern swings downstream, so the bow turns the short way past the bank's normal.
+    const swing = ((((up - into) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
+    const away: Pt = [moored[0] + nx * DEPART.out * length - Math.cos(up) * DEPART.drift * length, moored[1] + ny * DEPART.out * length - Math.sin(up) * DEPART.drift * length];
+    const ease = (f: number) => f * f * (3 - 2 * f);
+    untrack(() => {
+      boat = { p: moored, heading: into };
+      oldFilm = true;
+      departEffort = 0;
+      departWheel = 'still';
+    });
+    const t0 = performance.now();
+    let raf = 0, done = false;
+    const frame = (now: number) => {
+      const t = (now - t0) / 1000;
+      if (t > 4.5) oldFilm = false;
+      departEffort = t < DEPART.steam ? 0 : t < DEPART.back[1] ? 0.35 : t < DEPART.ahead ? 0.2 : 1.1;
+      departWheel = t < DEPART.astern ? 'still' : t < DEPART.back[1] ? 'astern' : t < DEPART.ahead ? 'still' : 'ahead';
+      const f = Math.max(0, Math.min(1, (t - DEPART.back[0]) / (DEPART.back[1] - DEPART.back[0])));
+      const e = ease(f);
+      boat = {
+        p: [moored[0] + (away[0] - moored[0]) * e, moored[1] + (away[1] - moored[1]) * e],
+        // She comes round a little behind her backing: the swing lags the move, then catches up.
+        heading: into + swing * ease(Math.min(1, f * 1.15)),
+      };
+      if (t >= DEPART.ahead + 0.6 && !done) {
+        done = true;
+        lastDistance = 0;
+        untrack(() => ondeparted?.());
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
+  });
 </script>
 
 <div class="backdrop" class:play={mode === 'play'} class:jolt aria-hidden="true">
@@ -443,12 +532,14 @@
       {/each}
       <!-- The Best Intentions from above (src/ui/boat): she turns to any heading, never flips -->
       <svg class="mark boat" viewBox="{-BOAT_BOX / 2} {-BOAT_BOX / 2} {BOAT_BOX} {BOAT_BOX}" width={boatBox} height={boatBox} style:transform="translate3d({boatAt[0] - boatBox / 2}px, {boatAt[1] - boatBox / 2}px, 0)">
-        <BoatTop {built} heading={deg} printed />
+        <BoatTop {built} heading={deg} printed paddle={departure ? departWheel : 'still'} />
       </svg>
       <!-- Steam (particles), over her: it billows out of her chimneys, on top of everything -->
       <canvas class="exhaust" bind:this={canvas} style:width="{mapW}px" style:height="{mapH}px"></canvas>
     </div>
   {/if}
+  <!-- The old film, over the opening fade-in: scratches and specks, gone once the picture's settled -->
+  {#if oldFilm}<div class="old-film"></div>{/if}
   <!-- The projector's lamp: bright in the middle, falling away to black at the edges, so the chart's own edges never show hard. -->
   <div class="lamp"></div>
   <!-- The felt: black over the map, lifted off it as she sets out. -->
@@ -528,6 +619,42 @@
   }
   .play .exhaust {
     opacity: 0;
+  }
+  /* The old film: grain and scratches jittering over the fade-in (only then: it's a whole-screen repaint). */
+  .old-film {
+    position: absolute;
+    inset: -10%;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, transparent 31.8%, rgba(255, 255, 255, 0.12) 32%, transparent 32.2%),
+      linear-gradient(90deg, transparent 77.9%, rgba(0, 0, 0, 0.35) 78%, transparent 78.15%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.55'/></svg>");
+    opacity: 0.3;
+    animation:
+      old-film-jitter 0.25s steps(3) infinite,
+      old-film-out 1.5s ease-in 3s forwards;
+  }
+  @keyframes old-film-jitter {
+    0% {
+      background-position: 0 0, 0 0, 0 0;
+    }
+    33% {
+      background-position: 18vw 0, -9vw 0, -40px 25px;
+    }
+    66% {
+      background-position: -12vw 0, 25vw 0, 30px -45px;
+    }
+  }
+  @keyframes old-film-out {
+    to {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .old-film {
+      display: none;
+    }
   }
   /* A mark on the chart: a small layer of its own, moved by the compositor. */
   .mark {

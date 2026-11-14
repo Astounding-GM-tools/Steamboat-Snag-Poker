@@ -70,6 +70,8 @@ export const muscatine: Step[] = [
     type: 'steam',
     leg: CHAPTER_1,
     to: SANDBAR_AT,
+    // Made fast bow-first at the Muscatine levee, below the town and above the bridge, on the 1890 chart.
+    landing: [2708, 13058],
     // Willie's log, not the crew's chatter: a musing a little way out, then the river and the islands.
     musings: [{ at: 0.5, text: NEW_FIRST_MATE }],
   },

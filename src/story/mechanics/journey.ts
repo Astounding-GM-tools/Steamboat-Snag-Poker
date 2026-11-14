@@ -146,6 +146,11 @@ export type Step =
       chatter?: StoryLine[];
       /** Willie's musings on the way, written into the log as she gets `at` that far along the stretch (0 to 1). */
       musings?: { at: number; text: string }[];
+      /**
+       * She sets out from a landing, made fast bow-first at this spot on the map (px): the stretch opens
+       * with her backing out, swinging round and getting up steam before she's under way.
+       */
+      landing?: [number, number];
     }
   | {
       type: 'encounter';

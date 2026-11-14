@@ -77,6 +77,8 @@
   const GATHER_WAY_S = 10;
   /** She steams this long before Willie writes her getting under way: the river first, then the words. */
   const CAST_OFF_QUIET_MS = 8_000;
+  /** After she's backed out and got under way from a landing, a moment before Willie writes. */
+  const AFTER_DEPARTURE_MS = 3_000;
   /** How often she moves while steaming (ms): thirty times a second is smooth at a riverboat's pace. */
   const STEP_MS = 1000 / 30;
 
@@ -104,8 +106,21 @@
   let typedLines = $state(0);
   /** The log open over the river (the header opens it). */
   let logOpen = $state(false);
+  /**
+   * Setting out from a landing (the stretch has one, and she hasn't left it yet): she lies there till
+   * the map's done with her backing out and swinging round (`departed`), and only then gets under way.
+   */
+  const departedFlag = $derived(`departed:${journey.place}`);
+  const departing = $derived(step?.type === 'steam' && !!step.landing && !journey.flags.includes(departedFlag));
+  function departed() {
+    if (!journey.flags.includes(departedFlag)) journey = { ...journey, flags: [...journey.flags, departedFlag] };
+  }
   /** The voyage's heading: "Day 2: Muscatine, upbound". */
-  const heading = $derived(t('river.heading', { day: journey.mornings, place: t(`place.${journey.place}`), bound: t(`river.${bound}`) }));
+  const heading = $derived(
+    departing
+      ? t('river.moored', { day: journey.mornings, place: t(`place.${journey.place}`) })
+      : t('river.heading', { day: journey.mornings, place: t(`place.${journey.place}`), bound: t(`river.${bound}`) }),
+  );
 
   /** Out on the river (or setting out on it): the map is beneath the felt. */
   const onRiver = $derived(!!journey.river || step?.type === 'steam');
@@ -126,6 +141,7 @@
       if (journey.river) boatT = journey.river.t;
       return;
     }
+    if (departing) return;
     const to = step.to;
     racing = false;
     // Willie logs her getting under way (once: a reload mid-stretch doesn't log it again), after she's
@@ -141,7 +157,7 @@
       // A musing is written once; a plain line, unless it's the last thing written (a reload).
       const written = first ? journey.log?.some((e) => e.text === line) : journey.log?.at(-1)?.text === line;
       if (!written) journey = writeLog(journey, line, first ? 'musing' : 'record');
-    }), CAST_OFF_QUIET_MS);
+    }), step.landing ? AFTER_DEPARTURE_MS : CAST_OFF_QUIET_MS);
     let last = performance.now(), raf = 0;
     const began = last;
     const tick = (now: number) => {
@@ -523,7 +539,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} {crates} {racing} effort={engineEffort} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} {crates} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">
