@@ -29,6 +29,7 @@ import {
   pushAgain,
   turnBack,
   jumpTo,
+  meetDebris,
   setStation,
   setRehire,
   type Slot,
@@ -41,6 +42,7 @@ import { BOAT, shipStrength } from './boat';
 import { Rng } from '../../engine/rng';
 import { newSession, nextSessionHand, submit, type TableSession } from '../../engine/session';
 import { DOCK_FEE, TROUBLE, coveredHands } from './snags';
+import { CRATE_ANTE, crateAnteFor, debrisAt, debrisStep } from '../characters/debris';
 
 /** Plays the voyage as a careful captain would; returns every state passed through. */
 function autopilot(seed: number, guard = 40000): JourneyState[] {
@@ -203,11 +205,70 @@ describe('round the islands', () => {
   it('remembers the passage chosen', () => {
     expect(chooseLane(out(), 'leg:0.3', 'left').lanes).toEqual({ 'leg:0.3': 'left' });
   });
-  it('takes aboard what was adrift as salvage, once per island', () => {
-    const once = passIsland(out(), 'leg:0.3', 2);
-    expect(once.salvage).toBe(2);
-    expect(passIsland(once, 'leg:0.3', 2).salvage).toBe(2);
-    expect(passIsland(once, 'leg:0.4', 1).salvage).toBe(3);
+  it('passes each island once', () => {
+    const once = passIsland(out(), 'leg:0.3');
+    expect(passIsland(once, 'leg:0.3').passed).toEqual(['leg:0.3']);
+    expect(passIsland(once, 'leg:0.4').passed).toEqual(['leg:0.3', 'leg:0.4']);
+  });
+});
+
+describe('debris on the river', () => {
+  /** Under way from Muscatine, a little way out, with buttons to play. */
+  const underWay = (): JourneyState => {
+    const steps = RIVER.days[0].steps;
+    const i = steps.findIndex((s) => s.type === 'steam');
+    const j = jumpTo({ ...newJourney(3, RIVER, RIVER_START), step: i + 1 }, RIVER, [steps[i]]);
+    return { ...j, strength: 12, river: { leg: 'chapter-1', t: 0.05 } };
+  };
+  /** One hand played out, carefully. */
+  const playHand = (j: JourneyState) => {
+    const rng = new Rng(9);
+    for (let guard = 0; j.encounter && !j.encounter.outcome && guard < 40; guard++) {
+      const e = j.encounter;
+      if (e.session.phase === 'hand') j = playEncounter(j, myMoveOwed(j) ? chooseAction('careful', viewFor(e.session.round!, mySeatAt(e), e.session.config), e.session.config, rng) : null);
+      else j = handDone(j, RIVER);
+    }
+    return j;
+  };
+  it('is a coin flip, the same each time for the same spot', () => {
+    const kinds = Array.from({ length: 200 }, (_, k) => debrisAt(7, `spot:${k}`).kind);
+    const crates = kinds.filter((k) => k === 'crate').length;
+    expect(crates).toBeGreaterThan(70);
+    expect(crates).toBeLessThan(130);
+    expect(debrisAt(7, 'spot:3')).toEqual(debrisAt(7, 'spot:3'));
+  });
+  it('stops her for one hand, and the stretch (and its main event) goes on after', () => {
+    const j = underWay();
+    const met = meetDebris(j, RIVER, 0.1, debrisStep({ kind: 'crate' }, crateAnteFor(j, 'chapter-1')), true);
+    expect(currentStep(met, RIVER)?.type).toBe('encounter');
+    expect(met.cratesMet).toEqual({ leg: 'chapter-1', n: 1 });
+    expect(crateAnteFor(met, 'chapter-1')).toBe(CRATE_ANTE + 1);
+    const after = playHand(met);
+    expect(after.encounter?.outcome).not.toBeNull();
+    const on = leaveEncounter(after, RIVER);
+    const rest = currentStep(on, RIVER);
+    expect(rest?.type).toBe('steam');
+    if (rest?.type === 'steam') {
+      expect(rest.main?.steps.length).toBe(2);
+      // Its window is where it was on the river, as shares of what's left of the stretch.
+      const at = (s: number) => 0.1 + s * (rest.to - 0.1);
+      // (Her stretch began where she was, 0.05.)
+      expect(at(rest.main!.window[0])).toBeCloseTo(0.05 + 0.4 * (0.6429 - 0.05));
+      expect(at(rest.main!.window[1])).toBeCloseTo(0.05 + 0.6 * (0.6429 - 0.05));
+    }
+    // Won, the crate is salvage worth its ante; lost, nothing.
+    expect(on.salvage ?? 0).toBe(after.encounter!.outcome === 'solved' ? CRATE_ANTE : 0);
+  });
+  it('leaves her with the obstacle’s snag only if it gets the better of her', () => {
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const j = { ...underWay(), rngState: seed };
+      const after = playHand(meetDebris(j, RIVER, 0.1, debrisStep({ kind: 'obstacle', id: 'sawyer', snag: TROUBLE.fouledWheel }, CRATE_ANTE), false));
+      const on = leaveEncounter(after, RIVER);
+      const struck = on.snags.filter((s) => s.index === TROUBLE.fouledWheel).length;
+      expect(struck, `seed ${seed}`).toBeLessThanOrEqual(1);
+      if (after.encounter!.outcome === 'solved') expect(struck, `seed ${seed}`).toBe(0);
+      expect(on.cratesMet).toBeUndefined();
+    }
   });
 });
 

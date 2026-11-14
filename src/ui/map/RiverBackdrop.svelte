@@ -31,8 +31,10 @@
     jolt?: boolean;
     /** Round the islands, the passages chosen (by island key). */
     lanes?: Record<string, 'left' | 'right'>;
-    /** Crates bobbing in the water, still to be picked up (map px). */
+    /** Debris in the island passages ahead, one thing in each (map px). */
     crates?: Pt[];
+    /** Debris in the open river ahead, on her course (as the leg's t). */
+    adrift?: number[];
     /** Something ahead to see before she gets there (an island to choose a way round): the view leans towards it. */
     ahead?: Pt | null;
     /** What she has built so far: Bill's bare boat until the story says otherwise. */
@@ -45,7 +47,7 @@
     departure?: Pt | null;
     ondeparted?: () => void;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, crates = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, crates = [], adrift = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -109,13 +111,17 @@
     };
     return { drawn, along, point };
   });
-  /** How far along the line she is. */
-  const distance = $derived.by(() => {
+  /** How far along the line a spot on the leg (t) is. */
+  function distanceAt(at: number): number {
     if (!sailed) return 0;
-    const x = Math.max(0, Math.min(1, t)) * SAMPLES, i = Math.floor(x);
+    const x = Math.max(0, Math.min(1, at)) * SAMPLES, i = Math.floor(x);
     const { along } = sailed;
     return i >= SAMPLES ? along[SAMPLES] : along[i] + (x - i) * (along[i + 1] - along[i]);
-  });
+  }
+  /** How far along the line she is. */
+  const distance = $derived(distanceAt(t));
+  /** All the debris in the water ahead: the passages' and the open river's. */
+  const flotsam = $derived(sailed ? [...crates, ...adrift.map((a) => sailed.point(distanceAt(a)))] : crates);
 
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
   const zoom = new Tween(untrack(() => (departure ? voyage.dockZoom : voyage.steamZoom)), { duration: 1100, easing: cubicInOut });
@@ -525,13 +531,13 @@
         What's on the chart, each in a small layer of its own, placed by a transform: their smoke and
         bobbing repaint only themselves, not a drawing the size of the screen.
       -->
-      {#each crates as c, i (i)}
+      {#each flotsam as c, i (i)}
         {@const [x, y] = onScreen(c)}
-        <!-- A crate adrift: what she picks up if she goes that way. -->
+        <!-- Something in the water: a crate, or a snag. No telling till she's on it. -->
         <svg class="mark" viewBox="-6 -6 12 12" width={12 * voyage.boatSize} height={12 * voyage.boatSize} style:transform="translate3d({x - 6 * voyage.boatSize}px, {y - 6 * voyage.boatSize}px, 0)">
           <g class="crate" style:animation-delay="{i * -0.7}s">
-            <rect class="ink" x="-4" y="-4" width="8" height="8" />
-            <path class="paper" d="M -4 -4 L 4 4 M 4 -4 L -4 4" stroke="#f4ecd8" stroke-width="1" />
+            <path class="ink" d="M -5 0.5 C -4 -2.5 -1 -1.5 0 -3 C 1.5 -1.5 4 -2.5 5 0 C 4 2.5 -3.5 3 -5 0.5 Z" />
+            <path d="M -3.5 -1 L 3 1 M -1 -3.5 L 1.5 2.5" stroke="#f4ecd8" stroke-width="0.8" fill="none" />
           </g>
         </svg>
       {/each}
@@ -693,9 +699,6 @@
     stroke: #f4ecd8;
     stroke-width: 0.8;
     paint-order: stroke;
-  }
-  .paper {
-    fill: #f4ecd8;
   }
   @media (prefers-reduced-motion: reduce) {
     .felt,

@@ -9,6 +9,7 @@ import { muscatine, muscatineTalk } from './chapters/01_muscatine';
 import { triCities, triCitiesTalks } from './chapters/02_triCities';
 import { leClaire, pushReading, rapidsTalk } from './chapters/03_rapids';
 import { START_COAL, START_PURSE } from './numbers';
+import { debrisTalk } from './characters/debris';
 
 export const RIVER: StoryDef = {
   days: [
@@ -28,6 +29,7 @@ export const RIVER_TALK: Record<string, Talk> = {
   ...muscatineTalk,
   ...triCitiesTalks,
   ...rapidsTalk,
+  ...debrisTalk,
   deck: deckTalk,
   deckIntel: deckIntelTalk,
 };

@@ -47,12 +47,8 @@ export const CHOICE_RECORDS: Record<string, string> = {
   aground: 'Struck a sandbar, a few miles below the Tri-Cities.',
 };
 
-/** Round an island: which way she went, and what came aboard. */
-export function islandRecord(name: string | null, way: 'port' | 'starboard', crates: number, found?: string): string {
-  const isle = name ?? 'the island';
-  if (!crates) return `Kept to ${way} of ${isle}.`;
-  return `Salvage to ${way} of ${isle}: ${crates === 1 ? 'a crate' : `${crates} crates`} aboard${found ? `, ${found}` : ''}.`;
-}
+/** Round an island: which way she went. */
+export const islandRecord = (name: string | null, way: 'port' | 'starboard') => `Kept to ${way} of ${name ?? 'the island'}.`;
 
 /** At a trader's: bought (or sold) what, for how much. */
 export const tradeRecord = (name: string, price: number) => (price < 0 ? `Sold ${name.toLowerCase()}, $${-price}.` : `Bought ${name.toLowerCase()}, $${price}.`);

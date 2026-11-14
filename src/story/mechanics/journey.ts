@@ -28,7 +28,7 @@ export interface StoryLine {
 
 /** How an encounter is won. */
 export type Goal =
-  /** Take one pot (the harbour master clears the boat when you've beaten him once). */
+  /** Take one pot, within the hands (a piece of debris: the one hand). */
   | { type: 'winPot' }
   /** The obstacle's pile gone, before the day's hands run out. */
   | { type: 'clear' }
@@ -92,6 +92,8 @@ export interface Effects {
   clear?: string;
   /** A bill settled: if you hold this snag, you pay (as far as the purse goes) and it's gone. */
   settle?: { snag: number; amount: number };
+  /** Salvage aboard, worth this many dollars more at a mercantile. */
+  salvage?: number;
 }
 
 /** An answer in the talk at the table that decides what happens: these effects, and `end` ends the scene there. */
@@ -157,6 +159,8 @@ export type Step =
        * there, and the stretch goes on after them.
        */
       main?: { window: [number, number]; steps: Step[] };
+      /** On again after a piece of debris: nothing worth Willie writing her under way again. */
+      quiet?: boolean;
     }
   | {
       type: 'encounter';
@@ -295,8 +299,10 @@ export interface JourneyState {
   lanes?: Record<string, 'left' | 'right'>;
   /** Islands passed (by key): what was in the water there has been picked up, or missed. */
   passed?: string[];
-  /** Crates of salvage picked up on the river: a couple of dollars apiece at a mercantile. */
+  /** Salvage picked up on the river: what it'll fetch at a mercantile, in dollars. */
   salvage?: number;
+  /** Crates fished out on this leg of the river so far (each one's ante a dollar more than the last). */
+  cratesMet?: { leg: string; n: number };
   /** The First Mate's Log: Willie's record of the voyage, a line at a time (docs/log.md). */
   log?: LogEntry[];
 }
@@ -425,6 +431,7 @@ function applyEffects(state: JourneyState, effects: Effects | undefined) {
   if (effects.tomorrow) state.tomorrow += effects.tomorrow;
   if (effects.clear) state.flags = state.flags.filter((f) => f !== effects.clear);
   if (effects.snag !== undefined) state.snags.push(jokerCard(effects.snag));
+  if (effects.salvage) state.salvage = (state.salvage ?? 0) + effects.salvage;
   if (effects.settle) {
     const { snag, amount } = effects.settle;
     const k = state.snags.findIndex((j) => j.index === snag);
@@ -442,19 +449,42 @@ function applyEffects(state: JourneyState, effects: Effects | undefined) {
 export function meetOnRiver(prev: JourneyState, story: StoryDef, t: number): JourneyState {
   const step = currentStep(prev, story);
   if (step?.type !== 'steam' || !step.main) throw new Error('No main event on this stretch');
+  return stopOnRiver(prev, story, t, step.main.steps, false);
+}
+
+/**
+ * A piece of debris met where she is (`t`): she stops for its hand (`step`), and the rest of the stretch
+ * follows, its main event still to come if it hasn't yet. A crate counts towards the next one's ante.
+ */
+export function meetDebris(prev: JourneyState, story: StoryDef, t: number, step: Step, crate: boolean): JourneyState {
+  const steam = currentStep(prev, story);
+  if (steam?.type !== 'steam') throw new Error('Not out on the river');
+  const state = stopOnRiver(prev, story, t, [step], true);
+  if (crate) state.cratesMet = { leg: steam.leg, n: (prev.cratesMet?.leg === steam.leg ? prev.cratesMet.n : 0) + 1 };
+  return state;
+}
+
+/** She stops at `t` for these steps; the rest of the stretch follows them (with its musings, and its main event if `keepMain`). */
+function stopOnRiver(prev: JourneyState, story: StoryDef, t: number, steps: Step[], keepMain: boolean): JourneyState {
+  const step = currentStep(prev, story);
+  if (step?.type !== 'steam') throw new Error('Not out on the river');
   const state = clone(prev);
   const from = prev.river?.t ?? 0;
   const at = (share: number) => from + share * (step.to - from);
+  /** A spot on the stretch, as a share of what's left of it from `t`. */
+  const share = (x: number) => (x - t) / (step.to - t || 1);
   const rest: Step = {
     type: 'steam',
     leg: step.leg,
     to: step.to,
-    ...(step.musings ? { musings: step.musings.filter((m) => at(m.at) > t).map((m) => ({ ...m, at: (at(m.at) - t) / (step.to - t || 1) })) } : {}),
+    ...(step.musings ? { musings: step.musings.filter((m) => at(m.at) > t).map((m) => ({ ...m, at: share(at(m.at)) })) } : {}),
+    ...(keepMain ? { quiet: true } : {}),
+    ...(keepMain && step.main ? { main: { window: [share(at(step.main.window[0])), share(at(step.main.window[1]))] as [number, number], steps: step.main.steps } } : {}),
   };
   state.river = { leg: step.leg, t };
   if (state.pending.length) state.pending.shift();
   else state.step++;
-  state.pending = [...clone(step.main.steps), rest, ...state.pending];
+  state.pending = [...clone(steps), rest, ...state.pending];
   return arrive(state, story);
 }
 
@@ -649,10 +679,10 @@ export function chooseLane(prev: JourneyState, key: string, side: 'left' | 'righ
   return { ...prev, lanes: { ...prev.lanes, [key]: side } };
 }
 
-/** An island passed: the crates adrift along the way she went are aboard, as salvage. */
-export function passIsland(prev: JourneyState, key: string, crates: number): JourneyState {
+/** An island passed (or its debris met, on the way she went): done with. */
+export function passIsland(prev: JourneyState, key: string): JourneyState {
   if (prev.passed?.includes(key)) return prev;
-  return { ...prev, passed: [...(prev.passed ?? []), key], salvage: (prev.salvage ?? 0) + crates };
+  return { ...prev, passed: [...(prev.passed ?? []), key] };
 }
 
 /** Never stuck for a stake: come to a table for money with next to none, and there's an odd job to be had. */
@@ -781,7 +811,7 @@ export function handDone(prev: JourneyState, story: StoryDef): JourneyState {
     if (over) outcome = left?.id === PLAYER_ID || (left?.id === goal.host && e.busted.at(-1)?.includes(PLAYER_ID)) ? 'solved' : 'failed';
     // Out of a table with no host, there's nothing left for you to watch.
     else if (mine.out && !goal.host) outcome = 'failed';
-  } else if (goal.type === 'winPot') outcome = won ? 'solved' : mine.out ? 'failed' : null;
+  } else if (goal.type === 'winPot') outcome = won ? 'solved' : mine.out || lastHand ? 'failed' : null;
   else if (goal.type === 'clear') {
     const pile = s.seats.find((p) => p.obstacle)!;
     outcome = pile.money <= 0 ? 'solved' : mine.out || lastHand ? 'failed' : null;

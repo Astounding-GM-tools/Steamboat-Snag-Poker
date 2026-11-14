@@ -117,4 +117,23 @@ debris hand. It's a leisurely game.
 **Build, in steps:** (1) the stream itself, plain TypeScript with tests (what comes next, given where
 she is, what's ahead and how long things take: "never collides" checked, not hoped for); (2) wire in
 what exists (departure, forks, The Sandbar, the log); (3) the debris event and its one-hand Snag.
+All three are in.
+
+**Debris, as built** (src/story/characters/debris.ts). Every piece is a coin flip, drawn from the
+voyage's seed and where it lies (the same thing there on a reload), and played for with one hand of
+Snag for the crew's strength, against something that can only be worn down (what's lost goes down the
+river):
+- **A crate:** won, salvage worth its ante at the Mercantile (the ante starts at $2 on a leg and goes up
+  a dollar for every crate met on it); lost, soggy cotton. What's in it isn't said yet.
+- **An obstacle** (a sawyer, a deadhead, a drift pile) carries one snag, a trouble with a fixer: the
+  Stove-in Plank (Lars), the Fouled Rudder (Willie), the Fouled Wheel (Lars), the Sprung Plank (Gus),
+  Scraped Paint (Willie). It leaves her with it only if it wins the hand with it played.
+- **Round an island** there's something in each passage, halfway along, and no telling which from the
+  wheelhouse: the way she goes, she plays for what's there. On open water the stream puts a piece in
+  the water ahead (`debrisLeadSeconds`), after a rest, where there's room. None while she races, with
+  no strength left to play, or downbound (yet).
+
+For now she stops for the hand rather than crawling (`paceDuringHand` is unused): simpler, and safe.
+Later: faces for the debris, what's in the crates, the full-house bonus, and selling salvage properly
+at the Mercantile (the Tri-Cities trader sells it a dollar's worth at a time, as a stopgap).
 

@@ -4,8 +4,8 @@
     BOAT,
     DOCK_FEE,
     ITEMS,
-    Rng,
     chooseLane,
+    meetDebris,
     meetOnRiver,
     passIsland,
     writeLog,
@@ -44,6 +44,7 @@
   import { voyage } from './map/tuning.svelte';
   import { loadLeg } from './map/legs';
   import { nextOnRiver } from '../story/mechanics/stream';
+  import { crateAnte, crateAnteFor, debrisAt, debrisRecord, debrisStep, type Debris } from '../story/characters/debris';
   import TypedLine from './TypedLine.svelte';
   import LogView from './LogView.svelte';
   import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, castOffRecord, islandRecord, leavingMuscatine, tradeRecord } from '../story/log';
@@ -158,10 +159,13 @@
           : UNDER_WAY_AGAIN;
       // A musing is written once; a plain line, unless it's the last thing written (a reload).
       const written = first ? journey.log?.some((e) => e.text === line) : journey.log?.at(-1)?.text === line;
-      if (!written) journey = writeLog(journey, line, first ? 'musing' : 'record');
+      if (!written && !step.quiet) journey = writeLog(journey, line, first ? 'musing' : 'record');
     }), step.landing ? AFTER_DEPARTURE_MS : CAST_OFF_QUIET_MS);
     let last = performance.now(), raf = 0, asked = 0;
     const began = last;
+    // The stream reckons upbound (t rising); downbound has no debris yet.
+    const up = to >= untrack(() => boatT);
+    adrift = null;
     const tick = (now: number) => {
       if (now - last < STEP_MS) {
         raf = requestAnimationFrame(tick);
@@ -174,8 +178,16 @@
       const way = Math.min(1, (now - began) / 1000 / GATHER_WAY_S);
       const gathered = way * way * (3 - 2 * way);
       boatT += dir * Math.min(Math.abs(to - boatT), (dt / voyage.legSeconds) * Math.max(0.02, gathered) * (racing ? voyage.race : 1));
-      // The event stream (stream.ts), asked twice a second: is this the moment for the stretch's main event?
-      if (step.main && now - asked > 500) {
+      // Debris called earlier, reached: she stops for its hand.
+      if (adrift && boatT >= adrift.t) {
+        const met = adrift;
+        adrift = null;
+        journey = meetDebris(journey, RIVER, boatT, debrisStep(met.debris, crateAnteFor(journey, step.leg)), met.debris.kind === 'crate');
+        return;
+      }
+      // The event stream (stream.ts), asked twice a second: the stretch's main event now, or debris ahead?
+      // (No debris while she races, or with no strength left in the crew to play for it.)
+      if (!endless && now - asked > 500) {
         asked = now;
         const from = steamFrom, at = (share: number) => from + share * (to - from);
         const call = nextOnRiver({
@@ -183,12 +195,17 @@
           to,
           pace: 1 / voyage.legSeconds,
           forks: isles.filter((i) => !passed.includes(i.key)).map((i) => ({ from: i.island.from_t, to: i.island.to_t })),
-          main: { window: [at(step.main.window[0]), at(step.main.window[1])] },
-          sinceFill: Infinity,
+          ...(step.main ? { main: { window: [at(step.main.window[0]), at(step.main.window[1])] as [number, number] } } : {}),
+          // Under way again (off a landing, or after a hand): a rest before anything's in the water.
+          sinceFill: (now - began) / 1000,
         });
         if (call.kind === 'main') {
           journey = meetOnRiver(journey, RIVER, boatT);
           return;
+        }
+        if (call.kind === 'debris' && !adrift && !racing && journey.strength > 0 && up) {
+          const key = `${step.leg}:${call.at.toFixed(4)}`;
+          adrift = { t: call.at, debris: debrisAt(journey.seed, key) };
         }
       }
       // Endless (development): back to where she started, and round again.
@@ -265,32 +282,10 @@
   });
   const chatterIndex = $derived(chatterNow ? chatterAt.findIndex((c) => c.speech === chatterNow) : -1);
 
+  /** Debris the stream has put in the water ahead on open river (stream.ts): where, and what it is. */
+  let adrift = $state<{ t: number; debris: Debris } | null>(null);
+
   // --- Islands: port or starboard ------------------------------------------------
-  /** Opening what came aboard round an island: Willie first, and sometimes someone else has a word. */
-  const SALVAGE_WORDS: { who: string; text: string | string[] }[][] = [
-    [{ who: 'willie', text: 'Some good stuff in here, Captain.' }],
-    [{ who: 'willie', text: 'What do you know, a box full of chocolates.' }],
-    [{ who: 'willie', text: ['Crate of stamped steel spoons, more than we’ll ever need.', 'We can unload this at any mercantile dock.'] }],
-    [
-      { who: 'willie', text: 'Yay, beans! They will keep us fed for a full month!' },
-      { who: 'gus', text: 'More beans? Why oh why could it not be pork chops and cabbage.' },
-    ],
-  ];
-  /** What each of those was, as the log has it. */
-  const SALVAGE_FOUND = ['odds and ends, some good', 'a box of chocolates', 'stamped steel spoons', 'beans, a month of them'];
-  /** What's said about the last salvage, a line at a time: each up till it's answered, or a while has passed. */
-  let salvageTalk = $state<SpeechLine[]>([]);
-  const salvageSaid = $derived(salvageTalk[0] ?? null);
-  const nextSalvageLine = () => (salvageTalk = salvageTalk.slice(1));
-  $effect(() => {
-    const said = salvageSaid;
-    if (!said) return;
-    // Closes by itself (its countdown on the speaker's portrait), or with Aye.
-    const timer = setTimeout(() => {
-      if (salvageSaid === said) nextSalvageLine();
-    }, autoMs(said) ?? 7000);
-    return () => clearTimeout(timer);
-  });
   let legData = $state<TravelSidecar | null>(null);
   $effect(() => {
     const id = leg;
@@ -299,7 +294,7 @@
       if (leg === id) legData = s;
     });
   });
-  /** The islands on this stretch, in the order she meets them, each with what's adrift on one of its passages. */
+  /** The islands on this stretch, in the order she meets them, each with what's adrift in its passages (one thing in each). */
   const isles = $derived.by(() => {
     if (step?.type !== 'steam' || !legData?.islands || endless) return [];
     const from = steamFrom, to = step.to, up = to >= from;
@@ -308,12 +303,9 @@
       .sort((a, b) => (up ? a.from_t - b.from_t : b.from_t - a.from_t))
       .map((island) => {
         const key = islandKey(leg, island);
-        // Where the crates are, and how many: the same each time this voyage comes by.
-        let h = journey.seed;
-        for (const ch of key) h = (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0;
-        const rng = new Rng(h);
-        const side: 'left' | 'right' = rng.int(2) ? 'left' : 'right';
-        return { island, key, up, prize: { side, crates: 1 + rng.int(2) }, word: rng.int(SALVAGE_WORDS.length) };
+        // What's in each passage: a coin flip, the same each time this voyage comes by.
+        const debris = { left: debrisAt(journey.seed, `${key}:left`), right: debrisAt(journey.seed, `${key}:right`) };
+        return { island, key, up, debris };
       });
   });
   const lanes = $derived(journey.lanes ?? {});
@@ -349,26 +341,26 @@
     if (!forkAhead) return;
     journey = chooseLane(journey, forkAhead.key, sides(forkAhead.island, forkAhead.up)[way].side);
   }
-  /** Where along an island the last of its crates drifts (as a fraction of the island, from the fork). */
-  const LAST_CRATE = 0.65;
-  // The last crate picked up, or round the island empty-handed: what was adrift along her way is aboard.
+  /** Where along an island its debris lies, in each passage (as a fraction of the island, from the fork). */
+  const DEBRIS_AT = 0.5;
+  // Halfway round an island, she comes on what's in the passage she took: the way she went is logged,
+  // and she stops for its hand (or, with no strength left to play for it, it drifts by).
   $effect(() => {
     const t = boatT;
     const done = isles.find((i) => {
       if (passed.includes(i.key)) return false;
-      const took = lanes[i.key] ?? i.island.passages.find((p) => p.kind === 'main')!.side;
       const span = i.island.to_t - i.island.from_t;
-      const at = took === i.prize.side ? (i.prize.crates > 1 ? LAST_CRATE : 0.35) : 1;
-      return i.up ? t >= i.island.from_t + at * span : t <= i.island.to_t - at * span;
+      return i.up ? t >= i.island.from_t + DEBRIS_AT * span : t <= i.island.to_t - DEBRIS_AT * span;
     });
-    if (!done) return;
+    if (!done || step?.type !== 'steam') return;
     const took = lanes[done.key] ?? done.island.passages.find((p) => p.kind === 'main')!.side;
-    const crates = took === done.prize.side ? done.prize.crates : 0;
     const { port } = sides(done.island, done.up);
     const way = took === port.side ? 'port' : 'starboard';
+    const leg = step.leg;
     untrack(() => {
-      journey = writeLog(passIsland(journey, done.key, crates), islandRecord(done.island.name, way, crates, crates ? SALVAGE_FOUND[done.word] : undefined));
-      if (crates) salvageTalk = SALVAGE_WORDS[done.word].map(({ who, text }) => ({ size: 'aside', who, text, auto: true }));
+      const passedBy = writeLog(passIsland(journey, done.key), islandRecord(done.island.name, way));
+      const debris = done.debris[took];
+      journey = passedBy.strength > 0 && !endless ? meetDebris(passedBy, RIVER, t, debrisStep(debris, crateAnteFor(passedBy, leg)), debris.kind === 'crate') : passedBy;
     });
   });
   /** The middle of an island (between its two passages' midpoints): where the view looks as she comes up to it. */
@@ -377,23 +369,16 @@
     const [a, b] = island.passages.map((p) => m(p.px));
     return [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
   }
-  /** Crates adrift on the passages ahead: a few along the middle of the way that has them. */
+  /** Debris in the passages ahead: something in the middle of each, no telling what from here. */
   const crates = $derived(
     isles
       .filter((i) => !passed.includes(i.key))
-      .flatMap(({ island, prize, key, up }) => {
-        const px = island.passages.find((p) => p.side === prize.side)!.px;
-        const took = lanes[key] ?? island.passages.find((p) => p.kind === 'main')!.side;
-        const mid = (k: number): Pt => {
-          const i = Math.min(px.length - 2, Math.floor(k * (px.length - 1)));
-          const f = k * (px.length - 1) - i;
+      .flatMap(({ island }) =>
+        island.passages.map(({ px }): Pt => {
+          const k = DEBRIS_AT * (px.length - 1), i = Math.min(px.length - 2, Math.floor(k)), f = k - i;
           return [px[i][0] + f * (px[i + 1][0] - px[i][0]), px[i][1] + f * (px[i + 1][1] - px[i][1])];
-        };
-        return Array.from({ length: prize.crates }, (_, k) => 0.35 + ((LAST_CRATE - 0.35) * k) / Math.max(1, prize.crates - 1))
-          // Gone as she reaches each one, going that way.
-          .filter((k) => !(took === prize.side && (up ? boatT > island.from_t + k * (island.to_t - island.from_t) : boatT < island.from_t + k * (island.to_t - island.from_t))))
-          .map(mid);
-      }),
+        }),
+      ),
   );
 
   // Willie's musings on this stretch: each written into the log as she gets that far along it.
@@ -497,7 +482,13 @@
   /** Up from the table: Willie logs how it went, and on. */
   function leave(j: JourneyState): JourneyState {
     const e = j.encounter;
-    const record = e?.outcome ? ENCOUNTER_RECORDS[e.def.id]?.[e.outcome] : undefined;
+    // Debris: what came of it (a crate's worth, or the snag it left her with).
+    const obstacle = e && e.def.rivals !== 'crew' && e.def.rivals[0]?.obstacle && e.def.hands === 1;
+    const record = !e?.outcome
+      ? undefined
+      : obstacle
+        ? debrisRecord(e.def.id, e.outcome, crateAnte(e.def), e.session.seats[0].jokers.at(-1)?.index)
+        : ENCOUNTER_RECORDS[e.def.id]?.[e.outcome];
     // The dock fee played for: whoever holds the bill when the hands are done settles it.
     const fee = e?.def.id === 'harbourMaster' ? (j.snags.some((s) => s.index === DOCK_FEE) ? DOCK_FEE_FLAG.snagged : DOCK_FEE_FLAG.dodged) : null;
     const marked = fee ? { ...j, flags: [...j.flags, fee] } : j;
@@ -558,7 +549,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} {crates} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} {crates} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">
@@ -590,10 +581,6 @@
       {#key forkLine}
         <div class="chatter"><Speech line={forkLine} name={called('willie')} opponent={false} top={0} bottom={0} /></div>
       {/key}
-    {:else if salvageSaid && !logOpen}
-      {#key salvageSaid}
-        <div class="chatter"><Speech line={salvageSaid} name={called(salvageSaid.who)} opponent={false} top={0} bottom={0} onnext={nextSalvageLine} /></div>
-      {/key}
     {:else if chatterNow && !logOpen}
       <!-- The crew passing the time as she steams: it closes by itself before the next, or with a tap. -->
       {#key chatterIndex}
@@ -604,10 +591,10 @@
       {#if forkAhead}
         <button class="ghost" onclick={() => steer('port')}>{t('river.port')}</button>
         <button onclick={() => steer('starboard')}>{t('river.starboard')}</button>
-      {:else if salvageSaid || chatterNow}
+      {:else if chatterNow}
         <!-- The crew talking: the white button answers them (and closes it), it doesn't skip the river. -->
         <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
-        <button onclick={() => (salvageSaid ? nextSalvageLine() : (hushed = [...hushed, chatterIndex]))}>{t('river.aye')}</button>
+        <button onclick={() => (hushed = [...hushed, chatterIndex])}>{t('river.aye')}</button>
       {:else}
         <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
         <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>

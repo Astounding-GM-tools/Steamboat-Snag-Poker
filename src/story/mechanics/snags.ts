@@ -63,9 +63,31 @@ export const SNAGS: SnagDef[] = [
   { index: 22, kind: 'duty' }, // the Strike Support Button
   // More troubles.
   { index: 23, kind: 'trouble' }, // On the Rocks (a scraped hull): no trade of its own, whoever gets it mends it
+  // What the debris on the river leaves her with (a sawyer, a deadhead, a drift pile), one at a time.
+  { index: 24, kind: 'trouble', fixer: 'lars' }, // a Stove-in Plank
+  { index: 25, kind: 'trouble', fixer: 'willie' }, // a Fouled Rudder: the man at the wheel clears it
+  { index: 26, kind: 'trouble', fixer: 'lars' }, // a Fouled Wheel: the paddlewheel, choked with brush
+  { index: 27, kind: 'trouble', fixer: 'gus' }, // a Sprung Plank: Gus caulks it, grumbling
+  { index: 28, kind: 'trouble', fixer: 'willie' }, // Scraped Paint: Willie and a brush
 ];
 
-export const TROUBLE = { brokenPole: 14, twistedCrankshaft: 15, brokenPaddle: 16, bustedBoiler: 17, fatigue: 18, brokenHeart: 19, onTheRocks: 23 } as const;
+export const TROUBLE = {
+  brokenPole: 14,
+  twistedCrankshaft: 15,
+  brokenPaddle: 16,
+  bustedBoiler: 17,
+  fatigue: 18,
+  brokenHeart: 19,
+  onTheRocks: 23,
+  stoveInPlank: 24,
+  fouledRudder: 25,
+  fouledWheel: 26,
+  sprungPlank: 27,
+  scrapedPaint: 28,
+} as const;
+
+/** What a piece of debris can do to her: one of these, if it gets the better of the hand. */
+export const DEBRIS_TROUBLES = [TROUBLE.stoveInPlank, TROUBLE.fouledRudder, TROUBLE.fouledWheel, TROUBLE.sprungPlank, TROUBLE.scrapedPaint] as const;
 
 export const DOCK_FEE = 20;
 export const PAMPHLETS = 21;
