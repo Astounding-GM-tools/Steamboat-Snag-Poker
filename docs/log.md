@@ -49,7 +49,7 @@ sanity: loyalty over understanding.
 
 **Always:** the Captain has no stated sex ("the Captain", all the way through).
 
-## Two kinds of entry
+## Three kinds of entry
 
 - **Records:** terse, written automatically from what happens, a line each:
   - salvage: "Crate aboard: soggy cotton, $3."
@@ -61,6 +61,10 @@ sanity: loyalty over understanding.
   - encounters won or lost, purchases, wages, the weather, who came aboard.
 - **Musings:** the novelette, written by us, triggered by story beats (the band first plays; the
   third Skip; a reload; reaching Dubuque) and by count. Longer entries.
+- **Thoughts:** musings too long, or too private, for the header. They're written into the log but
+  never typed out in the header's ticker: hidden gems, there for whoever opens the log. That's where
+  Willie's inner life is: the header has the news as it happens, the log has the man. (The first:
+  becoming First Mate, a little way out of Muscatine.)
 
 ## Where it's read
 

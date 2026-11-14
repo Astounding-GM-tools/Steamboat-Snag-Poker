@@ -97,14 +97,13 @@
    * next begins (Willie types slowly). `seenLog` counts the entries typed (or there already when the
    * voyage was opened); the header shows the next one to type, or the last.
    */
-  let seenLog = $state(untrack(() => journey.log?.length ?? 0));
-  const lastEntry = $derived.by(() => {
-    const log = journey.log ?? [];
-    return log.length ? log[Math.min(seenLog, log.length - 1)].text : null;
-  });
-  const freshEntry = $derived((journey.log?.length ?? 0) > seenLog);
+  /** What he types in the header: the log, but for his thoughts (those are only in the log, to be found there). */
+  const ticker = $derived((journey.log ?? []).filter((e) => e.kind !== 'thought'));
+  let seenLog = $state(untrack(() => ticker.length));
+  const lastEntry = $derived(ticker.length ? ticker[Math.min(seenLog, ticker.length - 1)].text : null);
+  const freshEntry = $derived(ticker.length > seenLog);
   const typed = () => {
-    seenLog = Math.min(seenLog + 1, journey.log?.length ?? 0);
+    seenLog = Math.min(seenLog + 1, ticker.length);
     typedLines = 0;
     typedAt = performance.now();
   };
@@ -219,7 +218,7 @@
           return;
         }
         // Not while Willie's typing (an entry still to finish), nor straight after: his words first, then the river.
-        const typing = (journey.log?.length ?? 0) > seenLog;
+        const typing = ticker.length > seenLog;
         const quiet = typing || now - typedAt < AFTER_TYPING_S * 1000;
         if (call.kind === 'debris' && !quiet && !adrift && !racing && journey.strength > 0 && up) {
           const key = `${step.leg}:${call.at.toFixed(4)}`;
@@ -409,7 +408,7 @@
       const at = from + m.at * (to - from);
       return (to >= from ? t >= at : t <= at) && !untrack(() => journey.log?.some((e) => e.text === m.text));
     });
-    if (due) untrack(() => (journey = writeLog(journey, due.text, 'musing')));
+    if (due) untrack(() => (journey = writeLog(journey, due.text, due.thought ? 'thought' : 'musing')));
   });
 
   /** Leaving a table for the river: the table's things slide off every which way as the felt lifts. */

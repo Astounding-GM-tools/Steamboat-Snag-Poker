@@ -54,7 +54,7 @@
       <p class="empty">{t('log.empty')}</p>
     {/if}
     {#each page as entry, i (i)}
-      <p class:musing={entry.kind === 'musing'}>
+      <p class:musing={entry.kind !== 'record'}>
         {#if i >= known}<TypedLine text={entry.text} fresh wrap />{:else}{entry.text}{/if}
       </p>
     {/each}

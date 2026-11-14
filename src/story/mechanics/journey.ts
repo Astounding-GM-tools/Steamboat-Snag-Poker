@@ -147,7 +147,7 @@ export type Step =
       to: number;
       chatter?: StoryLine[];
       /** Willie's musings on the way, written into the log as she gets `at` that far along the stretch (0 to 1). */
-      musings?: { at: number; text: string }[];
+      musings?: { at: number; text: string; thought?: boolean }[];
       /**
        * She sets out from a landing, made fast bow-first at this spot on the map (px): the stretch opens
        * with her backing out, swinging round and getting up steam before she's under way.
@@ -660,12 +660,15 @@ function drawTables(state: JourneyState, step: Extract<Step, { type: 'draw' }>) 
   state.rngState = rng.state;
 }
 
-/** A line in the First Mate's Log: a terse record of what happened, or one of Willie's musings. */
+/**
+ * A line in the First Mate's Log: a terse record of what happened, one of Willie's musings, or one of his
+ * thoughts (written in the log only, never typed out in the header: there to be found, by whoever reads it).
+ */
 export interface LogEntry {
   /** The morning it was written on (the day in the heading). */
   day: number;
   text: string;
-  kind: 'record' | 'musing';
+  kind: 'record' | 'musing' | 'thought';
 }
 
 /** Willie writes a line in the log. */

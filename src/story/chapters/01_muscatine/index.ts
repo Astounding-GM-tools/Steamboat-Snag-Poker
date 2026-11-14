@@ -72,7 +72,8 @@ export const muscatine: Step[] = [
     // Made fast bow-first at the Muscatine levee, below the town and the bridge, where the river opens out, on the 1890 chart.
     landing: [2450, 13185],
     // Willie's log, not the crew's chatter: a musing a little way out, then the river and the islands.
-    musings: [{ at: 0.3, text: NEW_FIRST_MATE }],
+    // (A thought: too long for the header, it's only in the log, for whoever opens it.)
+    musings: [{ at: 0.3, text: NEW_FIRST_MATE, thought: true }],
     // The Sandbar, around two thirds of the way (sandbars shift from season to season), after Willie's had his say: the event stream picks the moment.
     main: {
       window: [0.55, 0.75],
