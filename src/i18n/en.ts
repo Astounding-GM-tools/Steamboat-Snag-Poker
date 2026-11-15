@@ -322,7 +322,7 @@ export const en = {
   'character.sandbar.boat': 'Above Muscatine',
   'character.sandbar.blurb': 'Stands pat on everything. Takes your sweat and gives it to the river.',
   'character.crate.name': 'Salvage',
-  'character.crate.called': 'The crate',
+  'character.crate.called': 'Crate',
   'character.crate.nick': 'Crate',
   'character.crate.boat': 'Adrift',
   'character.crate.blurb': 'Could be anything. Worth a hand to find out.',
