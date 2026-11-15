@@ -27,16 +27,16 @@ and the joke is never on him: it's on the captain, which means the player, and u
   - A reload: "I woke certain we had already passed Hog Island. We had not. Or we had, and then
     had not."
   - The map: "The Captain stares at the river as if from a great height."
-  - Forks: "Again the Captain chose the lane with the crates in it, before anyone could have
-    seen them."
+  - Forks: (the passages are empty now: an oddity here would need the lanes to matter, by time saved)
 - Later: the song "Steamboat Bill" whistled six years before it's written; Pretty Patty; the
   Thierry Belle; the bands' race; whatever else the voyage turns up.
 
 **He takes it up with the Captain**, who offers explanations that make no sense inside the game
 and perfect sense outside it. Willie writes them down faithfully, and worries.
 
-**The pace:** slow. Chapter one has one or two small oddities, quickly explained away; the doubt
-grows chapter by chapter. If he panics early, it stops being dread and becomes a gag.
+**The pace:** slow. Chapter one has none: it lays the groundwork (the log, his voice, the thoughts
+hidden in it) and nothing more. Chapter two, slower on the river, is where he might first notice and
+muse; after that, wherever the fancy takes us. The doubt grows chapter by chapter. If he panics early, it stops being dread and becomes a gag.
 
 **The ending (chapter five, the last stretch).** Willie confronts the Captain with the evidence.
 The Captain laughs and explains everything: Willie is a character in a game inspired by a
