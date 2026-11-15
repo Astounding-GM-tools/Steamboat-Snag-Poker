@@ -986,7 +986,15 @@ publication; the compositions are already free). The sessions' centennial is 13 
 2026, the music free eighteen days later: a First Victor Sessions centennial, to fanfare. Takes:
 where there are two (Harmony Blues, Missouri Wobble, Yazoo Blues), either or both. Source files
 downloaded and hosted ourselves (transfers from The Syncopated Times, credited), not linked to; check
-they're the original 78s, not remakes. Nothing ships before 1 January 2027.
+they're the original 78s, not remakes. None of it ships before 1 January 2027: not even locked (a
+file in the build is distributed, whether the player can reach it or not).
+
+**Before that: two OKeh sides for chapter one.** The band's earlier, stiffer records play as
+background at The Sandbar and the Bettendorf saloon, and can ship in December 2026: the November
+1924 sides (Tulsa Blues, Vine Street Blues, Baby Dear) are free already, even if published in 1925
+(free since 1 January 2026). As I Like It (May 1925) only if it was published in 1925. Then the
+bandstand, in chapter two, unlocks the Victor sessions as the full playlist: the band, earned, at its
+best.
 
 **The Thierry Belle.** The rival boat (say it aloud: "terribly"; a French name with roots on this
 river). A captain and crew still to be named, met at poker tables all the way up and back down
