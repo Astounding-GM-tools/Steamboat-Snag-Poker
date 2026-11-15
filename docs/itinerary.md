@@ -31,7 +31,7 @@ stretch they're listed under; a map can place them anywhere plausible along it.
 | 15 | **LeClaire** | Landing | 497 | | Ellie's pilot games |
 | 16 | **The Rock Island Rapids**, down: the Long Reach, Campbell's Chain, the Moline Chain | Encounter (gate) | 497–482 | | |
 | 17 | **The Quad Cities** | Landing (hub) | 482 | | Dry dock, Gaylord's loan |
-| 18 | **Muscatine** | Landing | 455 | | Steamboat Bill's porch |
+| 18 | **Muscatine** | Landing (hub) | 455 | | Home. Steamboat Bill's porch, and the missus; cheap repairs. The downbound hub (decided 2026-11-15): Dubuque to Muscatine in a single day downbound, so it takes over from the Quad Cities, done to death on the way up |
 | 19 | **The Sandbar**, again (Sandy, refurbished) | Encounter | ~450 | just below Muscatine | |
 | 20 | **Burlington, Iowa** | Landing | 404 | 40.81, -91.11 | |
 | 21 | **Fort Madison, Iowa** | Passed | 383 | 40.63, -91.31 | |

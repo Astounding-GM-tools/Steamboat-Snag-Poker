@@ -61,6 +61,42 @@ drawer.
 Corrections scrawled in as the story earns them: "Tri-Cities" to "Quad Cities" on the way
 down; "Gilbert" to "Bettendorf" (the town renamed in 1903; the sheets still read the old name).
 
+## One river, one chart (decided 2026-11-15; not built)
+
+> *From the First Mate's Log, written at the chart table:*
+>
+> The Captain says we have been keeping the river in pieces, a separate chart for every run, as if
+> the Mississippi were a different river going down than coming up. It is not. I have looked.
+>
+> So: one chart, the whole river, and each run is only a line drawn on it in pencil. Up from
+> Muscatine is one line; down from Dubuque another, over the same water. Where we need more river,
+> we paste in another sheet. Nothing is cut twice.
+>
+> The chart is the Commission's, older than the Captain lets on: the soundings are dated September
+> 1894. The river has not moved much since. It will, once they start on the locks.
+>
+> Going down we will be quicker; the current does half the work. Dubuque to Muscatine in a day,
+> and Muscatine is home.
+
+**What that means, plainly:**
+- **One tile set for the whole river,** in one shared frame (the standard web-map XYZ tiling,
+  EPSG:3857, as QGIS exports it): `maptiles/mrc-1894/{z}/{x}/{y}.webp`. Sparse: tiles only along the
+  river's corridor (the game already shrugs off a missing tile). More river later: more tiles, nothing
+  re-cut. Not per chapter or per leg.
+- **A leg is data, not pictures:** its course, stops and islands in the shared coordinates (a small
+  file each). Upbound and downbound legs run over the same tiles; a downbound one is mostly an upbound
+  course reversed (a channel of its own here and there). Each leg its own pace: downbound quicker.
+- **Hub views** (the close-ups at landings) stay as they are for now, or become the same chart,
+  nearer.
+- **Today, by contrast:** each leg is its own cut of the chart (chapter one: 34,656 × 17,014 px, zoom
+  0 to 8), and everything on it is in that cut's own pixels: the course, the islands, the mooring at
+  Muscatine (`landing` in chapters/01_muscatine). Those convert mechanically once the chart's
+  georeferenced in the shared frame.
+- **Work:** the re-export is the map project's (HistoricalMap, QGIS); here, TileMap and route.ts
+  take the shared frame, and the hand-placed points are converted. Not light: one sitting each.
+- **The bucket** (Cloudflare R2, one bucket: `maptiles/` and `music/`): upload nothing until the
+  re-export, so it starts in its final shape. Issue #17.
+
 ## Next: the river as the game (2026-11-14)
 
 The meat of the game is on the river, not between landings: steaming is slow, and it's full.
