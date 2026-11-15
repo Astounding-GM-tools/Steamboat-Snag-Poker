@@ -975,6 +975,19 @@ dates from the 1920s, and that's fine. The name can be changed, as fiction.) The
 passengers you carry plays at the tables you pass through, and at the grand steamers on the way
 down: the music is something you carry.
 
+**The soundtrack: the First Victor Sessions, and strictly those** (decided 2026-11-15). Every track
+is from Bennie Moten's Kansas City Orchestra's December 1926 sessions for Victor in Chicago (13 and 14
+December): Kansas City Shuffle, Harmony Blues, Midnight Mama, Yazoo Blues, Missouri Wobble, Muscle
+Shoals Blues, Thick Lip Stomp, White Lightnin' Blues, and whatever else from those sessions turns up
+(some taken out again if they don't please). Not the stiffer Okeh sides before, nor 1927 after. It
+reads as a discerning ear, and partly is; it's also that this music comes free all at once: US
+recordings of 1926 enter the public domain on 1 January 2027 (100 years from the end of the year of
+publication; the compositions are already free). The sessions' centennial is 13 and 14 December
+2026, the music free eighteen days later: a First Victor Sessions centennial, to fanfare. Takes:
+where there are two (Harmony Blues, Missouri Wobble, Yazoo Blues), either or both. Source files
+downloaded and hosted ourselves (transfers from The Syncopated Times, credited), not linked to; check
+they're the original 78s, not remakes. Nothing ships before 1 January 2027.
+
 **The Thierry Belle.** The rival boat (say it aloud: "terribly"; a French name with roots on this
 river). A captain and crew still to be named, met at poker tables all the way up and back down
 again: a running rivalry, not a one-off.
