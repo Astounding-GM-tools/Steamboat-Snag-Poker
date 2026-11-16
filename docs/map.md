@@ -61,6 +61,28 @@ drawer.
 Corrections scrawled in as the story earns them: "Tri-Cities" to "Quad Cities" on the way
 down; "Gilbert" to "Bettendorf" (the town renamed in 1903; the sheets still read the old name).
 
+## Ideas waiting (2026-11-16)
+
+- **A nudge tool for the course.** The channel line is right almost everywhere, but where it isn't
+  (through an island, over a sand bank) it's jarring, and calculation has gone as far as it can. The
+  paths are lines of points (not Bézier curves; the game rounds the corners), so: a dev overlay on
+  the `?path` view where a nudge is dragged out (a spot, a push, a reach), bending the line smoothly
+  there. Nudges kept in their own file in global pixels, applied on load: a re-export never loses them,
+  and every leg over that water (up and down) gets the fix.
+- **The opening, slower.** Black; the chart fades in off to the side and pans along the river as it
+  does, till it rests on Muscatine. The header: just "Muscatine". We linger: it's the opening shot,
+  and we have time. A puff of steam; only then does she back out, gently ("The first day of spring");
+  she drifts down, comes round to face the river, and gathers way slowly. Then "Muscatine, upbound".
+- **Momentum.** Drawn small, her catch-up to the course reads as a sprint. She should speed up and
+  slow down only gradually, the current pushing back: momentum and resistance, not a pull onto her spot.
+- **Hands on the river, at her real pace.** When a hand comes up, she slows to a real boat's speed
+  (about 3.5 m/s: under 2 map px a second) and the view turns it round: the boat fades, and the chart
+  itself creeps by at that pace. The longer the hand, the slower and closer the view (full detail is at
+  zoom 0; steaming is at −1.6, so about three times closer before it blurs). When it's settled: back
+  out, and up to speed gradually, as if she'd slowed to hoist the salvage aboard or ease past the snag.
+  (Debris hands are one round: mostly they'd never get far into the zoom.)
+- **An encounter: the great Sand Bank Robbery.**
+
 ## One river, one chart (decided 2026-11-15; not built)
 
 > *From the First Mate's Log, written at the chart table:*

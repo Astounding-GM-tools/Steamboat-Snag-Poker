@@ -380,3 +380,9 @@ This is the League's snag, not Sandy's bar, so the house rule ("The Sandbar", ca
 8. **Odds' introduction** (`bettendorf.ts` L67): the bookmaker should lay odds when we first meet her.
 9. **Replace "You load sixteen tons"** (`depot.ts` L43): a borrowed line, and a 1946 one.
 10. **Ellie's "I prefer adventurous"**, said word for word in her blurb too (`03_rapids` L129, `en.ts` L282).
+
+## To review: the staple lines (noted 2026-11-16)
+
+The lines used over and over need a look, for repetition and fit. First: the win line at every
+obstacle's table, "She gains! A little further up." (`river.gainedGround`): it suits The Sandbar
+at best, and it's said at every debris hand too. Each kind of table wants its own, and more than one.
