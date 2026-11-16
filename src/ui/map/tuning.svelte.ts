@@ -12,7 +12,7 @@ export const voyage = $state({
   steamZoom: -1.6,
   playZoom: -1.4,
   /** At a landing, before she sets out: in close (the tiles' own detail), the boat big enough to see her wheel. */
-  dockZoom: -0.4,
+  dockZoom: 0,
   /**
    * The boat on the map, as a multiple of the first drawing. 0.75 is about four times her real size
    * (a 45 m sternwheeler on a chart of 2 m a pixel): a speck on a big river, but a boat.
