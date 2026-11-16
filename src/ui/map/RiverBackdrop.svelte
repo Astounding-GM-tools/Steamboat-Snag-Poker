@@ -158,6 +158,8 @@
    */
   const LOOK = 1.6;
   const TURN_RADIUS = 1.1;
+  /** The size she steers as (in `boatSize` terms), however small she's drawn: wide, unhurried turns. */
+  const STEER_SIZE = 1.5;
   /** Development only (`?path` in the address): her course drawn on the chart, and her spot on it. */
   const SHOW_PATH = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('path');
   /**
@@ -178,7 +180,9 @@
     const d = distance, s = sailed;
     if (!s || departure) return;
     untrack(() => {
-      const length = boatOnScreen / scale;
+      // She steers as a boat of `STEER_SIZE` would, whatever size she's drawn: drawn small, she'd
+      // otherwise turn as sharply as her little length allows, and dart about.
+      const length = (260 * Math.max(voyage.boatSize, STEER_SIZE) * TOP_SCALE) / scale;
       const moved = d - lastDistance;
       lastDistance = d;
       const fade = (x: number) => (join ? Math.max(0, 1 - x / (JOIN_LENGTHS * length)) ** 2 : 0);

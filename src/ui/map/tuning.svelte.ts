@@ -4,8 +4,8 @@
  * numbers settled: commit 33a7372 has them, to bring back.)
  */
 export const voyage = $state({
-  /** Seconds for a whole leg (0 to 1) at a leisurely pace. */
-  legSeconds: 320,
+  /** Seconds for a whole leg (0 to 1) at a leisurely pace (slower since she's drawn small: a speck mustn't zip). */
+  legSeconds: 420,
   /** How much quicker she goes with Skip held. */
   race: 12,
   /** The map's height as log2 of its scale (screen px per map px; a map px is 2 m): steaming, and at play. */
