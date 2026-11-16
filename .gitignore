@@ -2,3 +2,6 @@ node_modules
 dist
 .DS_Store
 scripts/balance-*.txt
+# The chart's tiles and the records: served from the bucket, never committed.
+public/maptiles
+public/music

@@ -2,12 +2,12 @@
  * The river map: one chart for the whole river (docs/map.md, "One river, one chart"), and the legs
  * drawn on it. The chart is one tile grid (`tiles.json`: UTM 15N, 2 m a pixel, every pixel global);
  * a leg is data on it (its channel, stops and islands, in the grid's pixels), fetched once each.
- * Served apart from the game (public/maptiles in development; VITE_MAP_ROOT elsewhere): without
- * them, null, and the river stays the felt.
+ * Served apart from the game, from VITE_MAP_ROOT (.env.development: public/maptiles; .env.production:
+ * the bucket; a build never carries them): without them, null, and the river stays the felt.
  */
 import type { Pt, TileSet, TravelSidecar } from './route';
 
-export const MAP_ROOT = (import.meta.env.VITE_MAP_ROOT as string | undefined) ?? '/maptiles/mrc-1894/';
+export const MAP_ROOT = import.meta.env.VITE_MAP_ROOT ?? '/maptiles/mrc-1894/';
 
 const json = <T>(path: string): Promise<T | null> =>
   fetch(`${MAP_ROOT}${path}`)
