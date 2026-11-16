@@ -8,7 +8,8 @@ import { say, you } from '../../lines';
 import { DOCK_FEE_AMOUNT, HARBOUR_HANDS, HARBOUR_MASTER_PURSE } from '../../numbers';
 
 /** The river map's leg (public/maptiles/river-1904/chapter-1/travel), and where on it things happen: Muscatine is 0, LeClaire 1. */
-const CHAPTER_1 = 'chapter-1';
+/** Chapter one's leg on the chart: Muscatine up to the rapids and LeClaire. */
+const CHAPTER_1 = 'chapter-1-upbound';
 /** Where the dev jumps put her for The Sandbar (in play the event stream picks the spot, in the middle of the way to the Tri-Cities). */
 export const SANDBAR_AT = 0.3;
 /** The Tri-Cities landing, as the map's sidecar has it. */
@@ -17,14 +18,14 @@ const TRI_CITIES_AT = 0.6429;
 /** Willie's second musing, a little way out of Muscatine: the chain of command, and Bill's missus. */
 const NEW_FIRST_MATE = [
   'Captain Bill is not coming with us.',
-  'First Mate made Captain, and I am the new First Mate.',
+  'First Mate made Captain, and I am the new First Mate now.',
   'Gus says being First Mate means doing tasks before anyone realises they need doing, and to write down everything the Captain should know and that I should remember.',
   'So that is what I’ll do, although I don’t yet know where to begin.',
   '',
   'I hope this will be a smooth run.',
-  'Pick up prime salvage',
+  'Pick up some prime salvage',
   'Make good money on the haul',
-  'And not leave it all at the tables along the way',
+  'And not leave it all at tables along the way',
 ].join('\n');
 
 const harbourMaster: Rival = { id: 'harbourMaster', ai: 'stubborn', money: HARBOUR_MASTER_PURSE };
@@ -37,7 +38,11 @@ export const muscatine: Step[] = [
   {
     type: 'encounter',
     // A few friendly hands on deck, for nothing: the talk is the point (RIVER_TALK.bill).
-    encounter: { id: 'bill', stake: 'purse', rivals: [{ id: 'steamboatBill', ai: 'stubborn', money: 50 }], goal: { type: 'evening' }, hands: 3, rules: { pot: false } },
+      encounter: {
+          id: 'bill', stake: 'purse', rivals: [{ id: 'steamboatBill', ai: 'stubborn', money: 50 }], goal: {
+              type: 'evening'
+          }, hands: 3, rules: { pot: false }
+      },
     solved: [],
     effects: { snag: DOCK_FEE },
   },
@@ -69,8 +74,8 @@ export const muscatine: Step[] = [
     type: 'steam',
     leg: CHAPTER_1,
     to: TRI_CITIES_AT,
-    // Made fast bow-first at the Muscatine levee, below the town and the bridge, where the river opens out, on the 1890 chart.
-    landing: [2450, 13185],
+    // Made fast bow-first at the Muscatine levee, below the town and the bridge, where the river opens out, on the Commission's chart (global pixels).
+    landing: [26570, 76494],
     // Willie's log, not the crew's chatter: a musing a little way out, then the river and the islands.
     // (A thought: too long for the header, it's only in the log, for whoever opens it.)
     musings: [{ at: 0.3, text: NEW_FIRST_MATE, thought: true }],
@@ -108,7 +113,7 @@ export const muscatineTalk: Record<string, Talk> = {
     rounds: [
       {
         deal: [
-          { ...said('I’ve landed a big job. A horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis. It has to be there the day the Fair opens.'), replies: [{ label: 'Good?' }] },
+          { ...said('Landed a big job. Horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis'), replies: [{ label: 'Good?' }] },
           you('That’s good news, isn’t it, Captain?'),
           { ...said('Good money. And the worst timing of my life.'), replies: [{ label: 'Why?' }] },
         ],
@@ -138,10 +143,10 @@ export const muscatineTalk: Record<string, Talk> = {
         flop: [
           { ...said('My wife’s taken ill. She needs me here, and so do the little ones.'), replies: [{ label: 'Bring them?' }] },
           you('Can’t they come with us, on the river?'),
-          said(['The river’s no place for little’uns, and she needs the doctor’s care.', 'This is how it must be. I’ve made my decision.']),
+          said(['The river’s no place for little ones, and she needs the doctor’s care.', 'This is how it must be. I’ve made my decision.']),
         ],
         verdict: [
-          said(['Here. The dock fee for the winter, and fifty dollars. Enough to settle it, with a little over for food and coal. Past that, you’ll find your own cargo.', 'Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers.']),
+          said(['Here. The dock fee bill for the winter, and fifty dollars. Enough to settle it, with a little over for food and coal. Past that, you’ll find your own cargo.', 'Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers.']),
         ],
       },
     ],

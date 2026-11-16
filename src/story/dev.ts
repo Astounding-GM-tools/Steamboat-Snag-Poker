@@ -37,11 +37,11 @@ const tournament = (skip: number, day = 3): JourneyState => {
 export const SCENES: { label: string; state: () => JourneyState }[] = [
   { label: 'Harbour master', state: () => dayOne('harbourTalk', { ...start(), snags: [jokerCard(DOCK_FEE)] }) },
   // The river and nothing else, round and round: Muscatine to LeClaire, no islands, no chatter, no encounters.
-  { label: 'Endless ambling', state: () => jumpTo({ ...start(), flags: ['dev:endless'] }, RIVER, [{ type: 'steam', leg: 'chapter-1', to: 1 }]) },
+  { label: 'Endless ambling', state: () => jumpTo({ ...start(), flags: ['dev:endless'] }, RIVER, [{ type: 'steam', leg: 'chapter-1-upbound', to: 1 }]) },
   // Out from Muscatine on the river map: the harbour master's done with, the dock fee paid.
   { label: 'Ambling along', state: () => jumpTo({ ...start(), step: RIVER.days[0].steps.findIndex((s) => s.type === 'steam') }, RIVER, []) },
-  { label: 'Under way', state: () => dayOne('underway', { ...start(), river: { leg: 'chapter-1', t: SANDBAR_AT } }) },
-  { label: 'Sandbar', state: () => dayOne('sandbar', { ...start(), river: { leg: 'chapter-1', t: SANDBAR_AT } }) },
+  { label: 'Under way', state: () => dayOne('underway', { ...start(), river: { leg: 'chapter-1-upbound', t: SANDBAR_AT } }) },
+  { label: 'Sandbar', state: () => dayOne('sandbar', { ...start(), river: { leg: 'chapter-1-upbound', t: SANDBAR_AT } }) },
   { label: 'Tri-Cities, evening', state: () => hub('evening') },
   { label: 'Tri-Cities, morning', state: () => hub('morning', [FLAG.heardOfPilot, FLAG.jobFound], 6) },
   { label: 'Deck game (Willie’s intel)', state: () => jumpTo(hub('evening'), RIVER, option('anchor').steps.slice(1)) },

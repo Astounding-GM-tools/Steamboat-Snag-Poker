@@ -575,7 +575,7 @@
 <div class="backdrop" class:play={mode === 'play'} class:jolt aria-hidden="true">
   {#if sidecar && boat}
     <div class="map" bind:clientWidth={mapW} bind:clientHeight={mapH}>
-      <TileMap base="{ROOT}{leg}/travel/" tiles={sidecar.tiles} {center} {scale} children={SHOW_PATH ? coursePath : undefined} />
+      <TileMap base={ROOT} tiles={sidecar.tiles} {center} {scale} children={SHOW_PATH ? coursePath : undefined} />
       <!--
         What's on the chart, each in a small layer of its own, placed by a transform: their smoke and
         bobbing repaint only themselves, not a drawing the size of the screen.

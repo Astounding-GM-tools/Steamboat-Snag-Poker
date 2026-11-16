@@ -218,7 +218,7 @@ describe('debris on the river', () => {
     const steps = RIVER.days[0].steps;
     const i = steps.findIndex((s) => s.type === 'steam');
     const j = jumpTo({ ...newJourney(3, RIVER, RIVER_START), step: i + 1 }, RIVER, [steps[i]]);
-    return { ...j, strength: 12, river: { leg: 'chapter-1', t: 0.05 } };
+    return { ...j, strength: 12, river: { leg: 'chapter-1-upbound', t: 0.05 } };
   };
   /** One hand played out, carefully. */
   const playHand = (j: JourneyState) => {
@@ -239,10 +239,10 @@ describe('debris on the river', () => {
   });
   it('stops her for one hand, and the stretch (and its main event) goes on after', () => {
     const j = underWay();
-    const met = meetDebris(j, RIVER, 0.1, debrisStep({ kind: 'crate' }, crateAnteFor(j, 'chapter-1')), true);
+    const met = meetDebris(j, RIVER, 0.1, debrisStep({ kind: 'crate' }, crateAnteFor(j, 'chapter-1-upbound')), true);
     expect(currentStep(met, RIVER)?.type).toBe('encounter');
-    expect(met.cratesMet).toEqual({ leg: 'chapter-1', n: 1 });
-    expect(crateAnteFor(met, 'chapter-1')).toBe(CRATE_ANTE + 1);
+    expect(met.cratesMet).toEqual({ leg: 'chapter-1-upbound', n: 1 });
+    expect(crateAnteFor(met, 'chapter-1-upbound')).toBe(CRATE_ANTE + 1);
     const after = playHand(met);
     expect(after.encounter?.outcome).not.toBeNull();
     const on = leaveEncounter(after, RIVER);
@@ -297,7 +297,7 @@ describe('the dock fee', () => {
     expect(currentStep(paid, RIVER)?.type).toBe('steam');
     const out = proceed(paid, RIVER);
     // She meets the stretch's main event (The Sandbar) at the middle of its window, without the river shown.
-    expect(out.river?.leg).toBe('chapter-1');
+    expect(out.river?.leg).toBe('chapter-1-upbound');
     expect(out.river!.t).toBeCloseTo(0.6429 * 0.65);
     expect(out.encounter?.def.id).toBe('underway');
   });
