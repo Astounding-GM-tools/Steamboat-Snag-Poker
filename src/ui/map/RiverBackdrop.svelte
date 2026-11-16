@@ -17,6 +17,8 @@
   import { course as forked, route, type Pt, type TravelSidecar } from './route';
   import { loadLeg, MAP_ROOT as ROOT } from './legs';
   import { voyage } from './tuning.svelte';
+  import { bendLeg } from './nudges';
+  import { nudges } from './nudgeStore.svelte';
   import BoatTop from '../boat/BoatTop.svelte';
   import type { Built } from '../boat/boat';
 
@@ -59,8 +61,12 @@
     });
   });
 
+  /** The leg with the course's nudges in (nudges.ts): the channel bent by hand where the chart's calculation went wrong. */
+  const bent = $derived(sidecar ? bendLeg(sidecar, nudges.list) : null);
   /** The channel, round the islands by the passages chosen. */
-  const course = $derived(sidecar ? forked(route(sidecar.path.px[0], sidecar.stops), leg, sidecar.islands ?? [], lanes) : null);
+  const course = $derived(bent ? forked(route(bent.path.px[0], bent.stops), leg, bent.islands ?? [], lanes) : null);
+  /** Development only (`?nudge`): the nudge overlay, to bend the course by eye. Never in a build. */
+  const nudgeEditor = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('nudge') ? import('./NudgeEditor.svelte').then((m) => m.default) : null;
 
   /** Corners cut off a line (Chaikin's), `rounds` times: the chart's channel as a boat would sail it, in curves. */
   function rounded(line: readonly Pt[], rounds: number): Pt[] {
@@ -162,8 +168,8 @@
   const TURN_RADIUS = 1.1;
   /** The size she steers as (in `boatSize` terms), however small she's drawn: wide, unhurried turns. */
   const STEER_SIZE = 1.5;
-  /** Development only (`?path` in the address): her course drawn on the chart, and her spot on it. */
-  const SHOW_PATH = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('path');
+  /** Development only (`?path` in the address, or `?nudge`): her course drawn on the chart, and her spot on it. */
+  const SHOW_PATH = import.meta.env.DEV && typeof location !== 'undefined' && /[?&](path|nudge)\b/.test(location.search);
   /**
    * How hard she's drawn back to her spot on the way: for every length she steams, this share of the gap
    * closes. Steering alone, as big as she's drawn, she'd swing half a length wide of the channel at a
@@ -652,6 +658,9 @@
   <!-- The felt: black over the map, lifted off it as she sets out. -->
   <div class="felt"></div>
 </div>
+{#if nudgeEditor && sailed}
+  {#await nudgeEditor then NudgeEditor}<NudgeEditor line={sailed.line} {center} {scale} width={mapW} height={mapH} />{/await}
+{/if}
 
 <style>
   .backdrop {
