@@ -37,6 +37,8 @@ const tournament = (skip: number, day = 3): JourneyState => {
 export const SCENES: { label: string; state: () => JourneyState }[] = [
   { label: 'Harbour master', state: () => dayOne('harbourTalk', { ...start(), snags: [jokerCard(DOCK_FEE)] }) },
   // The river and nothing else, round and round: Muscatine to LeClaire, no islands, no chatter, no encounters.
+  // The whole river on the chart, Dubuque down to St. Louis, round and round: for looking the chart over (Skip races).
+  { label: 'Endless amble: the whole river', state: () => jumpTo({ ...start(), flags: ['dev:endless', 'downbound'] }, RIVER, [{ type: 'steam', leg: 'whole-river', to: 1, seconds: 2500 }]) },
   { label: 'Endless ambling', state: () => jumpTo({ ...start(), flags: ['dev:endless'] }, RIVER, [{ type: 'steam', leg: 'chapter-1-upbound', to: 1 }]) },
   // Out from Muscatine on the river map: the harbour master's done with, the dock fee paid.
   { label: 'Ambling along', state: () => jumpTo({ ...start(), step: RIVER.days[0].steps.findIndex((s) => s.type === 'steam') }, RIVER, []) },

@@ -161,6 +161,8 @@ export type Step =
       main?: { window: [number, number]; steps: Step[] };
       /** On again after a piece of debris: nothing worth Willie writing her under way again. */
       quiet?: boolean;
+      /** Seconds the whole leg takes at her pace, if not the usual (a longer leg: development's whole river). */
+      seconds?: number;
     }
   | {
       type: 'encounter';

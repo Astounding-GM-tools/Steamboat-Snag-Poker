@@ -86,6 +86,8 @@
   const AFTER_DEPARTURE_MS = 3_000;
   /** How often she moves while steaming (ms): thirty times a second is smooth at a riverboat's pace. */
   const STEP_MS = 1000 / 30;
+  /** Seconds a whole leg takes at her pace: the usual, or the stretch's own (a longer leg). */
+  const legSeconds = $derived(step?.type === 'steam' && step.seconds ? step.seconds : voyage.legSeconds);
 
   /** Development only: she steams the leg over and over, with nothing to stop her (no islands, chatter or encounters): something running while we work. */
   const endless = $derived(import.meta.env.DEV && journey.flags.includes('dev:endless'));
@@ -191,7 +193,7 @@
       // From a standstill she gathers way: up to her pace over the first few seconds (eased), not all at once.
       const way = Math.min(1, ((now - began) / 1000 + (step.landing ? DEPARTED_WAY_S : 0)) / GATHER_WAY_S);
       const gathered = way * way * (3 - 2 * way);
-      boatT += dir * Math.min(Math.abs(to - boatT), (dt / voyage.legSeconds) * Math.max(0.02, gathered) * (racing ? voyage.race : 1));
+      boatT += dir * Math.min(Math.abs(to - boatT), (dt / legSeconds) * Math.max(0.02, gathered) * (racing ? voyage.race : 1));
       // Debris called earlier, reached: she stops for its hand.
       if (adrift && boatT >= adrift.t) {
         const met = adrift;
@@ -207,7 +209,7 @@
         const call = nextOnRiver({
           t: boatT,
           to,
-          pace: 1 / voyage.legSeconds,
+          pace: 1 / legSeconds,
           // Every island she hasn't got past yet, the one she's rounding too.
           forks: (legData?.islands ?? []).filter((i) => i.to_t > boatT && i.from_t < to).map((i) => ({ from: i.from_t, to: i.to_t })),
           ...(step.main ? { main: { window: [at(step.main.window[0]), at(step.main.window[1])] as [number, number] } } : {}),
