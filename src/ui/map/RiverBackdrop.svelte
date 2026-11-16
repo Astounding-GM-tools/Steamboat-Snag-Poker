@@ -421,8 +421,9 @@
         cv.height = Math.round(mapH * dpr);
       }
       const b = boat;
-      // Units of the top view, in map px, at this zoom.
+      // Units of the top view, in map px, at this zoom: the boat's (where her chimneys are), and the steam's (how big it billows, how far it drifts).
       const u = (voyage.boatSize * TOP_SCALE * growth) / scale;
+      const su = (voyage.steamSize * TOP_SCALE * growth) / scale;
       // How hard she's working: chuffs come oftener, and bigger, the harder it is.
       const hard = departure ? departEffort : effort;
       const moving = !!b && !!was && Math.hypot(b.p[0] - was[0], b.p[1] - was[1]) > 0.01;
@@ -435,7 +436,7 @@
           steamClock -= EXHAUST.steamEvery * (0.8 + Math.random() * 0.4);
           const [x, y] = at(CHIMNEYS[Math.floor(Math.random() * CHIMNEYS.length)]);
           const k = EXHAUST.steamDrift;
-          motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * u, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * u, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * u, r1: EXHAUST.steamSize[1] * u * Math.sqrt(hard) * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, shape: Math.random() < 1 / SUIT_EVERY ? CLOUDLETS + Math.floor(Math.random() * SUITS.length) : Math.floor(Math.random() * CLOUDLETS) });
+          motes.push({ x, y, vx: (EXHAUST.wind[0] * k + (Math.random() - 0.5) * 10) * su, vy: (EXHAUST.wind[1] * k + (Math.random() - 0.5) * 10) * su, age: 0, life: EXHAUST.steamLife * (0.8 + Math.random() * 0.4), r0: EXHAUST.steamSize[0] * su, r1: EXHAUST.steamSize[1] * su * Math.sqrt(hard) * (0.8 + Math.random() * 0.4), alpha: EXHAUST.steamAlpha, shape: Math.random() < 1 / SUIT_EVERY ? CLOUDLETS + Math.floor(Math.random() * SUITS.length) : Math.floor(Math.random() * CLOUDLETS) });
         }
       }
       // Nothing in the air: cleared once, then left alone till there is.
@@ -583,7 +584,7 @@
       {#each flotsam as c, i (i)}
         {@const [x, y] = onScreen(c)}
         <!-- Something in the water: a crate, or a snag. No telling till she's on it. -->
-        <svg class="mark" viewBox="-6 -6 12 12" width={12 * voyage.boatSize} height={12 * voyage.boatSize} style:transform="translate3d({x - 6 * voyage.boatSize}px, {y - 6 * voyage.boatSize}px, 0)">
+        <svg class="mark" viewBox="-6 -6 12 12" width={12 * voyage.steamSize} height={12 * voyage.steamSize} style:transform="translate3d({x - 6 * voyage.steamSize}px, {y - 6 * voyage.steamSize}px, 0)">
           <g class="crate" style:animation-delay="{i * -0.7}s">
             <path class="ink" d="M -5 0.5 C -4 -2.5 -1 -1.5 0 -3 C 1.5 -1.5 4 -2.5 5 0 C 4 2.5 -3.5 3 -5 0.5 Z" />
             <path d="M -3.5 -1 L 3 1 M -1 -3.5 L 1.5 2.5" stroke="#f4ecd8" stroke-width="0.8" fill="none" />

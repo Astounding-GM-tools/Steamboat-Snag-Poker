@@ -13,8 +13,13 @@ export const voyage = $state({
   playZoom: -1.4,
   /** At a landing, before she sets out: in close (the tiles' own detail), the boat big enough to see her wheel. */
   dockZoom: -0.4,
-  /** The boat on the map, and her wake's width, as multiples of the first drawing. */
-  boatSize: 3,
+  /**
+   * The boat on the map, as a multiple of the first drawing. 0.75 is about four times her real size
+   * (a 45 m sternwheeler on a chart of 2 m a pixel): a speck on a big river, but a boat.
+   */
+  boatSize: 0.75,
+  /** Her steam, and the debris in the water, on the same measure: kept big, so a small boat still leaves a trail you can see. */
+  steamSize: 3,
   /** Seconds of warning before an island's fork: the call goes up, and port or starboard can be chosen. */
   forkWarning: 12,
   /** A crew member's chatter closes this many seconds before the next comes up (or she arrives). */
