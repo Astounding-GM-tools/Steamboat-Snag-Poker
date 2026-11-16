@@ -5,11 +5,12 @@
   import { cardPrefs } from './cards.svelte';
   import { saveSettings, settings, switchFaces } from './settings.svelte';
   import { canFullscreen, setFullscreen } from './fullscreen';
+  import { music, setMusicOn, setVolume } from './music/player.svelte';
 
   /**
    * Options, as a plain page over the screen above the buttons (like How it
-   * works): the sound of coins, full screen (on a phone), and how card faces
-   * read. Remembered on this device.
+   * works): the sound of coins, the band (on, and how loud), full screen (on a
+   * phone), and how card faces read. Remembered on this device.
    */
   const sample = [stdCard(14, 's'), stdCard(10, 'h'), stdCard(7, 'd')];
 
@@ -32,6 +33,16 @@
       <button class:ghost={!settings.sound} aria-pressed={settings.sound} onclick={() => sound(true)}>{t('options.on')}</button>
       <button class:ghost={settings.sound} aria-pressed={!settings.sound} onclick={() => sound(false)}>{t('options.off')}</button>
     </div>
+  </section>
+
+  <section>
+    <h3>{t('options.music')}</h3>
+    <div class="choice">
+      <button class:ghost={!music.on} aria-pressed={music.on} onclick={() => setMusicOn(true)}>{t('options.on')}</button>
+      <button class:ghost={music.on} aria-pressed={!music.on} onclick={() => setMusicOn(false)}>{t('options.off')}</button>
+    </div>
+    <input class="volume" type="range" min="0" max="1" step="0.05" value={music.volume} disabled={!music.on} aria-label={t('options.volume')} oninput={(e) => setVolume(+e.currentTarget.value)} onchange={(e) => setVolume(+e.currentTarget.value, true)} />
+    <p class="tip">{t('options.musicTip')}</p>
   </section>
 
   {#if canFullscreen()}
@@ -94,6 +105,15 @@
   .choice button {
     font-size: 0.95rem;
     padding: 0.4em 0.5em;
+  }
+  .volume {
+    display: block;
+    width: 100%;
+    margin: 0.75rem 0 0.5rem;
+    accent-color: var(--paper);
+  }
+  .volume:disabled {
+    opacity: 0.4;
   }
   .sample {
     display: flex;

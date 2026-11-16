@@ -56,6 +56,9 @@
   import Table, { type TableView } from './Table.svelte';
   import { called, snagTitle } from './format';
   import { loadJourney, saveJourney } from './storage';
+  import { musicAt } from './music/playlist';
+  import { playHere } from './music/player.svelte';
+  import NowPlaying from './music/NowPlaying.svelte';
 
   /**
    * The story (Steamboat to St. Louis): the voyage's steps one after another
@@ -75,6 +78,12 @@
   const step = $derived(currentStep(journey, RIVER));
   const enc = $derived(journey.encounter);
   const playing = $derived(step?.type === 'encounter' && !!enc && !enc.outcome);
+  /** The band plays where it plays (The Sandbar, the Bettendorf saloon): through the table and its last words, and fades as she leaves. */
+  const musicHere = $derived(musicAt(step?.type === 'encounter' ? step.encounter.id : null));
+  $effect(() => {
+    playHere(musicHere);
+  });
+  $effect(() => () => playHere(null));
 
   /** Seconds she takes to gather way from a standstill (casting off, getting off The Sandbar). */
   const GATHER_WAY_S = 10;
@@ -541,6 +550,7 @@
   const troubles = $derived(journey.snags.filter((j) => snagDef(j.index).kind === 'trouble').length);
 </script>
 
+<NowPlaying />
 {#if onRiver && leg}
   <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onopened={() => departureEntry(LEAVING_MUSCATINE.backingOut)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
