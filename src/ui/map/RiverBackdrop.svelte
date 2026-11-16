@@ -491,7 +491,7 @@
      * seconds, from `panFrom` map px west of her), over the land and onto the river, to rest on her at
      * the landing; and lingers there.
      */
-    pan: 7,
+    pan: 10,
     linger: 3,
     panFrom: 1300,
     /** Seconds after the opening shot: the first steam, the wheel astern, backing out (from, to), the wheel ahead. */
@@ -689,7 +689,7 @@
   }
   /* The opening shot: the chart comes up out of the black slowly, as the view pans in. */
   .opening .felt {
-    animation: lift 6s ease-in-out 0.3s both;
+    animation: lift 8s ease-in-out 0.3s both;
   }
   @keyframes lift {
     from {

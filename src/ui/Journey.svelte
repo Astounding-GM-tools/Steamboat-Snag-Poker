@@ -79,7 +79,7 @@
   /** Seconds she takes to gather way from a standstill (casting off, getting off The Sandbar). */
   const GATHER_WAY_S = 10;
   /** Off a landing she gathers way slower still: momentum, and the current to push against. */
-  const GATHER_WAY_LANDING_S = 24;
+  const GATHER_WAY_LANDING_S = 36;
   /** She steams this long before Willie writes her getting under way: the river first, then the words. */
   const CAST_OFF_QUIET_MS = 8_000;
   /** After she's backed out and got under way from a landing, a moment before Willie writes. */
@@ -825,7 +825,7 @@
   }
   /* The opening shot: the heading ("Muscatine") comes up once the view has come to rest on her. */
   .status.opening {
-    animation: heading-in 1.6s ease 6s both;
+    animation: heading-in 1.6s ease 9s both;
   }
   @keyframes heading-in {
     from {
