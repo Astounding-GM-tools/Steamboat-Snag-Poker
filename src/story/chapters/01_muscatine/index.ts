@@ -75,7 +75,7 @@ export const muscatine: Step[] = [
     leg: CHAPTER_1,
     to: TRI_CITIES_AT,
     // Made fast bow-first at the Muscatine levee, below the town and the bridge, where the river opens out, on the Commission's chart (global pixels).
-    landing: [26582, 76450],
+    landing: [26627, 76455],
     // Willie's log, not the crew's chatter: a musing a little way out, then the river and the islands.
     // (A thought: too long for the header, it's only in the log, for whoever opens it.)
     musings: [{ at: 0.3, text: NEW_FIRST_MATE, thought: true }],
