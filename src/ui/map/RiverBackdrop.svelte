@@ -46,10 +46,10 @@
     ondeparted?: () => void;
     /** Departing, the wheel turns ahead: she's about to get under way. */
     onturn?: () => void;
-    /** Departing, the opening shot over: the first steam, and she begins to back out. */
-    onbacking?: () => void;
+    /** Departing, the opening shot over: the view has come to rest on her at the landing. */
+    onopened?: () => void;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, adrift = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted, onturn, onbacking }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, adrift = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted, onturn, onopened }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -488,17 +488,20 @@
   const DEPART = {
     /**
      * The opening shot, before any of it: the chart fades in as the view pans in from the west (`pan`
-     * seconds, from `panFrom` map px west of her), over the land and onto the river, to rest on her at
-     * the landing; and lingers there.
+     * seconds, from `panFrom` map px west of her), over the land and onto the river, zooming in from
+     * `openZoom` to the landing's full detail as it goes, both tapering off as it comes to rest on her.
      */
-    pan: 10,
-    linger: 3,
-    panFrom: 1300,
-    /** Seconds after the opening shot: the first steam, the wheel astern, backing out (from, to), the wheel ahead. */
-    steam: 0,
-    astern: 1,
-    back: [2, 10.5] as const,
-    ahead: 12,
+    pan: 14,
+    panFrom: 1800,
+    openZoom: -1,
+    /**
+     * Seconds after the opening shot (Willie's "The first day of spring." is written then): the first
+     * puff (about as he types "spring"), a few more, the wheel astern, backing out (from, to), the wheel ahead.
+     */
+    steam: 6,
+    astern: 10,
+    back: [11, 19.5] as const,
+    ahead: 21,
     /** How far she backs out, and drifts down, in her lengths. */
     out: 0.7,
     drift: 0.6,
@@ -517,7 +520,8 @@
     const landing = departure, s = sailed;
     if (!landing || !s) return;
     // Her length on the map, as she's drawn at the landing (in close, she's shorter on the map than at the river's height).
-    const length = untrack(() => (boatOnScreen * growth) / scale);
+    const dock = voyage.dockZoom;
+    const length = (boatOnScreen * Math.max(1, 2 ** ((dock - voyage.steamZoom) * GROWTH))) / 2 ** dock;
     // Her bow on the bank, and the current dragging her stern downstream: she lies out from the landing
     // towards the channel, angled down the river (MOORED_ANGLE off square to it).
     const start = s.point(0);
@@ -538,21 +542,26 @@
     const ease = (f: number) => f * f * (3 - 2 * f);
     /** Where the opening pan starts: due west of her, inland (the chart's x runs east). */
     const panFrom: Pt = [moored[0] - DEPART.panFrom, moored[1]];
-    const opening = DEPART.pan + DEPART.linger;
+    const opening = DEPART.pan;
+    /** The opening's easing: it tapers off, coming to rest gently. */
+    const settle = (f: number) => 1 - (1 - f) ** 3;
     untrack(() => {
       boat = { p: moored, heading: into };
       cam.set(panFrom, { duration: 0 });
+      // From further out, in to the landing's full detail as the view pans.
+      zoom.set(DEPART.openZoom, { duration: 0 });
+      zoom.set(voyage.dockZoom, { duration: DEPART.pan * 1000, easing: (f: number) => 1 - (1 - f) ** 2 });
       oldFilm = true;
       departEffort = 0;
       departWheel = 'still';
     });
     const t0 = performance.now();
-    let raf = 0, done = false, turned = false, backing = false;
+    let raf = 0, done = false, turned = false, opened = false;
     const frame = (now: number) => {
       const shot = (now - t0) / 1000;
-      // The opening shot: the view pans down the river to her, and rests.
+      // The opening shot: the view pans in to her, and comes to rest.
       if (shot <= DEPART.pan + 0.1) {
-        const f = ease(Math.min(1, shot / DEPART.pan));
+        const f = settle(Math.min(1, shot / DEPART.pan));
         cam.set([panFrom[0] + (moored[0] - panFrom[0]) * f, panFrom[1] + (moored[1] - panFrom[1]) * f], { duration: 0 });
       }
       if (shot > 4.5) oldFilm = false;
@@ -562,17 +571,17 @@
         raf = requestAnimationFrame(frame);
         return;
       }
-      if (t >= DEPART.steam && !backing) {
-        backing = true;
-        untrack(() => onbacking?.());
+      if (!opened) {
+        opened = true;
+        untrack(() => onopened?.());
       }
       if (t >= DEPART.ahead && !turned) {
         turned = true;
         untrack(() => onturn?.());
       }
 
-      // (One light puff to begin with, then the steady working steam of backing out.)
-      departEffort = t < DEPART.steam ? 0 : t < DEPART.steam + 0.8 ? 0.6 : t < DEPART.back[1] ? 0.35 : t < DEPART.ahead ? 0.2 : 1.1;
+      // (One puff to begin with, a few more as the steam comes up, then the steady working steam of backing out.)
+      departEffort = t < DEPART.steam ? 0 : t < DEPART.steam + 0.8 ? 0.8 : t < DEPART.astern ? 0.3 : t < DEPART.back[1] ? 0.35 : t < DEPART.ahead ? 0.2 : 1.1;
       departWheel = t < DEPART.astern ? 'still' : t < DEPART.back[1] ? 'astern' : t < DEPART.ahead ? 'still' : 'ahead';
       const clamp = (x: number) => Math.max(0, Math.min(1, x));
       const span = DEPART.back[1] - DEPART.back[0];
@@ -689,7 +698,7 @@
   }
   /* The opening shot: the chart comes up out of the black slowly, as the view pans in. */
   .opening .felt {
-    animation: lift 8s ease-in-out 0.3s both;
+    animation: lift 10s ease-in-out 0.3s both;
   }
   @keyframes lift {
     from {

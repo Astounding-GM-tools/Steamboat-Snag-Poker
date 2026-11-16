@@ -125,6 +125,8 @@
   const departing = $derived(step?.type === 'steam' && !!step.landing && !journey.flags.includes(departedFlag));
   function departed() {
     if (!journey.flags.includes(departedFlag)) journey = { ...journey, flags: [...journey.flags, departedFlag] };
+    // Under way, and gathering speed: the run ahead.
+    departureEntry(LEAVING_MUSCATINE.turning);
   }
   /** Willie writes as she leaves Muscatine, each entry once (a reload replays the departure, not the words). */
   function departureEntry(text: string) {
@@ -540,7 +542,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onturn={() => departureEntry(LEAVING_MUSCATINE.turning)} onbacking={() => departureEntry(LEAVING_MUSCATINE.backingOut)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onopened={() => departureEntry(LEAVING_MUSCATINE.backingOut)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">
@@ -825,7 +827,7 @@
   }
   /* The opening shot: the heading ("Muscatine") comes up once the view has come to rest on her. */
   .status.opening {
-    animation: heading-in 1.6s ease 9s both;
+    animation: heading-in 2s ease 11s both;
   }
   @keyframes heading-in {
     from {
