@@ -81,6 +81,9 @@ down; "Gilbert" to "Bettendorf" (the town renamed in 1903; the sheets still read
   zoom 0; steaming is at −1.6, so about three times closer before it blurs). When it's settled: back
   out, and up to speed gradually, as if she'd slowed to hoist the salvage aboard or ease past the snag.
   (Debris hands are one round: mostly they'd never get far into the zoom.)
+  *Built 2026-11-16:* `src/ui/map/creep.ts` (the curves; tuned in `tuning.svelte.ts`: `creepTail`,
+  `closeInTail`, `handZoom`, `backOutMs`), capped by the stream's `creepRoom`; the stretch carries on
+  from where she crept to (`driftOnRiver`). Aground (a `stuck` encounter) she holds still.
 - **An encounter: the great Sand Bank Robbery.**
 
 ## One river, one chart (decided 2026-11-15; not built)

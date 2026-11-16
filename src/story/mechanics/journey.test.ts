@@ -30,6 +30,7 @@ import {
   turnBack,
   jumpTo,
   meetDebris,
+  driftOnRiver,
   setStation,
   setRehire,
   type Slot,
@@ -258,6 +259,28 @@ describe('debris on the river', () => {
     }
     // Won, the crate is salvage worth its ante; lost, nothing.
     expect(on.salvage ?? 0).toBe(after.encounter!.outcome === 'solved' ? CRATE_ANTE : 0);
+  });
+  it('starts the rest of the stretch where she crept to during the hand, its main event where it was', () => {
+    const j = underWay();
+    const met = meetDebris(j, RIVER, 0.1, debrisStep({ kind: 'crate' }, crateAnteFor(j, 'chapter-1-upbound')), true);
+    const on = leaveEncounter(playHand(met), RIVER);
+    const before = currentStep(on, RIVER);
+    const drifted = driftOnRiver(on, 0.102);
+    expect(drifted.river?.t).toBeCloseTo(0.102);
+    const rest = currentStep(drifted, RIVER);
+    expect(rest?.type).toBe('steam');
+    if (rest?.type === 'steam' && before?.type === 'steam') {
+      const was = (s: number) => 0.1 + s * (before.to - 0.1);
+      const now = (s: number) => 0.102 + s * (rest.to - 0.102);
+      expect(now(rest.main!.window[0])).toBeCloseTo(was(before.main!.window[0]));
+      expect(now(rest.main!.window[1])).toBeCloseTo(was(before.main!.window[1]));
+    }
+    // Mid-hand too (the rest of the stretch still to come after it), and never back, nor past its end.
+    expect(driftOnRiver(met, 0.103).river?.t).toBeCloseTo(0.103);
+    expect(driftOnRiver(met, 0.09)).toBe(met);
+    expect(driftOnRiver(met, 5).river?.t).toBeCloseTo(0.6429);
+    // At a landing, nothing.
+    expect(driftOnRiver({ ...met, river: undefined }, 0.2).river).toBeUndefined();
   });
   it('leaves her with the obstacle’s snag only if it gets the better of her', () => {
     for (const seed of [1, 2, 3, 4, 5, 6]) {

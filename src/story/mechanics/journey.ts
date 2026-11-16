@@ -490,6 +490,34 @@ function stopOnRiver(prev: JourneyState, story: StoryDef, t: number, steps: Step
   return arrive(state, story);
 }
 
+/**
+ * She crept on during a hand (at her real pace, seen from her deck), and is now at `t`: the rest of the
+ * stretch starts from there. Its musings and main event stay where they were on the river (as shares
+ * of what's left of it from `t`); she never goes back, nor past the stretch's end. Off the river, or
+ * with no stretch to follow, nothing changes.
+ */
+export function driftOnRiver(prev: JourneyState, t: number): JourneyState {
+  const river = prev.river;
+  const k = prev.pending.findIndex((s) => s.type === 'steam');
+  const rest = prev.pending[k];
+  if (!river || rest?.type !== 'steam' || rest.leg !== river.leg) return prev;
+  const from = river.t, to = rest.to;
+  const up = to >= from;
+  const next = up ? Math.min(to, Math.max(from, t)) : Math.max(to, Math.min(from, t));
+  if (next === from) return prev;
+  /** A share of the stretch from `from`, as a share of it from `next`. */
+  const again = (share: number) => (from + share * (to - from) - next) / (to - next || 1);
+  const step: Step = {
+    ...rest,
+    ...(rest.musings ? { musings: rest.musings.map((m) => ({ ...m, at: again(m.at) })).filter((m) => m.at > 0) } : {}),
+    ...(rest.main ? { main: { ...rest.main, window: [Math.max(0, again(rest.main.window[0])), Math.max(0, again(rest.main.window[1]))] as [number, number] } } : {}),
+  };
+  const state = clone(prev);
+  state.river = { leg: river.leg, t: next };
+  state.pending[k] = step;
+  return state;
+}
+
 /** A caption read, or a stretch of river steamed: on. (Steamed without the river shown, she meets its main event at the middle of its window.) */
 export function proceed(prev: JourneyState, story: StoryDef): JourneyState {
   const step = currentStep(prev, story);

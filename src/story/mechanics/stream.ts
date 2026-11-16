@@ -121,3 +121,13 @@ export function nextOnRiver(s: StreamState, rules = STREAM_RULES): StreamCall {
 export function paceDuringHand(s: StreamState, rules = STREAM_RULES): number {
   return roomAhead(s, rules) <= rules.marginSeconds ? 0 : rules.crawl;
 }
+
+/**
+ * How far she may creep on during a hand, as the leg's `t` (seen from her deck, at her real pace: see
+ * src/ui/map/creep.ts): never into the next thing to keep clear for (a fork's warning, the main event's
+ * aim, the stretch's end), with the margin to spare. Where she's stopped is the hand's place in the
+ * stream; this is the most she may drift on from it before the stretch carries on.
+ */
+export function creepRoom(s: StreamState, rules = STREAM_RULES): number {
+  return Math.max(0, roomAhead(s, rules) - rules.marginSeconds) * s.pace;
+}
