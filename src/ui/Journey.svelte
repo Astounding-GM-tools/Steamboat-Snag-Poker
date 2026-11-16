@@ -78,8 +78,8 @@
 
   /** Seconds she takes to gather way from a standstill (casting off, getting off The Sandbar). */
   const GATHER_WAY_S = 10;
-  /** Off a landing, her wheel's already been driving ahead as she came round: she's that far into gathering way. */
-  const DEPARTED_WAY_S = 4;
+  /** Off a landing she gathers way slower still: momentum, and the current to push against. */
+  const GATHER_WAY_LANDING_S = 24;
   /** She steams this long before Willie writes her getting under way: the river first, then the words. */
   const CAST_OFF_QUIET_MS = 8_000;
   /** After she's backed out and got under way from a landing, a moment before Willie writes. */
@@ -130,10 +130,7 @@
   function departureEntry(text: string) {
     if (journey.place === 'muscatine' && !journey.log?.some((e) => e.text === text)) journey = writeLog(journey, text, 'musing');
   }
-  // As she backs out: the day.
-  $effect(() => {
-    if (departing) untrack(() => departureEntry(LEAVING_MUSCATINE.backingOut));
-  });
+
   /** The voyage's heading: "Day 2: Muscatine, upbound". */
   const heading = $derived(
     departing
@@ -191,7 +188,7 @@
       last = now;
       const dir = Math.sign(to - boatT);
       // From a standstill she gathers way: up to her pace over the first few seconds (eased), not all at once.
-      const way = Math.min(1, ((now - began) / 1000 + (step.landing ? DEPARTED_WAY_S : 0)) / GATHER_WAY_S);
+      const way = Math.min(1, (now - began) / 1000 / (step.landing ? GATHER_WAY_LANDING_S : GATHER_WAY_S));
       const gathered = way * way * (3 - 2 * way);
       boatT += dir * Math.min(Math.abs(to - boatT), (dt / legSeconds) * Math.max(0.02, gathered) * (racing ? voyage.race : 1));
       // Debris called earlier, reached: she stops for its hand.
@@ -543,7 +540,7 @@
 </script>
 
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onturn={() => departureEntry(LEAVING_MUSCATINE.turning)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onturn={() => departureEntry(LEAVING_MUSCATINE.turning)} onbacking={() => departureEntry(LEAVING_MUSCATINE.backingOut)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">
@@ -564,7 +561,7 @@
   <!-- Under way: the map is the picture; Pause for the menu, or hold Skip to race on. -->
   <div class="page steaming">
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-    <div class="status opens" role="button" tabindex="0" aria-label={t('log.open')} onclick={() => (logOpen = !logOpen)}>
+    <div class="status opens" class:opening={departing} role="button" tabindex="0" aria-label={t('log.open')} onclick={() => (logOpen = !logOpen)}>
       <span class="day">{heading}</span>
       {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} paused={racing} />{/if}
       {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
@@ -825,6 +822,15 @@
   }
   .page > :global(*) {
     --u: clamp(1rem, 3.7cqw, 1.7rem);
+  }
+  /* The opening shot: the heading ("Muscatine") comes up once the view has come to rest on her. */
+  .status.opening {
+    animation: heading-in 1.6s ease 6s both;
+  }
+  @keyframes heading-in {
+    from {
+      opacity: 0;
+    }
   }
   .status {
     min-width: 0;

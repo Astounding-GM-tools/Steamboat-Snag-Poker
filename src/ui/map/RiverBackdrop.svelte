@@ -46,8 +46,10 @@
     ondeparted?: () => void;
     /** Departing, the wheel turns ahead: she's about to get under way. */
     onturn?: () => void;
+    /** Departing, the opening shot over: the first steam, and she begins to back out. */
+    onbacking?: () => void;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, adrift = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted, onturn }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, adrift = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted, onturn, onbacking }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -484,11 +486,18 @@
    * from there she steers up the channel as always, and the camera draws back to the river's height.
    */
   const DEPART = {
-    /** Seconds from the start: the first steam, the wheel astern, backing out (from, to), the wheel ahead. */
-    steam: 3.5,
-    astern: 4.5,
-    back: [5.5, 14] as const,
-    ahead: 15.5,
+    /**
+     * The opening shot, before any of it: the chart fades in as the view pans down the river (`pan`
+     * seconds, from `panFrom` map px up the channel) to rest on her at the landing, and lingers there.
+     */
+    pan: 7,
+    linger: 3,
+    panFrom: 2000,
+    /** Seconds after the opening shot: the first steam, the wheel astern, backing out (from, to), the wheel ahead. */
+    steam: 0,
+    astern: 1,
+    back: [2, 10.5] as const,
+    ahead: 12,
     /** How far she backs out, and drifts down, in her lengths. */
     out: 0.7,
     drift: 0.6,
@@ -497,6 +506,8 @@
   };
   /** How far her stern lies swung downstream at the landing, off square to the river (radians): she lies at 70° to the bank. */
   const MOORED_ANGLE = (20 * Math.PI) / 180;
+  /** Set out from a landing: the opening shot (the felt lifts slowly). */
+  const opening = untrack(() => !!departure);
   let departEffort = $state(0);
   let departWheel = $state<'ahead' | 'astern' | 'still'>('still');
   /** The old film's scratches and specks, over the fade-in, gone once the picture's settled. */
@@ -524,22 +535,43 @@
     const off: Pt = [nx * DEPART.out * length, ny * DEPART.out * length];
     const down: Pt = [-Math.cos(up) * DEPART.drift * length, -Math.sin(up) * DEPART.drift * length];
     const ease = (f: number) => f * f * (3 - 2 * f);
+    /** Where the opening pan starts: up the channel from her. */
+    const panFrom = s.point(DEPART.panFrom);
+    const opening = DEPART.pan + DEPART.linger;
     untrack(() => {
       boat = { p: moored, heading: into };
+      cam.set(panFrom, { duration: 0 });
       oldFilm = true;
       departEffort = 0;
       departWheel = 'still';
     });
     const t0 = performance.now();
-    let raf = 0, done = false, turned = false;
+    let raf = 0, done = false, turned = false, backing = false;
     const frame = (now: number) => {
-      const t = (now - t0) / 1000;
+      const shot = (now - t0) / 1000;
+      // The opening shot: the view pans down the river to her, and rests.
+      if (shot <= DEPART.pan + 0.1) {
+        const f = ease(Math.min(1, shot / DEPART.pan));
+        cam.set([panFrom[0] + (moored[0] - panFrom[0]) * f, panFrom[1] + (moored[1] - panFrom[1]) * f], { duration: 0 });
+      }
+      if (shot > 4.5) oldFilm = false;
+      const t = shot - opening;
+      // Still the opening shot: she lies as she is (touching her would bring the view straight to her).
+      if (t < 0) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+      if (t >= DEPART.steam && !backing) {
+        backing = true;
+        untrack(() => onbacking?.());
+      }
       if (t >= DEPART.ahead && !turned) {
         turned = true;
         untrack(() => onturn?.());
       }
-      if (t > 4.5) oldFilm = false;
-      departEffort = t < DEPART.steam ? 0 : t < DEPART.back[1] ? 0.35 : t < DEPART.ahead ? 0.2 : 1.1;
+
+      // (One light puff to begin with, then the steady working steam of backing out.)
+      departEffort = t < DEPART.steam ? 0 : t < DEPART.steam + 0.8 ? 0.6 : t < DEPART.back[1] ? 0.35 : t < DEPART.ahead ? 0.2 : 1.1;
       departWheel = t < DEPART.astern ? 'still' : t < DEPART.back[1] ? 'astern' : t < DEPART.ahead ? 'still' : 'ahead';
       const clamp = (x: number) => Math.max(0, Math.min(1, x));
       const span = DEPART.back[1] - DEPART.back[0];
@@ -577,7 +609,7 @@
   {/if}
 {/snippet}
 
-<div class="backdrop" class:play={mode === 'play'} class:jolt aria-hidden="true">
+<div class="backdrop" class:opening class:play={mode === 'play'} class:jolt aria-hidden="true">
   {#if sidecar && boat}
     <div class="map" bind:clientWidth={mapW} bind:clientHeight={mapH}>
       <TileMap base={ROOT} tiles={sidecar.tiles} {center} {scale} children={SHOW_PATH ? coursePath : undefined} />
@@ -653,6 +685,10 @@
     inset: 0;
     background: #000;
     animation: lift 1.8s ease-in 0.5s both;
+  }
+  /* The opening shot: the chart comes up out of the black slowly, as the view pans in. */
+  .opening .felt {
+    animation: lift 6s ease-in-out 0.3s both;
   }
   @keyframes lift {
     from {
