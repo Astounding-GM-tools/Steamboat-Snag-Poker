@@ -487,12 +487,13 @@
    */
   const DEPART = {
     /**
-     * The opening shot, before any of it: the chart fades in as the view pans down the river (`pan`
-     * seconds, from `panFrom` map px up the channel) to rest on her at the landing, and lingers there.
+     * The opening shot, before any of it: the chart fades in as the view pans in from the west (`pan`
+     * seconds, from `panFrom` map px west of her), over the land and onto the river, to rest on her at
+     * the landing; and lingers there.
      */
     pan: 7,
     linger: 3,
-    panFrom: 2000,
+    panFrom: 1300,
     /** Seconds after the opening shot: the first steam, the wheel astern, backing out (from, to), the wheel ahead. */
     steam: 0,
     astern: 1,
@@ -535,8 +536,8 @@
     const off: Pt = [nx * DEPART.out * length, ny * DEPART.out * length];
     const down: Pt = [-Math.cos(up) * DEPART.drift * length, -Math.sin(up) * DEPART.drift * length];
     const ease = (f: number) => f * f * (3 - 2 * f);
-    /** Where the opening pan starts: up the channel from her. */
-    const panFrom = s.point(DEPART.panFrom);
+    /** Where the opening pan starts: due west of her, inland (the chart's x runs east). */
+    const panFrom: Pt = [moored[0] - DEPART.panFrom, moored[1]];
     const opening = DEPART.pan + DEPART.linger;
     untrack(() => {
       boat = { p: moored, heading: into };
