@@ -29,7 +29,7 @@ export const saloon: Step[] = [
     },
     solved: [],
   },
-  { type: 'caption', lines: [{ text: 'The crew stay aboard, playing among themselves while Lars sings.' }] },
+  { type: 'caption', lines: [{ text: 'The crew stay aboard, playing Snag for buttons while Lars sings.' }] },
   { type: 'dawn' },
 ];
 
