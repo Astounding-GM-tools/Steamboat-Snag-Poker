@@ -13,7 +13,7 @@
 #                  REFUSED before 2027-01-01 (not public domain until then).
 #   put DIR PREFIX any folder -> <bucket>/PREFIX/ (Content-Type by extension, Cache-Control from
 #                  --cache, default 1 hour). The 1926 guard applies here too.
-#   verify         curl -I the public URLs: status, type, cache-control, range support, CORS.
+#   verify         GET the public URLs (headers only shown): status, type, cache-control, range support, CORS.
 #
 # Options
 #   --dry-run      list what would go (counts, sizes, headers); upload nothing. With rclone and the
@@ -214,7 +214,7 @@ case "$target" in
     urls+=(music/tulsablues.mp3 music/asilikeit.mp3)
     for u in "${urls[@]}"; do
       echo "$PUBLIC_HOST/$u"
-      curl -sSI -H "Origin: $GAME_ORIGIN" "$PUBLIC_HOST/$u" | tr -d '\r' |
+      curl -sS -o /dev/null -D - -H "Origin: $GAME_ORIGIN" "$PUBLIC_HOST/$u" | tr -d '\r' |
         grep -iE '^(HTTP/|content-type|content-length|cache-control|accept-ranges|access-control-allow-origin|cf-cache-status)' | sed 's/^/    /'
     done
     echo "Range (a seek in a record: want 206 and content-range):"

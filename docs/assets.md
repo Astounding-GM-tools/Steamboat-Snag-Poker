@@ -147,7 +147,7 @@ The 1926 guard applies to `put` too.
 scripts/upload-assets.sh verify
 ```
 
-This makes `curl -I` requests to the public host, sending `Origin: https://snag.astounding.games`
+This makes GET requests (headers shown, bodies thrown away) to the public host, sending `Origin: https://snag.astounding.games`
 the way the game does. For each file it shows the status, content type, length, cache-control,
 `accept-ranges`, `access-control-allow-origin` and `cf-cache-status`. It then checks a byte-range
 request on a record (want `206` with `content-range`, which is what lets you seek in a record),
@@ -158,13 +158,14 @@ and that a 1926 side is *not* there (want `404`).
 - The records were `200`, `audio/mpeg`, with `accept-ranges: bytes`, and the range request gave
   `206`.
 - They had **no cache-control**, **no access-control-allow-origin** and
-  **`cf-cache-status: DYNAMIC`** (not cached at the edge). The checklist below fixes all three.
+  `cf-cache-status: DYNAMIC`. That last one was a false alarm: HEAD requests (`curl -I`) always say
+  DYNAMIC. A GET shows `MISS`, then `HIT`. The checklist below fixes the first two.
 - The tiles and JSON were `404` (not up yet), and `midnightmama.mp3` was `404` (good).
 
 To check one file by hand:
 
 ```bash
-curl -sI -H 'Origin: https://snag.astounding.games' https://snag-assets.astounding.games/maptiles/mrc-1894/tiles/0/0/0.webp
+curl -s -o /dev/null -D - -H "Origin: https://snag.astounding.games" https://snag-assets.astounding.games/maptiles/mrc-1894/tiles/0/0/0.webp
 ```
 
 ## After MapWright re-tiles
@@ -255,8 +256,7 @@ The tiles are plain `<img>` tags and don't need it.
 - [ ] **A cache rule:** **Caching** → **Cache Rules** → **Create** → when the hostname equals
       `snag-assets.astounding.games` → **Eligible for cache**; Edge TTL *Use cache-control header
       if present*; Browser TTL *Respect origin*. Without it, `.json` isn't cached at all (it's not
-      in Cloudflare's default extension list), and on 2026-11-17 even the mp3s came back
-      `cf-cache-status: DYNAMIC`.
+      in Cloudflare's default extension list). Check with a GET, not `curl -I`: a HEAD request always says `DYNAMIC`.
 - [ ] Run `verify` twice. The second run should show `cf-cache-status: HIT` (`MISS` the first
       time).
 
