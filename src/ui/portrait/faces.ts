@@ -631,8 +631,154 @@ const finlay: Face = {
   rest: { mouthCurve: 0.65 },
 };
 
+// The debris (story/characters/debris.ts): drafts, for review (docs/drafts-2026-11-17.md).
+
+/**
+ * A crate, adrift: a box of planks, a little askew, a nail head for a nose,
+ * the river lapping at its bottom slat. Soggy, and so hopeful about it: someone
+ * might fish it out. Worried brows that are really just eager ones.
+ */
+const crate: Face = {
+  head: { outline: 'M15 24 L83 19 L87 86 L13 90 Z' },
+  fill: 'tan',
+  eyes: { y: 45, gap: 13, rx: 4.6, ry: 6.4 },
+  brows: { y: 33, gap: 13, length: 11, weight: 3, arch: 2.5 },
+  nose: { kind: 'button', y: 56, size: 2.6, tint: 'grey' },
+  mouth: { y: 67, width: 12 },
+  parts: [
+    // The seams between the slats, and the slats' grain.
+    { layer: 'face', d: 'M14.4 46 L85.2 42 M13.6 68 L86.3 65', fill: 'none', stroke: 'ink', width: 1.8 },
+    { layer: 'face', d: 'M22 31 C30 30 34 32 42 30 M60 28 C66 27 70 29 76 27 M70 54 C74 53 78 55 82 53 M19 76 C25 75 29 77 34 75', fill: 'none', stroke: 'grey', width: 1.2 },
+    // Nails at the corners.
+    { layer: 'face', d: 'M20 29 h.1 M78 25 h.1 M81 82 h.1 M19 84 h.1', fill: 'none', stroke: 'ink', width: 3 },
+    // A corner of the top slat, sprung and drooping.
+    { layer: 'front', d: 'M83 19 L95 24 L93 29 L84 27 Z', fill: 'tan', stroke: 'ink', width: 2 },
+    // Damp: a dark tide mark along the bottom, and a drip.
+    { layer: 'face', d: 'M13.4 80 C30 78 40 82 52 79 C64 77 74 81 86.7 78 L87 86 L13 90 Z', fill: 'umber' },
+    { layer: 'front', d: 'M30 80 C29 84 28 86 30 87 C32 86 31 84 30 80 Z M64 79 C63 82 62 84 64 85 C66 84 65 82 64 79 Z', fill: 'paper', stroke: 'ink', width: 1.2 },
+    // The river, lapping.
+    { layer: 'front', d: 'M0 88 C10 82 18 90 28 85 C38 80 46 89 56 84 C66 79 76 88 86 83 C92 80 96 84 100 83 L100 104 L0 104 Z', fill: 'grey', stroke: 'ink', width: 2 },
+    { layer: 'front', d: 'M14 94 C22 91 28 95 36 92 M58 93 C66 90 72 94 82 91', fill: 'none', stroke: 'paper', width: 1.6 },
+  ],
+  blink: 3.2,
+  temper: 1.1,
+  zoom: 1.02,
+  // Hopeful already: brows up, a small smile. Its nerves are a wobble, and wide eyes.
+  rest: { browLift: 2, browTilt: -0.6, mouthCurve: 0.35, lookY: -0.3 },
+  moods: { nervous: { browLift: 3, browTilt: -1.2, eyeOpen: 1.25, mouthCurve: -0.25, wobble: 1, lean: 5 } },
+  dry: true,
+};
+
+/**
+ * A sawyer: a whole tree, roots in the mud, nodding up and down in the current.
+ * Bark for skin, a knot for a nose, the stubs of branches up top, and the
+ * patience of something that has all spring. Heavy lids, a slow blink, a smile
+ * that's mostly on one side.
+ */
+const sawyer: Face = {
+  head: { outline: 'M26 104 C28 80 25 56 27 36 C28 22 32 12 38 6 L46 14 L52 4 L60 13 L66 7 C71 16 73 28 74 40 C75 60 72 82 75 104 Z' },
+  fill: 'umber',
+  eyes: { y: 44, gap: 10.5, rx: 3.8, ry: 5, soft: true },
+  brows: { y: 36, gap: 10.5, length: 10, weight: 3.6, arch: 1 },
+  nose: { kind: 'hook', y: 54, size: 4.2 },
+  mouth: { y: 68, width: 11 },
+  parts: [
+    // Bark: long furrows down the trunk.
+    { layer: 'face', d: 'M33 24 C31 34 32 40 31 50 M35 74 C33 84 34 92 33 102 M67 22 C69 32 68 42 69 50 M66 76 C68 86 67 94 68 102 M50 82 C49 90 51 96 50 104', fill: 'none', stroke: 'ink', width: 1.5 },
+    // A knot, and a twig with two leaves: spring's here, even for a sawyer.
+    { layer: 'face', d: 'M56 86 C59 83 63 85 62 89 C60 92 56 91 56 86 Z', fill: 'ink' },
+    { layer: 'over', d: 'M74 58 L90 50', fill: 'none', stroke: 'ink', width: 3 },
+    { layer: 'over', d: 'M84 53 C86 45 93 44 94 46 C93 51 88 54 84 53 Z M88 51 C93 53 96 58 95 59 C90 59 88 55 88 51 Z', fill: 'paper', stroke: 'ink', width: 1.6 },
+    // The broken crown: stubs of branches.
+    { layer: 'over', d: 'M38 8 L30 -2 M66 9 L76 0 M52 6 L53 -4', fill: 'none', stroke: 'ink', width: 3.4 },
+    // Wet to the waterline, and the current about it.
+    { layer: 'front', d: 'M0 84 C12 79 20 87 30 83 C40 79 46 86 54 82 C64 78 72 86 82 82 C90 79 96 83 100 82 L100 104 L0 104 Z', fill: 'grey', stroke: 'ink', width: 2 },
+    { layer: 'front', d: 'M18 91 C26 88 32 92 40 89 M60 90 C68 87 74 91 84 88', fill: 'none', stroke: 'paper', width: 1.6 },
+  ],
+  blink: 9.5,
+  slowBlink: true,
+  temper: 0.7,
+  // Sly, and in no hurry: lids half down, one brow up, the smile on one side, nodding with the current.
+  rest: { eyeOpen: 0.6, browCock: 2, mouthCurve: 0.3, smirk: 0.5, lean: 4, lookX: 0.25 },
+  moods: { nervous: { eyeOpen: 0.9, browLift: 1, mouthCurve: 0, smirk: 0.2, lean: -3, lookX: -0.4 } },
+  dry: true,
+  tic: { effect: 'shifty', every: 9, when: 'confident' },
+};
+
+/**
+ * A deadhead: a waterlogged log floating on end, the top of it a hand under the
+ * surface. You see its face end-on, rings and all, with the river running over
+ * its crown. Sullen and lurking: low brows, eyes looking up from under them, a
+ * mouth turned down at the world. It has a grievance, and that grievance is hulls.
+ */
+const deadhead: Face = {
+  head: { outline: 'M50 20 C74 20 86 36 86 56 C86 78 72 94 50 94 C28 94 14 78 14 56 C14 36 26 20 50 20 Z' },
+  fill: 'umber',
+  eyes: { y: 54, gap: 12, rx: 4.2, ry: 4.6, soft: true },
+  brows: { y: 46, gap: 12, length: 13, weight: 4.4, arch: -0.5 },
+  mouth: { y: 74, width: 14 },
+  parts: [
+    // The rings, and a check split in from the edge.
+    { layer: 'face', d: 'M50 28 C68 28 78 40 78 55 C78 72 66 84 50 84 C34 84 22 72 22 55 C22 40 32 28 50 28 Z', fill: 'none', stroke: 'ink', width: 1.2 },
+    { layer: 'face', d: 'M86 60 L74 63 L76 68', fill: 'none', stroke: 'ink', width: 1.8 },
+    // Weed trailing off the bark.
+    { layer: 'front', d: 'M18 72 C14 80 18 86 13 94 M22 80 C20 88 24 92 21 100 M80 78 C84 86 80 92 85 100', fill: 'none', stroke: 'ink', width: 1.8 },
+    // The river running over the top of it: it lies a hand under the surface.
+    { layer: 'front', d: 'M0 36 C12 30 22 39 34 33 C46 27 56 37 68 31 C80 25 90 34 100 30 L100 -4 L0 -4 Z', fill: 'grey', stroke: 'ink', width: 2 },
+    { layer: 'front', d: 'M6 22 C16 18 24 24 34 20 M58 23 C68 19 76 25 88 20 M28 12 C36 9 42 13 50 10', fill: 'none', stroke: 'paper', width: 1.8 },
+  ],
+  blink: 8,
+  temper: 0.5,
+  zoom: 1.06,
+  // Sulking already: cross brows, eyes up from under them, a frown.
+  rest: { browTilt: 1.2, browLift: -1, eyeOpen: 0.7, lookY: -0.5, mouthCurve: -0.45 },
+  moods: { confident: { browTilt: 1.4, mouthCurve: 0.1, smirk: 0.6, lookX: 0.4, eyeOpen: 0.6 } },
+  dry: true,
+  tic: { effect: 'shifty', every: 7 },
+};
+
+/**
+ * A drift pile: brush, branches, and a barn door riding in the middle of it
+ * all, which makes a fine face. Planks, battens, a horseshoe still nailed on
+ * for luck (not yours), and sticks in every direction. A big grin under cross
+ * brows: delighted to see you, and heading for your wheel.
+ */
+const driftPile: Face = {
+  head: { outline: 'M16 24 L80 14 L87 80 L20 90 Z' },
+  fill: 'sand',
+  eyes: { y: 44, gap: 13, rx: 5, ry: 6.6 },
+  brows: { y: 32, gap: 13, length: 12, weight: 4, arch: 1 },
+  nose: { kind: 'button', y: 55, size: 3, tint: 'grey' },
+  mouth: { y: 69, width: 18 },
+  parts: [
+    // Brush behind it: branches every which way.
+    { layer: 'back', d: 'M20 24 L2 8 M10 16 L4 22 M22 50 L-2 46 M18 76 L0 92 M6 84 L2 78 M80 22 L98 4 M90 12 L98 16 M84 48 L102 54 M82 80 L100 96 M92 88 L98 82 M48 18 L44 0 M62 17 L70 2', fill: 'none', stroke: 'ink', width: 3 },
+    { layer: 'back', d: 'M4 34 C10 28 16 32 18 38 C12 40 8 40 4 34 Z M96 66 C90 60 84 64 82 70 C88 72 92 72 96 66 Z', fill: 'grey', stroke: 'ink', width: 1.6 },
+    // The door's planks, and its battens.
+    { layer: 'face', d: 'M32 21.5 L36 87.5 M48 19 L52 85 M64 16.5 L69 83', fill: 'none', stroke: 'ink', width: 1.4 },
+    { layer: 'face', d: 'M17 31 L80 21 M20 82 L86 72', fill: 'none', stroke: 'ink', width: 5 },
+    { layer: 'face', d: 'M17 31 L80 21 M20 82 L86 72', fill: 'none', stroke: 'grey', width: 2.8 },
+    // A horseshoe, still nailed on, for somebody's luck.
+    { layer: 'face', d: 'M43 22 C44 30 56 28 55 20', fill: 'none', stroke: 'ink', width: 2.6 },
+    // Brush caught across its corners, a branch through it, and a bird's nest snagged on top.
+    { layer: 'over', d: 'M-2 60 L22 63 M78 64 L100 66 M2 98 L34 78 M10 100 L28 84 M70 98 L98 74 M86 100 L94 86 M6 14 L28 34', fill: 'none', stroke: 'ink', width: 3.4 },
+    { layer: 'over', d: 'M8 92 C14 86 18 94 24 88 C28 84 32 92 38 86 M66 90 C72 84 76 92 82 86 C86 82 90 88 96 82', fill: 'none', stroke: 'ink', width: 1.6 },
+    { layer: 'over', d: 'M76 12 C78 4 92 4 94 12 C90 16 80 16 76 12 Z', fill: 'grey', stroke: 'ink', width: 1.8 },
+    { layer: 'over', d: 'M78 10 L92 8 M80 13 L90 11', fill: 'none', stroke: 'ink', width: 1 },
+  ],
+  blink: 4.4,
+  temper: 1,
+  zoom: 1.02,
+  // Cheerfully menacing: a grin under cross brows, already.
+  rest: { browTilt: 1, mouthCurve: 0.7, lean: -3 },
+  // Rattled, it keeps the grin and loses the brows.
+  moods: { nervous: { browTilt: -0.8, browLift: 2, mouthCurve: 0.45, wobble: 0.8, eyeOpen: 1.2 } },
+  dry: true,
+  tic: { effect: 'twitch', every: 6 },
+};
+
 /** By the id they go by at the table and in the story. */
-export const FACES = { gus, willie, lars, sandbar: sandy, iceSheet, gaylord, steamboatBill, morag, konrad, harbourMaster, foreman, ellie, tripp, rourke, odds, lenny, maxMoritz, ignatz, nemo, walrus, eliza, finlay };
+export const FACES = { gus, willie, lars, sandbar: sandy, iceSheet, gaylord, steamboatBill, morag, konrad, harbourMaster, foreman, ellie, tripp, rourke, odds, lenny, maxMoritz, ignatz, nemo, walrus, eliza, finlay, crate, sawyer, deadhead, driftPile };
 export type FaceId = keyof typeof FACES;
 
 export const hasFace = (id: string): id is FaceId => id in FACES;

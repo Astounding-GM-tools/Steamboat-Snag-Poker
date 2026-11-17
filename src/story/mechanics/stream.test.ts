@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { STREAM_RULES, busy, nextOnRiver, paceDuringHand, roomAhead, type Fork, type StreamState } from './stream';
+import { STREAM_RULES, busy, creepRoom, nextOnRiver, paceDuringHand, roomAhead, type Fork, type StreamState } from './stream';
 import { Rng } from '../../engine/rng';
 
 const PACE = 1 / 320;
@@ -138,5 +138,31 @@ describe('the syncopated event stream', () => {
     const quick = steam(() => 12);
     const slow = steam(() => 75);
     expect(quick.hands.length).toBeGreaterThanOrEqual(slow.hands.length);
+  });
+});
+
+describe('creeping on during a hand', () => {
+  it('never into a fork’s warning, the main event’s aim, or past the stretch’s end, with the margin to spare', () => {
+    const margin = STREAM_RULES.marginSeconds * PACE;
+    for (let t = 0; t < STRETCH.to; t += 0.003) {
+      const s = state(t);
+      const room = creepRoom(s);
+      expect(room).toBeGreaterThanOrEqual(0);
+      const end = t + room;
+      if (room > 0) {
+        expect(end).toBeLessThanOrEqual(STRETCH.to - margin + 1e-9);
+        for (const [a] of zones()) if (a > t) expect(end).toBeLessThanOrEqual(a - margin + 1e-9);
+        const aim = (WINDOW[0] + WINDOW[1]) / 2;
+        if (aim > t) expect(end).toBeLessThanOrEqual(aim - margin + 1e-9);
+      }
+    }
+  });
+  it('leaves room for the creep wherever debris is called', () => {
+    // Called with room for its lead, a crawl's worth of hand and the margin: met, there's still room to creep.
+    for (let t = 0; t < STRETCH.to; t += 0.002) {
+      const call = nextOnRiver(state(t));
+      if (call.kind !== 'debris') continue;
+      expect(creepRoom(state(call.at))).toBeGreaterThan(0);
+    }
   });
 });

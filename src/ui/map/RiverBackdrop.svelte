@@ -17,6 +17,9 @@
   import { course as forked, route, type Pt, type TravelSidecar } from './route';
   import { loadLeg, MAP_ROOT as ROOT } from './legs';
   import { voyage } from './tuning.svelte';
+  import { bendLeg } from './nudges';
+  import { nudges } from './nudgeStore.svelte';
+  import { creepZoom } from './creep';
   import BoatTop from '../boat/BoatTop.svelte';
   import type { Built } from '../boat/boat';
 
@@ -59,8 +62,12 @@
     });
   });
 
+  /** The leg with the course's nudges in (nudges.ts): the channel bent by hand where the chart's calculation went wrong. */
+  const bent = $derived(sidecar ? bendLeg(sidecar, nudges.list) : null);
   /** The channel, round the islands by the passages chosen. */
-  const course = $derived(sidecar ? forked(route(sidecar.path.px[0], sidecar.stops), leg, sidecar.islands ?? [], lanes) : null);
+  const course = $derived(bent ? forked(route(bent.path.px[0], bent.stops), leg, bent.islands ?? [], lanes) : null);
+  /** Development only (`?nudge`): the nudge overlay, to bend the course by eye. Never in a build. */
+  const nudgeEditor = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('nudge') ? import('./NudgeEditor.svelte').then((m) => m.default) : null;
 
   /** Corners cut off a line (Chaikin's), `rounds` times: the chart's channel as a boat would sail it, in curves. */
   function rounded(line: readonly Pt[], rounds: number): Pt[] {
@@ -128,16 +135,47 @@
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
   const zoom = new Tween(untrack(() => (departure ? voyage.dockZoom : voyage.steamZoom)), { duration: 1100, easing: cubicInOut });
   let wasDeparting = untrack(() => !!departure);
+  /** Motion reduced: a hand is a plain stop, the view no closer as it goes on. */
+  const STILL = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /** When play began (a table came up), and how long the view takes to come down to the table's height. */
+  let playSince = 0;
+  const SETTLE_MS = 1100;
+  let wasMode: Props['mode'] | null = null;
+  // (Before the view's effects, so they all see it.)
+  let playing = false;
+  $effect.pre(() => {
+    const p = mode === 'play';
+    if (p && !playing) playSince = performance.now();
+    playing = p;
+  });
   $effect(() => {
-    const at = !!departure;
+    const at = !!departure, m = mode;
     untrack(() => {
       if (at) zoom.set(voyage.dockZoom, { duration: 0 });
       // Under way from the landing: the camera draws back slowly to the river's height.
       else if (wasDeparting) zoom.set(voyage.steamZoom, { duration: 7000 });
-      else zoom.target = mode === 'play' ? voyage.playZoom : voyage.steamZoom;
+      else if (m === 'play') {
+        if (wasMode !== 'play') zoom.set(voyage.playZoom, { duration: SETTLE_MS });
+      }
+      // The hand settled: back out to the river's height, gently (she's getting under way again meanwhile).
+      else if (wasMode === 'play') zoom.set(voyage.steamZoom, { duration: STILL ? SETTLE_MS : voyage.backOutMs });
+      else zoom.target = voyage.steamZoom;
       wasDeparting = at;
+      wasMode = m;
     });
-    void mode;
+  });
+  /**
+   * At play on the river, the longer it goes on the closer the view comes (src/ui/map/creep.ts), towards
+   * the chart's full detail and never past it. Stepped four times a second, not every frame: the steps
+   * are far under a pixel, and the blurred chart under the table is repainted only then.
+   */
+  $effect(() => {
+    if (mode !== 'play' || departure || STILL) return;
+    const timer = setInterval(() => {
+      const s = (performance.now() - playSince - SETTLE_MS) / 1000;
+      if (s > 0) zoom.set(creepZoom(s, voyage.playZoom, voyage.handZoom, voyage.closeInTail), { duration: 0 });
+    }, 250);
+    return () => clearInterval(timer);
   });
   /**
    * In close (at a landing) she's drawn bigger, so her wheel can be seen turning, but not as much bigger
@@ -162,8 +200,8 @@
   const TURN_RADIUS = 1.1;
   /** The size she steers as (in `boatSize` terms), however small she's drawn: wide, unhurried turns. */
   const STEER_SIZE = 1.5;
-  /** Development only (`?path` in the address): her course drawn on the chart, and her spot on it. */
-  const SHOW_PATH = import.meta.env.DEV && typeof location !== 'undefined' && new URLSearchParams(location.search).has('path');
+  /** Development only (`?path` in the address, or `?nudge`): her course drawn on the chart, and her spot on it. */
+  const SHOW_PATH = import.meta.env.DEV && typeof location !== 'undefined' && /[?&](path|nudge)\b/.test(location.search);
   /**
    * How hard she's drawn back to her spot on the way: for every length she steams, this share of the gap
    * closes. Steering alone, as big as she's drawn, she'd swing half a length wide of the channel at a
@@ -237,7 +275,9 @@
         return;
       }
       if (follow) {
-        if (cam.target[0] !== b.p[0] || cam.target[1] !== b.p[1]) cam.set(b.p, { duration: mode === 'play' ? 1100 : 0 });
+        // At play the view comes down onto her spot, then keeps on it as she creeps (in steps under a pixel: no tween restarted each time).
+        const settling = mode === 'play' ? Math.max(0, playSince + SETTLE_MS - performance.now()) : 0;
+        if (cam.target[0] !== b.p[0] || cam.target[1] !== b.p[1]) cam.set(b.p, { duration: settling });
         return;
       }
       const W = innerWidth, H = innerHeight;
@@ -264,6 +304,8 @@
     lean.target = ahead ? 0.65 : 0;
   });
   const center = $derived.by<Pt>(() => {
+    // Development (`?nudge`): the view held still while the course is bent, she steaming on out of it.
+    if (nudges.hold) return nudges.hold;
     const [cx, cy] = cam.current, k = lean.current, a = leanTo ?? cam.current;
     return [cx + k * (a[0] - cx), cy + k * (a[1] - cy)];
   });
@@ -652,6 +694,9 @@
   <!-- The felt: black over the map, lifted off it as she sets out. -->
   <div class="felt"></div>
 </div>
+{#if nudgeEditor && sailed}
+  {#await nudgeEditor then NudgeEditor}<NudgeEditor line={sailed.line} {center} {scale} width={mapW} height={mapH} />{/await}
+{/if}
 
 <style>
   .backdrop {

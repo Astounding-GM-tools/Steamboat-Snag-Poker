@@ -11,6 +11,16 @@ export const voyage = $state({
   /** The map's height as log2 of its scale (screen px per map px; a map px is 2 m): steaming, and at play. */
   steamZoom: -1.6,
   playZoom: -1.4,
+  /**
+   * A hand on the river (src/ui/map/creep.ts): she creeps on at her real pace, slowing by a factor of e
+   * every `creepTail` seconds (so she comes ever more slowly to about 160 map px, 300 m, on); the view
+   * closes in from `playZoom` towards `handZoom` (the chart's full detail), a share 1/e of the rest every
+   * `closeInTail` seconds; settled, it draws back out to the river's height over `backOutMs`.
+   */
+  creepTail: 90,
+  handZoom: 0,
+  closeInTail: 240,
+  backOutMs: 3500,
   /** At a landing, before she sets out: in close (the tiles' own detail), the boat big enough to see her wheel. */
   dockZoom: 0,
   /**

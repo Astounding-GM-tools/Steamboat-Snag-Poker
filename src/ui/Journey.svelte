@@ -6,6 +6,7 @@
     ITEMS,
     chooseLane,
     meetDebris,
+    driftOnRiver,
     meetOnRiver,
     passIsland,
     writeLog,
@@ -43,13 +44,14 @@
   import RiverBackdrop from './map/RiverBackdrop.svelte';
   import { voyage } from './map/tuning.svelte';
   import { loadLeg } from './map/legs';
-  import { nextOnRiver } from '../story/mechanics/stream';
+  import { creepRoom, nextOnRiver } from '../story/mechanics/stream';
+  import { REAL_PACE_PX, crept } from './map/creep';
   import { crateAnte, crateAnteFor, debrisAt, debrisRecord, debrisStep, type Debris } from '../story/characters/debris';
   import TypedLine from './TypedLine.svelte';
   import LogView from './LogView.svelte';
   import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, LEAVING_MUSCATINE, castOffRecord, islandRecord, leftMuscatine, tradeRecord } from '../story/log';
   import { DOCK_FEE_AMOUNT } from '../story/numbers';
-  import { islandKey, sides, type Island, type Pt, type TravelSidecar } from './map/route';
+  import { islandKey, route, sides, type Island, type Pt, type TravelSidecar } from './map/route';
   import { heavy } from './heavy';
   import ShipPage from './ShipPage.svelte';
   import Speech, { autoMs, type SpeechLine } from './Speech.svelte';
@@ -165,7 +167,8 @@
   const engineEffort = $derived(racing ? EFFORT.racing : bound === 'downbound' ? EFFORT.downstream : EFFORT.upstream);
   $effect(() => {
     if (step?.type !== 'steam') {
-      if (journey.river) boatT = journey.river.t;
+      // (At a hand on the river she may have crept on: see `creeping`.)
+      if (journey.river) boatT = journey.river.t + creptT;
       return;
     }
     if (departing) return;
@@ -201,7 +204,9 @@
       // From a standstill she gathers way: up to her pace over the first few seconds (eased), not all at once.
       const way = Math.min(1, (now - began) / 1000 / (step.landing ? GATHER_WAY_LANDING_S : GATHER_WAY_S));
       const gathered = way * way * (3 - 2 * way);
-      boatT += dir * Math.min(Math.abs(to - boatT), (dt / legSeconds) * Math.max(0.02, gathered) * (racing ? voyage.race : 1));
+      // (Never slower than a real boat's pace: off a hand on the river she's under way already, at that.)
+      const least = legPx ? Math.max(0.02, (REAL_PACE_PX * legSeconds) / legPx) : 0.02;
+      boatT += dir * Math.min(Math.abs(to - boatT), (dt / legSeconds) * Math.max(least, gathered) * (racing ? voyage.race : 1));
       // Debris called earlier, reached: she stops for its hand.
       if (adrift && boatT >= adrift.t) {
         const met = adrift;
@@ -321,6 +326,57 @@
     if (!id) return;
     loadLeg(id).then((s) => {
       if (leg === id) legData = s;
+    });
+  });
+  /** The leg's length on the chart (map px): her real pace, as the leg's `t`. */
+  const legPx = $derived(legData ? route(legData.path.px[0], legData.stops).length : 0);
+
+  /**
+   * A hand on the river, at her real pace (src/ui/map/creep.ts): she doesn't stop dead, she slows to a
+   * real boat's pace and creeps on while it's played, slower the longer it goes, the view seen from her
+   * deck (the map does that part). Not aground (The Sandbar holds her fast), not with motion reduced (a
+   * plain stop), and never into what the stream keeps clear for (`creepRoom`). Where she's crept to
+   * (`creptT`, past where she stopped) is where the rest of the stretch starts from, once she's done.
+   */
+  const stillMotion = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const creeping = $derived(!stillMotion && !endless && step?.type === 'encounter' && !step.stuck && !!journey.river && legPx > 0);
+  let creptT = 0;
+  /** How often she's moved on while creeping (ms): four times a second, at her real pace, is under a pixel each. */
+  const CREEP_MS = 250;
+  $effect(() => {
+    if (!creeping) return;
+    const plan = untrack(() => {
+      const river = journey.river!;
+      const rest = journey.pending.find((p) => p.type === 'steam');
+      // The stream reckons upbound (t rising), and so does the creep: downbound, she stops for now.
+      if (rest?.type !== 'steam' || rest.leg !== river.leg || rest.to <= river.t) return null;
+      const from = river.t, to = rest.to, at = (share: number) => from + share * (to - from);
+      const room = creepRoom({
+        t: from,
+        to,
+        pace: 1 / (rest.seconds ?? voyage.legSeconds),
+        forks: (legData?.islands ?? []).filter((i) => i.to_t > from && i.from_t < to).map((i) => ({ from: i.from_t, to: i.to_t })),
+        ...(rest.main ? { main: { window: [at(rest.main.window[0]), at(rest.main.window[1])] as [number, number] } } : {}),
+        sinceFill: 0,
+      });
+      return { from, room, px: legPx };
+    });
+    if (!plan) return;
+    const t0 = performance.now();
+    const timer = setInterval(() => {
+      creptT = Math.min(plan.room, crept((performance.now() - t0) / 1000, voyage.creepTail) / plan.px);
+      boatT = plan.from + creptT;
+    }, CREEP_MS);
+    return () => clearInterval(timer);
+  });
+  // Done creeping (the hand's settled, or she's run aground): the stretch carries on from where she's got to.
+  let wasCreeping = false;
+  $effect.pre(() => {
+    const c = creeping;
+    untrack(() => {
+      if (wasCreeping && !c && creptT && journey.river) journey = driftOnRiver(journey, journey.river.t + creptT);
+      if (!c) creptT = 0;
+      wasCreeping = c;
     });
   });
   /** The islands on this stretch, in the order she meets them. (Port or starboard picks the way round: nothing's in the passages.) */

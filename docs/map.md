@@ -69,6 +69,21 @@ down; "Gilbert" to "Bettendorf" (the town renamed in 1903; the sheets still read
   the `?path` view where a nudge is dragged out (a spot, a push, a reach), bending the line smoothly
   there. Nudges kept in their own file in global pixels, applied on load: a re-export never loses them,
   and every leg over that water (up and down) gets the fix.
+
+  *How to nudge* (built 2026-11-16). Run the dev server and open the game with `?nudge` in the address
+  (it shows the red course too, as `?path` does); pick a scene that steams the water in question (the
+  dev scene "Endless amble: the whole river" covers it all; hold Skip to race there). Drag the red line
+  where it should go: that's a nudge, its spot where you grabbed and its push as far as you drag. Its
+  reach is the dashed circle (300 px, 600 m, to start; the wheel over its dot or handle, or `[` and `]`,
+  makes it smaller or bigger). Drag the red handle to change the push, the blue dot to move the spot;
+  Delete takes the picked one away. **Freeze view** holds the view still while you work (she steams on
+  out of it; untick to catch her up). **Save to repo** writes them all to `src/story/map/nudges.json`
+  (through the dev server: `nudgeFile` in `vite.config.ts`), ready to commit; **Copy** is the fallback
+  (on a phone over `--host`, where the clipboard won't take it, a box to copy from). The bend is
+  `bend` in `src/ui/map/nudges.ts`: every point within the reach moves by the push times a cosine
+  falloff, the line cut finer there first; nothing beyond the reach moves. It's applied where the
+  map builds her course (`RiverBackdrop`), to the channel and the islands' passages: the stops and
+  islands go by `t`, so the story's places stay put. None of the overlay is in a build.
 - **The opening, slower.** Black; the chart fades in off to the side and pans along the river as it
   does, till it rests on Muscatine. The header: just "Muscatine". We linger: it's the opening shot,
   and we have time. A puff of steam; only then does she back out, gently ("The first day of spring");
@@ -81,6 +96,9 @@ down; "Gilbert" to "Bettendorf" (the town renamed in 1903; the sheets still read
   zoom 0; steaming is at −1.6, so about three times closer before it blurs). When it's settled: back
   out, and up to speed gradually, as if she'd slowed to hoist the salvage aboard or ease past the snag.
   (Debris hands are one round: mostly they'd never get far into the zoom.)
+  *Built 2026-11-16:* `src/ui/map/creep.ts` (the curves; tuned in `tuning.svelte.ts`: `creepTail`,
+  `closeInTail`, `handZoom`, `backOutMs`), capped by the stream's `creepRoom`; the stretch carries on
+  from where she crept to (`driftOnRiver`). Aground (a `stuck` encounter) she holds still.
 - **An encounter: the great Sand Bank Robbery.**
 
 ## One river, one chart (decided 2026-11-15; not built)
