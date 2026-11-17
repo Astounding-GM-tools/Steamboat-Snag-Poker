@@ -172,6 +172,8 @@
   $effect(() => {
     if (mode !== 'play' || departure || STILL) return;
     const timer = setInterval(() => {
+      // Hidden (another tab, the window minimised), nothing to repaint: it's reckoned from the clock, so it catches up.
+      if (document.hidden) return;
       const s = (performance.now() - playSince - SETTLE_MS) / 1000;
       if (s > 0) zoom.set(creepZoom(s, voyage.playZoom, voyage.handZoom, voyage.closeInTail), { duration: 0 });
     }, 250);
@@ -251,7 +253,12 @@
       boat = { p: [ahead[0] + (there[0] - ahead[0]) * k, ahead[1] + (there[1] - ahead[1]) * k], heading };
     });
   });
-  const deg = $derived(boat ? (boat.heading * 180) / Math.PI : 0);
+  /**
+   * Her heading, to the nearest quarter of a degree. Cost, not look: every change re-renders her top view
+   * (some three dozen attributes, under the print filters) and she steers a hair each step, 30 times a
+   * second; a quarter degree swings her bow under a tenth of a pixel, and the derived stays put till it's crossed.
+   */
+  const deg = $derived(boat ? Math.round((boat.heading * 180) / Math.PI * 4) / 4 : 0);
 
   /**
    * The chart, moved like a chart on a table: it holds still while she steams across it, and when

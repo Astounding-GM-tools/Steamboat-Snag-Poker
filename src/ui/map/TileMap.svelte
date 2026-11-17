@@ -33,23 +33,42 @@
   const ox = $derived(width / 2 - center[0] * scale);
   const oy = $derived(height / 2 - center[1] * scale);
 
-  function layer(z: number) {
+  /**
+   * The tiles of level `z` in view, as a range of columns and rows. A string, so the derived below it holds
+   * still (and the list isn't rebuilt, URLs and all) until the view crosses a tile's edge: panning moves
+   * only the layer's transform, many frames for each tile it brings in.
+   */
+  function range(z: number) {
     const span = ts * 2 ** (tiles.max_zoom - z); // map pixels per tile
     const [w, h] = tiles.size_px;
     const x0 = Math.max(0, Math.floor(-ox / scale / span)), x1 = Math.min(Math.ceil(w / span) - 1, Math.floor((width - ox) / scale / span));
     const y0 = Math.max(0, Math.floor(-oy / scale / span)), y1 = Math.min(Math.ceil(h / span) - 1, Math.floor((height - oy) / scale / span));
-    const out: { url: string; left: number; top: number; size: number }[] = [];
+    return `${z} ${x0} ${x1} ${y0} ${y1}`;
+  }
+  function layer(key: string) {
+    const [z, x0, x1, y0, y1] = key.split(' ').map(Number);
+    const span = ts * 2 ** (tiles.max_zoom - z);
+    const out: { url: string; x: number; y: number; span: number }[] = [];
     for (let x = x0; x <= x1; x++)
       for (let y = y0; y <= y1; y++) {
         const url = base + tiles.url.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y));
-        if (!missing.has(url)) out.push({ url, left: x * span * scale, top: y * span * scale, size: span * scale });
+        if (!missing.has(url)) out.push({ url, x: x * span, y: y * span, span });
       }
     return out;
   }
 
-  const top = $derived(width ? layer(level) : []);
+  const topRange = $derived(width ? range(level) : '');
+  const top = $derived(topRange ? layer(topRange) : []);
   const sharp = $derived(top.every((t) => loaded.has(t.url)));
-  const under = $derived(width && !sharp ? layer(Math.max(tiles.min_zoom, level - 3)) : []);
+  const underRange = $derived(width && !sharp ? range(Math.max(tiles.min_zoom, level - 3)) : '');
+  const under = $derived(underRange ? layer(underRange) : []);
+  /**
+   * A tile's place and size on the layer (the same box as ever: `span * scale` across, half a pixel over,
+   * so no seam shows), as one transform on an image `ts` across. Cost, not look: while the view zooms (the
+   * opening shot, a table coming up, the creep), left, top, width and height on every tile were re-set each
+   * frame, and each a layout; a transform is only a repaint, which the zoom needs anyway.
+   */
+  const place = (t: { x: number; y: number; span: number }) => `translate(${t.x * scale}px, ${t.y * scale}px) scale(${(t.span * scale + 0.5) / ts})`;
 
   function gone(url: string) {
     missing = new Set(missing).add(url);
@@ -63,10 +82,10 @@
   <!-- The tiles sit still in their own layer; the layer moves (a transform, done by the compositor). -->
   <div class="tiles" style:transform="translate3d({ox}px, {oy}px, 0)">
   {#each under as t (t.url)}
-    <img src={t.url} alt="" style:left="{t.left}px" style:top="{t.top}px" style:width="{t.size + 0.5}px" style:height="{t.size + 0.5}px" onerror={() => gone(t.url)} />
+    <img src={t.url} alt="" width={ts} height={ts} style:transform={place(t)} onerror={() => gone(t.url)} />
   {/each}
   {#each top as t (t.url)}
-    <img src={t.url} alt="" style:left="{t.left}px" style:top="{t.top}px" style:width="{t.size + 0.5}px" style:height="{t.size + 0.5}px" onload={() => arrived(t.url)} onerror={() => gone(t.url)} />
+    <img src={t.url} alt="" width={ts} height={ts} style:transform={place(t)} onload={() => arrived(t.url)} onerror={() => gone(t.url)} />
   {/each}
   </div>
   {#if children}
@@ -93,6 +112,9 @@
   }
   img {
     position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: 0 0;
     user-select: none;
     pointer-events: none;
   }

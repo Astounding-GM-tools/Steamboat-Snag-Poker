@@ -364,6 +364,8 @@
     if (!plan) return;
     const t0 = performance.now();
     const timer = setInterval(() => {
+      // Hidden, no one to see her creep: reckoned from the clock, she's where she should be when it's shown again.
+      if (document.hidden) return;
       creptT = Math.min(plan.room, crept((performance.now() - t0) / 1000, voyage.creepTail) / plan.px);
       boatT = plan.from + creptT;
     }, CREEP_MS);
