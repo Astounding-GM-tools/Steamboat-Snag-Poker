@@ -60,7 +60,7 @@ export function breakfastTalk({ day, journey }: TalkContext): RoundScript {
     return {
       deal: [
         {
-          ...say('gaylord', ['Fearless and audacious. I see myself in you, Captain.', `${LOAN} dollars now, twice that back in two weeks. Should a third week begin, twice that again.`]),
+          ...say('gaylord', ['Fearless and audacious. I do see myself in you, Captain.', `${LOAN} dollars now, twice that back in two weeks. Should a third week begin, twice that again.`]),
           replies: [pass, { label: 'Done', effect: 'take', end: true }],
         },
       ],
@@ -70,8 +70,8 @@ export function breakfastTalk({ day, journey }: TalkContext): RoundScript {
 
 /** Gaylord in your seat, saying what he's about. */
 const SHOPTALK = {
-  flop: ['Never fall in love with a pair, Captain.', 'Note who stands pat. It’s the only honest thing a man does at this table.', 'I don’t play the cards. I play the price of the cards.'],
-  turn: ['Now we see who came to play and who came to pay.', 'A fee to see the River. Cheap, for what it tells me.', 'Patience. It’s the only edge that doesn’t wear down.'],
+  flop: ['Never fall in love with a pair, Captain.', 'Note who stands pat. It’s the only honest thing a man does at this table.', 'I don’t play the cards, I play the price of the cards.'],
+  turn: ['Now we see who came to play and who came to pay.', 'A fee to see the River. Cheap, for what it tells me.', 'Patience, now. Patience is an edge that doesn’t wear dull.'],
   river: ['Lay it down gently. You want them to think you’re sorry.', 'There. Never show more than you must.', 'The best hand is the one they believe.'],
 };
 export function hiredTalk({ hand, seed }: TalkContext): RoundScript {

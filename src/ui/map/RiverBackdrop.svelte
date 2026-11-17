@@ -19,6 +19,7 @@
   import { voyage } from './tuning.svelte';
   import { bendLeg } from './nudges';
   import { nudges } from './nudgeStore.svelte';
+  import { creepZoom } from './creep';
   import BoatTop from '../boat/BoatTop.svelte';
   import type { Built } from '../boat/boat';
 
@@ -134,16 +135,47 @@
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
   const zoom = new Tween(untrack(() => (departure ? voyage.dockZoom : voyage.steamZoom)), { duration: 1100, easing: cubicInOut });
   let wasDeparting = untrack(() => !!departure);
+  /** Motion reduced: a hand is a plain stop, the view no closer as it goes on. */
+  const STILL = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /** When play began (a table came up), and how long the view takes to come down to the table's height. */
+  let playSince = 0;
+  const SETTLE_MS = 1100;
+  let wasMode: Props['mode'] | null = null;
+  // (Before the view's effects, so they all see it.)
+  let playing = false;
+  $effect.pre(() => {
+    const p = mode === 'play';
+    if (p && !playing) playSince = performance.now();
+    playing = p;
+  });
   $effect(() => {
-    const at = !!departure;
+    const at = !!departure, m = mode;
     untrack(() => {
       if (at) zoom.set(voyage.dockZoom, { duration: 0 });
       // Under way from the landing: the camera draws back slowly to the river's height.
       else if (wasDeparting) zoom.set(voyage.steamZoom, { duration: 7000 });
-      else zoom.target = mode === 'play' ? voyage.playZoom : voyage.steamZoom;
+      else if (m === 'play') {
+        if (wasMode !== 'play') zoom.set(voyage.playZoom, { duration: SETTLE_MS });
+      }
+      // The hand settled: back out to the river's height, gently (she's getting under way again meanwhile).
+      else if (wasMode === 'play') zoom.set(voyage.steamZoom, { duration: STILL ? SETTLE_MS : voyage.backOutMs });
+      else zoom.target = voyage.steamZoom;
       wasDeparting = at;
+      wasMode = m;
     });
-    void mode;
+  });
+  /**
+   * At play on the river, the longer it goes on the closer the view comes (src/ui/map/creep.ts), towards
+   * the chart's full detail and never past it. Stepped four times a second, not every frame: the steps
+   * are far under a pixel, and the blurred chart under the table is repainted only then.
+   */
+  $effect(() => {
+    if (mode !== 'play' || departure || STILL) return;
+    const timer = setInterval(() => {
+      const s = (performance.now() - playSince - SETTLE_MS) / 1000;
+      if (s > 0) zoom.set(creepZoom(s, voyage.playZoom, voyage.handZoom, voyage.closeInTail), { duration: 0 });
+    }, 250);
+    return () => clearInterval(timer);
   });
   /**
    * In close (at a landing) she's drawn bigger, so her wheel can be seen turning, but not as much bigger
@@ -243,7 +275,9 @@
         return;
       }
       if (follow) {
-        if (cam.target[0] !== b.p[0] || cam.target[1] !== b.p[1]) cam.set(b.p, { duration: mode === 'play' ? 1100 : 0 });
+        // At play the view comes down onto her spot, then keeps on it as she creeps (in steps under a pixel: no tween restarted each time).
+        const settling = mode === 'play' ? Math.max(0, playSince + SETTLE_MS - performance.now()) : 0;
+        if (cam.target[0] !== b.p[0] || cam.target[1] !== b.p[1]) cam.set(b.p, { duration: settling });
         return;
       }
       const W = innerWidth, H = innerHeight;

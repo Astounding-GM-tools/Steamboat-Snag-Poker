@@ -1,4 +1,6 @@
 node_modules
 dist
+public/maptiles
+public/music
 .DS_Store
 scripts/balance-*.txt
