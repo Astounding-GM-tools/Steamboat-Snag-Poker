@@ -4,3 +4,7 @@ public/maptiles
 public/music
 .DS_Store
 scripts/balance-*.txt
+
+# The playtest bot's runs (scripts/playtest.sim.ts, scripts/sandbar-tuning.sim.ts)
+playtest-runs.json
+sandbar-tuning.txt
