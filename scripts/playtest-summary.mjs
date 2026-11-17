@@ -50,7 +50,7 @@ out.push(
 out.push('\n### Debris on the river\n');
 out.push(
   table(
-    ['persona', 'met per voyage p10/p50/p90', 'before / after the Sandbar (mean)', 'crates won', 'sawyer won', 'deadhead won', 'drift pile won', 'strength lost per piece (mean)', 'runs reaching the Tri-Cities at 0 strength', 'skipped: no strength'],
+    ['persona', 'met per voyage p10/p50/p90', 'before / after the Sandbar (mean)', 'crates won', 'sawyer won', 'deadhead won', 'drift pile won', 'strength lost per piece (mean)', 'runs reaching the Tri-Cities at 0 strength', 'skipped: no strength', 'in a passage (mean)'],
     names.map((n) => {
       const rs = personas[n];
       const all = rs.flatMap((r) => r.debris);
@@ -69,6 +69,7 @@ out.push(
         mean(all.map((d) => d.strengthBefore - d.strengthAfter)),
         pct(rs.filter((r) => r.atTriCities && r.atTriCities.strength === 0).length, rs.length),
         rs.reduce((a, r) => a + r.debrisSkippedNoStrength, 0),
+        mean(rs.map((r) => r.laneCrates ?? 0)),
       ];
     }),
   ),

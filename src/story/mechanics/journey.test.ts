@@ -33,6 +33,8 @@ import {
   driftOnRiver,
   setStation,
   setRehire,
+  setPieceDue,
+  laneCratesNow,
   type Slot,
   type JourneyState,
   type Step,
@@ -281,6 +283,28 @@ describe('debris on the river', () => {
     expect(driftOnRiver(met, 5).river?.t).toBeCloseTo(0.6429);
     // At a landing, nothing.
     expect(driftOnRiver({ ...met, river: undefined }, 0.2).river).toBeUndefined();
+  });
+  it('owes a crate first out of Muscatine, then the river’s own: the set piece is gone once met, and every piece is counted', () => {
+    const j = underWay();
+    expect(setPieceDue(currentStep(j, RIVER))).toBe('crate');
+    const met = meetDebris(j, RIVER, 0.1, debrisStep({ kind: 'crate' }, crateAnteFor(j, 'chapter-1-upbound')), true);
+    expect(met.fillsMet).toEqual({ leg: 'chapter-1-upbound', n: 1 });
+    const on = leaveEncounter(playHand(met), RIVER);
+    expect(setPieceDue(currentStep(on, RIVER))).toBeNull();
+    const again = meetDebris(on, RIVER, 0.2, debrisStep({ kind: 'obstacle', id: 'sawyer', snag: TROUBLE.fouledWheel }, CRATE_ANTE), false);
+    expect(again.fillsMet).toEqual({ leg: 'chapter-1-upbound', n: 2 });
+  });
+  it('puts crates in the islands’ starboard passages only once The Sandbar is behind her', () => {
+    const j = underWay();
+    expect(laneCratesNow(currentStep(j, RIVER))).toBeNull();
+    // Past The Sandbar: the rest of the stretch keeps its lane crates, and its main event is gone.
+    const past = jumpTo(j, RIVER, [{ type: 'steam', leg: 'chapter-1-upbound', to: 0.6429, laneCrates: { side: 'starboard', afterMain: true } }]);
+    expect(laneCratesNow(currentStep(past, RIVER))).toBe('starboard');
+    // A crate met in a passage doesn't count with the leg's crates: the next one's ante doesn't climb.
+    const met = meetDebris({ ...past, river: { leg: 'chapter-1-upbound', t: 0.5 } }, RIVER, 0.505, debrisStep({ kind: 'crate' }, CRATE_ANTE), false);
+    expect(crateAnteFor(met, 'chapter-1-upbound')).toBe(CRATE_ANTE);
+    const rest = currentStep(leaveEncounter(playHand(met), RIVER), RIVER);
+    expect(rest?.type === 'steam' && rest.laneCrates).toEqual({ side: 'starboard', afterMain: true });
   });
   it('leaves her with the obstacle’s snag only if it gets the better of her', () => {
     for (const seed of [1, 2, 3, 4, 5, 6]) {

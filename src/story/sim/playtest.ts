@@ -2,8 +2,9 @@
  * The playtest bot: plays the voyage (chapter one, Muscatine to the top of the rapids) as a captain
  * of a given temper would, and records how it went. Headless, but faithful to what the UI adds on top
  * of the pure voyage (src/ui/Journey.svelte): the river's event stream at `legSeconds` 420, with the
- * open-water debris it puts in her way, the islands' busy stretches, Willie's typing (the river is
- * quiet while he types and a while after), her gathering way, and her creeping on during a hand.
+ * open-water debris it puts in her way (a stretch's set pieces first), the islands' busy stretches,
+ * her gathering way, and her creeping on during a hand. (Until 2026-11-17 the river kept quiet while
+ * Willie typed: `typing: true` plays it that way.)
  *
  * What the UI adds that the bot can only approximate is marked APPROX: the seconds a hand takes a
  * person, how long the departure from Muscatine plays, Willie's typing speed (the average of
@@ -34,6 +35,9 @@ import {
   meetDebris,
   meetOnRiver,
   morningStrength,
+  setPieceDue,
+  laneCrateFlag,
+  laneCratesNow,
   myMoveOwed,
   mySeatAt,
   newJourney,
@@ -49,10 +53,10 @@ import {
   type StoryDef,
 } from '../mechanics';
 import { nextOnRiver, creepRoom, type Fork } from '../mechanics/stream';
-import { crateAnteFor, debrisAt, debrisStep, type Debris } from '../characters/debris';
+import { CRATE_ANTE, crateAnteFor, debrisAt, debrisStep, type Debris } from '../characters/debris';
 import { FLAG } from '../flags';
 import { CLIMB_COAL, GAYLORD_FEE, GAYLORD_FIRST_HIRE, GAYLORD_LAST_HIRE, MORNING_ENTRY, READY_STRENGTH } from '../numbers';
-import { CHOICE_RECORDS, DOCK_FEE_FLAG, LEAVING_MUSCATINE, UNDER_WAY_AGAIN, ENCOUNTER_RECORDS, islandRecord, leftMuscatine, castOffRecord } from '../log';
+import { CHOICE_RECORDS, DOCK_FEE_FLAG, LEAVING_MUSCATINE, UNDER_WAY_AGAIN, ENCOUNTER_RECORDS, firstCrateRecord, islandRecord, leftMuscatine, castOffRecord } from '../log';
 import { DOCK_FEE_AMOUNT } from '../numbers';
 import { BOAT, shipStrength } from '../mechanics/boat';
 import { crept, REAL_PACE_PX } from '../../ui/map/creep';
@@ -63,14 +67,15 @@ import { crept, REAL_PACE_PX } from '../../ui/map/creep';
 export const LEG_SECONDS = 420;
 /** Chapter one's leg (public/maptiles/mrc-1894/legs/chapter-1-upbound.json): its islands, and its length in map px. */
 export const CHAPTER_1 = 'chapter-1-upbound';
-export const CHAPTER_1_ISLANDS: (Fork & { name: string | null })[] = [
-  { from: 0.3399, to: 0.3602, name: null },
-  { from: 0.3708, to: 0.3949, name: null },
-  { from: 0.4906, to: 0.519, name: 'Horse Island' },
-  { from: 0.686, to: 0.6931, name: null },
-  { from: 0.8656, to: 0.8838, name: 'Spencer Island' },
-  { from: 0.9631, to: 0.9753, name: null },
-  { from: 0.9771, to: 0.9856, name: null },
+/** (`main`: the main channel's side of the river, `left` the Illinois bank: upbound, `left` is starboard.) */
+export const CHAPTER_1_ISLANDS: (Fork & { name: string | null; main: 'left' | 'right' })[] = [
+  { from: 0.3399, to: 0.3602, name: null, main: 'right' },
+  { from: 0.3708, to: 0.3949, name: null, main: 'right' },
+  { from: 0.4906, to: 0.519, name: 'Horse Island', main: 'left' },
+  { from: 0.686, to: 0.6931, name: null, main: 'right' },
+  { from: 0.8656, to: 0.8838, name: 'Spencer Island', main: 'left' },
+  { from: 0.9631, to: 0.9753, name: null, main: 'right' },
+  { from: 0.9771, to: 0.9856, name: null, main: 'right' },
 ];
 /** The leg's channel, in map px (measured from the sidecar). */
 export const CHAPTER_1_PX = 41125;
@@ -107,7 +112,7 @@ export function typingSeconds(text: string, rng?: Rng): number {
 
 // --- Personas -----------------------------------------------------------------------------------
 
-export type PersonaId = 'careful' | 'loose' | 'novice' | 'reckless';
+export type PersonaId = 'careful' | 'loose' | 'novice' | 'reckless' | 'savvy';
 
 export interface Persona {
   id: PersonaId;
@@ -127,6 +132,8 @@ export interface Persona {
   saloonAt: number;
   /** Gaylord at breakfast: hire him, take his loan, or neither. */
   gaylord: 'hire' | 'loan' | 'pass';
+  /** Runs coal: the depot's for a dozen dollars lost, sold at the Mercantile at $8 a load (while saving up). */
+  sellsCoal?: boolean;
   /** A hand's seconds on the river (APPROX: a person reading the talk and choosing). */
   handSeconds: (rng: Rng) => number;
 }
@@ -138,6 +145,7 @@ export const PERSONAS: Record<PersonaId, Persona> = {
   careful: { id: 'careful', table: 'careful', dockFee: 'snag', depot: 'learn', ready: READY_STRENGTH, upgrades: true, saloonAt: 30, gaylord: 'pass', handSeconds: normalHands },
   loose: { id: 'loose', table: 'loose', dockFee: 'snag', depot: 'learn', ready: 26, upgrades: true, saloonAt: 15, gaylord: 'hire', handSeconds: quickHands },
   novice: { id: 'novice', table: 'stubborn', standPat: true, dockFee: 'pay', depot: 'play', ready: 0, upgrades: true, saloonAt: Infinity, gaylord: 'pass', handSeconds: normalHands },
+  savvy: { id: 'savvy', table: 'careful', dockFee: 'snag', depot: 'learn', ready: READY_STRENGTH, upgrades: true, saloonAt: Infinity, gaylord: 'pass', sellsCoal: true, handSeconds: normalHands },
   reckless: { id: 'reckless', table: 'swashbuckler', dockFee: 'snag', depot: 'play', ready: 0, upgrades: false, saloonAt: 0, gaylord: 'loan', handSeconds: quickHands },
 };
 
@@ -177,6 +185,8 @@ export interface RunRecord {
   debris: DebrisMet[];
   /** Debris called while the crew had no strength (the UI then puts nothing in the water). */
   debrisSkippedNoStrength: number;
+  /** Crates met in a passage round an island. */
+  laneCrates: number;
   /** The stream's main event: where it came (t), and whether the stretch ended before it (an anomaly). */
   sandbarAt?: number;
   /** Troubles taken on (by what gave them), and fixed (at the deck game). */
@@ -215,13 +225,17 @@ export interface RunRecord {
 export interface PlayOptions {
   /** Give up after this many mornings (a softlock, or a captain who never gets ready). */
   maxDays?: number;
-  /** Model Willie's typing quieting the river (the UI does); off: the stream alone. */
+  /** The old rule: the river kept quiet while Willie typed, and 12 s after (the UI until 2026-11-17; off now). */
   typing?: boolean;
   /** Seconds a whole leg takes. */
   legSeconds?: number;
   /** Changes to try (re-simulated tuning): the story to play. */
   story?: StoryDef;
   start?: { purse: number; coal: number };
+  /** Tuning to try: no debris called with the crew's strength at or below this (the UI: 0). */
+  debrisFloor?: number;
+  /** Tuning to try: every crate's ante the first one's (the UI: a dollar more for each met on the leg). */
+  flatCrateAnte?: boolean;
   /** Told what the river does, as it does it (debugging the stream). */
   trace?: (line: string) => void;
 }
@@ -246,8 +260,10 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
   const legSeconds = opts.legSeconds ?? LEG_SECONDS;
   const rng = new Rng(seed * 7919 + 17);
   const timeRng = new Rng(seed * 104729 + 3);
-  const pen = new Typewriter(new Rng(seed + 99), opts.typing ?? true);
+  const pen = new Typewriter(new Rng(seed + 99), opts.typing ?? false);
   let clock = 0;
+  const floor = opts.debrisFloor ?? 0;
+  const ante = (leg: string) => (opts.flatCrateAnte ? CRATE_ANTE : crateAnteFor(s, leg));
   const rec: RunRecord = {
     seed,
     persona: persona.id,
@@ -258,6 +274,7 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
     dawns: [],
     debris: [],
     debrisSkippedNoStrength: 0,
+    laneCrates: 0,
     troublesTaken: [],
     troublesFixed: 0,
     salvageEarned: 0,
@@ -287,6 +304,10 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
   let purseAtSeat = 0;
   let troublesAtSeat: number[] = [];
 
+  const dockFeeEntry = () => {
+    const text = leftMuscatine(s.flags, s.purse, DOCK_FEE_AMOUNT);
+    if (s.place === 'muscatine' && !s.log?.some((e) => e.text === text)) log(text);
+  };
   const log = (text: string) => {
     s = writeLog(s, text);
     pen.write(text, clock);
@@ -331,9 +352,10 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
       departed = true;
     }
     opts.trace?.(`steam ${from.toFixed(3)} to ${to}, typing till +${(pen.busyUntil - clock).toFixed(0)}s`);
+    // Leaving Muscatine, nothing yet (the dock fee comes after the river's second piece); elsewhere, a line.
     const first = from === 0 && s.place === 'muscatine';
-    const line = first ? leftMuscatine(s.flags, s.purse, DOCK_FEE_AMOUNT, s.coal, BOAT.bunker) : from === 0 ? castOffRecord(s.place, 'upbound') : UNDER_WAY_AGAIN;
-    let written = !!step.quiet;
+    const line = from === 0 ? castOffRecord(s.place, 'upbound') : UNDER_WAY_AGAIN;
+    let written = !!step.quiet || first;
     const writeAt = step.landing ? AFTER_DEPARTURE_S : CAST_OFF_QUIET_S;
     const at = (share: number) => from + share * (to - from);
     const main = step.main ? { window: [at(step.main.window[0]), at(step.main.window[1])] as [number, number] } : undefined;
@@ -355,16 +377,32 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
       // Round an island: Willie logs the way she went (the main passage: the bot never steers).
       for (const isl of CHAPTER_1_ISLANDS) {
         const key = `${CHAPTER_1}:${isl.from}`;
-        if (isl.from >= from && isl.to <= to && !passed.has(key) && t >= isl.to) {
+        if (isl.to > from && isl.to <= to && !passed.has(key) && t >= isl.to) {
           passed.add(key);
           s = { ...s, passed: [...(s.passed ?? []), key] };
           log(islandRecord(isl.name, 'port'));
         }
       }
+      // A crate in a passage round an island (the stretch's `laneCrates`): met if she's going that way.
+      // (The bot takes the main channel; a savvy captain steers for the crate.)
+      const side = laneCratesNow(step);
+      if (side && s.strength > floor) {
+        for (const isl of CHAPTER_1_ISLANDS) {
+          const key = `${CHAPTER_1}:${isl.from}`;
+          const mid = (isl.from + isl.to) / 2;
+          if (isl.to <= from || isl.to > to || passed.has(key) || s.flags.includes(laneCrateFlag(key)) || t < mid || t >= isl.to) continue;
+          const crateSide = side === 'starboard' ? 'left' : 'right';
+          if (crateSide !== isl.main && !persona.sellsCoal) continue;
+          debrisNow = { debris: { kind: 'crate' }, at: t, strength: s.strength };
+          rec.laneCrates++;
+          s = meetDebris({ ...s, flags: [...s.flags, laneCrateFlag(key)] }, story, t, debrisStep({ kind: 'crate' }, ante(step.leg)), false);
+          return;
+        }
+      }
       if (adrift && t >= adrift.t) {
         const met = adrift;
         debrisNow = { debris: met.debris, at: t, strength: s.strength };
-        s = meetDebris(s, story, t, debrisStep(met.debris, crateAnteFor(s, step.leg)), met.debris.kind === 'crate');
+        s = meetDebris(s, story, t, debrisStep(met.debris, ante(step.leg)), met.debris.kind === 'crate');
         return;
       }
       if (elapsed - asked >= 0.5) {
@@ -379,12 +417,14 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
         });
         if (call.kind === 'main') {
           rec.sandbarAt = t;
+          dockFeeEntry();
           s = meetOnRiver(s, story, t);
           return;
         }
         if (call.kind !== 'river') opts.trace?.(`t ${t.toFixed(3)} +${elapsed.toFixed(0)}s: ${call.kind}${pen.quiet(clock) ? ' (quiet: Willie typing)' : ''}${adrift ? ' (debris already ahead)' : ''}`);
         if (call.kind === 'debris' && !pen.quiet(clock) && !adrift) {
-          if (s.strength > 0) adrift = { t: call.at, debris: debrisAt(s.seed, `${step.leg}:${call.at.toFixed(4)}`) };
+          // A set piece first, if the stretch owes one; then the river's coin flip.
+          if (s.strength > floor) adrift = { t: call.at, debris: setPieceDue(step) === 'crate' ? { kind: 'crate' } : debrisAt(s.seed, `${step.leg}:${call.at.toFixed(4)}`) };
           else rec.debrisSkippedNoStrength++;
         }
       }
@@ -442,6 +482,8 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
     // (A full bunker only when the climb is near: the depot's coal costs a dozen dollars lost at its table.)
     if ((s.coal === 0 || (nearly && s.time === 'morning' && s.coal < CLIMB_COAL && s.purse >= budget)) && open('depot')) return go('depot');
     if (persona.upgrades && open('mercantile') && wantsMercantile()) return go('mercantile');
+    // Running coal while saving up: the depot's, sold at the Mercantile.
+    if (persona.sellsCoal && saving() && s.coal >= 3 && open('mercantile')) return go('mercantile');
     if ((s.salvage ?? 0) >= 4 && open('mercantile')) return go('mercantile');
     // A job, if it doesn't leave her short of coal for the climb (the depot fills her up again).
     if (open('jobs') && s.coal >= 1) {
@@ -451,6 +493,11 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
     if (open('depot')) return go('depot');
     if (open('mercantile')) return go('mercantile');
     return go(opts.find((o) => o.open && !o.option.menu)!.option.id);
+  }
+
+  /** Still saving: no boiler yet, or not the price of the day before the climb (fireman, food, the door, the entry). */
+  function saving(): boolean {
+    return !s.upgrades.includes('boilerOverhaul') || s.purse < 3 + ITEMS.fireman.price + ITEMS.food.price + MORNING_ENTRY + 12;
   }
 
   /** The careful captain's shopping list: the boiler, then (ready for tomorrow) a fireman and food. */
@@ -473,6 +520,8 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
       if (id === 'sellSalvage') rec.salvageSold++;
     };
     while (canBuy(s, story, 'sellSalvage') && (s.salvage ?? 0) > 0) purchase('sellSalvage');
+    // Coal, sold while saving up (a load kept back for a job).
+    if (persona.sellsCoal && saving()) while (s.coal > 1 && canBuy(s, story, 'sellCoal')) purchase('sellCoal');
     if (persona.upgrades) {
       if (canBuy(s, story, 'boilerOverhaul') && s.purse >= ITEMS.boilerOverhaul.price + MORNING_ENTRY) purchase('boilerOverhaul');
       const tomorrow = s.time === 'afternoon' && s.coal >= CLIMB_COAL && s.upgrades.includes('boilerOverhaul');
@@ -514,7 +563,10 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
           ...(d.kind === 'crate' && won ? { salvage: step.effects?.salvage ?? 0 } : {}),
         });
         if (d.kind === 'crate' && won) rec.salvageEarned += step.effects?.salvage ?? 0;
-        log(d.kind === 'crate' ? 'Salvaged goods.' : 'Steered clear of a snag.');
+        // As the UI writes it: out of Muscatine the first is the set-piece crate; after the second, the dock fee.
+        const n = s.place === 'muscatine' && s.fillsMet?.leg === s.river?.leg ? (s.fillsMet?.n ?? 0) : 0;
+        log(n === 1 && d.kind === 'crate' ? firstCrateRecord(s.seed, won, step.effects?.salvage ?? 0) : d.kind === 'crate' ? 'Salvaged goods, worth $2 at the Mercantile.' : 'Steered clear of a snag.');
+        if (n === 2) dockFeeEntry();
         debrisNow = null;
       } else {
         const r = ENCOUNTER_RECORDS[id]?.[e.outcome];

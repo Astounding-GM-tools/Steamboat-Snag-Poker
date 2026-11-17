@@ -161,6 +161,17 @@ export type Step =
       main?: { window: [number, number]; steps: Step[] };
       /** On again after a piece of debris: nothing worth Willie writing her under way again. */
       quiet?: boolean;
+      /**
+       * Set pieces: what the stretch's first fills are, in order, before the river's own coin flips
+       * (out of Muscatine, a crate, always). Each one met is gone from what's left of the stretch.
+       */
+      fills?: 'crate'[];
+      /**
+       * Round each island on the stretch, a crate in this passage (port or starboard, as she heads),
+       * there to be spotted: steer that way and she fishes it out. With `afterMain`, only once the
+       * stretch's main event is behind her.
+       */
+      laneCrates?: { side: 'port' | 'starboard'; afterMain?: boolean };
       /** Seconds the whole leg takes at her pace, if not the usual (a longer leg: development's whole river). */
       seconds?: number;
     }
@@ -305,6 +316,8 @@ export interface JourneyState {
   salvage?: number;
   /** Crates fished out on this leg of the river so far (each one's ante a dollar more than the last). */
   cratesMet?: { leg: string; n: number };
+  /** Pieces of debris met on this leg so far, of any kind (what Willie writes goes by it). */
+  fillsMet?: { leg: string; n: number };
   /** The First Mate's Log: Willie's record of the voyage, a line at a time (docs/log.md). */
   log?: LogEntry[];
 }
@@ -463,6 +476,7 @@ export function meetDebris(prev: JourneyState, story: StoryDef, t: number, step:
   if (steam?.type !== 'steam') throw new Error('Not out on the river');
   const state = stopOnRiver(prev, story, t, [step], true);
   if (crate) state.cratesMet = { leg: steam.leg, n: (prev.cratesMet?.leg === steam.leg ? prev.cratesMet.n : 0) + 1 };
+  state.fillsMet = { leg: steam.leg, n: (prev.fillsMet?.leg === steam.leg ? prev.fillsMet.n : 0) + 1 };
   return state;
 }
 
@@ -481,6 +495,9 @@ function stopOnRiver(prev: JourneyState, story: StoryDef, t: number, steps: Step
     to: step.to,
     ...(step.musings ? { musings: step.musings.filter((m) => at(m.at) > t).map((m) => ({ ...m, at: share(at(m.at)) })) } : {}),
     ...(keepMain ? { quiet: true } : {}),
+    // A piece met: the set pieces still owed are the rest of them.
+    ...(step.fills?.length ? { fills: keepMain ? step.fills.slice(1) : step.fills } : {}),
+    ...(step.laneCrates ? { laneCrates: step.laneCrates } : {}),
     ...(keepMain && step.main ? { main: { window: [share(at(step.main.window[0])), share(at(step.main.window[1]))] as [number, number], steps: step.main.steps } } : {}),
   };
   state.river = { leg: step.leg, t };
@@ -516,6 +533,20 @@ export function driftOnRiver(prev: JourneyState, t: number): JourneyState {
   state.river = { leg: river.leg, t: next };
   state.pending[k] = step;
   return state;
+}
+
+/** The flag that says the crate round this island (by its key) has been met. */
+export const laneCrateFlag = (islandKey: string) => `lane:${islandKey}`;
+
+/** Round islands on this stretch, is there a crate in a passage now (not before the main event, if it says so)? */
+export function laneCratesNow(step: Step | null): 'port' | 'starboard' | null {
+  if (step?.type !== 'steam' || !step.laneCrates) return null;
+  return step.laneCrates.afterMain && step.main ? null : step.laneCrates.side;
+}
+
+/** The set piece owed next on this stretch of river, if any (else the river's own coin flip). */
+export function setPieceDue(step: Step | null): 'crate' | null {
+  return step?.type === 'steam' ? (step.fills?.[0] ?? null) : null;
 }
 
 /** A caption read, or a stretch of river steamed: on. (Steamed without the river shown, she meets its main event at the middle of its window.) */

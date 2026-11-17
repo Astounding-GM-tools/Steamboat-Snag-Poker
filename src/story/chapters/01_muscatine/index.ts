@@ -15,7 +15,7 @@ export const SANDBAR_AT = 0.3;
 /** The Tri-Cities landing, as the map's sidecar has it. */
 const TRI_CITIES_AT = 0.6429;
 
-/** Willie's second musing, a little way out of Muscatine: the chain of command, and Bill's missus. */
+/** Willie's second musing, a little way out of Muscatine: the chain of command, and what he hopes of the run. */
 const NEW_FIRST_MATE = [
   'Captain Bill is not coming with us.',
   'First Mate made Captain, and I am the new First Mate now.',
@@ -79,6 +79,10 @@ export const muscatine: Step[] = [
     // Willie's log, not the crew's chatter: a musing a little way out, then the river and the islands.
     // (A thought: too long for the header, it's only in the log, for whoever opens it.)
     musings: [{ at: 0.3, text: NEW_FIRST_MATE, thought: true }],
+    // Out of Muscatine, a crate first, always: the new Captain's first salvage (then the river's own coin flips).
+    fills: ['crate'],
+    // Past The Sandbar, a crate in the starboard passage round each island (Horse Island), there to be spotted.
+    laneCrates: { side: 'starboard', afterMain: true },
     // The Sandbar, around two thirds of the way (sandbars shift from season to season), after Willie's had his say: the event stream picks the moment.
     main: {
       window: [0.55, 0.75],

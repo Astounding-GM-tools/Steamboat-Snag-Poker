@@ -59,6 +59,9 @@ export function sides(island: Island, upbound: boolean): { port: Passage; starbo
   return upbound ? { starboard: left, port: right } : { port: left, starboard: right };
 }
 
+/** The point at fraction `u` of a passage's (or any polyline's) length. */
+export const pointAlong = (line: readonly Pt[], u: number): Pt => measured(line).at(u);
+
 /** A polyline measured: the point at fraction `u` of its length, and the stretch between two fractions. */
 function measured(line: readonly Pt[]) {
   const cum = [0];

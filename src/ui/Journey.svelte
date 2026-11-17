@@ -9,6 +9,9 @@
     driftOnRiver,
     meetOnRiver,
     passIsland,
+    setPieceDue,
+    laneCrateFlag,
+    laneCratesNow,
     writeLog,
     buy,
     canBuy,
@@ -49,9 +52,9 @@
   import { crateAnte, crateAnteFor, debrisAt, debrisRecord, debrisStep, type Debris } from '../story/characters/debris';
   import TypedLine from './TypedLine.svelte';
   import LogView from './LogView.svelte';
-  import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, LEAVING_MUSCATINE, castOffRecord, islandRecord, leftMuscatine, tradeRecord } from '../story/log';
+  import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, LEAVING_MUSCATINE, castOffRecord, firstCrateRecord, islandRecord, leftMuscatine, tradeRecord } from '../story/log';
   import { DOCK_FEE_AMOUNT } from '../story/numbers';
-  import { islandKey, route, sides, type Island, type Pt, type TravelSidecar } from './map/route';
+  import { islandKey, pointAlong, route, sides, type Island, type Pt, type TravelSidecar } from './map/route';
   import { heavy } from './heavy';
   import ShipPage from './ShipPage.svelte';
   import Speech, { autoMs, type SpeechLine } from './Speech.svelte';
@@ -118,12 +121,8 @@
   const typed = () => {
     seenLog = Math.min(seenLog + 1, ticker.length);
     typedLines = 0;
-    typedAt = performance.now();
   };
-  /** When Willie last finished typing an entry: the river is quiet a while after, before anything's in the water. */
-  let typedAt = 0;
-  /** Seconds of quiet after he's done typing, before the stream puts debris in the water. */
-  const AFTER_TYPING_S = 12;
+  // (The river doesn't wait for him: he types through anything, debris included. docs/playtest-2026-11-17.md.)
   /** How far into the entry he'd typed (lines): away at a table, he picks up there, not from the top. */
   let typedLines = $state(0);
   /** The log open over the river (the header opens it). */
@@ -177,16 +176,11 @@
     // Willie logs her getting under way (once: a reload mid-stretch doesn't log it again), after she's
     // been steaming a while: first the river, then the words.
     const settle = setTimeout(() => untrack(() => {
-      // Leaving Muscatine, Willie's third entry (how the dock fee went, and the coal); elsewhere, a line.
-      const first = steamFrom === 0 && journey.place === 'muscatine';
-      const line = first
-        ? leftMuscatine(journey.flags, journey.purse, DOCK_FEE_AMOUNT, journey.coal, BOAT.bunker)
-        : steamFrom === 0
-          ? castOffRecord(t(`place.${journey.place}`), t(`river.${bound}`))
-          : UNDER_WAY_AGAIN;
-      // A musing is written once; a plain line, unless it's the last thing written (a reload).
-      const written = first ? journey.log?.some((e) => e.text === line) : journey.log?.at(-1)?.text === line;
-      if (!written && !step.quiet) journey = writeLog(journey, line, first ? 'musing' : 'record');
+      // Leaving Muscatine, nothing yet: the dock fee comes after the river's second piece (`leave`). Elsewhere, a line.
+      if (steamFrom === 0 && journey.place === 'muscatine') return;
+      const line = steamFrom === 0 ? castOffRecord(t(`place.${journey.place}`), t(`river.${bound}`)) : UNDER_WAY_AGAIN;
+      // Not if it's the last thing written (a reload).
+      if (journey.log?.at(-1)?.text !== line && !step.quiet) journey = writeLog(journey, line, 'record');
     }), step.landing ? AFTER_DEPARTURE_MS : CAST_OFF_QUIET_MS);
     let last = performance.now(), raf = 0, asked = 0;
     const began = last;
@@ -214,6 +208,13 @@
         journey = meetDebris(journey, RIVER, boatT, debrisStep(met.debris, crateAnteFor(journey, step.leg)), met.debris.kind === 'crate');
         return;
       }
+      // A crate in the passage she's taken round an island, reached: she stops for it (not counted with the leg's crates: its ante doesn't climb).
+      const lane = !racing && journey.strength > 0 ? laneCrates.find((c) => c.hers && boatT >= c.t) : undefined;
+      if (lane) {
+        const marked = { ...journey, flags: [...journey.flags, laneCrateFlag(lane.key)] };
+        journey = meetDebris(marked, RIVER, boatT, debrisStep({ kind: 'crate' }, crateAnteFor(journey, step.leg)), false);
+        return;
+      }
       // The event stream (stream.ts), asked twice a second: the stretch's main event now, or debris ahead?
       // (No debris while she races, or with no strength left in the crew to play for it.)
       if (!endless && now - asked > 500) {
@@ -230,15 +231,14 @@
           sinceFill: (now - began) / 1000,
         });
         if (call.kind === 'main') {
-          journey = meetOnRiver(journey, RIVER, boatT);
+          // (Out of Muscatine, the dock fee written first if the river never brought a second piece.)
+          journey = meetOnRiver(dockFeeEntry(journey), RIVER, boatT);
           return;
         }
-        // Not while Willie's typing (an entry still to finish), nor straight after: his words first, then the river.
-        const typing = ticker.length > seenLog;
-        const quiet = typing || now - typedAt < AFTER_TYPING_S * 1000;
-        if (call.kind === 'debris' && !quiet && !adrift && !racing && journey.strength > 0 && up) {
+        // A set piece first, if the stretch owes one (out of Muscatine, a crate); then the river's coin flip.
+        if (call.kind === 'debris' && !adrift && !racing && journey.strength > 0 && up) {
           const key = `${step.leg}:${call.at.toFixed(4)}`;
-          adrift = { t: call.at, debris: debrisAt(journey.seed, key) };
+          adrift = { t: call.at, debris: setPieceDue(step) === 'crate' ? { kind: 'crate' } : debrisAt(journey.seed, key) };
         }
       }
       // Endless (development): back to where she started, and round again.
@@ -386,13 +386,29 @@
     if (step?.type !== 'steam' || !legData?.islands || endless) return [];
     const from = steamFrom, to = step.to, up = to >= from;
     return legData.islands
-      .filter((i) => (up ? i.from_t >= from && i.to_t <= to : i.to_t <= from && i.from_t >= to))
+      // (Including one she's in the middle of: stopped in a passage for its crate, the stretch goes on from there.)
+      .filter((i) => (up ? i.to_t > from && i.to_t <= to : i.from_t < from && i.from_t >= to))
       .sort((a, b) => (up ? a.from_t - b.from_t : b.from_t - a.from_t))
       .map((island) => ({ island, key: islandKey(leg, island), up }));
   });
   // (The same empty table each time: a new one would have the map work out her course again, and start a departure over.)
   const lanes = $derived(journey.lanes ?? NO_LANES);
   const passed = $derived(journey.passed ?? []);
+  /**
+   * The crates in a passage round the islands ahead (the stretch's `laneCrates`): where each lies (the
+   * passage's middle, on the map and as the leg's t), and whether it's in the way she's going.
+   */
+  const laneCrates = $derived.by(() => {
+    const side = laneCratesNow(step);
+    if (!side) return [];
+    return isles
+      .filter((i) => !passed.includes(i.key) && !journey.flags.includes(laneCrateFlag(i.key)))
+      .map(({ island, key, up }) => {
+        const passage = sides(island, up)[side];
+        const took = lanes[key] ?? island.passages.find((p) => p.kind === 'main')!.side;
+        return { key, t: (island.from_t + island.to_t) / 2, px: pointAlong(passage.px, 0.5), hers: took === passage.side };
+      });
+  });
   /** The island she's coming up to (within warning) or rounding: the view leans towards it till she's past. */
   const islandNear = $derived.by(() => {
     if (step?.type !== 'steam') return null;
@@ -539,20 +555,32 @@
     const outcome = after.encounter?.outcome;
     journey = outcome && step?.type === 'encounter' && !closingLines(after, step, outcome).length ? leave(after) : after;
   }
+  /** Out of Muscatine: how the dock fee went, written once (after the river's second piece, or before The Sandbar if there was none). */
+  function dockFeeEntry(j: JourneyState): JourneyState {
+    if (j.place !== 'muscatine') return j;
+    const text = leftMuscatine(j.flags, j.purse, DOCK_FEE_AMOUNT);
+    return j.log?.some((e) => e.text === text) ? j : writeLog(j, text, 'musing');
+  }
   /** Up from the table: Willie logs how it went, and on. */
   function leave(j: JourneyState): JourneyState {
     const e = j.encounter;
     // Debris: what came of it (a crate's worth, or the snag it left her with).
     const obstacle = e && e.def.rivals !== 'crew' && e.def.rivals[0]?.obstacle && e.def.hands === 1;
+    // Out of Muscatine the first piece is the set-piece crate: Willie on what was in it, or what losing it means.
+    const met = obstacle && j.place === 'muscatine' && j.fillsMet?.leg === j.river?.leg ? (j.fillsMet?.n ?? 0) : 0;
     const record = !e?.outcome
       ? undefined
       : obstacle
-        ? debrisRecord(e.def.id, e.outcome, crateAnte(e.def), e.session.seats[0].jokers.at(-1)?.index)
+        ? met === 1 && e.def.id === 'crate'
+          ? firstCrateRecord(j.seed, e.outcome === 'solved', crateAnte(e.def))
+          : debrisRecord(e.def.id, e.outcome, crateAnte(e.def), e.session.seats[0].jokers.at(-1)?.index)
         : ENCOUNTER_RECORDS[e.def.id]?.[e.outcome];
     // The dock fee played for: whoever holds the bill when the hands are done settles it.
     const fee = e?.def.id === 'harbourMaster' ? (j.snags.some((s) => s.index === DOCK_FEE) ? DOCK_FEE_FLAG.snagged : DOCK_FEE_FLAG.dodged) : null;
     const marked = fee ? { ...j, flags: [...j.flags, fee] } : j;
-    return leaveEncounter(record ? writeLog(marked, record) : marked, RIVER);
+    const written = record ? writeLog(marked, record) : marked;
+    // After the second piece out of Muscatine: the Captain against the harbour master, as Willie has it.
+    return leaveEncounter(met === 2 ? dockFeeEntry(written) : written, RIVER);
   }
   /** What's said at this table, as the hand stands. */
   function talkNow() {
@@ -610,7 +638,7 @@
 
 <NowPlaying />
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onopened={() => departureEntry(LEAVING_MUSCATINE.backingOut)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} pieces={step?.type === 'steam' ? laneCrates.map((c) => c.px) : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onopened={() => departureEntry(LEAVING_MUSCATINE.backingOut)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">

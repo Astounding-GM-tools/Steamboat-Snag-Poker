@@ -33,14 +33,44 @@ export const LEAVING_MUSCATINE = {
   turning: [`Cargo run for Dubuque, ${MUSCATINE_TO_DUBUQUE} miles upriver.`, 'Strong spring-thaw current, four miles an hour.'].join('\n'),
 };
 
-/** Under way from Muscatine: how the dock fee went (paid, played for and dodged, or snagged: flags), and the coal. */
-export function leftMuscatine(flags: readonly string[], purse: number, fee: number, coal: number, bunker: number): string {
+/** Under way from Muscatine, after the second piece of debris: how the dock fee went (paid, played for and dodged, or snagged: flags). */
+export function leftMuscatine(flags: readonly string[], purse: number, fee: number): string {
   const lines: string[] = [];
   if (flags.includes(DOCK_FEE_FLAG.dodged)) lines.push('The Captain played the harbour master for the docking fee.', `Dodged the fee: $${fee} saved for coal. We'll need it.`);
   else if (flags.includes(DOCK_FEE_FLAG.snagged)) lines.push('The Captain played the harbour master for the docking fee.', `Snagged the fee, and the ante. $${purse} left for expenses.`);
   else lines.push(`Captain paid the dock fee. $${fee}.`, `$${purse} left for the river.`);
-  lines.push(`Coal at ${coal}/${bunker}.`, 'Need to bunker up before we reach the rapids.');
   return lines.join('\n');
+}
+
+/**
+ * The first crate out of Muscatine, and Willie on it: won, what was in it (a find from the small
+ * tier in docs/drafts-2026-11-17.md, "What's in the crates"); lost, far too much read into it.
+ * Drafts, for review. Picked by the voyage's seed, so a reload writes the same.
+ */
+export const FIRST_CRATE = {
+  found: [
+    'Fished out a crate of clothes-pegs.',
+    'A gross of corncob pipes. Gus took the best.',
+    'A crate of hymnals. Lars approves.',
+    'Two dozen horseshoes. Luck, by the pound.',
+    'A crate of bicycle bells, ringing.',
+    'Seed packets, dry in their tins.',
+    'A crate of sheet music. Lars hums along.',
+    'Fished out a crate of doorknobs. No doors.',
+    'A crate of horehound candy, a little stuck together.',
+  ],
+  lost: [
+    'Lost the first crate of the voyage. Gus says it means nothing. Gus would.',
+    'First crate: soggy cotton. Captain Bill never lost a first crate. I asked.',
+    'The river kept the first one. Testing us, I think.',
+  ],
+};
+
+/** What Willie writes after the first crate: the find and its worth, or what losing it must mean. */
+export function firstCrateRecord(seed: number, won: boolean, worth: number): string {
+  const list = won ? FIRST_CRATE.found : FIRST_CRATE.lost;
+  const line = list[(seed >>> 0) % list.length];
+  return won ? `${line}\nWorth $${worth} at the Mercantile.` : line;
 }
 
 /** What's written when an answer at the table ends it, by the answer's effect. */

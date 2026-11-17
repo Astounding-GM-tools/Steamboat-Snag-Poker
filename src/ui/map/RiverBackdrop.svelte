@@ -36,6 +36,8 @@
     lanes?: Record<string, 'left' | 'right'>;
     /** Debris in the open river ahead, on her course (as the leg's t). */
     adrift?: number[];
+    /** Debris lying in a passage round an island, there to be spotted whichever way she goes (map px). */
+    pieces?: Pt[];
     /** Something ahead to see before she gets there (an island to choose a way round): the view leans towards it. */
     ahead?: Pt | null;
     /** What she has built so far: Bill's bare boat until the story says otherwise. */
@@ -52,7 +54,7 @@
     /** Departing, the opening shot over: the view has come to rest on her at the landing. */
     onopened?: () => void;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, adrift = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted, onturn, onopened }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, adrift = [], pieces = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted, onturn, onopened }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -130,7 +132,7 @@
   /** How far along the line she is. */
   const distance = $derived(distanceAt(t));
   /** The debris in the water ahead, on her course. */
-  const flotsam = $derived(sailed ? adrift.map((a) => sailed.point(distanceAt(a))) : []);
+  const flotsam = $derived(sailed ? [...adrift.map((a) => sailed.point(distanceAt(a))), ...pieces] : []);
 
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
   const zoom = new Tween(untrack(() => (departure ? voyage.dockZoom : voyage.steamZoom)), { duration: 1100, easing: cubicInOut });
