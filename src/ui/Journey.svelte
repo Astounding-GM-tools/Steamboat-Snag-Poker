@@ -49,7 +49,7 @@
   import { loadLeg } from './map/legs';
   import { creepRoom, nextOnRiver } from '../story/mechanics/stream';
   import { REAL_PACE_PX, crept } from './map/creep';
-  import { crateAnte, crateAnteFor, debrisAt, debrisRecord, debrisStep, type Debris } from '../story/characters/debris';
+  import { crateAnte, crateAnteFor, debrisAffordable, debrisAt, debrisRecord, debrisStep, type Debris } from '../story/characters/debris';
   import TypedLine from './TypedLine.svelte';
   import LogView from './LogView.svelte';
   import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, UNDER_WAY_AGAIN, LEAVING_MUSCATINE, castOffRecord, firstCrateRecord, islandRecord, leftMuscatine, tradeRecord } from '../story/log';
@@ -209,14 +209,14 @@
         return;
       }
       // A crate in the passage she's taken round an island, reached: she stops for it (not counted with the leg's crates: its ante doesn't climb).
-      const lane = !racing && journey.strength > 0 ? laneCrates.find((c) => c.hers && boatT >= c.t) : undefined;
+      const lane = !racing && debrisAffordable(journey) ? laneCrates.find((c) => c.hers && boatT >= c.t) : undefined;
       if (lane) {
         const marked = { ...journey, flags: [...journey.flags, laneCrateFlag(lane.key)] };
         journey = meetDebris(marked, RIVER, boatT, debrisStep({ kind: 'crate' }, crateAnteFor(journey, step.leg)), false);
         return;
       }
       // The event stream (stream.ts), asked twice a second: the stretch's main event now, or debris ahead?
-      // (No debris while she races, or with no strength left in the crew to play for it.)
+      // (No debris while she races, or with the crew at the floor: they're never left with nothing.)
       if (!endless && now - asked > 500) {
         asked = now;
         const from = steamFrom, at = (share: number) => from + share * (to - from);
@@ -236,7 +236,7 @@
           return;
         }
         // A set piece first, if the stretch owes one (out of Muscatine, a crate); then the river's coin flip.
-        if (call.kind === 'debris' && !adrift && !racing && journey.strength > 0 && up) {
+        if (call.kind === 'debris' && !adrift && !racing && debrisAffordable(journey) && up) {
           const key = `${step.leg}:${call.at.toFixed(4)}`;
           adrift = { t: call.at, debris: setPieceDue(step) === 'crate' ? { kind: 'crate' } : debrisAt(journey.seed, key) };
         }

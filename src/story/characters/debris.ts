@@ -19,8 +19,15 @@ export type Debris = { kind: 'crate' } | { kind: 'obstacle'; id: Hazard; snag: n
 export const HAZARDS = ['sawyer', 'deadhead', 'driftPile'] as const;
 export type Hazard = (typeof HAZARDS)[number];
 
-/** A crate's ante on the first of a leg, and a dollar more for every crate met on it since. */
+/**
+ * A crate's ante, every one: $2 (it climbed a dollar a crate along a leg, till the first stretch's
+ * pieces left the crew with nothing: docs/playtest-2026-11-17.md, Update).
+ */
 export const CRATE_ANTE = 2;
+/** No debris is put in the water with the crew's strength at or below this: the river never leaves them with nothing. */
+export const DEBRIS_FLOOR = 6;
+/** Debris can be met now: the crew have more than the floor to play it with. */
+export const debrisAffordable = (state: JourneyState) => state.strength > DEBRIS_FLOOR;
 /** What a piece of debris has to play with: enough to see the hand through, never enough to matter. */
 const DEBRIS_PILE = 30;
 
@@ -37,8 +44,8 @@ export function debrisAt(seed: number, key: string): Debris {
   return { kind: 'obstacle', id: HAZARDS[rng.int(HAZARDS.length)], snag: DEBRIS_TROUBLES[rng.int(DEBRIS_TROUBLES.length)] };
 }
 
-/** The next crate's ante on this leg: a dollar more for every one met on it so far. */
-export const crateAnteFor = (state: JourneyState, leg: string) => CRATE_ANTE + (state.cratesMet?.leg === leg ? state.cratesMet.n : 0);
+/** The next crate's ante on this leg: the same for every one (the count of crates met is kept, should it climb again). */
+export const crateAnteFor = (_state: JourneyState, _leg: string) => CRATE_ANTE;
 
 /** One hand, from the first: an ante of `ante` (the ante is ceil((hand − antePast) / 3)). */
 const oneHand = (ante: number) => ({ jokerForfeit: 0, antePast: 1 - 3 * ante });

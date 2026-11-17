@@ -199,16 +199,20 @@ All three are in.
 voyage's seed and where it lies (the same thing there on a reload), and played for with one hand of
 Snag for the crew's strength, against something that can only be worn down (what's lost goes down the
 river):
-- **A crate:** won, salvage worth its ante at the Mercantile (the ante starts at $2 on a leg and goes up
-  a dollar for every crate met on it); lost, soggy cotton. What's in it isn't said yet.
+- **A crate:** won, salvage worth its ante at the Mercantile ($2, every one: it used to climb a dollar a
+  crate along a leg, and drained the crew); lost, soggy cotton. Out of Muscatine the first is a set
+  piece (the stretch's `fills`), and Willie writes up what was in it.
 - **An obstacle** (a sawyer, a deadhead, a drift pile) carries one snag, a trouble with a fixer: the
   Stove-in Plank (Lars), the Fouled Rudder (Willie), the Fouled Wheel (Lars), the Sprung Plank (Gus),
   Scraped Paint (Willie). It leaves her with it only if it wins the hand with it played.
 - **Where:** on open water only. The stream puts a piece in the water ahead (`debrisLeadSeconds`),
-  after a rest, where there's room. None while she races, with no strength left to play, or downbound
-  (yet).
-- **Round an island, nothing** (tried, and taken out: with the open river's debris it was too much). Port
-  or starboard picks the way round, and Willie logs it: for now a cosmetic call. Later it should be
+  after a rest, where there's room, whether or not Willie's typing (he types through anything). None
+  while she races, with the crew at 6 strength or less (`DEBRIS_FLOOR`: the river never leaves them
+  with nothing), or downbound (yet).
+- **Round an island:** where the stretch says so (`laneCrates`), a crate lies in one passage, drawn
+  there to be spotted; steer that way and she fishes it out. On chapter one's first stretch, starboard,
+  once The Sandbar is behind her (at Horse Island that's the main channel). Otherwise port or
+  starboard picks the way round, and Willie logs it: for now a cosmetic call. Later it should be
   about time: one passage shorter or quicker than the other, the time saved (or lost) the point of it.
 
 For now she stops for the hand rather than crawling (`paceDuringHand` is unused): simpler, and safe.

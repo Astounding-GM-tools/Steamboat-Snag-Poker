@@ -314,7 +314,7 @@ export interface JourneyState {
   passed?: string[];
   /** Salvage picked up on the river: what it'll fetch at a mercantile, in dollars. */
   salvage?: number;
-  /** Crates fished out on this leg of the river so far (each one's ante a dollar more than the last). */
+  /** Crates fished out on this leg of the river so far (counted; the ante no longer climbs with them). */
   cratesMet?: { leg: string; n: number };
   /** Pieces of debris met on this leg so far, of any kind (what Willie writes goes by it). */
   fillsMet?: { leg: string; n: number };

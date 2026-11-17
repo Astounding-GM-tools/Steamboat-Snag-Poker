@@ -245,7 +245,8 @@ describe('debris on the river', () => {
     const met = meetDebris(j, RIVER, 0.1, debrisStep({ kind: 'crate' }, crateAnteFor(j, 'chapter-1-upbound')), true);
     expect(currentStep(met, RIVER)?.type).toBe('encounter');
     expect(met.cratesMet).toEqual({ leg: 'chapter-1-upbound', n: 1 });
-    expect(crateAnteFor(met, 'chapter-1-upbound')).toBe(CRATE_ANTE + 1);
+    // Counted, but the next one's ante is the same: it doesn't climb.
+    expect(crateAnteFor(met, 'chapter-1-upbound')).toBe(CRATE_ANTE);
     const after = playHand(met);
     expect(after.encounter?.outcome).not.toBeNull();
     const on = leaveEncounter(after, RIVER);

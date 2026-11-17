@@ -19,9 +19,8 @@ const OUT = process.env.PLAYTEST_OUT ?? 'playtest-runs.json';
 const TYPING = process.env.PLAYTEST_TYPING === '1';
 /** Tuning to try, as JSON by encounter id: PLAYTEST_TUNE='{"sandbar":{"money":24},"longReach":{"money":45}}'. */
 const TUNE: Tuning | null = process.env.PLAYTEST_TUNE ? JSON.parse(process.env.PLAYTEST_TUNE) : null;
-/** River tuning to try: PLAYTEST_FLOOR=6 (no debris at or below that strength), PLAYTEST_FLAT_ANTE=1 (crates' ante doesn't climb). */
-const FLOOR = Number(process.env.PLAYTEST_FLOOR ?? 0);
-const FLAT = process.env.PLAYTEST_FLAT_ANTE === '1';
+/** River tuning to try: PLAYTEST_FLOOR=9 (no debris at or below that strength; the game's is DEBRIS_FLOOR). */
+const FLOOR = process.env.PLAYTEST_FLOOR ? Number(process.env.PLAYTEST_FLOOR) : undefined;
 const DAYS = Number(process.env.PLAYTEST_DAYS ?? 40);
 const story = TUNE ? tuned(RIVER, TUNE) : RIVER;
 /** A shop price to try: PLAYTEST_PRICE='{"boilerOverhaul":30}' (ITEMS is plain data, changed for this run only). */
@@ -31,7 +30,7 @@ it('playtest', { timeout: 6 * 3_600_000 }, () => {
   const runs: RunRecord[] = [];
   for (const name of NAMES) {
     const t0 = performance.now();
-    for (let seed = FROM; seed < FROM + SEEDS; seed++) runs.push(playVoyage(seed, PERSONAS[name], { typing: TYPING, story, debrisFloor: FLOOR, flatCrateAnte: FLAT, maxDays: DAYS }));
+    for (let seed = FROM; seed < FROM + SEEDS; seed++) runs.push(playVoyage(seed, PERSONAS[name], { typing: TYPING, story, debrisFloor: FLOOR, maxDays: DAYS }));
     console.error(`${name}: ${SEEDS} voyages, ${((performance.now() - t0) / SEEDS).toFixed(0)} ms each`);
   }
   writeFileSync(OUT, JSON.stringify(runs));

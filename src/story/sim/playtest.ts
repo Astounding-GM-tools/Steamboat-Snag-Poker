@@ -53,7 +53,7 @@ import {
   type StoryDef,
 } from '../mechanics';
 import { nextOnRiver, creepRoom, type Fork } from '../mechanics/stream';
-import { CRATE_ANTE, crateAnteFor, debrisAt, debrisStep, type Debris } from '../characters/debris';
+import { DEBRIS_FLOOR, crateAnteFor, debrisAt, debrisStep, type Debris } from '../characters/debris';
 import { FLAG } from '../flags';
 import { CLIMB_COAL, GAYLORD_FEE, GAYLORD_FIRST_HIRE, GAYLORD_LAST_HIRE, MORNING_ENTRY, READY_STRENGTH } from '../numbers';
 import { CHOICE_RECORDS, DOCK_FEE_FLAG, LEAVING_MUSCATINE, UNDER_WAY_AGAIN, ENCOUNTER_RECORDS, firstCrateRecord, islandRecord, leftMuscatine, castOffRecord } from '../log';
@@ -232,10 +232,8 @@ export interface PlayOptions {
   /** Changes to try (re-simulated tuning): the story to play. */
   story?: StoryDef;
   start?: { purse: number; coal: number };
-  /** Tuning to try: no debris called with the crew's strength at or below this (the UI: 0). */
+  /** Tuning to try: no debris called with the crew's strength at or below this (the game's: DEBRIS_FLOOR). */
   debrisFloor?: number;
-  /** Tuning to try: every crate's ante the first one's (the UI: a dollar more for each met on the leg). */
-  flatCrateAnte?: boolean;
   /** Told what the river does, as it does it (debugging the stream). */
   trace?: (line: string) => void;
 }
@@ -262,8 +260,8 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
   const timeRng = new Rng(seed * 104729 + 3);
   const pen = new Typewriter(new Rng(seed + 99), opts.typing ?? false);
   let clock = 0;
-  const floor = opts.debrisFloor ?? 0;
-  const ante = (leg: string) => (opts.flatCrateAnte ? CRATE_ANTE : crateAnteFor(s, leg));
+  const floor = opts.debrisFloor ?? DEBRIS_FLOOR;
+  const ante = (leg: string) => crateAnteFor(s, leg);
   const rec: RunRecord = {
     seed,
     persona: persona.id,
