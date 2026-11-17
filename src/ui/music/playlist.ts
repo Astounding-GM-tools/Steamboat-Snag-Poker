@@ -1,7 +1,8 @@
 /**
  * The band's records, and where they play (docs/story.md, the soundtrack). Chapter one has only the
- * OKeh sides Bennie Moten's Kansas City Orchestra cut in November 1924, free already: one plays at
- * The Sandbar, another in the Bettendorf saloon. As I Like It (1925) is the spare, not played.
+ * OKeh sides Bennie Moten's Kansas City Orchestra cut in November 1924, free already: Tulsa Blues and
+ * Vine Street Blues, in turn, at The Sandbar and in the Bettendorf saloon alike (two records, so
+ * variety over a tune of its own for each place). Baby Dear and As I Like It (1925) are spares.
  *
  * The Victor sides of December 1926 come into the public domain on 1 January 2027, and none of them
  * is named here before then: not even locked (a file in the build is distributed, whether the player
@@ -26,13 +27,16 @@ export const OKEH_1924 = {
   asILikeIt: { id: 'asILikeIt', title: 'As I Like It', band: MOTEN, year: 1925, file: 'asilikeit.mp3' },
 } satisfies Record<string, Track>;
 
+/** Chapter one's two records, played in turn. */
+const CHAPTER_ONE: Track[] = [OKEH_1924.tulsaBlues, OKEH_1924.vineStreet];
+
 /**
  * Where the band plays, by the encounter's id: Sandy's house band under the whole Sandbar game, and
  * whoever's on at the Bettendorf saloon (the Tri-Cities' table). Anywhere else, the river's quiet.
  */
 export const PLACES: Record<string, Track[]> = {
-  sandbar: [OKEH_1924.tulsaBlues],
-  triCities: [OKEH_1924.vineStreet],
+  sandbar: CHAPTER_ONE,
+  triCities: CHAPTER_ONE,
 };
 
 /** What plays here (an encounter's id), or nothing. */

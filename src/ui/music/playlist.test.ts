@@ -10,8 +10,8 @@ describe('the soundtrack', () => {
   });
 
   it('plays at The Sandbar and the Bettendorf saloon, and nowhere else', () => {
-    expect(musicAt('sandbar')?.[0].title).toBe('Tulsa Blues');
-    expect(musicAt('triCities')?.[0].title).toBe('Vine Street Blues');
+    // Both records, in turn, at both: variety over a tune for each place.
+    for (const place of ['sandbar', 'triCities']) expect(musicAt(place)?.map((t) => t.title)).toEqual(['Tulsa Blues', 'Vine Street Blues']);
     expect(musicAt('harbourTalk')).toBeNull();
     expect(musicAt(null)).toBeNull();
   });

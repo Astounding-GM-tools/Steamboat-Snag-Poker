@@ -38,7 +38,7 @@ export const en = {
   'options.facesTip': 'Big suit makes a flush easier to spot. At the table, tap a card on the board to switch.',
   'options.music': 'The band',
   'options.volume': 'Volume',
-  'options.musicTip': 'Bennie Moten’s Kansas City Orchestra plays at The Sandbar and in the Bettendorf saloon: Tulsa Blues and Vine Street Blues, their OKeh sides of 1924.',
+  'options.musicTip': 'Bennie Moten’s Kansas City Orchestra plays at The Sandbar and in the Bettendorf saloon: Tulsa Blues and Vine Street Blues in turn, their OKeh sides of 1924.',
   /** The credit at the top of the screen as a record starts. */
   'music.nowPlaying': 'Now playing: {title}, {band}, {year}',
   // How it works is Morag's pamphlet against the game: the rules, accurately, and her opinion of them.

@@ -89,6 +89,8 @@ const decks: Deck[] = browser ? [newDeck(), newDeck()] : [];
 let active: Deck | null = null;
 /** What this place wants, even while the music's off or the tab hidden. */
 let wanted: Track[] | null = null;
+/** The record last heard: a place's list starts on the one after it, so the same side doesn't come round twice running. */
+let lastHeard: string | null = null;
 const same = (a: Track[] | null, b: Track[] | null) => !!a && !!b && a.length === b.length && a.every((t, i) => t.id === b[i].id);
 
 function apply(deck: Deck) {
@@ -105,6 +107,7 @@ function load(deck: Deck) {
 /** The credit, once it's actually heard (not while it waits on a first tap). */
 function credit(deck: Deck) {
   const track = deck === active && deck.tracks ? deck.tracks[deck.index] : null;
+  if (track) lastHeard = track.id;
   if (track && music.now?.id !== track.id) music.now = track;
 }
 
@@ -181,7 +184,7 @@ export function playHere(tracks: Track[] | null) {
   if (deck.tracks) rest(deck);
   active = deck;
   deck.tracks = tracks;
-  deck.index = 0;
+  deck.index = (tracks.findIndex((t) => t.id === lastHeard) + 1) % tracks.length;
   deck.target = 1;
   load(deck);
   start(deck);
