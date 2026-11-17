@@ -76,7 +76,8 @@ down; "Gilbert" to "Bettendorf" (the town renamed in 1903; the sheets still read
   where it should go: that's a nudge, its spot where you grabbed and its push as far as you drag. Its
   reach is the dashed circle (300 px, 600 m, to start; the wheel over its dot or handle, or `[` and `]`,
   makes it smaller or bigger). Drag the red handle to change the push, the blue dot to move the spot;
-  Delete takes the picked one away. **Save to repo** writes them all to `src/story/map/nudges.json`
+  Delete takes the picked one away. **Freeze view** holds the view still while you work (she steams on
+  out of it; untick to catch her up). **Save to repo** writes them all to `src/story/map/nudges.json`
   (through the dev server: `nudgeFile` in `vite.config.ts`), ready to commit; **Copy** is the fallback
   (on a phone over `--host`, where the clipboard won't take it, a box to copy from). The bend is
   `bend` in `src/ui/map/nudges.ts`: every point within the reach moves by the push times a cosine

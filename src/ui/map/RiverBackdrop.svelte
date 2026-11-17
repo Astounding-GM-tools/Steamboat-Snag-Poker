@@ -270,6 +270,8 @@
     lean.target = ahead ? 0.65 : 0;
   });
   const center = $derived.by<Pt>(() => {
+    // Development (`?nudge`): the view held still while the course is bent, she steaming on out of it.
+    if (nudges.hold) return nudges.hold;
     const [cx, cy] = cam.current, k = lean.current, a = leanTo ?? cam.current;
     return [cx + k * (a[0] - cx), cy + k * (a[1] - cy)];
   });

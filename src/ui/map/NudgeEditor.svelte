@@ -4,7 +4,8 @@
    * (docs/map.md, "How to nudge"). Drag the red line to pull it where it should go: that's a nudge, a
    * spot, a push and a reach. Each shows as a dot (its spot) and a handle (where it pushes the line
    * to): drag the handle to change the push, the dot to move the spot; the wheel over either, or
-   * [ and ], to change the reach. Delete takes the one picked away. Save writes them to the repo
+   * [ and ], to change the reach. Freeze holds the view still (she steams on out of it) while you work.
+   * Delete takes the one picked away. Save writes them to the repo
    * (src/story/map/nudges.json, through the dev server); Copy puts them on the clipboard instead.
    *
    * It lies over everything, but only the line and the handles take the pointer: the game's own
@@ -134,6 +135,14 @@
     }
   }
 
+  /** Freeze the view where it is, or let it follow her again. Never left frozen once the overlay's gone. */
+  function freeze() {
+    nudges.hold = nudges.hold ? null : [center[0], center[1]];
+  }
+  $effect(() => () => {
+    nudges.hold = null;
+  });
+
   const points = $derived(line.map((q) => `${q[0]},${q[1]}`).join(' '));
 </script>
 
@@ -161,6 +170,7 @@
   <div class="row">
     <button onclick={save} disabled={!dirty}>Save to repo</button>
     <button onclick={copy}>Copy</button>
+    <label><input type="checkbox" checked={!!nudges.hold} onchange={freeze} /> Freeze view</label>
     {#if picked !== null && nudges.list[picked]}
       <button onclick={() => picked !== null && remove(picked)}>Delete</button>
       <span>reach {Math.round(nudges.list[picked].reach)} px</span>

@@ -5,8 +5,13 @@
  */
 import saved from '../../story/map/nudges.json';
 import { parseNudges, type Nudge } from './nudges';
+import type { Pt } from './route';
 
-export const nudges = $state<{ list: Nudge[] }>({ list: parseNudges(saved) });
+export const nudges = $state<{ list: Nudge[]; hold: Pt | null }>({
+  list: parseNudges(saved),
+  /** Development: the view frozen here (map px), not following her, while the nudge overlay says so. */
+  hold: null,
+});
 
 if (import.meta.hot) {
   // The overlay's own save comes back as an update to the file: taken in quietly, no reload. An edit
