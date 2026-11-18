@@ -189,10 +189,21 @@
     if (step?.type !== 'shot') return;
     const st = step, began = performance.now();
     const timer = setInterval(() => {
-      if (performance.now() - began >= (st.seconds ?? 6) * 1000 && (!st.wait || !freshEntry)) skipShot();
+      if (performance.now() - began >= (st.seconds ?? 6) * 1000 && (!st.wait || shotTyped(st))) skipShot();
     }, 400);
     return () => clearInterval(timer);
   });
+  /**
+   * A shot's line typed out, its last letter a beat ago (SHOT_BEAT_MS): on a shot the view is the point,
+   * so it doesn't wait out the time to read the line, as the ticker would.
+   */
+  const SHOT_BEAT_MS = 1200;
+  let linesTypedAt = 0;
+  function shotTyped(st: Extract<NonNullable<typeof step>, { type: 'shot' }>): boolean {
+    if (!freshEntry) return true;
+    const typingIt = !!st.log && lastEntry === st.log.text && typedLines >= st.log.text.split('\n').length;
+    return typingIt && performance.now() - linesTypedAt >= SHOT_BEAT_MS;
+  }
   function skipShot() {
     if (step?.type === 'shot') journey = proceed(journey, RIVER);
   }
@@ -314,7 +325,7 @@
     const settled = setTimeout(() => (settling = false), SETTLE_TAPS_MS);
     if (!untrack(() => onRiver && !lifting)) return () => clearTimeout(settled);
     arriving = true;
-    const timer = setTimeout(() => (arriving = false), 2000);
+    const timer = setTimeout(() => (arriving = false), 3000);
     return () => {
       clearTimeout(timer);
       clearTimeout(settled);
@@ -734,7 +745,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="status opens" class:opening={step.type === 'shot' && !!step.opening} role="button" tabindex="0" aria-label={t('log.open')} onclick={() => (logOpen = !logOpen)}>
       <span class="day">{heading}</span>
-      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} paused={racing} />{/if}
+      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => ((typedLines = n), (linesTypedAt = performance.now()))} paused={racing} />{/if}
       {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
     </div>
     {#if logOpen && journey.log?.length}<LogView entries={journey.log} today={Math.max(1, journey.mornings)} onclose={() => (logOpen = false)} />{/if}
@@ -774,7 +785,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="status opens" class:unseen={!journey.mornings} role="button" tabindex="0" aria-label={t('log.open')} onclick={() => journey.log?.length && (logOpen = !logOpen)}>
       <span class="day">{heading}{#if step.type === 'hub'} · {t(`river.slot.${journey.time}`)}{/if}</span>
-      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} paused={racing} />{/if}
+      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => ((typedLines = n), (linesTypedAt = performance.now()))} paused={racing} />{/if}
       <span>{t('river.purse')} ${journey.purse}</span>
       <span>{t('river.strength')} {journey.strength}</span>
       <span>{t('river.coal')} {t('river.coalLoads', { n: journey.coal, max: BOAT.bunker })}</span>
@@ -893,8 +904,25 @@
   .lifting :global(.table > :not(.rivals, .felt, .mine, .actions)) {
     animation: fade-out 0.5s both;
   }
+  /* (Forward, easing out: run in reverse, the old drop also reversed its easing and landed with a thump.) */
   .arriving :global(.table > .rivals) {
-    animation: off-top 0.8s ease-out 0.7s reverse both;
+    animation: rivals-in 1.4s cubic-bezier(0.22, 0.8, 0.3, 1) 0.4s both;
+  }
+  @keyframes rivals-in {
+    from {
+      transform: translateY(-14vh);
+      opacity: 0;
+    }
+  }
+  /* The first thing said waits till they're down, then comes in softly. */
+  .arriving :global(.speech-slot) {
+    animation: caption-in 0.8s ease-out 1.7s both;
+  }
+  @keyframes caption-in {
+    from {
+      transform: translateY(1.5vh);
+      opacity: 0;
+    }
   }
   .arriving :global(.table > .felt) {
     animation: off-left 0.8s ease-out 0.8s reverse both;

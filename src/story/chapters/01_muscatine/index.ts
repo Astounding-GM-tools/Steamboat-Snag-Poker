@@ -124,7 +124,7 @@ export const muscatineTalk: Record<string, Talk> = {
         // Good news or bad? Either way it comes to the same thing: you're the captain now.
         deal: [
           {
-            ...said('Landed a big job. Horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis'),
+            ...said(['Landed a big job.', 'Horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis.']),
             replies: [
               { label: 'Bad', go: 'bad' },
               { label: 'Good', go: 'good' },

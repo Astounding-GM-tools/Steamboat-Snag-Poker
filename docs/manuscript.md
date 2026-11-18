@@ -28,7 +28,8 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **muscatineTalk**
 
-- **Bill:** Landed a big job. Horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis <sub>bill.rounds[1].deal[1] · index.ts:127</sub>
+- **Bill:** Landed a big job. <sub>bill.rounds[1].deal[1][1] · index.ts:127</sub>
+- **Bill:** Horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis. <sub>bill.rounds[1].deal[1][2] · index.ts:127</sub>
 - *button* Bad <sub>bill.rounds[1].deal[1].replies[1].label · index.ts:129</sub>
 - *button* Good <sub>bill.rounds[1].deal[1].replies[2].label · index.ts:130</sub>
 - **You:** This is good news, isn’t it, Captain? <sub>bill.rounds[1].deal[2] · index.ts:133</sub>
