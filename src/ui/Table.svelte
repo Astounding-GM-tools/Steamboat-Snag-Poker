@@ -1046,9 +1046,10 @@
   {#if showHelp}<div class="help-layer layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
   <!-- How it works covers what's said: the line comes back when it closes. -->
   {#if line && !showHelp}
-    <!-- Each line slides in from the right, and out the way it went (swiped, or left on a button). -->
+    <!-- Each line slides in from the right, and out the way it went (swiped, or left on a button). (Its way out
+         is local: when the whole table goes, a voyage started afresh say, it goes with it, not 220 ms later.) -->
     {#key line}
-    <div class="speech-slot" in:fly|global={{ x: 70, duration: 260, opacity: 0 }} out:fly|global={{ x: 90 * exitDir, duration: 220, opacity: 0 }}>
+    <div class="speech-slot" in:fly|global={{ x: 70, duration: 260, opacity: 0 }} out:fly={{ x: 90 * exitDir, duration: 220, opacity: 0 }}>
     <Speech
       {line}
       name={speakerName(line.who)}

@@ -295,12 +295,23 @@
 
   /** A table just come up on the river: its things slide in over the map (and only then: a jolt after mustn't replay it). */
   let arriving = $state(false);
+  /**
+   * A table just come up takes no taps for a moment: a tap meant for what was there before (Skip, on the
+   * shot it replaced) mustn't land on its buttons, in the same spot, and play it on unseen.
+   */
+  let settling = $state(false);
+  const SETTLE_TAPS_MS = 700;
   $effect(() => {
     void shownKey;
-    if (!untrack(() => onRiver && !lifting)) return;
+    settling = true;
+    const settled = setTimeout(() => (settling = false), SETTLE_TAPS_MS);
+    if (!untrack(() => onRiver && !lifting)) return () => clearTimeout(settled);
     arriving = true;
     const timer = setTimeout(() => (arriving = false), 2000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(settled);
+    };
   });
 
   /** Something hit her mid-talk (a line's `jolt`): the table and the map lurch together. */
@@ -706,7 +717,7 @@
   <!-- Encounters may follow one another with nothing between: each sits down at a table of its own. -->
   {#key shownKey}
     <!-- Running aground: the whole picture lurches as the table comes up. On the river, the table's things slide in over the map, and off it again. -->
-    <div class="over" class:river={onRiver} bind:this={overEl} class:jolt={step?.type === 'encounter' && step.jolt} class:lifting class:arriving inert={lifting}>
+    <div class="over" class:river={onRiver} bind:this={overEl} class:jolt={step?.type === 'encounter' && step.jolt} class:lifting class:arriving inert={lifting || settling}>
       <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} onjolt={jolt} />
     </div>
   {/key}
