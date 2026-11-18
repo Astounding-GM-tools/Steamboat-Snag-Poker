@@ -446,6 +446,8 @@ export const en = {
   'hub.job:cattle.desc': '-1 coal, +$14',
   'hub.job:mail.name': 'Job: Mail run',
   'hub.job:mail.desc': '-1 coal, +$9',
+  'hub.job:salvage.name': 'Job: Salvage camping',
+  'hub.job:salvage.desc': 'No coal. Crates below the rapids, for the crew’s strength',
   'river.needsCoal': 'Needs {n} coal',
   'river.heldGround': 'You hold your ground! The sand drifts away.',
   'river.gainedGround': 'She gains! A little further up.',

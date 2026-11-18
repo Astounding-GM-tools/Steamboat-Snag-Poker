@@ -7,7 +7,8 @@ import { t } from '../../../i18n';
 import { NAGS, deckGame, deckLines } from '../../characters/crew';
 import { FLAG } from '../../flags';
 import { capital } from '../../lines';
-import { BREAKFAST_COST, CLIMB_COAL, DOCKING_FEE, GAYLORD_FIRST_HIRE, GAYLORD_LAST_DAY, GAYLORD_LEAVES, JOB_COAL, JOB_PAY, MORNING_ENTRY, READY_STRENGTH } from '../../numbers';
+import { BREAKFAST_COST, CLIMB_COAL, DOCKING_FEE, GAYLORD_FIRST_HIRE, GAYLORD_LAST_DAY, GAYLORD_LEAVES, JOB_COAL, JOB_PAY, MORNING_ENTRY, READY_STRENGTH, SALVAGE_ANTE, SALVAGE_CRATES } from '../../numbers';
+import { debrisStep } from '../../characters/debris';
 import { gaylordPlaysYourSeat, tournament } from '../03_rapids';
 import { breakfast, breakfastTalk, saloon, triCitiesTalk } from './bettendorf';
 import { depot, depotTalks } from './depot';
@@ -22,6 +23,23 @@ const job = (id: string, text: string, pays: number, flag?: string): HubOption =
   ...(flag ? { flag } : {}),
   steps: [{ type: 'caption', lines: [{ text }], effects: { purse: pays, coal: -JOB_COAL, ...(flag ? { clear: flag } : {}) } }, { type: 'slot' }],
 });
+
+/**
+ * Salvage camping: tied up below the Moline chain for the slot, no coal burned, fishing out what the
+ * rapids took off the boats that tried them that day. A crate a hand, for the crew's strength (idle at
+ * the hub otherwise), each one won salvage for the Mercantile. (Draft text, for review.)
+ */
+const salvageCamp: Step[] = [
+  {
+    type: 'caption',
+    lines: [
+      { text: 'You tie up below the Moline chain, where the river hands back what the rapids took off the boats that tried them.' },
+      { who: 'gus', text: 'Not a shovel of coal, Captain. Just patience and a boat hook.' },
+    ],
+  },
+  ...Array.from({ length: SALVAGE_CRATES }, (): Step => debrisStep({ kind: 'crate' }, SALVAGE_ANTE)),
+  { type: 'slot' },
+];
 
 export const triCities: Hub = {
   advice: (state) => {
@@ -73,6 +91,7 @@ export const triCities: Hub = {
         job('timber', 'You herd a timber raft off the bridge piers all day. The raft is bigger than the boat.', JOB_PAY.timber, FLAG.jobFound),
         job('cattle', 'You ferry a herd of cattle across the river, and spend the rest of the day swabbing the deck.', JOB_PAY.cattle, FLAG.jobFound),
         job('mail', 'You run the mail to Moline and back, and Gus counts every shovel.', JOB_PAY.mail),
+        { id: 'job:salvage', times: DAYTIME, steps: salvageCamp },
       ],
     },
   ],

@@ -161,13 +161,13 @@ out.push(table(['persona', ...items], names.map((n) => [n, ...items.map((i) => p
 out.push('\n### Troubles, salvage, the depot\n');
 out.push(
   table(
-    ['persona', 'troubles taken (mean)', 'from debris / Sandbar / other', 'fixed at the deck game (mean)', 'salvage earned $ (mean)', 'salvage sold $ (mean)', 'depot cost per game p10/p50/p90', 'depot games costing > $25'],
+    ['persona', 'troubles taken (mean)', 'from debris / Sandbar / other', 'fixed at the deck game (mean)', 'salvage earned $ (mean)', 'salvage sold $ (mean)', 'camp crates (mean)', 'depot cost per game p10/p50/p90', 'depot games costing > $25'],
     names.map((n) => {
       const rs = personas[n];
       const t = rs.flatMap((r) => r.troublesTaken);
       const deb = t.filter((x) => ['sawyer', 'deadhead', 'driftPile'].includes(x.from)).length, sb = t.filter((x) => x.from === 'sandbar').length;
       const dc = rs.flatMap((r) => r.depotCost);
-      return [n, mean(rs.map((r) => r.troublesTaken.length)), `${deb} / ${sb} / ${t.length - deb - sb}`, mean(rs.map((r) => r.troublesFixed)), mean(rs.map((r) => r.salvageEarned)), mean(rs.map((r) => r.salvageSold)), qs(dc), `${dc.filter((x) => x > 25).length} of ${dc.length}`];
+      return [n, mean(rs.map((r) => r.troublesTaken.length)), `${deb} / ${sb} / ${t.length - deb - sb}`, mean(rs.map((r) => r.troublesFixed)), mean(rs.map((r) => r.salvageEarned)),  mean(rs.map((r) => r.salvageSold)), mean(rs.map((r) => r.campCrates ?? 0)), qs(dc), `${dc.filter((x) => x > 25).length} of ${dc.length}`];
     }),
   ),
 );

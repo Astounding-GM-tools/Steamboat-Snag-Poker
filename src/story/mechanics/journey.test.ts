@@ -46,6 +46,8 @@ import { Rng } from '../../engine/rng';
 import { newSession, nextSessionHand, submit, type TableSession } from '../../engine/session';
 import { DOCK_FEE, TROUBLE, coveredHands } from './snags';
 import { CRATE_ANTE, crateAnteFor, debrisAt, debrisStep } from '../characters/debris';
+import { GOSSIP, gossip } from '../characters/crew';
+import { SALVAGE_ANTE, SALVAGE_CRATES } from '../numbers';
 
 /** Plays the voyage as a careful captain would; returns every state passed through. */
 function autopilot(seed: number, guard = 40000): JourneyState[] {
@@ -493,7 +495,7 @@ describe('the Tri-Cities', () => {
   it('opens the jobs for free, and a job fills the slot and burns its coal', () => {
     const open = goTo({ ...at('morning', ['jobFound']), coal: 3 }, RIVER, 'jobs');
     expect(open.time).toBe('morning');
-    expect(ids(open)).toEqual(['job:timber', 'job:cattle', 'job:mail']);
+    expect(ids(open)).toEqual(['job:timber', 'job:cattle', 'job:mail', 'job:salvage']);
     let s = goTo(open, RIVER, 'job:cattle');
     const purse = s.purse;
     s = proceed(s, RIVER);
@@ -504,10 +506,45 @@ describe('the Tri-Cities', () => {
     expect(currentStep(s, RIVER)?.type).toBe('hub');
   });
 
-  it('always has the mail, and no job without coal', () => {
+  it('always has the mail and salvage camping, and only the salvage without coal', () => {
     const s = goTo({ ...at('morning'), coal: 0 }, RIVER, 'jobs');
-    expect(hubOptions(s, RIVER).map((o) => [o.option.id, o.open])).toEqual([['job:mail', false]]);
+    expect(hubOptions(s, RIVER).map((o) => [o.option.id, o.open])).toEqual([
+      ['job:mail', false],
+      ['job:salvage', true],
+    ]);
     expect(closeMenu(s).submenu).toBeNull();
+  });
+
+  it('camps below the rapids for salvage: a crate a hand for the crew’s strength, no coal, and the slot’s gone', () => {
+    const rng = new Rng(5);
+    let s = goTo(goTo({ ...at('morning'), coal: 0, strength: 18 }, RIVER, 'jobs'), RIVER, 'job:salvage');
+    s = proceed(s, RIVER);
+    let crates = 0, won = 0;
+    for (let guard = 0; guard < 500 && currentStep(s, RIVER)?.type === 'encounter'; guard++) {
+      const e = s.encounter!;
+      if (e.outcome) {
+        expect(e.def.id).toBe('crate');
+        crates++;
+        if (e.outcome === 'solved') won++;
+        s = leaveEncounter(s, RIVER);
+      } else if (e.session.phase === 'hand') s = playEncounter(s, myMoveOwed(s) ? chooseAction('careful', viewFor(e.session.round!, mySeatAt(e), e.session.config), e.session.config, rng) : null);
+      else s = handDone(s, RIVER);
+    }
+    expect(crates).toBe(SALVAGE_CRATES);
+    expect(s.salvage ?? 0).toBe(won * SALVAGE_ANTE);
+    expect(s.coal).toBe(0);
+    expect(s.time).toBe('afternoon');
+    expect(currentStep(s, RIVER)?.type).toBe('hub');
+  });
+
+  it('has Willie bring back gossip that’s true just now, a different line each night', () => {
+    const ctx = (journey: JourneyState, day: number) => ({ hand: 1, pile: 0, seed: 1, fixed: [], day, trips: false, lost: 0, foldedOut: false, met: true, attempt: 1, journey });
+    const broke = { ...at('evening', ['met:triCities', 'met:morning']), purse: 3, coal: 0, mornings: 6 };
+    const lines = new Set(Array.from({ length: GOSSIP.length }, (_, day) => gossip(ctx(broke, day))));
+    expect(lines.size).toBe(GOSSIP.length);
+    // With the boiler and a full bunker, nothing about coal or the boiler.
+    const flush = { ...broke, purse: 60, coal: 6, upgrades: ['boilerOverhaul'] };
+    for (let day = 0; day < 6; day++) expect(gossip(ctx(flush, day))).not.toMatch(/Coal’s fetching|strike chest|boiler/);
   });
 
   it('lets you walk away from the depot and stay where you were', () => {

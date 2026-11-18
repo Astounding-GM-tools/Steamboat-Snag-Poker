@@ -185,6 +185,8 @@ export interface RunRecord {
   debris: DebrisMet[];
   /** Debris called while the crew had no strength (the UI then puts nothing in the water). */
   debrisSkippedNoStrength: number;
+  /** Crates played at salvage camp, below the rapids. */
+  campCrates: number;
   /** Crates met in a passage round an island. */
   laneCrates: number;
   /** The stream's main event: where it came (t), and whether the stretch ended before it (an anomaly). */
@@ -273,6 +275,7 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
     debris: [],
     debrisSkippedNoStrength: 0,
     laneCrates: 0,
+    campCrates: 0,
     troublesTaken: [],
     troublesFixed: 0,
     salvageEarned: 0,
@@ -449,7 +452,9 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
       s = goTo(s, story, id);
     };
     if (s.submenu === 'jobs') {
-      const job = ['job:cattle', 'job:timber', 'job:mail'].find(open);
+      // Cattle or timber when Willie's found it; then salvage camping (no coal) or the mail run.
+      const camp = s.strength > DEBRIS_FLOOR && (persona.upgrades || s.coal < 1);
+      const job = ['job:cattle', 'job:timber', ...(camp ? ['job:salvage', 'job:mail'] : ['job:mail', 'job:salvage'])].find(open);
       if (job) return go(job);
       s = closeMenu(s);
       return hub();
@@ -484,7 +489,7 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
     if (persona.sellsCoal && saving() && s.coal >= 3 && open('mercantile')) return go('mercantile');
     if ((s.salvage ?? 0) >= 4 && open('mercantile')) return go('mercantile');
     // A job, if it doesn't leave her short of coal for the climb (the depot fills her up again).
-    if (open('jobs') && s.coal >= 1) {
+    if (open('jobs')) {
       go('jobs');
       return;
     }
@@ -569,6 +574,11 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
       } else {
         const r = ENCOUNTER_RECORDS[id]?.[e.outcome];
         if (r) log(r);
+        // A crate at salvage camp, below the rapids.
+        if (id === 'crate') {
+          rec.campCrates++;
+          if (e.outcome === 'solved') rec.salvageEarned += step.effects?.salvage ?? 0;
+        }
       }
       if (id === 'sandbar') {
         if (e.outcome === 'solved') rec.sandbarCleared = step.attempt ?? 1;

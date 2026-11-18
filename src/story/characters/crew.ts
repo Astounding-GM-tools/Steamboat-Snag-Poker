@@ -88,6 +88,47 @@ export function deckTalk({ hand, seed, fixed, day }: TalkContext): RoundScript {
   };
 }
 
+/**
+ * What Willie heard ashore, the nights after the first: whatever's true just now, one a night in
+ * turn. Each is a hint for a captain going round in circles (docs/playtest-2026-11-17.md: the ones who
+ * do odd jobs all week and leave the money at Bettendorf). Drafts, for review.
+ */
+export const GOSSIP: { when: (j: TalkContext['journey']) => boolean; text: string }[] = [
+  {
+    // Coal's dear: sell it. The strikers' heap is the cheap end of that.
+    when: (j) => !j.upgrades.includes('boilerOverhaul'),
+    text: 'Coal’s fetching eight dollars a load at the Mercantile, Captain, and they’re still buying. Funny, how the strikers’ heap keeps losing sacks.',
+  },
+  {
+    // The depot: what the foreman never says.
+    when: (j) => j.coal < 6,
+    text: 'Rourke says the strike chest is running low. Any captain who loses a dozen dollars at their table is a friend of the union, he says. He winked, Captain. Twice.',
+  },
+  {
+    when: (j) => j.purse < 15 && j.flags.includes('met:triCities'),
+    text: 'They say the house always wins in Bettendorf, Captain. I think they mean Odds.',
+  },
+  {
+    // The Games: what the playtest found works at a crowded table.
+    when: (j) => j.flags.includes('met:morning'),
+    text: 'The captains who win at Davenport hardly swap a card when the table’s full, Captain. They just sit there looking stubborn, and let the others throw their money about.',
+  },
+  {
+    when: () => true,
+    text: 'Every boat that tries the rapids and doesn’t make it comes down lighter, Captain. Folks camp below the Moline chain and fish out whatever floats by.',
+  },
+  {
+    when: (j) => !j.upgrades.includes('boilerOverhaul') && j.mornings >= 5,
+    text: 'The Mercantile has a boiler overhaul for forty dollars, Captain. Gus has been to look at it three times. He thinks I didn’t notice.',
+  },
+];
+
+/** Tonight's gossip: the true ones in turn, by the day. */
+export function gossip({ journey, day }: TalkContext): string {
+  const now = GOSSIP.filter((g) => g.when(journey));
+  return now[day % now.length].text;
+}
+
 /** The evening Willie comes back from ashore: the pilot, the first time. */
 export const deckIntelTalk = (context: TalkContext): RoundScript => ({
     ...deckTalk(context),
@@ -95,7 +136,8 @@ export const deckIntelTalk = (context: TalkContext): RoundScript => ({
     ...(context.hand === 1 && context.met
       ? {
           deal: [
-            say('willie', ['Same town, same talk, Captain.', 'There’s work ashore, though: a timber raft to herd off the bridge piers, cattle to ferry across, and the mail to Moline.']),
+            say('willie', gossip(context)),
+            say('willie', 'There’s work ashore, too: a timber raft to herd off the bridge piers, cattle to ferry across, the mail to Moline, and salvage below the rapids, for anyone with a boat hook.'),
             say('gus', 'Anything broken, Captain, lay it on the table. We’ll see to it.'),
           ],
         }

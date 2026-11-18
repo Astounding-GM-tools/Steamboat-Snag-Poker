@@ -27,6 +27,9 @@ export const BREAKFAST_COST = 4;
 export const BREAKFAST_STRENGTH = 4;
 export const JOB_COAL = 1;
 export const JOB_PAY = { timber: 10, cattle: 14, mail: 9 };
+/** Salvage camping below the rapids: no coal burned, this many crates fished out (a hand each, for the crew's strength), each worth this much won. */
+export const SALVAGE_CRATES = 4;
+export const SALVAGE_ANTE = 3;
 
 /** The Pilot Games. */
 export const MORNING_ENTRY = 5;
