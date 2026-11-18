@@ -12,20 +12,6 @@
         "5174"
       ],
       "port": 5174
-    },
-    {
-      "name": "integration",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "--prefix",
-        "/Users/olemak/Projects/Willies_Wild_River/.claude/worktrees/integration",
-        "run",
-        "dev",
-        "--",
-        "--port",
-        "5185"
-      ],
-      "port": 5185
     }
   ]
 }
