@@ -134,7 +134,7 @@ export const muscatineTalk: Record<string, Talk> = {
           { ...said('Good money. And the worst timing of my life.'), id: 'timing', branch: true, replies: [{ label: 'Why?', go: 'why' }] },
           { ...said('Because you’re the captain now.'), id: 'why', branch: true, replies: [{ label: 'Me?', end: true }] },
           { ...you('You say that like it’s bad news, Captain?'), id: 'bad', branch: true, next: 'making' },
-          { ...said(['It is good news. It’s just the timing that’s bad.', 'Because I can’t come with you. I’m making you the captain.']), id: 'making', branch: true, replies: [{ label: 'Me?', end: true }] },
+          { ...said(['It is good news. It’s just the timing that’s bad.', 'Because I can’t come with. I’m making you the captain.']), id: 'making', branch: true, replies: [{ label: 'Me?', end: true }] },
         ],
         flop: [
           you('Me? I’m only the first mate.'),

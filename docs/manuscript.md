@@ -38,7 +38,7 @@ descriptions, the river's calls and the log's labels) is at the end.
 - *button* Me? <sub>bill.rounds[1].deal[4].replies[1].label · index.ts:135</sub>
 - **You:** You say that like it’s bad news, Captain? <sub>bill.rounds[1].deal[5] · index.ts:136</sub>
 - **Bill:** It is good news. It’s just the timing that’s bad. <sub>bill.rounds[1].deal[6][1] · index.ts:137</sub>
-- **Bill:** Because I can’t come with you. I’m making you the captain. <sub>bill.rounds[1].deal[6][2] · index.ts:137</sub>
+- **Bill:** Because I can’t come with. I’m making you the captain. <sub>bill.rounds[1].deal[6][2] · index.ts:137</sub>
 - *button* Me? <sub>bill.rounds[1].deal[6].replies[1].label · index.ts:137</sub>
 - **You:** Me? I’m only the first mate. <sub>bill.rounds[1].flop[1] · index.ts:140</sub>
 - **Bill:** That’s what a first mate is for. <sub>bill.rounds[1].flop[2] · index.ts:141</sub>
