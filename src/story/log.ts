@@ -29,8 +29,8 @@ const MUSCATINE_TO_DUBUQUE = 125;
  * wheel turns ahead, the run; under way, how the dock fee went and the coal.
  */
 export const LEAVING_MUSCATINE = {
-  /** The opening shot, as the view comes in to her: the day, a pause, and what it means on the river. */
-  opening: ['The first day of spring,', 'which is what some folks call the day the ice goes out.'].join('\n'),
+  /** The opening shot, one sentence typed as the view pans and zooms in to her: the day, and what it means on the river. */
+  opening: 'The first day of spring is what some folks call the day the ice lets go of the river.',
   turning: [`Cargo run for Dubuque, ${MUSCATINE_TO_DUBUQUE} miles upriver.`, 'Strong spring-thaw current, four miles an hour.'].join('\n'),
 };
 

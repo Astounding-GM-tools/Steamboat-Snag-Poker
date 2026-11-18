@@ -115,7 +115,14 @@
    */
   /** What he types in the header: the log, but for his thoughts (those are only in the log, to be found there). */
   const ticker = $derived((journey.log ?? []).filter((e) => e.kind !== 'thought'));
-  let seenLog = $state(untrack(() => ticker.length));
+  // (Opened on a shot whose line is the latest entry, a new voyage's opening say: that one he types, as it comes up.)
+  let seenLog = $state(
+    untrack(() => {
+      const at = currentStep(journey, RIVER);
+      const typing = at?.type === 'shot' && at.log && ticker.at(-1)?.text === at.log.text;
+      return typing ? ticker.length - 1 : ticker.length;
+    }),
+  );
   const lastEntry = $derived(ticker.length ? ticker[Math.min(seenLog, ticker.length - 1)].text : null);
   const freshEntry = $derived(ticker.length > seenLog);
   const typed = () => {
@@ -991,9 +998,9 @@
   .page > :global(*) {
     --u: clamp(1rem, 3.7cqw, 1.7rem);
   }
-  /* The opening shot: the heading ("Muscatine") comes up once the view has come to rest on her. */
+  /* The opening shot: the heading ("Muscatine") comes up early, out of the black, so Willie's typing is seen as the view pans in. */
   .status.opening {
-    animation: heading-in 2s ease 11s both;
+    animation: heading-in 2s ease 3s both;
   }
   @keyframes heading-in {
     from {

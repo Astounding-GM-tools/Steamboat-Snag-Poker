@@ -191,8 +191,7 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **LEAVING_MUSCATINE**
 
-- The first day of spring, <sub>opening[1] · log.ts:33</sub>
-- which is what some folks call the day the ice goes out. <sub>opening[2] · log.ts:33</sub>
+- The first day of spring is what some folks call the day the ice lets go of the river. <sub>opening · log.ts:33</sub>
 - Cargo run for Dubuque, {MUSCATINE_TO_DUBUQUE} miles upriver. <sub>turning[1] · log.ts:34</sub>
 - Strong spring-thaw current, four miles an hour. <sub>turning[2] · log.ts:34</sub>
 

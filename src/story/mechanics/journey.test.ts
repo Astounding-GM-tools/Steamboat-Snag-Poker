@@ -83,7 +83,7 @@ describe('the voyage', () => {
     expect(first?.type === 'shot' && first.opening).toBe(true);
     // One morning: it has dawned already, and the day's line is written as the shot comes up.
     expect(s.mornings).toBe(1);
-    expect(s.log?.[0]?.text).toMatch(/^The first day of spring,/);
+    expect(s.log?.[0]?.text).toMatch(/^The first day of spring /);
     s = proceed(s, RIVER);
     expect(s.encounter?.def.id).toBe('bill');
     expect(s.encounter?.session.round?.potMode).toBe(false);
