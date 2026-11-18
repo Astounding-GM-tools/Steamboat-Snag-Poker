@@ -905,7 +905,8 @@
     if (!res) return '';
     if (res.rides) return t('hr.rides');
     // You get your own line ("You take the pot!"), not your name in theirs.
-    const line = (key: string, s: number) => (s === me ? (table.winLine ?? t(`${key}.you`)) : t(key, { name: who(s) }));
+    // (A table's own win line says the winning only: not where the snags go.)
+    const line = (key: string, s: number) => (s === me ? ((key === 'hr.wins' || key === 'hr.byFolds') && table.winLine) || t(`${key}.you`) : t(key, { name: who(s) }));
     // You folded and one captain is left: say so (with more still at the table, the rest folded too).
     if (res.byFolds && me >= 0 && round.seats[me].folded && res.winners.length === 1 && round.seats.length === 2) return t('hr.youFolded', { name: who(res.winners[0]) });
     if (res.byFolds) return [line('hr.byFolds', res.winners[0]), res.weakest !== null && res.dumped.length ? line('hr.snagsTo', res.weakest) : ''].filter(Boolean).join(' ');

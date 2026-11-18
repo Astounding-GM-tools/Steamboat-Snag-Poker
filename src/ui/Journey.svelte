@@ -518,11 +518,27 @@
       phase: s.phase,
       currency: enc.def.stake === 'strength' ? 'buttons' : undefined,
       label: t('river.day', { day: journey.mornings }),
-      ...(s.seats.some((p) => p.obstacle) ? { winLine: t(s.seats.some((p) => p.steady) ? 'river.gainedGround' : 'river.heldGround') } : {}),
+      ...(s.seats.some((p) => p.obstacle) ? { winLine: winLine(enc.def.id, s.hand) } : {}),
       ...(enc.def.proxy ? { proxy: t('river.proxy') } : {}),
       ending: s.phase === 'over' ? (s.seats[0].out ? 'lostAll' : 'wonAll') : undefined,
     });
   });
+
+  /**
+   * A won hand against the river, said in place of "You take the pot!": a line for what she's up
+   * against, in turn by the hand (a one-hand table, by where on the voyage she met it). Anything
+   * without lines of its own: the old one.
+   */
+  const WIN_LINES: Record<string, number> = { sandbar: 6, crate: 5, sawyer: 4, deadhead: 4, driftPile: 4, rapids: 4 };
+  /** The rapids' stages share the climb's lines. */
+  const WIN_KIND: Record<string, string> = { molineChain: 'rapids', campbellsChain: 'rapids', longReach: 'rapids' };
+  function winLine(id: string, hand: number): string {
+    const kind = WIN_KIND[id] ?? id, n = WIN_LINES[kind];
+    if (!n) return t('river.gainedGround');
+    // Where she met it: the voyage's step and spot, so one-hand tables don't all start on the first line.
+    const met = journey.step + journey.pending.length + Math.round((journey.river?.t ?? 0) * 1e4) + journey.seed;
+    return t(`river.won.${kind}.${((hand - 1 + met) % n) + 1}`);
+  }
 
   /** What's on a crew member's mind on this screen. */
   const advice = $derived.by((): StoryLine | null => {
