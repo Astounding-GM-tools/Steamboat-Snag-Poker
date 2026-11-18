@@ -179,60 +179,59 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **ENCOUNTER_RECORDS**
 
-- Took command of the Best Intentions from Captain Bill, at Muscatine. <sub>bill.solved · log.ts:9</sub>
-- Off The Sandbar at last. All hands sore. <sub>sandbar.solved · log.ts:10</sub>
-- Aground on The Sandbar. We stay the night. <sub>sandbar.failed · log.ts:10</sub>
-- Cards on deck by lantern light. Repairs seen to. <sub>deck.solved · log.ts:11</sub>
-- Anchored downstream of the dock. Went ashore for news. <sub>deckIntel.solved · log.ts:12</sub>
-- Cards with the strikers at the coal depot. <sub>depot.solved · log.ts:13</sub>
-- An evening at the Bettendorf saloon. <sub>triCities.solved · log.ts:14</sub>
+- Off The Sandbar at last. All hands sore. <sub>sandbar.solved · log.ts:9</sub>
+- Aground on The Sandbar. We stay the night. <sub>sandbar.failed · log.ts:9</sub>
+- Cards on deck by lantern light. Repairs seen to. <sub>deck.solved · log.ts:10</sub>
+- Anchored downstream of the dock. Went ashore for news. <sub>deckIntel.solved · log.ts:11</sub>
+- Cards with the strikers at the coal depot. <sub>depot.solved · log.ts:12</sub>
+- An evening at the Bettendorf saloon. <sub>triCities.solved · log.ts:13</sub>
 
 **castOffRecord**
 
-- Cast off from {place}, {bound}. <sub> · log.ts:18</sub>
+- Cast off from {place}, {bound}. <sub> · log.ts:17</sub>
 
 **UNDER_WAY_AGAIN**
 
-- Under way again. <sub> · log.ts:19</sub>
+- Under way again. <sub> · log.ts:18</sub>
 
 **LEAVING_MUSCATINE**
 
-- The first day of spring is what some folks call the day the ice lets go of the river. <sub>opening · log.ts:33</sub>
-- Cargo run for Dubuque, {MUSCATINE_TO_DUBUQUE} miles upriver. <sub>turning[1] · log.ts:34</sub>
-- Strong spring-thaw current, four miles an hour. <sub>turning[2] · log.ts:34</sub>
+- The first day of spring is what some folks call the day the ice lets go of the river. <sub>opening · log.ts:32</sub>
+- Cargo run for Dubuque, {MUSCATINE_TO_DUBUQUE} miles upriver. <sub>turning[1] · log.ts:33</sub>
+- Strong spring-thaw current, four miles an hour. <sub>turning[2] · log.ts:33</sub>
 
 **FIRST_CRATE**
 
-- Fished out a crate of clothes-pegs. <sub>found[1] · log.ts:53</sub>
-- A gross of corncob pipes. Gus took the best. <sub>found[2] · log.ts:54</sub>
-- A crate of hymnals. Lars approves. <sub>found[3] · log.ts:55</sub>
-- Two dozen horseshoes. Luck, by the pound. <sub>found[4] · log.ts:56</sub>
-- A crate of bicycle bells, ringing. <sub>found[5] · log.ts:57</sub>
-- Seed packets, dry in their tins. <sub>found[6] · log.ts:58</sub>
-- A crate of sheet music. Lars hums along. <sub>found[7] · log.ts:59</sub>
-- Fished out a crate of doorknobs. No doors. <sub>found[8] · log.ts:60</sub>
-- A crate of horehound candy, a little stuck together. <sub>found[9] · log.ts:61</sub>
-- Lost the first crate of the voyage. Gus says it means nothing. Gus would. <sub>lost[1] · log.ts:64</sub>
-- First crate: soggy cotton. Captain Bill never lost a first crate. I asked. <sub>lost[2] · log.ts:65</sub>
-- The river kept the first one. Testing us, I think. <sub>lost[3] · log.ts:66</sub>
+- Fished out a crate of clothes-pegs. <sub>found[1] · log.ts:52</sub>
+- A gross of corncob pipes. Gus took the best. <sub>found[2] · log.ts:53</sub>
+- A crate of hymnals. Lars approves. <sub>found[3] · log.ts:54</sub>
+- Two dozen horseshoes. Luck, by the pound. <sub>found[4] · log.ts:55</sub>
+- A crate of bicycle bells, ringing. <sub>found[5] · log.ts:56</sub>
+- Seed packets, dry in their tins. <sub>found[6] · log.ts:57</sub>
+- A crate of sheet music. Lars hums along. <sub>found[7] · log.ts:58</sub>
+- Fished out a crate of doorknobs. No doors. <sub>found[8] · log.ts:59</sub>
+- A crate of horehound candy, a little stuck together. <sub>found[9] · log.ts:60</sub>
+- Lost the first crate of the voyage. Gus says it means nothing. Gus would. <sub>lost[1] · log.ts:63</sub>
+- First crate: soggy cotton. Captain Bill never lost a first crate. I asked. <sub>lost[2] · log.ts:64</sub>
+- The river kept the first one. Testing us, I think. <sub>lost[3] · log.ts:65</sub>
 
 **firstCrateRecord**
 
 - {line}  
-> Worth ${worth} at the Mercantile. <sub> · log.ts:74</sub>
+> Worth ${worth} at the Mercantile. <sub> · log.ts:73</sub>
 
 **CHOICE_RECORDS**
 
-- Struck a sandbar, a few miles below the Tri-Cities. <sub>aground · log.ts:79</sub>
+- Struck a sandbar, a few miles below the Tri-Cities. <sub>aground · log.ts:78</sub>
 
 **islandRecord**
 
-- Kept to {way} of {island}. <sub> · log.ts:83</sub>
+- Kept to {way} of {island}. <sub> · log.ts:82</sub>
 
 **tradeRecord**
 
-- Sold {name}, ${price}. <sub> · log.ts:86</sub>
-- Bought {name}, ${price}. <sub> · log.ts:86</sub>
+- Sold {name}, ${price}. <sub> · log.ts:85</sub>
+- Bought {name}, ${price}. <sub> · log.ts:85</sub>
 
 ## The Tri-Cities
 

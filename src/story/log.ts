@@ -4,9 +4,8 @@
  * longer entries, come later.
  */
 
-/** What's written when an encounter is over, by its id and how it went. (The dock fee isn't here: Willie tells it as she leaves Muscatine.) */
+/** What's written when an encounter is over, by its id and how it went. (Not Bill's: Willie tells that himself, on the walk to the harbour master's. Nor the dock fee: he tells it as she leaves Muscatine.) */
 export const ENCOUNTER_RECORDS: Record<string, { solved?: string; failed?: string }> = {
-  bill: { solved: 'Took command of the Best Intentions from Captain Bill, at Muscatine.' },
   sandbar: { solved: 'Off The Sandbar at last. All hands sore.', failed: 'Aground on The Sandbar. We stay the night.' },
   deck: { solved: 'Cards on deck by lantern light. Repairs seen to.' },
   deckIntel: { solved: 'Anchored downstream of the dock. Went ashore for news.' },
