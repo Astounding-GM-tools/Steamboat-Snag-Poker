@@ -278,6 +278,9 @@
     aspect-ratio: 1;
     border-radius: 50%;
     font-size: calc(3.2 * var(--u, 1rem));
+    /* A little in from the screen's edge: drawn smaller about its own middle, so it stays level with the name
+       and the title beside it, and nothing else on the table moves. */
+    scale: 0.91;
   }
   /* Their cards on the grid, like yours: three cards in columns 1–6, the snag fan in 7–10, the discards in 11–12. */
   .cards {
