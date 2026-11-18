@@ -284,6 +284,16 @@
    * The player's own line: the circle says "You", and sits lower, over the top of the button below (an Art
    * Deco touch). It takes no taps: they go through to the button. (The rest of the caption still does.)
    */
+  /*
+   * The player's own line, as wide as the buttons below: its outer line (the outline, 4px out and 1px thick)
+   * on their edges (the caption's layer is the table's content box, the buttons' width), and the gap between
+   * the two lines filled, so nothing on the table shows through beside it.
+   */
+  .speech.you {
+    left: 5px;
+    right: 5px;
+    box-shadow: 0 0 0 4px #0c0c0b;
+  }
   .you .face {
     bottom: -1em;
     z-index: 1;
