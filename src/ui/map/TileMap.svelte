@@ -68,7 +68,19 @@
    * opening shot, a table coming up, the creep), left, top, width and height on every tile were re-set each
    * frame, and each a layout; a transform is only a repaint, which the zoom needs anyway.
    */
-  const place = (t: { x: number; y: number; span: number }) => `translate(${t.x * scale}px, ${t.y * scale}px) scale(${(t.span * scale + 0.5) / ts})`;
+  const place = (t: { x: number; y: number; span: number }) =>
+    `translate(${(t.x - near[0]) * scale}px, ${(t.y - near[1]) * scale}px) scale(${(t.span * scale + 0.5) / ts})`;
+  /**
+   * The layer's own origin, near the view (map px, on a coarse tile's corner): tiles are placed from it,
+   * not from the chart's corner. The chart is the whole river, a quarter of a million pixels tall, and
+   * placed from its corner the layer is that big too: more than an iPhone will draw (it drops the layer,
+   * and the tiles with it). A string, like the ranges: it changes only as the view crosses a coarse tile.
+   */
+  const nearKey = $derived.by(() => {
+    const span = ts * 2 ** (tiles.max_zoom - Math.max(tiles.min_zoom, level - 3));
+    return `${Math.floor(-ox / scale / span) * span} ${Math.floor(-oy / scale / span) * span}`;
+  });
+  const near = $derived(nearKey.split(' ').map(Number));
 
   function gone(url: string) {
     missing = new Set(missing).add(url);
@@ -80,7 +92,7 @@
 
 <div class="map" bind:clientWidth={width} bind:clientHeight={height}>
   <!-- The tiles sit still in their own layer; the layer moves (a transform, done by the compositor). -->
-  <div class="tiles" style:transform="translate3d({ox}px, {oy}px, 0)">
+  <div class="tiles" style:transform="translate3d({ox + near[0] * scale}px, {oy + near[1] * scale}px, 0)">
   {#each under as t (t.url)}
     <img src={t.url} alt="" width={ts} height={ts} style:transform={place(t)} onerror={() => gone(t.url)} />
   {/each}
