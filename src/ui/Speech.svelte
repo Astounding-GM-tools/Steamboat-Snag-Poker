@@ -200,7 +200,7 @@
     <div class="words">
       {#if !opponent || line.size === 'full'}<span class="who">{name}</span>{/if}
       <p>
-        {#each beats(line) as beat, i}<span class="beat" style="animation-delay: {i * BEAT_MS}ms">{beat}</span>{/each}
+        {#each beats(line) as beat, i}<span class="beat" style="animation-delay: calc(var(--beats-after, 0ms) + {i * BEAT_MS}ms)">{beat}</span>{/each}
       </p>
     </div>
   {/key}

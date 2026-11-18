@@ -917,6 +917,8 @@
   /* The first thing said waits till they're down, then comes in softly. */
   .arriving :global(.speech-slot) {
     animation: caption-in 0.8s ease-out 1.7s both;
+    /* Its beats (a line said in parts) counted from when it comes in, not from when it's made: still in turn. */
+    --beats-after: 1.7s;
   }
   @keyframes caption-in {
     from {
