@@ -172,6 +172,7 @@
   class:band={line.at === 'band'}
   class:after-show={line.show}
   class:notch={opponent && line.size !== 'full'}
+  class:you={line.who === 'you'}
   class:waits={!onnext}
   style={grow === 'up'
     ? `bottom: ${bottom}px; min-height: calc(100% - ${top + bottom}px)`
@@ -192,7 +193,7 @@
   {#key line}
     {#if !opponent || line.size === 'full'}
       <span class="face" aria-hidden="true">
-        {#if hasFace(line.who)}<span class="likeness"><Portrait id={line.who} mood={line.mood} /></span>{:else}{name[0]}{/if}
+        {#if hasFace(line.who)}<span class="likeness"><Portrait id={line.who} mood={line.mood} /></span>{:else if line.who === 'you'}<span class="you-name">{name}</span>{:else}{name[0]}{/if}
         {#if ms}<Countdown {ms} />{/if}
       </span>
     {/if}
@@ -278,6 +279,19 @@
   .likeness {
     position: absolute;
     inset: 0;
+  }
+  /*
+   * The player's own line: the circle says "You", and sits lower, over the top of the button below (an Art
+   * Deco touch). It takes no taps: they go through to the button. (The rest of the caption still does.)
+   */
+  .you .face {
+    bottom: -1em;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .you-name {
+    font-size: 0.62em;
+    letter-spacing: 0.04em;
   }
   /* The full caption fills the screen: its portrait sits inside the frame. */
   .full .face {

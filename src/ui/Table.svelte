@@ -1050,7 +1050,7 @@
     <!-- Each line slides in from the right, and out the way it went (swiped, or left on a button). (Its way out
          is local: when the whole table goes, a voyage started afresh say, it goes with it, not 220 ms later.) -->
     {#key line}
-    <div class="speech-slot" in:fly|global={{ x: 70, duration: 260, opacity: 0 }} out:fly={{ x: 90 * exitDir, duration: 220, opacity: 0 }}>
+    <div class="speech-slot" class:over-buttons={line.who === 'you'} in:fly|global={{ x: 70, duration: 260, opacity: 0 }} out:fly={{ x: 90 * exitDir, duration: 220, opacity: 0 }}>
     <Speech
       {line}
       name={speakerName(line.who)}
@@ -1271,6 +1271,10 @@
   }
   .speech-slot > :global(*) {
     pointer-events: auto;
+  }
+  /* The player's own line: its circle comes down over the top of the button below (it takes no taps). */
+  .speech-slot.over-buttons {
+    z-index: 52;
   }
   .table {
     --gap: 0.5rem;
