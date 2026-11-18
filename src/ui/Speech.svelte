@@ -211,11 +211,17 @@
    * Sized by the table it's on (its width, cqw): a tablet's captions, portraits and words grow with
    * its table, a phone's stay as they were. Everything inside is in em, from this.
    */
+  /*
+   * Every caption as wide as the buttons below: its outer line (the outline, 4px out and 1px thick) on their
+   * edges (the caption's layer is the table's content box, the buttons' width), and the gap between the two
+   * lines filled (the box-shadow), so nothing on the table shows through beside it.
+   */
   .speech {
     font-size: var(--u, 1rem);
     position: absolute;
-    left: 1em;
-    right: 1em;
+    left: 5px;
+    right: 5px;
+    box-shadow: 0 0 0 4px #0c0c0b;
     z-index: 20;
     display: grid;
     place-items: center;
@@ -251,6 +257,10 @@
   .full {
     outline-offset: 6px;
     border-width: 3px;
+    /* (Its outer line further out: 7px in, for it to sit on the buttons' edges, and the wider gap filled.) */
+    left: 7px;
+    right: 7px;
+    box-shadow: 0 0 0 6px #0c0c0b;
   }
   /* Anyone but the opponent: their portrait sits on the caption's bottom right corner (the top is where the opponent's own portrait looks down from). */
   .face {
@@ -284,16 +294,6 @@
    * The player's own line: the circle says "You", and sits lower, over the top of the button below (an Art
    * Deco touch). It takes no taps: they go through to the button. (The rest of the caption still does.)
    */
-  /*
-   * The player's own line, as wide as the buttons below: its outer line (the outline, 4px out and 1px thick)
-   * on their edges (the caption's layer is the table's content box, the buttons' width), and the gap between
-   * the two lines filled, so nothing on the table shows through beside it.
-   */
-  .speech.you {
-    left: 5px;
-    right: 5px;
-    box-shadow: 0 0 0 4px #0c0c0b;
-  }
   .you .face {
     bottom: -1em;
     z-index: 1;
