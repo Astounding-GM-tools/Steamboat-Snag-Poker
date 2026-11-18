@@ -56,7 +56,7 @@ function autopilot(seed: number, guard = 40000): JourneyState[] {
   const rng = new Rng(seed);
   for (let i = 0; i < guard && !s.done; i++) {
     const step = currentStep(s, RIVER)!;
-    if (step.type === 'caption' || step.type === 'steam') s = proceed(s, RIVER);
+    if (step.type === 'caption' || step.type === 'steam' || step.type === 'shot') s = proceed(s, RIVER);
     else if (step.type === 'council') s = castOff(s, RIVER);
     else if (step.type === 'fork') s = pushAgain(s, RIVER);
     else if (step.type === 'hub') {
@@ -77,9 +77,13 @@ function autopilot(seed: number, guard = 40000): JourneyState[] {
 }
 
 describe('the voyage', () => {
-  it('opens on the river, then a hand with Bill', () => {
+  it('opens on the chart at the levee, Willie typing the day, then a hand with Bill', () => {
     let s = newJourney(1, RIVER, RIVER_START);
-    expect(currentStep(s, RIVER)?.type).toBe('caption');
+    const first = currentStep(s, RIVER);
+    expect(first?.type === 'shot' && first.opening).toBe(true);
+    // One morning: it has dawned already, and the day's line is written as the shot comes up.
+    expect(s.mornings).toBe(1);
+    expect(s.log?.[0]?.text).toMatch(/^The first day of spring,/);
     s = proceed(s, RIVER);
     expect(s.encounter?.def.id).toBe('bill');
     expect(s.encounter?.session.round?.potMode).toBe(false);
@@ -333,6 +337,9 @@ describe('the dock fee', () => {
       else if (e.session.phase === 'hand') s = playEncounter(s, chooseAction('careful', viewFor(e.session.round!, mySeatAt(e), e.session.config), e.session.config, rng));
       else s = handDone(s, RIVER);
     }
+    // The walk over to the harbour master's office (a shot on the map, Willie typing).
+    expect(currentStep(s, RIVER)?.type).toBe('shot');
+    s = proceed(s, RIVER);
     return s;
   }
 

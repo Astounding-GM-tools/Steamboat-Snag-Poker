@@ -344,10 +344,8 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
       return;
     }
     if (step.landing && !departed) {
-      // The departure plays (the effect waits for it): Willie writes as she backs out, and as she turns ahead.
-      const text = LEAVING_MUSCATINE.backingOut;
-      s = writeLog(s, text);
-      pen.write(text, clock);
+      // The departure plays (the effect waits for it): Willie writes how the dock fee went as she casts off, and the run as she gets under way.
+      dockFeeEntry();
       clock += DEPARTURE_S;
       log(LEAVING_MUSCATINE.turning);
       departed = true;
@@ -569,7 +567,7 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
         // As the UI writes it: out of Muscatine the first is the set-piece crate; after the second, the dock fee.
         const n = s.place === 'muscatine' && s.fillsMet?.leg === s.river?.leg ? (s.fillsMet?.n ?? 0) : 0;
         log(n === 1 && d.kind === 'crate' ? firstCrateRecord(s.seed, won, step.effects?.salvage ?? 0) : d.kind === 'crate' ? 'Salvaged goods, worth $2 at the Mercantile.' : 'Steered clear of a snag.');
-        if (n === 2) dockFeeEntry();
+        // (The dock fee's written as she casts off now.)
         debrisNow = null;
       } else {
         const r = ENCOUNTER_RECORDS[id]?.[e.outcome];
@@ -680,6 +678,12 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
       switch (step.type) {
         case 'caption':
           clock += 5;
+          s = proceed(s, story);
+          break;
+        case 'shot':
+          // A moment on the map at the landing: on when Willie's typed it (the log line's written as it comes up).
+          if (step.log) pen.write(step.log.text, clock);
+          clock = Math.max(clock + (step.seconds ?? 6), step.wait ? pen.busyUntil : 0);
           s = proceed(s, story);
           break;
         case 'steam':

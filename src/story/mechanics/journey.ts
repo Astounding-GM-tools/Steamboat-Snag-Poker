@@ -104,6 +104,14 @@ export interface Choice {
 
 export type Step =
   | { type: 'caption'; title?: string; lines: StoryLine[]; effects?: Effects }
+  /**
+   * A moment on the map, at a landing, before she casts off: the view on her (or on `look`, a spot on
+   * the chart: the harbour master's office), Willie typing `log` in the header (written as it comes up).
+   * On when `seconds` have passed (the view's pan with them), and, with `wait`, he's typed it; or the
+   * player skips. (Without `wait` he types on through what follows.) `opening`: the voyage's first shot
+   * (out of the black, the view pans and zooms in to her).
+   */
+  | { type: 'shot'; look?: [number, number]; log?: { text: string; kind?: 'record' | 'musing' }; seconds?: number; wait?: boolean; opening?: boolean }
   /** A new day: the crew's strength made, wages paid, yesterday's hired hands paid off. */
   | { type: 'dawn' }
   /** The morning council: the crew's advice, the landing's trader, and casting off (with `coal` loads aboard at least). */
@@ -419,6 +427,11 @@ function arrive(state: JourneyState, story: StoryDef): JourneyState {
     state.time = state.time === 'morning' ? 'afternoon' : 'evening';
     return advance(state, story);
   }
+  if (step.type === 'shot') {
+    // Willie writes as the shot comes up (once: a reload doesn't write it again).
+    if (step.log && !state.log?.some((e) => e.text === step.log!.text)) state.log = writeLog(state, step.log.text, step.log.kind ?? 'musing').log;
+    return state;
+  }
   if (step.type === 'leave') {
     state.pending = [];
     return advance(state, story);
@@ -549,9 +562,10 @@ export function setPieceDue(step: Step | null): 'crate' | null {
   return step?.type === 'steam' ? (step.fills?.[0] ?? null) : null;
 }
 
-/** A caption read, or a stretch of river steamed: on. (Steamed without the river shown, she meets its main event at the middle of its window.) */
+/** A caption read, a shot seen, or a stretch of river steamed: on. (Steamed without the river shown, she meets its main event at the middle of its window.) */
 export function proceed(prev: JourneyState, story: StoryDef): JourneyState {
   const step = currentStep(prev, story);
+  if (step?.type === 'shot') return advance(clone(prev), story);
   if (step?.type !== 'caption' && step?.type !== 'steam') throw new Error('Not a caption or a stretch of river');
   if (step.type === 'steam' && step.main) {
     const from = prev.river?.t ?? 0;

@@ -6,6 +6,7 @@ import { DOCK_FEE, type Rival, type Step, type Talk } from '../../mechanics';
 import { sandbar, sandbarTalk } from '../../characters/sandy';
 import { say, you } from '../../lines';
 import { DOCK_FEE_AMOUNT, HARBOUR_HANDS, HARBOUR_MASTER_PURSE } from '../../numbers';
+import { LEAVING_MUSCATINE } from '../../log';
 
 /** The river map's leg (public/maptiles/river-1904/chapter-1/travel), and where on it things happen: Muscatine is 0, LeClaire 1. */
 /** Chapter one's leg on the chart: Muscatine up to the rapids and LeClaire. */
@@ -15,7 +16,7 @@ export const SANDBAR_AT = 0.3;
 /** The Tri-Cities landing, as the map's sidecar has it. */
 const TRI_CITIES_AT = 0.6429;
 
-/** Willie's second musing, a little way out of Muscatine: the chain of command, and what he hopes of the run. */
+/** Willie, as the Captain walks over to the harbour master's: the chain of command, and what he hopes of the run. */
 const NEW_FIRST_MATE = [
   'Captain Bill is not coming with us.',
   'First Mate made Captain, and I am the new First Mate now.',
@@ -30,11 +31,17 @@ const NEW_FIRST_MATE = [
 
 const harbourMaster: Rival = { id: 'harbourMaster', ai: 'stubborn', money: HARBOUR_MASTER_PURSE };
 
+/** The harbour master's office, on Front Street up from the levee (on the Commission's chart, global pixels). */
+const HARBOUR_OFFICE: [number, number] = [26420, 76300];
+
+/**
+ * One morning at Muscatine, all of it on the chart: the view comes in to her at the levee as Willie
+ * types the day; Bill's hands aboard; the Captain's walk to the harbour master's (the view pans into town,
+ * Willie writing who's captain now); the dock fee played for there; then back to her, and she casts off.
+ */
 export const muscatine: Step[] = [
-  {
-    type: 'caption',
-    lines: [{ text: 'Muscatine, on the Mississippi.' }, { text: 'The first day of spring, which is what some folks call the day the ice goes out.' }],
-  },
+  { type: 'dawn' },
+  { type: 'shot', opening: true, log: { text: LEAVING_MUSCATINE.opening }, seconds: 16, wait: true },
   {
     type: 'encounter',
     // A few friendly hands on deck, for nothing: the talk is the point (RIVER_TALK.bill).
@@ -46,7 +53,8 @@ export const muscatine: Step[] = [
     solved: [],
     effects: { snag: DOCK_FEE },
   },
-  { type: 'dawn' },
+  // Over to the harbour master's office: Willie on the new captain as the view walks into town (he types on through the game there).
+  { type: 'shot', look: HARBOUR_OFFICE, log: { text: NEW_FIRST_MATE }, seconds: 12 },
   {
     type: 'scene',
     steps: [
@@ -76,9 +84,6 @@ export const muscatine: Step[] = [
     to: TRI_CITIES_AT,
     // Made fast bow-first at the Muscatine levee, below the town and the bridge, where the river opens out, on the Commission's chart (global pixels).
     landing: [26639, 76467],
-    // Willie's log, not the crew's chatter: a musing a little way out, then the river and the islands.
-    // (A thought: too long for the header, it's only in the log, for whoever opens it.)
-    musings: [{ at: 0.3, text: NEW_FIRST_MATE, thought: true }],
     // Out of Muscatine, a crate first, always: the new Captain's first salvage (then the river's own coin flips).
     fills: ['crate'],
     // Past The Sandbar, a crate in the starboard passage round each island (Horse Island), there to be spotted.

@@ -29,11 +29,12 @@ const MUSCATINE_TO_DUBUQUE = 125;
  * wheel turns ahead, the run; under way, how the dock fee went and the coal.
  */
 export const LEAVING_MUSCATINE = {
-  backingOut: 'The first day of spring.',
+  /** The opening shot, as the view comes in to her: the day, a pause, and what it means on the river. */
+  opening: ['The first day of spring,', 'which is what some folks call the day the ice goes out.'].join('\n'),
   turning: [`Cargo run for Dubuque, ${MUSCATINE_TO_DUBUQUE} miles upriver.`, 'Strong spring-thaw current, four miles an hour.'].join('\n'),
 };
 
-/** Under way from Muscatine, after the second piece of debris: how the dock fee went (paid, played for and dodged, or snagged: flags). */
+/** Casting off from Muscatine, as the view comes back to her from the harbour master's: how the dock fee went (paid, played for and dodged, or snagged: flags). */
 export function leftMuscatine(flags: readonly string[], purse: number, fee: number): string {
   const lines: string[] = [];
   if (flags.includes(DOCK_FEE_FLAG.dodged)) lines.push('The Captain played the harbour master for the docking fee.', `Dodged the fee: $${fee} saved for coal. We'll need it.`);

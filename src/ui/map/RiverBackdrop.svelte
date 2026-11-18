@@ -46,15 +46,22 @@
     racing?: boolean;
     /** How hard the engine's working (1: steaming upstream at her pace): she chuffs this much more, or less. */
     effort?: number;
-    /** She lies at a landing (its spot on the map): the departure plays, and `ondeparted` when she's under way. */
+    /**
+     * She lies at a landing (its spot on the map): moored there, still, and the opening shot plays (once);
+     * `onopened` when the view's come to rest on her. She stays till `cast`.
+     */
     departure?: Pt | null;
+    /** Moored, the view looks here instead of at her (the harbour master's office): a slow pan there, and back. */
+    look?: Pt | null;
+    /** Moored, and now she casts off: the view comes back to her, then she backs out, and `ondeparted` when she's under way. */
+    cast?: boolean;
     ondeparted?: () => void;
     /** Departing, the wheel turns ahead: she's about to get under way. */
     onturn?: () => void;
     /** Departing, the opening shot over: the view has come to rest on her at the landing. */
     onopened?: () => void;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, adrift = [], pieces = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, ondeparted, onturn, onopened }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, adrift = [], pieces = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, look = null, cast = false, ondeparted, onturn, onopened }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -153,7 +160,9 @@
   $effect(() => {
     const at = !!departure, m = mode;
     untrack(() => {
-      if (at) zoom.set(voyage.dockZoom, { duration: 0 });
+      if (at) {
+        if (!shooting) zoom.set(voyage.dockZoom, { duration: 0 });
+      }
       // Under way from the landing: the camera draws back slowly to the river's height.
       else if (wasDeparting) zoom.set(voyage.steamZoom, { duration: 7000 });
       else if (m === 'play') {
@@ -283,6 +292,8 @@
         camReady = true;
         return;
       }
+      // Moored, the view is the shots' (the opening, a look elsewhere); casting off, it follows her again.
+      if (departure && !casting) return;
       if (follow) {
         // At play the view comes down onto her spot, then keeps on it as she creeps (in steps under a pixel: no tween restarted each time).
         const settling = mode === 'play' ? Math.max(0, playSince + SETTLE_MS - performance.now()) : 0;
@@ -546,13 +557,13 @@
     panFrom: 1800,
     openZoom: -1,
     /**
-     * Seconds after the opening shot (Willie's "The first day of spring." is written then): the first
-     * puff (about as he types "spring"), a few more, the wheel astern, backing out (from, to), the wheel ahead.
+     * Seconds from casting off (the view back on her, Willie typing how the dock fee went): the first puff,
+     * a few more as the steam comes up, the wheel astern, backing out (from, to), the wheel ahead.
      */
-    steam: 6,
-    astern: 10,
-    back: [11, 19.5] as const,
-    ahead: 21,
+    steam: 1,
+    astern: 5,
+    back: [6, 14.5] as const,
+    ahead: 16,
     /** How far she backs out, and drifts down, in her lengths. */
     out: 0.7,
     drift: 0.6,
@@ -567,9 +578,22 @@
   let departWheel = $state<'ahead' | 'astern' | 'still'>('still');
   /** The old film's scratches and specks, over the fade-in, gone once the picture's settled. */
   let oldFilm = $state(false);
+  /** Seconds the view takes to look elsewhere from her moorings, and back: unhurried, a walk into town. */
+  const LOOK_S = 9;
+  /** How she lies at the landing, and the way she'll come round: worked out once she's moored. */
+  let pose: { landing: Pt; moored: Pt; into: number; swing: number; off: Pt; down: Pt } | null = null;
+  /** The opening shot under way (its zoom isn't to be snapped back), and done (the view is free to look about). */
+  let shooting = false;
+  let shot = $state(false);
+  /** Casting off: from here the view follows her again. */
+  let casting = false;
+  const ease = (f: number) => f * f * (3 - 2 * f);
+
+  // Moored at the landing: she lies bow-first on the bank, still; the opening shot pans and zooms in to her.
   $effect(() => {
     const landing = departure, s = sailed;
     if (!landing || !s) return;
+    if (pose && pose.landing[0] === landing[0] && pose.landing[1] === landing[1]) return;
     // Her length on the map, as she's drawn at the landing (in close, she's shorter on the map than at the river's height).
     const dock = voyage.dockZoom;
     const length = (boatOnScreen * Math.max(1, 2 ** ((dock - voyage.steamZoom) * GROWTH))) / 2 ** dock;
@@ -590,47 +614,76 @@
     /** Off the levee, and down the river: she backs out over the backing, and drifts down until the wheel turns ahead. */
     const off: Pt = [nx * DEPART.out * length, ny * DEPART.out * length];
     const down: Pt = [-Math.cos(up) * DEPART.drift * length, -Math.sin(up) * DEPART.drift * length];
-    const ease = (f: number) => f * f * (3 - 2 * f);
+    pose = { landing, moored, into, swing, off, down };
     /** Where the opening pan starts: due west of her, inland (the chart's x runs east). */
     const panFrom: Pt = [moored[0] - DEPART.panFrom, moored[1]];
-    const opening = DEPART.pan;
     /** The opening's easing: it tapers off, coming to rest gently. */
     const settle = (f: number) => 1 - (1 - f) ** 3;
     untrack(() => {
       boat = { p: moored, heading: into };
+      departEffort = 0;
+      departWheel = 'still';
+      if (!opening) {
+        shot = true;
+        cam.set(moored, { duration: 0 });
+        onopened?.();
+        return;
+      }
+      shooting = true;
+      oldFilm = true;
       cam.set(panFrom, { duration: 0 });
       // From further out, in to the landing's full detail as the view pans.
       zoom.set(DEPART.openZoom, { duration: 0 });
       zoom.set(voyage.dockZoom, { duration: DEPART.pan * 1000, easing: (f: number) => 1 - (1 - f) ** 2 });
-      oldFilm = true;
-      departEffort = 0;
-      departWheel = 'still';
     });
+    if (!opening) return;
     const t0 = performance.now();
-    let raf = 0, done = false, turned = false, opened = false;
     const frame = (now: number) => {
-      const shot = (now - t0) / 1000;
-      // The opening shot: the view pans in to her, and comes to rest.
-      if (shot <= DEPART.pan + 0.1) {
-        const f = settle(Math.min(1, shot / DEPART.pan));
-        cam.set([panFrom[0] + (moored[0] - panFrom[0]) * f, panFrom[1] + (moored[1] - panFrom[1]) * f], { duration: 0 });
-      }
-      if (shot > 4.5) oldFilm = false;
-      const t = shot - opening;
-      // Still the opening shot: she lies as she is (touching her would bring the view straight to her).
-      if (t < 0) {
-        raf = requestAnimationFrame(frame);
+      const t = (now - t0) / 1000;
+      if (t > 4.5) oldFilm = false;
+      const f = settle(Math.min(1, t / DEPART.pan));
+      cam.set([panFrom[0] + (moored[0] - panFrom[0]) * f, panFrom[1] + (moored[1] - panFrom[1]) * f], { duration: 0 });
+      if (t < DEPART.pan) {
+        shotRaf = requestAnimationFrame(frame);
         return;
       }
-      if (!opened) {
-        opened = true;
-        untrack(() => onopened?.());
+      shooting = false;
+      shot = true;
+      untrack(() => onopened?.());
+    };
+    shotRaf = requestAnimationFrame(frame);
+    // (No cleanup here: the effect re-runs when the course is rebuilt, and that mustn't stop the shot halfway.)
+  });
+
+  // Moored, looking elsewhere (the harbour master's office) or back at her: a slow pan, as if on foot.
+  $effect(() => {
+    const at = look, ready = shot;
+    if (!departure || !ready || casting || !pose) return;
+    untrack(() => cam.set(at ?? pose!.moored, { duration: LOOK_S * 1000, easing: cubicInOut }));
+  });
+
+  // Casting off: the view comes back to her if it's elsewhere, then the steam comes up, the wheel turns
+  // astern, she backs out, comes round, drifts down a little, the wheel turns ahead, and she's under way.
+  $effect(() => {
+    if (!cast || !departure || !shot || !pose || casting) return;
+    const p = pose, s = sailed;
+    if (!s) return;
+    casting = true;
+    const [cx, cy] = cam.target;
+    const away = Math.hypot(cx - p.moored[0], cy - p.moored[1]) > 1;
+    if (away) cam.set(p.moored, { duration: LOOK_S * 1000, easing: cubicInOut });
+    const t0 = performance.now() + (away ? LOOK_S * 1000 : 0);
+    let done = false, turned = false;
+    const frame = (now: number) => {
+      const t = (now - t0) / 1000;
+      if (t < 0) {
+        castRaf = requestAnimationFrame(frame);
+        return;
       }
       if (t >= DEPART.ahead && !turned) {
         turned = true;
         untrack(() => onturn?.());
       }
-
       // (One puff to begin with, a few more as the steam comes up, then the steady working steam of backing out.)
       departEffort = t < DEPART.steam ? 0 : t < DEPART.steam + 0.8 ? 0.8 : t < DEPART.astern ? 0.3 : t < DEPART.back[1] ? 0.35 : t < DEPART.ahead ? 0.2 : 1.1;
       departWheel = t < DEPART.astern ? 'still' : t < DEPART.back[1] ? 'astern' : t < DEPART.ahead ? 'still' : 'ahead';
@@ -643,8 +696,8 @@
       const drifted = ease(clamp((t - turning) / (DEPART.ahead + 0.6 - turning)));
       const swung = ease(clamp((t - turning) / (DEPART.back[1] - turning)));
       boat = {
-        p: [moored[0] + off[0] * pushed + down[0] * drifted, moored[1] + off[1] * pushed + down[1] * drifted],
-        heading: into + swing * swung,
+        p: [p.moored[0] + p.off[0] * pushed + p.down[0] * drifted, p.moored[1] + p.off[1] * pushed + p.down[1] * drifted],
+        heading: p.into + p.swing * swung,
       };
       if (t >= DEPART.ahead + 0.6 && !done) {
         done = true;
@@ -655,10 +708,16 @@
         untrack(() => ondeparted?.());
         return;
       }
-      raf = requestAnimationFrame(frame);
+      castRaf = requestAnimationFrame(frame);
     };
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
+    castRaf = requestAnimationFrame(frame);
+    // (No cleanup here either: once she's casting off, she goes, whatever re-runs the effect.)
+  });
+  // The shot's and the casting off's frames, stopped only when the map goes.
+  let shotRaf = 0, castRaf = 0;
+  $effect(() => () => {
+    cancelAnimationFrame(shotRaf);
+    cancelAnimationFrame(castRaf);
   });
 </script>
 

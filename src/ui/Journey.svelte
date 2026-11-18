@@ -143,16 +143,56 @@
     if (journey.place === 'muscatine' && !journey.log?.some((e) => e.text === text)) journey = writeLog(journey, text, 'musing');
   }
 
+
+  /**
+   * A morning at a landing the day casts off from (its stretch of river has a `landing`), till she's
+   * under way: it's all on the map, her moored at the levee, the scenes (Bill's hands, the harbour
+   * master's) played over it, and the shots moving the view about.
+   */
+  const dock = $derived.by(() => {
+    if (journey.flags.includes(departedFlag) || journey.river) return null;
+    const day = RIVER.days.find((d) => d.day === journey.day);
+    const stretch = day && day.place === journey.place ? day.steps.find((x) => x.type === 'steam' && !!x.landing) : undefined;
+    return stretch?.type === 'steam' && stretch.landing ? { leg: stretch.leg, landing: stretch.landing as Pt } : null;
+  });
   /** The voyage's heading: "Day 2: Muscatine, upbound". */
+  // (Moored, the place alone: "Muscatine". Under way: "Day 1: Muscatine, upbound".)
   const heading = $derived(
-    departing
+    dock
       ? t('river.moored', { day: journey.mornings, place: t(`place.${journey.place}`) })
       : t('river.heading', { day: journey.mornings, place: t(`place.${journey.place}`), bound: t(`river.${bound}`) }),
   );
-
-  /** Out on the river (or setting out on it): the map is beneath the felt. */
-  const onRiver = $derived(!!journey.river || step?.type === 'steam');
-  const leg = $derived(journey.river?.leg ?? (step?.type === 'steam' ? step.leg : ''));
+  /** Out on the river, setting out on it, or at its landing: the map is beneath the felt. */
+  const onRiver = $derived(!!journey.river || step?.type === 'steam' || !!dock);
+  const leg = $derived(journey.river?.leg ?? (step?.type === 'steam' ? step.leg : (dock?.leg ?? '')));
+  /** Where a shot has the view look, moored (the harbour master's office): held through what follows, till another shot or she casts off. */
+  let lookHeld = $state<Pt | null>(null);
+  $effect(() => {
+    const st = step, d = departing;
+    untrack(() => {
+      if (st?.type === 'shot') lookHeld = st.look ?? null;
+      else if (d) lookHeld = null;
+    });
+  });
+  /**
+   * A shot on, till its seconds (the view's pan with them) have passed, and Willie's typed what it wrote
+   * if it waits for him; then on. The player can skip it.
+   */
+  $effect(() => {
+    if (step?.type !== 'shot') return;
+    const st = step, began = performance.now();
+    const timer = setInterval(() => {
+      if (performance.now() - began >= (st.seconds ?? 6) * 1000 && (!st.wait || !freshEntry)) skipShot();
+    }, 400);
+    return () => clearInterval(timer);
+  });
+  function skipShot() {
+    if (step?.type === 'shot') journey = proceed(journey, RIVER);
+  }
+  // Casting off from Muscatine: Willie writes how the dock fee went, as the view comes back to her.
+  $effect(() => {
+    if (departing) untrack(() => (journey = dockFeeEntry(journey)));
+  });
   /** Where she is on the leg's map, as she steams. */
   let boatT = $state(untrack(() => journey.river?.t ?? 0));
   /** Skip held: she races on to wherever she's bound, or till something stops her. */
@@ -472,7 +512,7 @@
   let lifting = $state(false);
   let wasPlaying = false;
   $effect.pre(() => {
-    const p = playing, steaming = step?.type === 'steam';
+    const p = playing, steaming = step?.type === 'steam' || step?.type === 'shot';
     untrack(() => {
       if (wasPlaying && !p && steaming) {
         lifting = true;
@@ -571,7 +611,7 @@
     const outcome = after.encounter?.outcome;
     journey = outcome && step?.type === 'encounter' && !closingLines(after, step, outcome).length ? leave(after) : after;
   }
-  /** Out of Muscatine: how the dock fee went, written once (after the river's second piece, or before The Sandbar if there was none). */
+  /** Out of Muscatine: how the dock fee went, written once, as she casts off. */
   function dockFeeEntry(j: JourneyState): JourneyState {
     if (j.place !== 'muscatine') return j;
     const text = leftMuscatine(j.flags, j.purse, DOCK_FEE_AMOUNT);
@@ -595,8 +635,7 @@
     const fee = e?.def.id === 'harbourMaster' ? (j.snags.some((s) => s.index === DOCK_FEE) ? DOCK_FEE_FLAG.snagged : DOCK_FEE_FLAG.dodged) : null;
     const marked = fee ? { ...j, flags: [...j.flags, fee] } : j;
     const written = record ? writeLog(marked, record) : marked;
-    // After the second piece out of Muscatine: the Captain against the harbour master, as Willie has it.
-    return leaveEncounter(met === 2 ? dockFeeEntry(written) : written, RIVER);
+    return leaveEncounter(written, RIVER);
   }
   /** What's said at this table, as the hand stands. */
   function talkNow() {
@@ -654,7 +693,7 @@
 
 <NowPlaying />
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} pieces={step?.type === 'steam' ? laneCrates.map((c) => c.px) : []} {racing} effort={engineEffort} departure={departing && step?.type === 'steam' && step.landing ? step.landing : null} ondeparted={departed} onopened={() => departureEntry(LEAVING_MUSCATINE.backingOut)} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} adrift={adrift && step?.type === 'steam' ? [adrift.t] : []} pieces={step?.type === 'steam' ? laneCrates.map((c) => c.px) : []} {racing} effort={engineEffort} departure={dock?.landing ?? null} look={lookHeld} cast={departing} ondeparted={departed} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' || step?.type === 'shot' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">
@@ -671,11 +710,11 @@
       <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} onjolt={jolt} />
     </div>
   {/key}
-{:else if step.type === 'steam'}
-  <!-- Under way: the map is the picture; Pause for the menu, or hold Skip to race on. -->
+{:else if step.type === 'steam' || step.type === 'shot'}
+  <!-- Under way: the map is the picture; Pause for the menu, or hold Skip to race on. (A shot at the landing too: Skip moves it on.) -->
   <div class="page steaming">
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-    <div class="status opens" class:opening={departing} role="button" tabindex="0" aria-label={t('log.open')} onclick={() => (logOpen = !logOpen)}>
+    <div class="status opens" class:opening={step.type === 'shot' && !!step.opening} role="button" tabindex="0" aria-label={t('log.open')} onclick={() => (logOpen = !logOpen)}>
       <span class="day">{heading}</span>
       {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => (typedLines = n)} paused={racing} />{/if}
       {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
@@ -702,7 +741,11 @@
         <button onclick={() => (hushed = [...hushed, chatterIndex])}>{t('river.aye')}</button>
       {:else}
         <button class="ghost" onclick={onmenu}>{t('river.pause')}</button>
-        <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>
+        {#if step.type === 'shot'}
+          <button onclick={skipShot}>{t('river.skip')}</button>
+        {:else}
+          <button data-heavy="true" disabled={racing} onclick={() => (racing = true)}>{t('river.skip')}</button>
+        {/if}
       {/if}
     </div>
   </div>
