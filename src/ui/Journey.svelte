@@ -205,7 +205,12 @@
     return typingIt && performance.now() - linesTypedAt >= SHOT_BEAT_MS;
   }
   function skipShot() {
-    if (step?.type === 'shot') journey = proceed(journey, RIVER);
+    if (step?.type !== 'shot') return;
+    // Its line typed out, it's read (the ticker's pause to read it is the shot's own beat): else, gone to the
+    // table before the pause ended, he'd type it again at the next shot.
+    const st = step;
+    if (st.log && freshEntry && lastEntry === st.log.text && typedLines >= st.log.text.split('\n').length) typed();
+    journey = proceed(journey, RIVER);
   }
   // Casting off from Muscatine: Willie writes how the dock fee went, as the view comes back to her.
   $effect(() => {
