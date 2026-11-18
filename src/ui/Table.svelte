@@ -539,8 +539,9 @@
   function nextLine(go?: string) {
     if (!talk) return;
     const lines = talk.lines;
-    // In order, a branch is passed by: only a reply leads there.
-    const i = go ? lines.findIndex((l) => l.id === go) : lines.findIndex((l, k) => k > talk!.i && !l.branch);
+    // Where to: the reply's line, or this line's own `next` (a branch running on); else in order, passing branches by.
+    const to = go ?? lines[talk.i]?.next;
+    const i = to ? lines.findIndex((l) => l.id === to) : lines.findIndex((l, k) => k > talk!.i && !l.branch);
     talk = i >= 0 && i < talk.lines.length ? { ...talk, i } : null;
     if (!talk) talkOver();
   }

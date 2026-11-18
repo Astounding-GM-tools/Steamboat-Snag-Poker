@@ -121,13 +121,22 @@ export const muscatineTalk: Record<string, Talk> = {
   bill: {
     rounds: [
       {
+        // Good news or bad? Either way it comes to the same thing: you're the captain now.
         deal: [
-          { ...said('Landed a big job. Horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis'), replies: [{ label: 'Good?' }] },
-          you('That’s good news, isn’t it, Captain?'),
-          { ...said('Good money. And the worst timing of my life.'), replies: [{ label: 'Why?' }] },
+          {
+            ...said('Landed a big job. Horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis'),
+            replies: [
+              { label: 'Bad', go: 'bad' },
+              { label: 'Good', go: 'good' },
+            ],
+          },
+          { ...you('This is good news, isn’t it, Captain?'), id: 'good', branch: true, next: 'timing' },
+          { ...said('Good money. And the worst timing of my life.'), id: 'timing', branch: true, replies: [{ label: 'Why?', go: 'why' }] },
+          { ...said('Because you’re the captain now.'), id: 'why', branch: true, replies: [{ label: 'Me?', end: true }] },
+          { ...you('You say that like it’s bad news, Captain?'), id: 'bad', branch: true, next: 'making' },
+          { ...said(['It is good news. It’s just the timing that’s bad.', 'Because I can’t come with you. I’m making you the captain.']), id: 'making', branch: true, replies: [{ label: 'Me?', end: true }] },
         ],
         flop: [
-          { ...said('Because you’re the captain now.'), replies: [{ label: 'Me?' }] },
           you('Me? I’m only the first mate.'),
           { ...said('That’s what a first mate is for.'), replies: [{ label: 'Gus?' }] },
           you('Why not Mr. Klemm? No one knows the boat better.'),

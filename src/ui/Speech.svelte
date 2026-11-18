@@ -63,6 +63,8 @@
     dealing?: boolean;
     /** Only reached by a reply that goes to it (by `id`): the conversation passes it by otherwise. */
     branch?: boolean;
+    /** The line to go on to (by `id`) once this one's said, in place of the next in order: how a branch runs on. */
+    next?: string;
     /** Only while these snags (by number) are where it says: with `you`, or with `them`. Snags outlive the game. */
     holding?: { snag: number; by: 'you' | 'them' }[];
     /**
