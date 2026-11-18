@@ -56,6 +56,8 @@ const stage = (id: string, strength: number, jokers: number[]): Step => ({
     rivals: [{ id, ai: 'stubborn', money: strength, jokers, obstacle: true, steady: true }],
     goal: { type: 'clear' },
     hands: CLIMB_HANDS,
+    // (Counted: a stage's pushes, while the coal lasts.)
+    counted: true,
     push: true,
     rules: { jokerForfeit: 0, drainPerJoker: 0 },
   },

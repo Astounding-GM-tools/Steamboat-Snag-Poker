@@ -21,6 +21,8 @@ export const sandbar: EncounterDef = {
   rivals: [{ id: 'sandbar', ai: 'stubborn', money: SANDBAR_PILE, jokers: [TROUBLE.onTheRocks, TROUBLE.brokenPaddle, TROUBLE.twistedCrankshaft], obstacle: true, steady: true }],
   goal: { type: 'clear' },
   hands: SANDBAR_HANDS,
+  // (Counted: the day's hands are its daylight, and the last is last call.)
+  counted: true,
   // The river plays dear from the first hand: an ante of 2, then 3 (as if three hands were already past).
   rules: { jokerForfeit: 0, antePast: -3 },
 };

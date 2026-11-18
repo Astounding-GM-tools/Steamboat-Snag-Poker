@@ -63,6 +63,11 @@ export interface EncounterDef {
   goal: Goal;
   /** Hands at most (the day's hours, against an obstacle). */
   hands: number;
+  /**
+   * The count of hands matters here (who holds the bill at the end, the daylight left, the pushes the coal
+   * allows): the table shows which hand it is, of how many. (Where it doesn't, Bill's say, nothing.)
+   */
+  counted?: boolean;
   /** One push: it burns a load of coal, and the crew come to it fresh. */
   push?: boolean;
   /** Who else may be here, by the day of the voyage (they keep to their calendar, whatever you do). */

@@ -586,7 +586,8 @@
       money: s.seated.map((i) => s.seats[i].money),
       phase: s.phase,
       currency: enc.def.stake === 'strength' ? 'buttons' : undefined,
-      label: t('river.day', { day: journey.mornings }),
+      // Which hand of how many, where it matters (the day's in Willie's log now, not on the board).
+      label: enc.def.counted ? t('river.handOf', { n: s.hand, of: enc.def.hands }) : undefined,
       ...(s.seats.some((p) => p.obstacle) ? { winLine: winLine(enc.def.id, s.hand) } : {}),
       ...(enc.def.proxy ? { proxy: t('river.proxy') } : {}),
       ending: s.phase === 'over' ? (s.seats[0].out ? 'lostAll' : 'wonAll') : undefined,

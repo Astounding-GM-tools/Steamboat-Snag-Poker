@@ -70,7 +70,8 @@ export const muscatine: Step[] = [
       },
       {
         type: 'encounter',
-        encounter: { id: 'harbourMaster', stake: 'purse', rivals: [harbourMaster], goal: { type: 'evening' }, hands: HARBOUR_HANDS },
+        // (Counted: whoever holds the bill after the last hand pays it.)
+        encounter: { id: 'harbourMaster', stake: 'purse', rivals: [harbourMaster], goal: { type: 'evening' }, hands: HARBOUR_HANDS, counted: true },
         solved: [],
         // Whoever holds the bill after five hands settles it.
         effects: { settle: { snag: DOCK_FEE, amount: DOCK_FEE_AMOUNT } },
