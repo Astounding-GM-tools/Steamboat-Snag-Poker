@@ -17,8 +17,7 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **NEW_FIRST_MATE**
 
-- First Mate made Captain, and I am the new First Mate now. <sub>[1] · index.ts:21</sub>
-- Gus, the engineer, says being First Mate means being the Captain’s eyes and ears, and to write down everything I need to remember and that the Captain should know about. <sub>[2] · index.ts:22</sub>
+- First Mate made Captain, and I am the new First Mate now. <sub> · index.ts:20</sub>
 
 **muscatineTalk**
 
@@ -27,119 +26,118 @@ descriptions, the river's calls and the log's labels) is at the end.
 - *button* Bad <sub>bill.rounds[1].deal[1].replies[1].label · index.ts:124</sub>
 - *button* Good <sub>bill.rounds[1].deal[1].replies[2].label · index.ts:125</sub>
 - **You:** This is good news, isn’t it, Captain? <sub>bill.rounds[1].deal[2] · index.ts:128</sub>
-- **Bill:** Good money. And the worst timing of my life. <sub>bill.rounds[1].deal[3] · index.ts:129</sub>
-- *button* Why? <sub>bill.rounds[1].deal[3].replies[1].label · index.ts:129</sub>
-- **Bill:** Because you’re the captain now. <sub>bill.rounds[1].deal[4] · index.ts:130</sub>
-- *button* Me? <sub>bill.rounds[1].deal[4].replies[1].label · index.ts:130</sub>
-- **You:** You say that like it’s bad news, Captain? <sub>bill.rounds[1].deal[5] · index.ts:131</sub>
-- **Bill:** It is good news. It’s just the timing that’s bad. <sub>bill.rounds[1].deal[6][1] · index.ts:132</sub>
-- **Bill:** Because I can’t come with. I’m making you the captain. <sub>bill.rounds[1].deal[6][2] · index.ts:132</sub>
-- *button* Me? <sub>bill.rounds[1].deal[6].replies[1].label · index.ts:132</sub>
-- **You:** Me? I’m only the first mate. <sub>bill.rounds[1].flop[1] · index.ts:135</sub>
-- **Bill:** That’s what a first mate is for. <sub>bill.rounds[1].flop[2] · index.ts:136</sub>
-- *button* Gus? <sub>bill.rounds[1].flop[2].replies[1].label · index.ts:136</sub>
-- **You:** Why not Mr. Klemm? No one knows the boat better. <sub>bill.rounds[1].flop[3] · index.ts:137</sub>
-- **Bill:** Gus only cares about his engine. He’d stay in port all day cleaning it if he could. <sub>bill.rounds[1].flop[4] · index.ts:138</sub>
-- **Bill:** Any other bright ideas? <sub>bill.rounds[2].flop[1] · index.ts:143</sub>
-- *button* Lars? <sub>bill.rounds[2].flop[1].replies[1].label · index.ts:143</sub>
-- **You:** Lars, then. He’s a grown man, and stronger than anyone. <sub>bill.rounds[2].flop[2] · index.ts:144</sub>
-- **Bill:** Lars doesn’t speak the language. We’re not even sure that’s his name. <sub>bill.rounds[2].flop[3][1] · index.ts:145</sub>
-- **Bill:** And he’s a hopeless Snag player. <sub>bill.rounds[2].flop[2] · index.ts:145</sub>
-- *button* Snag? <sub>bill.rounds[2].flop[3].replies[1].label · index.ts:145</sub>
-- **You:** What has Snag got to do with captaining? <sub>bill.rounds[2].flop[4] · index.ts:146</sub>
-- **Bill:** Everything. Poker is what makes the river run. <sub>bill.rounds[2].flop[5][1] · index.ts:147</sub>
-- **Bill:** Every decision on the river is made over a hand of cards. Just as we’re doing now. <sub>bill.rounds[2].flop[5][2] · index.ts:147</sub>
-- **Bill:** Well? <sub>bill.rounds[3].deal[1] · index.ts:152</sub>
-- *button* Willie? <sub>bill.rounds[3].deal[1].replies[1].label · index.ts:152</sub>
-- **You:** Willie, then. He’s a great player, and everyone likes him. <sub>bill.rounds[3].deal[2] · index.ts:153</sub>
-- **Bill:** Too young, and too eager. Maybe in a few seasons. For now, it’s your turn. <sub>bill.rounds[3].deal[3] · index.ts:154</sub>
-- **Bill:** My wife’s taken ill. She needs me here, and so do the little ones. <sub>bill.rounds[3].flop[1] · index.ts:157</sub>
-- *button* Bring them? <sub>bill.rounds[3].flop[1].replies[1].label · index.ts:157</sub>
-- **You:** Can’t they come with us, on the river? <sub>bill.rounds[3].flop[2] · index.ts:158</sub>
-- **Bill:** The river’s no place for little ones, and she needs the doctor’s care. <sub>bill.rounds[3].flop[3][1] · index.ts:159</sub>
-- **Bill:** This is how it must be. I’ve made my decision. <sub>bill.rounds[3].flop[2] · index.ts:159</sub>
-- **Bill:** Here. The dock fee bill for the winter, and fifty dollars. Enough to settle it, with a little over for food and coal. Past that, you’ll find your own cargo. <sub>bill.rounds[3].verdict[1][1] · index.ts:162</sub>
-- **Bill:** Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers. <sub>bill.rounds[3].verdict[1][2] · index.ts:162</sub>
-- **The harbour master:** Here to pay your dock fee, I suppose? Thirty-seven dollars. A good deal of money. <sub>harbourTalk.rounds[1].deal[1] · index.ts:172</sub>
-- *button* Pay <sub>harbourTalk.rounds[1].deal[1].replies[1].label · index.ts:174</sub>
-- *button* Snag <sub>harbourTalk.rounds[1].deal[1].replies[2].label · index.ts:175</sub>
-- **The harbour master:** Hrmpf. The River Code: can’t refuse that. But only five rounds, and whoever holds the bill after that settles it. Agreed? <sub>harbourTalk.rounds[1].deal[2] · index.ts:179</sub>
-- *button* Pay <sub>harbourTalk.rounds[1].deal[2].replies[1].label · index.ts:183</sub>
-- *button* Deal <sub>harbourTalk.rounds[1].deal[2].replies[2].label · index.ts:184</sub>
-- **Willie:** It’s a fine day on the river, Captain! <sub>underway.rounds[1].deal[1].text[1] · index.ts:198</sub>
-- **Willie:** Clear water up to the Tri-Cities, Mr. Klemm says, and not a single sn— <sub>underway.rounds[1].deal[1].text[2] · index.ts:198</sub>
-- *button* Single what? <sub>underway.rounds[1].deal[1].replies[1].label · index.ts:199</sub>
-- **Willie:** Snag! We are aground, Captain! <sub>underway.rounds[1].deal[2].text[1] · index.ts:202</sub>
-- **Willie:** Stuck fast! <sub>underway.rounds[1].deal[2].text[2] · index.ts:202</sub>
-- **Gus:** We have run aground on a sandbar, Captain. The engine alone can’t shift us, we need shovels and poles. <sub>underway.rounds[1].deal[3].text[1] · index.ts:207</sub>
-- **Gus:** Pray that our strength outlasts the work, or we will spend the night right here. <sub>underway.rounds[1].deal[3].text[2] · index.ts:207</sub>
-- *button* Next <sub>underway.rounds[1].deal[3].replies[1].label · index.ts:208</sub>
-- **The harbour master:** Thirty-seven dollars, Captain. Pleasure doing business. <sub>harbourMaster.rounds[5].verdict[1] · index.ts:223</sub>
-- **The harbour master:** Hrmpf. Mine to settle, then. Off with you. <sub>harbourMaster.rounds[5].verdict[2] · index.ts:224</sub>
+- **Bill:** Good money. And the worst timing of my life. <sub>bill.rounds[1].deal[3][1] · index.ts:129</sub>
+- **Bill:** Because you’re the captain now. <sub>bill.rounds[1].deal[2] · index.ts:129</sub>
+- *button* Me? <sub>bill.rounds[1].deal[3].replies[1].label · index.ts:129</sub>
+- **You:** You say that like it’s bad news, Captain? <sub>bill.rounds[1].deal[4] · index.ts:130</sub>
+- **Bill:** It is good news. It’s just the timing that’s bad. <sub>bill.rounds[1].deal[5][1] · index.ts:131</sub>
+- **Bill:** Because I can’t come with. I’m making you the captain. <sub>bill.rounds[1].deal[5][2] · index.ts:131</sub>
+- *button* Me? <sub>bill.rounds[1].deal[5].replies[1].label · index.ts:131</sub>
+- **You:** Me? I’m only the first mate. <sub>bill.rounds[1].flop[1] · index.ts:134</sub>
+- **Bill:** That’s what a first mate is for. <sub>bill.rounds[1].flop[2] · index.ts:135</sub>
+- *button* Gus? <sub>bill.rounds[1].flop[2].replies[1].label · index.ts:135</sub>
+- **You:** Why not Mr. Klemm? No one knows the boat better. <sub>bill.rounds[1].flop[3] · index.ts:136</sub>
+- **Bill:** Gus only cares about his engine. He’d stay in port all day cleaning it if he could. <sub>bill.rounds[1].flop[4] · index.ts:137</sub>
+- **Bill:** Anything else on your mind? <sub>bill.rounds[2].flop[1] · index.ts:142</sub>
+- *button* Lars? <sub>bill.rounds[2].flop[1].replies[1].label · index.ts:142</sub>
+- **You:** Lars, then. He’s a grown man, and stronger than anyone. <sub>bill.rounds[2].flop[2] · index.ts:143</sub>
+- **Bill:** Lars doesn’t speak the language. We’re not even sure that’s his name. <sub>bill.rounds[2].flop[3][1] · index.ts:144</sub>
+- **Bill:** And he’s a hopeless Snag player. <sub>bill.rounds[2].flop[2] · index.ts:144</sub>
+- *button* Snag? <sub>bill.rounds[2].flop[3].replies[1].label · index.ts:144</sub>
+- **You:** What has Snag got to do with captaining? <sub>bill.rounds[2].flop[4] · index.ts:145</sub>
+- **Bill:** Everything. Poker is what makes the river run. <sub>bill.rounds[2].flop[5][1] · index.ts:146</sub>
+- **Bill:** Every decision on the river is made over a hand of cards. Just as we’re doing now. <sub>bill.rounds[2].flop[5][2] · index.ts:146</sub>
+- **Bill:** Well? <sub>bill.rounds[3].deal[1] · index.ts:151</sub>
+- *button* Willie? <sub>bill.rounds[3].deal[1].replies[1].label · index.ts:151</sub>
+- **You:** Willie, then. He’s a great player, and everyone likes him. <sub>bill.rounds[3].deal[2] · index.ts:152</sub>
+- **Bill:** Too young, and too eager. Maybe in a few seasons. For now, it’s your turn. <sub>bill.rounds[3].deal[3] · index.ts:153</sub>
+- **Bill:** My wife’s taken ill. She needs me here, and so do the little ones. <sub>bill.rounds[3].flop[1] · index.ts:156</sub>
+- *button* Bring them? <sub>bill.rounds[3].flop[1].replies[1].label · index.ts:156</sub>
+- **You:** Can’t they come with us, on the river? <sub>bill.rounds[3].flop[2] · index.ts:157</sub>
+- **Bill:** The river’s no place for little ones, and she needs the doctor’s care. <sub>bill.rounds[3].flop[3][1] · index.ts:158</sub>
+- **Bill:** This is how it must be. I’ve made my decision. <sub>bill.rounds[3].flop[2] · index.ts:158</sub>
+- **Bill:** Here. The dock fee bill for the winter, and fifty dollars. Enough to settle it, with a little over for food and coal. Past that, you’ll find your own cargo. <sub>bill.rounds[3].verdict[1][1] · index.ts:161</sub>
+- **Bill:** Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers. <sub>bill.rounds[3].verdict[1][2] · index.ts:161</sub>
+- **The harbour master:** Here to pay your dock fee, I suppose? Thirty-seven dollars. A good deal of money. <sub>harbourTalk.rounds[1].deal[1] · index.ts:171</sub>
+- *button* Pay <sub>harbourTalk.rounds[1].deal[1].replies[1].label · index.ts:173</sub>
+- *button* Snag <sub>harbourTalk.rounds[1].deal[1].replies[2].label · index.ts:174</sub>
+- **The harbour master:** Hrmpf. The River Code: can’t refuse that. But only five rounds, and whoever holds the bill after that settles it. Agreed? <sub>harbourTalk.rounds[1].deal[2] · index.ts:178</sub>
+- *button* Pay <sub>harbourTalk.rounds[1].deal[2].replies[1].label · index.ts:182</sub>
+- *button* Deal <sub>harbourTalk.rounds[1].deal[2].replies[2].label · index.ts:183</sub>
+- **Willie:** It’s a fine day on the river, Captain! <sub>underway.rounds[1].deal[1].text[1] · index.ts:197</sub>
+- **Willie:** Clear water up to the Tri-Cities, Mr. Klemm says, and not a single sn— <sub>underway.rounds[1].deal[1].text[2] · index.ts:197</sub>
+- *button* Single what? <sub>underway.rounds[1].deal[1].replies[1].label · index.ts:198</sub>
+- **Willie:** Snag! We are aground, Captain! <sub>underway.rounds[1].deal[2].text[1] · index.ts:201</sub>
+- **Willie:** Stuck fast! <sub>underway.rounds[1].deal[2].text[2] · index.ts:201</sub>
+- **Gus:** We have run aground on a sandbar, Captain. The engine alone can’t shift us, we need shovels and poles. <sub>underway.rounds[1].deal[3].text[1] · index.ts:206</sub>
+- **Gus:** Pray that our strength outlasts the work, or we will spend the night right here. <sub>underway.rounds[1].deal[3].text[2] · index.ts:206</sub>
+- *button* Next <sub>underway.rounds[1].deal[3].replies[1].label · index.ts:207</sub>
+- **The harbour master:** Thirty-seven dollars, Captain. Pleasure doing business. <sub>harbourMaster.rounds[5].verdict[1] · index.ts:222</sub>
+- **The harbour master:** Hrmpf. Mine to settle, then. Off with you. <sub>harbourMaster.rounds[5].verdict[2] · index.ts:223</sub>
 
 ### src/story/characters/sandy.ts
 
 
 **SANDY**
 
-- **Sandy:** Welcome to The Sandbar! I’ll be your bartender this evening. <sub>opening[1] · sandy.ts:37</sub>
-- **Sandy:** Today’s specials: Paddle Split, Crankshaft with a Twist, and the Best Intentions, served on the Rocks. <sub>opening[2] · sandy.ts:37</sub>
-- **Sandy:** Welcome back, Captain, have a seat. It’s five o’clock somewhere, I’m sure. <sub>mornings[1] · sandy.ts:38</sub>
-- **Sandy:** Another round, Captain? <sub>rounds[1].text · sandy.ts:40</sub>
-- *button* Leave <sub>rounds[1].answers[1].label · sandy.ts:40</sub>
-- *comeback* **Sandy:** You wish. <sub>rounds[1].answers[1].comeback · sandy.ts:40</sub>
-- *button* Deal <sub>rounds[1].answers[2].label · sandy.ts:40</sub>
-- *comeback* **Sandy:** Shore thing. <sub>rounds[1].answers[2].comeback · sandy.ts:40</sub>
-- **Sandy:** Pub quiz, Captain! <sub>rounds[2].text[1] · sandy.ts:41</sub>
-- **Sandy:** Name a structure for retaining water. <sub>rounds[2].text[2] · sandy.ts:41</sub>
-- *button* Well <sub>rounds[2].answers[1].label · sandy.ts:41</sub>
-- *button* Dam <sub>rounds[2].answers[2].label · sandy.ts:41</sub>
-- **Sandy:** Pub quiz, Captain! <sub>rounds[3].text[1] · sandy.ts:42</sub>
-- **Sandy:** Name a common river sediment. <sub>rounds[3].text[2] · sandy.ts:42</sub>
-- *button* Leaves <sub>rounds[3].answers[1].label · sandy.ts:42</sub>
-- *button* Quartz <sub>rounds[3].answers[2].label · sandy.ts:42</sub>
-- **Sandy:** Pub quiz, Captain! <sub>rounds[4].text[1] · sandy.ts:44</sub>
-- **Sandy:** What do they raise along a river? <sub>rounds[4].text[2] · sandy.ts:44</sub>
-- *button* Levy <sub>rounds[4].answers[1].label · sandy.ts:46</sub>
-- *button* Levee <sub>rounds[4].answers[2].label · sandy.ts:46</sub>
-- *button* I just want to leave. Please let me leave. <sub>rounds[4].answers[3].label · sandy.ts:46</sub>
-- **Sandy:** A deuce drifts into a sandbar, orders a beer. <sub>quips[1][1] · sandy.ts:50</sub>
-- **Sandy:** Says: “Put it on my bill.” <sub>quips[1][2] · sandy.ts:50</sub>
-- **Sandy:** It wasn’t easy for me, growing up. <sub>quips[1] · sandy.ts:51</sub>
-- **Sandy:** You see, my mother was a beach. <sub>quips[2][2] · sandy.ts:51</sub>
-- **Sandy:** You are a very grounded person, Captain. <sub>quips[3] · sandy.ts:52</sub>
-- **Sandy:** What’s your poison, Captain? We’ve got silt, and we’ve got grit. <sub>quips[4][1] · sandy.ts:53</sub>
-- **Sandy:** Moonshine too, if you stick around. <sub>quips[4][2] · sandy.ts:53</sub>
-- **Sandy:** This is a very fine sediment, Captain. <sub>quips[5] · sandy.ts:54</sub>
-- **Sandy:** The nerve of some people! <sub>quips[6][1] · sandy.ts:55</sub>
-- **Sandy:** Calling me shallow! <sub>quips[6][2] · sandy.ts:55</sub>
-- **Sandy:** I aspire to be a Beach Club one day. <sub>quips[7] · sandy.ts:56</sub>
-- **Sandy:** ♪ Sand and deliver! ♪ <sub>quips[8][1] · sandy.ts:57</sub>
-- **Sandy:** ♪ Your money and your time! ♪ <sub>quips[8][2] · sandy.ts:57</sub>
-- **Sandy:** I used to be a mountain, you know. <sub>quips[9][1] · sandy.ts:58</sub>
-- **Sandy:** Erosion was a constant grind. <sub>quips[9][2] · sandy.ts:58</sub>
-- **Sandy:** I hope you like the impression I made of your hull. <sub>quips[10][1] · sandy.ts:59</sub>
-- **Sandy:** But wait until you see my work on the engine. <sub>quips[10][2] · sandy.ts:59</sub>
-- **Sandy:** Do you know what the best thing about sand is? <sub>quips[11][1] · sandy.ts:60</sub>
-- **Sandy:** Sand gets everywhere. <sub>quips[11][2] · sandy.ts:60</sub>
-- **Sandy:** ♪ Do you like Piña Coladas? ♪ <sub>quips[12][1] · sandy.ts:61</sub>
-- **Sandy:** ♪ And getting stuck on the river? ♪ <sub>quips[12][2] · sandy.ts:61</sub>
-- **Sandy:** Last call! <sub>lastCall · sandy.ts:63</sub>
-- **Sandy:** I’ll drift off downstream now… Catch you later, Captain! <sub>cleared · sandy.ts:64</sub>
-- **Sandy:** I think you’ve had enough, Captain. You’re in no shape to navigate; better spend the night. <sub>beaten · sandy.ts:65</sub>
+- **Sandy:** Welcome to The Sandbar! I’ll be your bartender this evening. <sub>opening[1] · sandy.ts:26</sub>
+- **Sandy:** Today’s specials are the Paddle Split, Crankshaft with a Twist, and Best Intentions, served on the Rocks. <sub>opening[2] · sandy.ts:26</sub>
+- **Sandy:** Welcome back, Captain, have a seat. It’s five o’clock somewhere, I’m sure. <sub>mornings[1] · sandy.ts:27</sub>
+- **Sandy:** Another round, Captain? <sub>rounds[1].text · sandy.ts:29</sub>
+- *button* Leave <sub>rounds[1].answers[1].label · sandy.ts:29</sub>
+- *comeback* **Sandy:** You wish. <sub>rounds[1].answers[1].comeback · sandy.ts:29</sub>
+- *button* Deal <sub>rounds[1].answers[2].label · sandy.ts:29</sub>
+- *comeback* **Sandy:** Shore thing. <sub>rounds[1].answers[2].comeback · sandy.ts:29</sub>
+- **Sandy:** Pub quiz, Captain! <sub>rounds[2].text[1] · sandy.ts:30</sub>
+- **Sandy:** Name a man-made structure for retaining water. <sub>rounds[2].text[2] · sandy.ts:30</sub>
+- *button* Well <sub>rounds[2].answers[1].label · sandy.ts:30</sub>
+- *button* Dam <sub>rounds[2].answers[2].label · sandy.ts:30</sub>
+- **Sandy:** Pub quiz, Captain! <sub>rounds[3].text[1] · sandy.ts:31</sub>
+- **Sandy:** Name a common river sediment. <sub>rounds[3].text[2] · sandy.ts:31</sub>
+- *button* Leaves <sub>rounds[3].answers[1].label · sandy.ts:31</sub>
+- *button* Quartz <sub>rounds[3].answers[2].label · sandy.ts:31</sub>
+- **Sandy:** Pub quiz, Captain! <sub>rounds[4].text[1] · sandy.ts:33</sub>
+- **Sandy:** What do bankers raise along a river? <sub>rounds[4].text[2] · sandy.ts:33</sub>
+- *button* Levy <sub>rounds[4].answers[1].label · sandy.ts:34</sub>
+- *button* Levee <sub>rounds[4].answers[2].label · sandy.ts:34</sub>
+- *button* I just want to leave. Please let me leave. <sub>rounds[4].answers[3].label · sandy.ts:34</sub>
+- **Sandy:** Deuce drifts into a sandbar. Orders a beer. <sub>quips[1][1] · sandy.ts:38</sub>
+- **Sandy:** Says: “Put it on my bill.” <sub>quips[1][2] · sandy.ts:38</sub>
+- **Sandy:** It wasn’t easy for me, growing up. <sub>quips[1] · sandy.ts:39</sub>
+- **Sandy:** You see, my mother was a beach. <sub>quips[2][2] · sandy.ts:39</sub>
+- **Sandy:** You are a very grounded person, Captain. <sub>quips[3] · sandy.ts:40</sub>
+- **Sandy:** You’ve got true grit, Captain. <sub>quips[4] · sandy.ts:41</sub>
+- **Sandy:** What’s your poison, Captain? We’ve got a fine selection of silt. <sub>quips[5][1] · sandy.ts:42</sub>
+- **Sandy:** Moonshine too, if you stick around. <sub>quips[5][2] · sandy.ts:42</sub>
+- **Sandy:** That is a very fine sediment, Captain. <sub>quips[6] · sandy.ts:43</sub>
+- **Sandy:** The nerve of some people! <sub>quips[7][1] · sandy.ts:44</sub>
+- **Sandy:** Calling me shallow! <sub>quips[7][2] · sandy.ts:44</sub>
+- **Sandy:** I aspire to be a Beach Club one day. <sub>quips[8] · sandy.ts:45</sub>
+- **Sandy:** ♪ Sand and deliver! ♪ <sub>quips[9][1] · sandy.ts:46</sub>
+- **Sandy:** ♪ Your money and your time! ♪ <sub>quips[9][2] · sandy.ts:46</sub>
+- **Sandy:** I used to be a mountain, you know. <sub>quips[10][1] · sandy.ts:47</sub>
+- **Sandy:** Erosion was a constant grind. <sub>quips[10][2] · sandy.ts:47</sub>
+- **Sandy:** Do you like the impression I made of your hull? <sub>quips[11][1] · sandy.ts:48</sub>
+- **Sandy:** Wait until you see my work on the engine! <sub>quips[11][2] · sandy.ts:48</sub>
+- **Sandy:** Do you know what the best thing about sand is? <sub>quips[12][1] · sandy.ts:49</sub>
+- **Sandy:** Sand gets everywhere. <sub>quips[12][2] · sandy.ts:49</sub>
+- **Sandy:** ♪ Do you like Piña Coladas? ♪ <sub>quips[13][1] · sandy.ts:50</sub>
+- **Sandy:** ♪ And being stuck in the sand? ♪ <sub>quips[13][2] · sandy.ts:50</sub>
+- **Sandy:** Last call! <sub>lastCall · sandy.ts:52</sub>
+- **Sandy:** I’ll slink off downstream now. See you later, Captain... if you catch my drift! <sub>cleared · sandy.ts:53</sub>
+- **Sandy:** I think you’ve had enough. You’re in no shape to navigate, better spend the night. <sub>beaten · sandy.ts:54</sub>
 
 **sandbarTalk**
 
-- **Sandy:** Going to sand pat, Captain? <sub>pat[1] · sandy.ts:88</sub>
-- **Sandy:** Sand pat again? You’ll fit right in. <sub>pat[1] · sandy.ts:88</sub>
-- **Sandy:** Sand pat again? You’ll fit right in. <sub>pat[1] · sandy.ts:88</sub>
-- **Sandy:** You’re getting the hang of this. Do nothing. Nothing moves here. <sub>pat[1] · sandy.ts:88</sub>
-- **Gus:** That’s our own sweat back, Captain, no more. What we lose, the river keeps. <sub>verdict[1][1].text · sandy.ts:92</sub>
-- **Sandy:** Your first one’s on the house. So’s your boat. <sub>verdict[1][2] · sandy.ts:93</sub>
-- **Willie:** She’s off, Captain! We’re floating! <sub>verdict[4].text · sandy.ts:98</sub>
-- **Gus:** That’s all they have, Captain. There’s not another shove in them today. <sub>verdict[6].text · sandy.ts:100</sub>
-- **Willie:** That’s the light gone. She won’t move tonight. <sub>verdict[7][1].text · sandy.ts:103</sub>
-- **Willie:** That’s the light gone. She won’t move tonight. <sub>verdict[7][2].text · sandy.ts:104</sub>
+- **Sandy:** Going to sand pat, Captain? <sub>pat[1] · sandy.ts:71</sub>
+- **Sandy:** Sand pat again? Don’t mind if you do. <sub>pat[1] · sandy.ts:71</sub>
+- **Sandy:** Sand pat again? You’ll fit right in. <sub>pat[1] · sandy.ts:71</sub>
+- **Sandy:** You’re getting the hang of this. Do nothing. <sub>pat[1] · sandy.ts:71</sub>
+- **Gus:** That’s our own sweat won back, Captain, no more. What we lose, the river keeps. <sub>verdict[1][1].text · sandy.ts:75</sub>
+- **Sandy:** Your first one’s on the house. So’s your boat. <sub>verdict[1][2] · sandy.ts:76</sub>
+- **Willie:** She’s off, Captain! We’re floating! <sub>verdict[4].text · sandy.ts:81</sub>
+- **Gus:** That’s all they’ve got, Captain. There’s not another shove in them today. <sub>verdict[6].text · sandy.ts:83</sub>
+- **Willie:** That’s the light gone. She won’t move tonight. <sub>verdict[7][1].text · sandy.ts:87</sub>
 
 ### src/story/characters/debris.ts
 
@@ -173,26 +171,23 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **ENCOUNTER_RECORDS**
 
-- Off The Sandbar at last. All hands sore. <sub>sandbar.solved · log.ts:9</sub>
-- Aground on The Sandbar. We stay the night. <sub>sandbar.failed · log.ts:9</sub>
-- Cards on deck by lantern light. Repairs seen to. <sub>deck.solved · log.ts:10</sub>
-- Anchored downstream of the dock. Went ashore for news. <sub>deckIntel.solved · log.ts:11</sub>
-- Cards with the strikers at the coal depot. <sub>depot.solved · log.ts:12</sub>
-- An evening at the Bettendorf saloon. <sub>triCities.solved · log.ts:13</sub>
+- Off The Sandbar at last. All hands sore. <sub>sandbar.solved · log.ts:10</sub>
+- Cards on deck by lantern light. Repairs seen to. <sub>deck.solved · log.ts:11</sub>
+- Anchored downstream of the dock. Went ashore for news. <sub>deckIntel.solved · log.ts:12</sub>
+- Cards with the strikers at the coal depot. <sub>depot.solved · log.ts:13</sub>
+- An evening at the Bettendorf saloon. <sub>triCities.solved · log.ts:14</sub>
 
 **castOffRecord**
 
-- Cast off from {place}, {bound}. <sub> · log.ts:17</sub>
+- Cast off from {place}, {bound}. <sub> · log.ts:18</sub>
 
 **UNDER_WAY_AGAIN**
 
-- Under way again. <sub> · log.ts:18</sub>
+- Under way again. <sub> · log.ts:19</sub>
 
 **LEAVING_MUSCATINE**
 
-- The first day of spring is what some folks call the day the ice lets go of the river. <sub>opening · log.ts:32</sub>
-- Cargo run for Dubuque, {MUSCATINE_TO_DUBUQUE} miles upriver. <sub>turning[1] · log.ts:33</sub>
-- Strong spring-thaw current, four miles an hour. <sub>turning[2] · log.ts:33</sub>
+- The first day of spring is what some folks call the day the ice lets go of the river. <sub>opening · log.ts:33</sub>
 
 **FIRST_CRATE**
 
@@ -216,10 +211,11 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **SMOOTH_RUN**
 
-- I hope this will be a smooth run. <sub>[1] · log.ts:70</sub>
-- Pick up some prime salvage <sub>[2] · log.ts:70</sub>
-- Make good money on the haul <sub>[3] · log.ts:70</sub>
-- And not leave it all at tables along the way <sub>[4] · log.ts:70</sub>
+- Cargo run on Dubuque, {MUSCATINE_TO_DUBUQUE} miles up. <sub>[1] · log.ts:70</sub>
+- I hope this will be a smooth run. <sub>[2] · log.ts:70</sub>
+- Pick up some prime salvage <sub>[3] · log.ts:70</sub>
+- Make good money on the haul <sub>[4] · log.ts:70</sub>
+- And not leave it all at tables along the way <sub>[5] · log.ts:70</sub>
 
 **firstCrateRecord**
 
@@ -236,18 +232,22 @@ descriptions, the river's calls and the log's labels) is at the end.
 - Hit a deadhead <sub>hazard.deadhead.struck · log.ts:90</sub>
 - Hit a drift pile <sub>hazard.driftPile.struck · log.ts:91</sub>
 
-**CHOICE_RECORDS**
+**STRUCK_SANDBAR**
 
-- Struck a sandbar, a few miles below the Tri-Cities. <sub>aground · log.ts:110</sub>
+- Stuck on a sandbar a few miles west of Tri-Cities. <sub> · log.ts:112</sub>
+
+**AGROUND_NIGHT**
+
+- Aground. We stay the night on the river. <sub> · log.ts:114</sub>
 
 **islandRecord**
 
-- Kept to {way} of {island}. <sub> · log.ts:114</sub>
+- Kept to {way} of {island}. <sub> · log.ts:117</sub>
 
 **tradeRecord**
 
-- Sold {name}, ${price}. <sub> · log.ts:117</sub>
-- Bought {name}, ${price}. <sub> · log.ts:117</sub>
+- Sold {name}, ${price}. <sub> · log.ts:120</sub>
+- Bought {name}, ${price}. <sub> · log.ts:120</sub>
 
 ## The Tri-Cities
 
@@ -455,14 +455,14 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **deckQuips**
 
-- **Gus:** Old Hildegard doesn’t care for sand, Captain. Not one bit. <sub>[1] · crew.ts:49</sub>
-- **Willie:** Beans again tomorrow, Captain! Cold beans. <sub>[2] · crew.ts:50</sub>
+- **Gus:** The engine does not care much for sand, Captain. Needs an overhaul. <sub>[1] · crew.ts:49</sub>
+- **Willie:** Cold beans for supper, Captain! Woulda been warm beans, if’n we had a stove. <sub>[2] · crew.ts:50</sub>
 - **Lars:** Sjekk. <sub>[3] · crew.ts:51</sub>
-- **Gus:** She’s a good boat. Don’t tell her I said so. <sub>[4] · crew.ts:52</sub>
-- **Willie:** I think he liked us, Captain. Sandy. <sub>[5] · crew.ts:53</sub>
-- **Willie:** The Mathilda Belle tried the rapids without a pilot, Captain. Came back down by evening, all washed up, cargo lost. <sub>[6] · crew.ts:54</sub>
-- **Willie:** So did the Thierry Belle. She’s back in the queue at Davenport. <sub>[7] · crew.ts:55</sub>
-- **Gus:** Too early on the thaw to go up. Everyone says so. I say so. <sub>[8] · crew.ts:56</sub>
+- **Gus:** She’s a good boat, the Best Intentions. <sub>[4] · crew.ts:52</sub>
+- **Willie:** I think he liked us, Captain. That Sandy. <sub>[5] · crew.ts:53</sub>
+- **Willie:** The Mathilda tried the rapids without a pilot, Captain. Came back down by evening, all washed up, cargo lost. <sub>[6] · crew.ts:54</sub>
+- **Willie:** They say the Thierry Belle is queued up at Davenport. <sub>[7] · crew.ts:55</sub>
+- **Gus:** Too early on the thaw to go up. Current’s too strong for our boiler. <sub>[8] · crew.ts:56</sub>
 - **Lars:** Fåld. <sub>[9] · crew.ts:57</sub>
 
 **FIXING**
@@ -1360,6 +1360,9 @@ descriptions, the river's calls and the log's labels) is at the end.
 ### river
 
 - `river.downbound`: downbound
+- `river.inbound`: inbound
+- `river.aground`: aground
+- `river.docked`: docked
 
 ### hub
 
@@ -1492,6 +1495,7 @@ descriptions, the river's calls and the log's labels) is at the end.
 ### place
 
 - `place.muscatine`: Muscatine
+- `place.sandbar`: The Sandbar
 - `place.triCities`: the Tri-Cities
 - `place.leClaire`: LeClaire
 - `place.davenport`: Davenport

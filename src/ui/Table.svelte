@@ -635,7 +635,7 @@
     const holder = (snag: number) =>
       round.seats[me]?.jokers.some((j) => j.index === snag) ? 'you' : round.seats.some((s, i) => i !== me && s.jokers.some((j) => j.index === snag)) ? 'them' : null;
     const lines = script?.[trigger]?.filter(
-      (l) => (!l.when || outcomes.includes(l.when)) && (l.holding ?? []).every((h) => holder(h.snag) === h.by) && !(l.once && said.includes(l.once)),
+      (l) => (!l.when || [l.when].flat().some((w) => outcomes.includes(w))) && (l.holding ?? []).every((h) => holder(h.snag) === h.by) && !(l.once && said.includes(l.once)),
     );
     if (!lines?.length || fired.has(key)) return false;
     fired.add(key);

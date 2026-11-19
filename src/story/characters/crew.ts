@@ -46,14 +46,14 @@ const larsSays = (day: number, tune: string, word: string) => (day > A_WEEK ? wo
 
 /** Round the lantern, after supper. */
 const deckQuips = (day: number) => [
-  aside('gus', 'Old Hildegard doesn’t care for sand, Captain. Not one bit.'),
-  aside('willie', 'Beans again tomorrow, Captain! Cold beans.'),
+  aside('gus', 'The engine does not care much for sand, Captain. Needs an overhaul.'),
+  aside('willie', 'Cold beans for supper, Captain! Woulda been warm beans, if’n we had a stove.'),
   aside('lars', larsSays(day, '♪ ♪ ♫', 'Sjekk.')),
-  aside('gus', 'She’s a good boat. Don’t tell her I said so.'),
-  aside('willie', 'I think he liked us, Captain. Sandy.'),
-  aside('willie', 'The Mathilda Belle tried the rapids without a pilot, Captain. Came back down by evening, all washed up, cargo lost.'),
-  aside('willie', 'So did the Thierry Belle. She’s back in the queue at Davenport.'),
-  aside('gus', 'Too early on the thaw to go up. Everyone says so. I say so.'),
+  aside('gus', 'She’s a good boat, the Best Intentions.'),
+  aside('willie', 'I think he liked us, Captain. That Sandy.'),
+  aside('willie', 'The Mathilda tried the rapids without a pilot, Captain. Came back down by evening, all washed up, cargo lost.'),
+  aside('willie', 'They say the Thierry Belle is queued up at Davenport.'),
+  aside('gus', 'Too early on the thaw to go up. Current’s too strong for our boiler.'),
   aside('lars', larsSays(day, '♫ ♪ ♫ ♪', 'Fåld.')),
 ];
 

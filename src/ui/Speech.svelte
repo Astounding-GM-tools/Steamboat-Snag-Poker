@@ -15,6 +15,8 @@
   }
 
   /** One line of a conversation. */
+  /** How a hand went, as a line can wait on it. */
+  export type Outcome = 'won' | 'dumped' | 'kept' | 'lost' | 'wonAll' | 'lostAll';
   export interface SpeechLine {
     /** How the speaker looks saying it, if they have a face. */
     mood?: MoodBlend;
@@ -56,7 +58,7 @@
      * or `kept` yours), or the game is over, all the money yours or all of
      * it theirs. After a story's lines the table moves on by itself.
      */
-    when?: 'won' | 'dumped' | 'kept' | 'lost' | 'wonAll' | 'lostAll';
+    when?: Outcome | readonly Outcome[];
     /** They show their hand (even after a fold): the cards turn face up, and the words follow. */
     show?: boolean;
     /** Said as the cards go out: the deal goes ahead beneath it, and it stays until the next lines take its place. */

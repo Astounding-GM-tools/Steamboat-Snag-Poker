@@ -601,8 +601,8 @@ describe('Sandy', () => {
     }
   });
 
-  it('has a dozen one-liners, exactly', () => {
-    expect(SANDY.quips).toHaveLength(12);
+  it('has a baker’s dozen one-liners, exactly', () => {
+    expect(SANDY.quips).toHaveLength(13);
   });
 
   it('repeats its last morning once it has no more', () => {

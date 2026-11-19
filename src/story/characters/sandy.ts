@@ -10,67 +10,50 @@ const bar = (text: string | string[]): SpeechLine => say('sandbar', text);
 /** A one-liner, said aside; two parts are a setup and its punchline, a beat apart. */
 const quip = (text: string | string[]): SpeechLine => ({ ...aside('sandbar', ''), text });
 
-/**
- * The Sandbar is worn down, never fed: it's `steady`, so what the crew loses to it goes down the
- * river, not onto its pile. Played carefully (simulated, 80 voyages): through on the first day about
- * two times in five, by the second nine in ten, by the third all but certain.
- */
+
 export const sandbar: EncounterDef = {
   id: 'sandbar',
   stake: 'strength',
   rivals: [{ id: 'sandbar', ai: 'stubborn', money: SANDBAR_PILE, jokers: [TROUBLE.onTheRocks, TROUBLE.brokenPaddle, TROUBLE.twistedCrankshaft], obstacle: true, steady: true }],
   goal: { type: 'clear' },
   hands: SANDBAR_HANDS,
-  // (Counted: the day's hands are its daylight, and the last is last call.)
   counted: true,
-  // The river plays dear from the first hand: an ante of 2, then 3 (as if three hands were already past).
   rules: { jokerForfeit: 0, antePast: -3 },
 };
 
-/**
- * Sandy keeps bar, and nothing gets him down. His routine, honed like a
- * comedian's: a joke is excellent, or it's out. Jokes still in the workshop
- * are in docs/story.md (Sandy's routine).
- */
 export const SANDY: Routine = {
   who: 'sandbar',
-  opening: ['Welcome to The Sandbar! I’ll be your bartender this evening.', 'Today’s specials: Paddle Split, Crankshaft with a Twist, and the Best Intentions, served on the Rocks.'],
+  opening: ['Welcome to The Sandbar! I’ll be your bartender this evening.', 'Today’s specials are the Paddle Split, Crankshaft with a Twist, and Best Intentions, served on the Rocks.'],
   mornings: ['Welcome back, Captain, have a seat. It’s five o’clock somewhere, I’m sure.'],
   rounds: [
     { text: 'Another round, Captain?', answers: [{ label: 'Leave', comeback: 'You wish.' }, { label: 'Deal', comeback: 'Shore thing.' }] },
-    { text: ['Pub quiz, Captain!', 'Name a structure for retaining water.'], answers: [{ label: 'Well' }, { label: 'Dam' }] },
+    { text: ['Pub quiz, Captain!', 'Name a man-made structure for retaining water.'], answers: [{ label: 'Well' }, { label: 'Dam' }] },
     { text: ['Pub quiz, Captain!', 'Name a common river sediment.'], answers: [{ label: 'Leaves' }, { label: 'Quartz' }] },
     {
-      text: ['Pub quiz, Captain!', 'What do they raise along a river?'],
-      // No easy way out: the plea deals, like the rest.
+      text: ['Pub quiz, Captain!', 'What do bankers raise along a river?'],
       answers: [{ label: 'Levy' }, { label: 'Levee' }, { label: 'I just want to leave. Please let me leave.' }],
     },
   ],
   quips: [
-    ['A deuce drifts into a sandbar, orders a beer.', 'Says: “Put it on my bill.”'],
+    ['Deuce drifts into a sandbar. Orders a beer.', 'Says: “Put it on my bill.”'],
     ['It wasn’t easy for me, growing up.', 'You see, my mother was a beach.'],
     'You are a very grounded person, Captain.',
-    ['What’s your poison, Captain? We’ve got silt, and we’ve got grit.', 'Moonshine too, if you stick around.'],
-    'This is a very fine sediment, Captain.',
+    'You’ve got true grit, Captain.',
+    ['What’s your poison, Captain? We’ve got a fine selection of silt.', 'Moonshine too, if you stick around.'],
+    'That is a very fine sediment, Captain.',
     ['The nerve of some people!', 'Calling me shallow!'],
     'I aspire to be a Beach Club one day.',
     ['♪ Sand and deliver! ♪', '♪ Your money and your time! ♪'],
     ['I used to be a mountain, you know.', 'Erosion was a constant grind.'],
-    ['I hope you like the impression I made of your hull.', 'But wait until you see my work on the engine.'],
+    ['Do you like the impression I made of your hull?', 'Wait until you see my work on the engine!'],
     ['Do you know what the best thing about sand is?', 'Sand gets everywhere.'],
-    ['♪ Do you like Piña Coladas? ♪', '♪ And getting stuck on the river? ♪'],
+    ['♪ Do you like Piña Coladas? ♪', '♪ And being stuck in the sand? ♪'],
   ],
   lastCall: 'Last call!',
-  cleared: 'I’ll drift off downstream now… Catch you later, Captain!',
-  beaten: 'I think you’ve had enough, Captain. You’re in no shape to navigate; better spend the night.',
+  cleared: 'I’ll slink off downstream now. See you later, Captain... if you catch my drift!',
+  beaten: 'I think you’ve had enough. You’re in no shape to navigate, better spend the night.',
 };
 
-/**
- * A day against Sandy: his opening or his morning; a round before the third
- * hand; last call at the start of the last round; and however the day ends, on
- * whichever hand. His one-liners come when a hand goes his way (you lost it, or
- * folded): a small consolation, while they last.
- */
 export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundScript {
   const hands = attempt > 1 ? SANDBAR_MORNING_HANDS : SANDBAR_HANDS;
   const first = attempt === 1;
@@ -85,11 +68,11 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
   return {
     ...scene,
     // Stood pat: it says so, twice in a day at most.
-    ...(hand === 1 ? { pat: [quip(first ? 'Going to sand pat, Captain?' : 'Sand pat again? You’ll fit right in.')] } : hand === 4 ? { pat: [quip(first ? 'Sand pat again? You’ll fit right in.' : 'You’re getting the hang of this. Do nothing. Nothing moves here.')] } : {}),
+    ...(hand === 1 ? { pat: [quip(first ? 'Going to sand pat, Captain?' : 'Sand pat again? Don’t mind if you do.')] } : hand === 4 ? { pat: [quip(first ? 'Sand pat again? You’ll fit right in.' : 'You’re getting the hang of this. Do nothing.')] } : {}),
     verdict: [
       ...(hand === 1 && first
         ? [
-            { size: 'scene' as const, who: 'gus', when: 'won' as const, text: 'That’s our own sweat back, Captain, no more. What we lose, the river keeps.' },
+            { size: 'scene' as const, who: 'gus', when: 'won' as const, text: 'That’s our own sweat won back, Captain, no more. What we lose, the river keeps.' },
             { ...bar('Your first one’s on the house. So’s your boat.'), when: 'lost' as const },
           ]
         : []),
@@ -97,11 +80,11 @@ export function sandbarTalk({ hand, pile, seed, attempt }: TalkContext): RoundSc
       ...(SANDY.cleared ? [{ ...bar(SANDY.cleared), when: 'wonAll' as const }] : []),
       { size: 'scene', who: 'willie', when: 'wonAll', text: 'She’s off, Captain! We’re floating!' },
       ...(SANDY.beaten ? [{ ...bar(SANDY.beaten), when: 'lostAll' as const }] : []),
-      { size: 'scene', who: 'gus', when: 'lostAll', text: 'That’s all they have, Captain. There’s not another shove in them today.' },
+      { size: 'scene', who: 'gus', when: 'lostAll', text: 'That’s all they’ve got, Captain. There’s not another shove in them today.' },
       ...(hand === hands
         ? [
-            { size: 'scene' as const, who: 'willie', when: 'won' as const, text: 'That’s the light gone. She won’t move tonight.' },
-            { size: 'scene' as const, who: 'willie', when: 'lost' as const, text: 'That’s the light gone. She won’t move tonight.' },
+            // (Won or lost: not when she's cleared, nor beaten for the day, which say so themselves.)
+            { size: 'scene' as const, who: 'willie', when: ['won', 'lost'] as const, text: 'That’s the light gone. She won’t move tonight.' },
           ]
         : []),
     ],
