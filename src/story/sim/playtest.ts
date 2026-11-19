@@ -49,6 +49,7 @@ import {
   turnBack,
   writeLog,
   type JourneyState,
+  type HubOption,
   type Step,
   type StoryDef,
 } from '../mechanics';
@@ -513,12 +514,12 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
   /** At a council (the mercantile, or the morning's): buy what's wanted, sell what's spare, and on. */
   function council() {
     const purchase = (id: string) => {
-      const before = s.purse;
+      const before = s.purse, held = s.salvage ?? 0;
       s = buy(s, story, id);
       rec.bought[id] = (rec.bought[id] ?? 0) + 1;
       if (id === 'boilerOverhaul') rec.milestones.boiler = s.mornings;
       if (ITEMS[id].price > 0) rec.spent += before - s.purse;
-      if (id === 'sellSalvage') rec.salvageSold++;
+      if (id === 'sellSalvage') rec.salvageSold += held - (s.salvage ?? 0);
     };
     while (canBuy(s, story, 'sellSalvage') && (s.salvage ?? 0) > 0) purchase('sellSalvage');
     // Coal, sold while saving up (a load kept back for a job).
@@ -730,6 +731,7 @@ export type Tuning = Record<string, { money?: number; hands?: number }>;
 /** The story with these encounters changed (wherever they are: the days, a stretch's main event, the hubs). */
 export function tuned(story: StoryDef, tuning: Tuning): StoryDef {
   const walk = (steps: Step[]): Step[] => steps.map(one);
+  const tunedSteps = (steps: HubOption['steps']): HubOption['steps'] => (typeof steps === 'function' ? (st: JourneyState) => walk(steps(st)) : walk(steps));
   const one = (step: Step): Step => {
     if (step.type === 'scene') return { ...step, steps: walk(step.steps) };
     if (step.type === 'steam' && step.main) return { ...step, main: { ...step.main, steps: walk(step.main.steps) } };
@@ -742,6 +744,6 @@ export function tuned(story: StoryDef, tuning: Tuning): StoryDef {
   return {
     ...story,
     days: story.days.map((d) => ({ ...d, steps: walk(d.steps) })),
-    hubs: Object.fromEntries(Object.entries(story.hubs ?? {}).map(([k, h]) => [k, { ...h, options: h.options.map((o) => ({ ...o, steps: walk(o.steps), ...(o.menu ? { menu: o.menu.map((m) => ({ ...m, steps: walk(m.steps) })) } : {}) })) }])),
+    hubs: Object.fromEntries(Object.entries(story.hubs ?? {}).map(([k, h]) => [k, { ...h, options: h.options.map((o) => ({ ...o, steps: tunedSteps(o.steps), ...(o.menu ? { menu: o.menu.map((m) => ({ ...m, steps: tunedSteps(m.steps) })) } : {}) })) }])),
   };
 }

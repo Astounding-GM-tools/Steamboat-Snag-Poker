@@ -40,10 +40,10 @@ export const depot: Step[] = [
 const CHEST_UP = ['More for the strike chest! That should last us another day or two.', 'That’s the week’s bread and beans. Much obliged, Captain.', 'The union thanks you, Captain.'];
 const CHEST_DOWN = ['Plenty more where that came from. Union sends it up by the sack.', 'Take it, take it. It’s only the strike chest.', 'Easy come, Captain. Tuesday’s post brings more.'];
 const RIVER_LIFE: SpeechLine[] = [
-  { size: 'aside', who: 'foreman', text: 'You load sixteen tons, and what do you get?' },
+  { size: 'aside', who: 'foreman', text: 'You load sixteen tons, and what do you get?', once: 'sixteenTons' },
   // The joke is the captain's answer.
-  { size: 'aside', who: 'rourke', text: 'How do I look, Captain?', replies: [{ label: 'Good' }, { label: 'Striking' }] },
-  { size: 'aside', who: 'foreman', text: 'Bill still cheat at patience?' },
+  { size: 'aside', who: 'rourke', text: 'How do I look, Captain?', replies: [{ label: 'Good' }, { label: 'Striking' }], once: 'striking' },
+  { size: 'aside', who: 'foreman', text: 'Bill still cheat at patience?', once: 'patience' },
   { size: 'aside', who: 'rourke', text: 'Coal’s dear upriver, I hear.' },
 ];
 const FOLDED = 'Folding, Cap’n? You wouldn’t be… letting us win, now would you?';

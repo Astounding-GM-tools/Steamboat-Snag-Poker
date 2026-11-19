@@ -2,13 +2,13 @@
  * The Tri-Cities (or four): the first hub. Davenport's queue, Rock Island's
  * coal, Moline's market, Bettendorf's bets.
  */
-import { morningStrength, snagDef, type Hub, type HubOption, type Slot, type Step, type Talk } from '../../mechanics';
+import { morningStrength, snagDef, type Hub, type HubOption, type JourneyState, type Slot, type Step, type Talk } from '../../mechanics';
 import { t } from '../../../i18n';
 import { NAGS, deckGame, deckLines } from '../../characters/crew';
 import { FLAG } from '../../flags';
 import { capital } from '../../lines';
 import { BREAKFAST_COST, CLIMB_COAL, DOCKING_FEE, GAYLORD_FIRST_HIRE, GAYLORD_LAST_DAY, GAYLORD_LEAVES, JOB_COAL, JOB_PAY, MORNING_ENTRY, READY_STRENGTH, SALVAGE_ANTE, SALVAGE_CRATES } from '../../numbers';
-import { debrisStep } from '../../characters/debris';
+import { debrisAt, debrisStep } from '../../characters/debris';
 import { gaylordPlaysYourSeat, tournament } from '../03_rapids';
 import { breakfast, breakfastTalk, saloon, triCitiesTalk } from './bettendorf';
 import { depot, depotTalks } from './depot';
@@ -26,10 +26,11 @@ const job = (id: string, text: string, pays: number, flag?: string): HubOption =
 
 /**
  * Salvage camping: tied up below the Moline chain for the slot, no coal burned, fishing out what the
- * rapids took off the boats that tried them that day. A crate a hand, for the crew's strength (idle at
- * the hub otherwise), each one won salvage for the Mercantile. (Draft text, for review.)
+ * rapids took off the boats that tried them that day. A hand a piece, for the crew's strength (idle at
+ * the hub otherwise): whatever comes down, crates (salvage for the Mercantile) and wreckage alike, a
+ * coin flip each, drawn from the voyage's seed and the day (a reload meets the same). (Draft text, for review.)
  */
-const salvageCamp: Step[] = [
+const salvageCamp = (state: JourneyState): Step[] => [
   {
     type: 'caption',
     lines: [
@@ -37,7 +38,7 @@ const salvageCamp: Step[] = [
       { who: 'gus', text: 'Not a shovel of coal, Captain. Just patience and a boat hook.' },
     ],
   },
-  ...Array.from({ length: SALVAGE_CRATES }, (): Step => debrisStep({ kind: 'crate' }, SALVAGE_ANTE)),
+  ...Array.from({ length: SALVAGE_CRATES }, (_, i): Step => debrisStep(debrisAt(state.seed, `camp:${state.mornings}:${state.time}:${i}`), SALVAGE_ANTE)),
   { type: 'slot' },
 ];
 

@@ -234,8 +234,12 @@ export interface HubOption {
   to?: number;
   /** Only with this much coal aboard. */
   coal?: number;
-  steps: Step[];
+  /** What it plays: set steps, or steps drawn as it's taken (from the voyage's seed and the day, say). */
+  steps: Step[] | ((state: JourneyState) => Step[]);
 }
+
+/** A hub option's steps, as taken now. */
+export const optionSteps = (option: HubOption, state: JourneyState): Step[] => (typeof option.steps === 'function' ? option.steps(state) : option.steps);
 
 export interface Hub {
   options: HubOption[];
@@ -619,7 +623,7 @@ export function goTo(prev: JourneyState, story: StoryDef, id: string): JourneySt
   }
   state.submenu = null;
   state.purse -= choice.option.cost ?? 0;
-  state.pending = clone(choice.option.steps);
+  state.pending = clone(optionSteps(choice.option, prev));
   return arrive(state, story);
 }
 
@@ -657,11 +661,22 @@ export function deckCrew(state: JourneyState): string[] {
   return state.crew.filter((id) => !out.includes(id));
 }
 
+/** How many of it go in one sale: one, or all that's aboard (a lot: the salvage). */
+function lotSize(state: JourneyState, itemId: string): number {
+  const lot = ITEMS[itemId]?.lot;
+  return lot ? (state[lot] ?? 0) : 1;
+}
+
+/** What it costs now (negative: what it fetches): a lot's price is for all that's aboard. */
+export function itemPrice(state: JourneyState, itemId: string): number {
+  return ITEMS[itemId].price * lotSize(state, itemId);
+}
+
 /** Can this be bought now (at this council, affordable, room for it, not already had)? */
 export function canBuy(state: JourneyState, story: StoryDef, itemId: string): boolean {
   const step = currentStep(state, story);
   const item = ITEMS[itemId];
-  if (step?.type !== 'council' || !item || !step.trader.includes(itemId) || state.purse < item.price) return false;
+  if (step?.type !== 'council' || !item || !step.trader.includes(itemId) || lotSize(state, itemId) < 1 || state.purse < itemPrice(state, itemId)) return false;
   if (item.once && state.upgrades.includes(itemId)) return false;
   if (item.effect.coal && (state.coal + item.effect.coal > BOAT.bunker || state.coal + item.effect.coal < 0)) return false;
   if (item.effect.salvage && (state.salvage ?? 0) + item.effect.salvage < 0) return false;
@@ -675,10 +690,11 @@ export function buy(prev: JourneyState, story: StoryDef, itemId: string): Journe
   const state = clone(prev);
   const item = ITEMS[itemId];
   const e = item.effect;
-  state.purse -= item.price;
+  const n = lotSize(prev, itemId);
+  state.purse -= item.price * n;
   if (item.once) state.upgrades.push(itemId);
   if (e.coal) state.coal += e.coal;
-  if (e.salvage) state.salvage = (state.salvage ?? 0) + e.salvage;
+  if (e.salvage) state.salvage = (state.salvage ?? 0) + e.salvage * n;
   if (e.comfort) {
     state.comfort += e.comfort;
     state.strength += e.comfort;

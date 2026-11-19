@@ -27,7 +27,7 @@ const dayOne = (id: string, state: JourneyState): JourneyState => {
 };
 const hubIndex = RIVER.days[0].steps.findIndex((s) => s.type === 'hub');
 const hub = (time: Slot, flags: string[] = [], coal = 2): JourneyState => ({ ...start(), step: hubIndex, pending: [], encounter: null, place: 'triCities', time, flags, coal, purse: 30, mornings: 3 });
-const option = (id: string): HubOption => RIVER.hubs!.triCities.options.find((o) => o.id === id)!;
+const option = (id: string): HubOption & { steps: Step[] } => RIVER.hubs!.triCities.options.find((o) => o.id === id)! as HubOption & { steps: Step[] };
 /** The Tournament from a later table (the steps before it passed by, the draw kept). */
 const tournament = (skip: number, day = 3): JourneyState => {
   const [draw, ...rest] = option('tournament').steps;

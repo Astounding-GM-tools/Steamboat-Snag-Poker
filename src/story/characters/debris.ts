@@ -88,7 +88,7 @@ function crateTalk({ journey }: TalkContext): RoundScript {
     deal: [willie('Crate in the water, Captain! Let’s fish it out.')],
     verdict: [
       { ...willie(`Salvaged goods, worth $${worth} at the Mercantile.`), when: 'won' },
-      { ...gus('It’s just soggy cotton, boys.'), when: 'lost' },
+      { ...gus('It’s just soggy cotton, boys.'), when: 'lost', once: 'soggyCotton' },
     ],
   };
 }

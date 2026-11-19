@@ -112,13 +112,15 @@ export interface ItemDef {
   effect: ItemEffect;
   /** Bought once and kept (an upgrade); otherwise supplies, bought as often as you like. */
   once?: boolean;
+  /** Sold as a lot: all of it that's aboard at once (price and effect are for one of it). */
+  lot?: 'salvage';
 }
 
 export const ITEMS: Record<string, ItemDef> = {
   /** Black-market prices, while the strike's on. */
   coal: { id: 'coal', price: 10, effect: { coal: 1 } },
   sellCoal: { id: 'sellCoal', price: -8, effect: { coal: -1 } },
-  sellSalvage: { id: 'sellSalvage', price: -1, effect: { salvage: -1 } },
+  sellSalvage: { id: 'sellSalvage', price: -1, effect: { salvage: -1 }, lot: 'salvage' },
   food: { id: 'food', price: 4, effect: { tomorrow: 4 } },
   hammocks: { id: 'hammocks', price: 12, effect: { comfort: 3 }, once: true },
   sparePole: { id: 'sparePole', price: 6, effect: { spare: TROUBLE.brokenPole }, once: true },

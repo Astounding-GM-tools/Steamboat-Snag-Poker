@@ -557,7 +557,7 @@ export const en = {
   'item.sellCoal.name': 'A load of coal',
   'item.sellCoal.desc': 'Sell one. Coal’s short while the strike’s on.',
   'item.sellSalvage.name': 'Salvage',
-  'item.sellSalvage.desc': 'What was fished out of the river, sold a dollar’s worth at a time.',
+  'item.sellSalvage.desc': 'What was fished out of the river, all of it.',
   'item.fireman.name': 'A second fireman',
   'item.fireman.desc': 'A second shovel at the furnace, for today and tomorrow.',
   'item.boilerOverhaul.name': 'Boiler overhaul',

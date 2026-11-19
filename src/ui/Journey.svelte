@@ -15,6 +15,7 @@
     writeLog,
     buy,
     canBuy,
+    itemPrice,
     canCastOff,
     castOff,
     choose,
@@ -699,6 +700,11 @@
     });
   }
 
+  /** Quips said once a voyage, and said already (their keys, from the flags). */
+  const saidOnce = $derived(journey.flags.filter((f) => f.startsWith('said:')).map((f) => f.slice(5)));
+  function sayOnce(key: string) {
+    if (!journey.flags.includes(`said:${key}`)) journey = { ...journey, flags: [...journey.flags, `said:${key}`] };
+  }
   /** A reply at the table that decides what happens next. */
   function talked(effect: string) {
     if (step?.type !== 'encounter' || !step.choices?.[effect]) return;
@@ -713,7 +719,7 @@
     else if (step.type === 'encounter' && enc?.outcome) journey = leave(journey);
   }
   function purchase(id: string) {
-    if (canBuy(journey, RIVER, id)) journey = writeLog(buy(journey, RIVER, id), tradeRecord(t(`item.${id}.name`), ITEMS[id].price));
+    if (canBuy(journey, RIVER, id)) journey = writeLog(buy(journey, RIVER, id), tradeRecord(t(`item.${id}.name`), itemPrice(journey, id)));
   }
 
   /** What the encounter left you: troubles taken on (against an obstacle). */
@@ -742,7 +748,7 @@
   {#key shownKey}
     <!-- Running aground: the whole picture lurches as the table comes up. On the river, the table's things slide in over the map, and off it again. -->
     <div class="over" class:river={onRiver} bind:this={overEl} class:jolt={step?.type === 'encounter' && step.jolt} class:lifting class:arriving inert={lifting || settling}>
-      <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} ontalk={talked} onjolt={jolt} />
+      <Table table={view ?? last.view!} onplay={play} onnext={next} {onmenu} script={talkNow()} said={saidOnce} onsaid={sayOnce} ontalk={talked} onjolt={jolt} />
     </div>
   {/key}
 {:else if step.type === 'steam' || step.type === 'shot'}
@@ -841,7 +847,7 @@
             {@const owned = item.once && journey.upgrades.includes(id)}
             <li>
               <span class="item"><strong>{t(`item.${id}.name`)}</strong><small>{t(`item.${id}.desc`)}</small></span>
-              <button class="ghost" disabled={!canBuy(journey, RIVER, id)} onclick={() => purchase(id)}>{owned ? t('river.owned') : item.price < 0 ? `+$${-item.price}` : `$${item.price}`}</button>
+              <button class="ghost" disabled={!canBuy(journey, RIVER, id)} onclick={() => purchase(id)}>{owned ? t('river.owned') : itemPrice(journey, id) < 0 ? `+$${-itemPrice(journey, id)}` : `$${itemPrice(journey, id)}`}</button>
             </li>
           {/each}
         </ul>

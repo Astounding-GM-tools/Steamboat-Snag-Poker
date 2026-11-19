@@ -1,6 +1,6 @@
 # Manuscript: every word the player sees
 
-Generated from the source by `node scripts/manuscript.mjs` (2026-11-18): don't edit it here, edit the
+Generated from the source by `node scripts/manuscript.mjs` (2026-11-19): don't edit it here, edit the
 source (each line says where: the declaration, and file:line), then run it again.
 
 How to read it: **Speaker:** the line; **You** is the player (the Captain, or Bill's First Mate before
@@ -240,22 +240,23 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **salvageCamp**
 
-- You tie up below the Moline chain, where the river hands back what the rapids took off the boats that tried them. <sub>[1].lines[1].text · index.ts:36</sub>
-- **Gus:** Not a shovel of coal, Captain. Just patience and a boat hook. <sub>[1].lines[2].text · index.ts:37</sub>
+- You tie up below the Moline chain, where the river hands back what the rapids took off the boats that tried them. <sub>[1].lines[1].text · index.ts:37</sub>
+- **Gus:** Not a shovel of coal, Captain. Just patience and a boat hook. <sub>[1].lines[2].text · index.ts:38</sub>
+- camp:{mornings}:{time}:{i} <sub>[2] · index.ts:41</sub>
 
 **triCities**
 
-- **Willie:** At these coal prices the mail runs don’t pay, Captain. <sub>advice.text · index.ts:46</sub>
-- **Gus:** {snag} wants seeing to, Captain. A night at anchor would do it. <sub>advice.text · index.ts:49</sub>
-- **Willie:** We’re near broke, Captain. I could wade ashore and ask around. <sub>advice.text · index.ts:50</sub>
-- **Gus:** She’ll want a full bunker for the rapids, Captain. <sub>advice.text · index.ts:51</sub>
-- **Willie:** They’ll bet on anything in Bettendorf, Captain. Even on which it’ll be, three or four. <sub>advice.text · index.ts:52</sub>
-- You anchor downstream of the dock, where it’s free. Willie wades ashore, looking for work and gossip. <sub>options[1].steps[1].lines[1].text · index.ts:60</sub>
-- **Gus:** An overhaul gets twice the work from the same coal, Captain. <sub>options[2].steps[1].advice[1].text · index.ts:73</sub>
-- Done <sub>options[2].steps[1].leave · index.ts:76</sub>
-- You herd a timber raft off the bridge piers all day. The raft is bigger than the boat. <sub>options[8].menu[1] · index.ts:91</sub>
-- You ferry a herd of cattle across the river, and spend the rest of the day swabbing the deck. <sub>options[8].menu[2] · index.ts:92</sub>
-- You run the mail to Moline and back, and Gus counts every shovel. <sub>options[8].menu[3] · index.ts:93</sub>
+- **Willie:** At these coal prices the mail runs don’t pay, Captain. <sub>advice.text · index.ts:47</sub>
+- **Gus:** {snag} wants seeing to, Captain. A night at anchor would do it. <sub>advice.text · index.ts:50</sub>
+- **Willie:** We’re near broke, Captain. I could wade ashore and ask around. <sub>advice.text · index.ts:51</sub>
+- **Gus:** She’ll want a full bunker for the rapids, Captain. <sub>advice.text · index.ts:52</sub>
+- **Willie:** They’ll bet on anything in Bettendorf, Captain. Even on which it’ll be, three or four. <sub>advice.text · index.ts:53</sub>
+- You anchor downstream of the dock, where it’s free. Willie wades ashore, looking for work and gossip. <sub>options[1].steps[1].lines[1].text · index.ts:61</sub>
+- **Gus:** An overhaul gets twice the work from the same coal, Captain. <sub>options[2].steps[1].advice[1].text · index.ts:74</sub>
+- Done <sub>options[2].steps[1].leave · index.ts:77</sub>
+- You herd a timber raft off the bridge piers all day. The raft is bigger than the boat. <sub>options[8].menu[1] · index.ts:92</sub>
+- You ferry a herd of cattle across the river, and spend the rest of the day swabbing the deck. <sub>options[8].menu[2] · index.ts:93</sub>
+- You run the mail to Moline and back, and Gus counts every shovel. <sub>options[8].menu[3] · index.ts:94</sub>
 
 ### src/story/chapters/02_triCities/depot.ts
 
@@ -1492,7 +1493,7 @@ descriptions, the river's calls and the log's labels) is at the end.
 - `item.sellCoal.name`: A load of coal
 - `item.sellCoal.desc`: Sell one. Coal’s short while the strike’s on.
 - `item.sellSalvage.name`: Salvage
-- `item.sellSalvage.desc`: What was fished out of the river, sold a dollar’s worth at a time.
+- `item.sellSalvage.desc`: What was fished out of the river, all of it.
 - `item.fireman.name`: A second fireman
 - `item.fireman.desc`: A second shovel at the furnace, for today and tomorrow.
 - `item.boilerOverhaul.name`: Boiler overhaul

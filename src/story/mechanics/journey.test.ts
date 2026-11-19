@@ -7,6 +7,7 @@ import { jokerCard } from '../../engine/cards';
 import {
   buy,
   canBuy,
+  itemPrice,
   canCastOff,
   castOff,
   choose,
@@ -38,6 +39,7 @@ import {
   type Slot,
   type JourneyState,
   type Step,
+  optionSteps,
   type StoryDef,
   STORY_CONFIG,
 } from './journey';
@@ -45,7 +47,7 @@ import { BOAT, shipStrength } from './boat';
 import { Rng } from '../../engine/rng';
 import { newSession, nextSessionHand, submit, type TableSession } from '../../engine/session';
 import { DOCK_FEE, TROUBLE, coveredHands } from './snags';
-import { CRATE_ANTE, crateAnteFor, debrisAt, debrisStep } from '../characters/debris';
+import { CRATE_ANTE, HAZARDS, crateAnteFor, debrisAt, debrisStep } from '../characters/debris';
 import { GOSSIP, gossip } from '../characters/crew';
 import { SALVAGE_ANTE, SALVAGE_CRATES } from '../numbers';
 
@@ -522,26 +524,46 @@ describe('the Tri-Cities', () => {
     expect(closeMenu(s).submenu).toBeNull();
   });
 
-  it('camps below the rapids for salvage: a crate a hand for the crew’s strength, no coal, and the slot’s gone', () => {
+  it('sells all the salvage aboard in one go at the Mercantile, a dollar a dollar’s worth', () => {
+    const s = goTo({ ...at('morning'), salvage: 7, purse: 20 }, RIVER, 'mercantile');
+    expect(itemPrice(s, 'sellSalvage')).toBe(-7);
+    const sold = buy(s, RIVER, 'sellSalvage');
+    expect(sold.purse).toBe(s.purse + 7);
+    expect(sold.salvage).toBe(0);
+    expect(canBuy(sold, RIVER, 'sellSalvage')).toBe(false);
+  });
+
+  it('camps below the rapids for salvage: whatever comes down a hand a piece, for the crew’s strength, no coal, and the slot’s gone', () => {
     const rng = new Rng(5);
     let s = goTo(goTo({ ...at('morning'), coal: 0, strength: 18 }, RIVER, 'jobs'), RIVER, 'job:salvage');
     s = proceed(s, RIVER);
-    let crates = 0, won = 0;
+    let pieces = 0, won = 0;
     for (let guard = 0; guard < 500 && currentStep(s, RIVER)?.type === 'encounter'; guard++) {
       const e = s.encounter!;
       if (e.outcome) {
-        expect(e.def.id).toBe('crate');
-        crates++;
-        if (e.outcome === 'solved') won++;
+        expect(['crate', ...HAZARDS]).toContain(e.def.id);
+        pieces++;
+        if (e.outcome === 'solved' && e.def.id === 'crate') won++;
         s = leaveEncounter(s, RIVER);
       } else if (e.session.phase === 'hand') s = playEncounter(s, myMoveOwed(s) ? chooseAction('careful', viewFor(e.session.round!, mySeatAt(e), e.session.config), e.session.config, rng) : null);
       else s = handDone(s, RIVER);
     }
-    expect(crates).toBe(SALVAGE_CRATES);
+    expect(pieces).toBe(SALVAGE_CRATES);
     expect(s.salvage ?? 0).toBe(won * SALVAGE_ANTE);
     expect(s.coal).toBe(0);
     expect(s.time).toBe('afternoon');
     expect(currentStep(s, RIVER)?.type).toBe('hub');
+  });
+
+  it('brings a mix down the rapids to the camp, crates and wreckage, different day to day', () => {
+    const camp = RIVER.hubs!.triCities.options.find((o) => o.id === 'jobs')!.menu!.find((o) => o.id === 'job:salvage')!;
+    const ids = (day: number) => optionSteps(camp, { ...at('morning'), mornings: day }).flatMap((x) => (x.type === 'encounter' ? [x.encounter.id] : []));
+    const week = Array.from({ length: 7 }, (_, d) => ids(d + 2));
+    expect(new Set(week.flat()).has('crate')).toBe(true);
+    expect(week.flat().some((id) => id !== 'crate')).toBe(true);
+    expect(new Set(week.map((w) => w.join())).size).toBeGreaterThan(1);
+    // The same day, the same pieces (a reload).
+    expect(ids(3)).toEqual(ids(3));
   });
 
   it('has Willie bring back gossip that’s true just now, a different line each night', () => {
@@ -692,7 +714,7 @@ describe('Gaylord\'s week', () => {
 
   it('sits at the final on his own calendar, then doesn\'t', () => {
     const noon = (day: number) => {
-      const [draw, , ...rest] = hubOptions(at(day), RIVER).find((o) => o.option.id === 'tournament')!.option.steps;
+      const [draw, , ...rest] = hubOptions(at(day), RIVER).find((o) => o.option.id === 'tournament')!.option.steps as Step[];
       return jumpTo(at(day), RIVER, [draw, ...rest]).encounter!.session.seats.map((p) => p.id);
     };
     expect(noon(4)).toContain('gaylord');
