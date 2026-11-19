@@ -41,6 +41,9 @@
   .actions > :global(:last-child) {
     grid-column: 7 / 13;
   }
+  .actions > :global(.whole) {
+    grid-column: 1 / -1;
+  }
   .actions > :global(.stand-in) {
     grid-column: 1 / -1;
     visibility: hidden;

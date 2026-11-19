@@ -17,10 +17,7 @@ export const SANDBAR_AT = 0.3;
 const TRI_CITIES_AT = 0.6429;
 
 /** Willie, as the Captain walks over to the harbour master's: the chain of command, and what he hopes of the run. */
-const NEW_FIRST_MATE = [
-  'First Mate made Captain, and I am the new First Mate now.',
-  'Gus, the engineer, says being First Mate means being the Captain’s eyes and ears, and to write down everything I need to remember and that the Captain should know about.',
-].join('\n');
+const NEW_FIRST_MATE = 'First Mate made Captain, and I am the new First Mate now.';
 
 const harbourMaster: Rival = { id: 'harbourMaster', ai: 'stubborn', money: HARBOUR_MASTER_PURSE };
 
@@ -126,8 +123,7 @@ export const muscatineTalk: Record<string, Talk> = {
             ],
           },
           { ...you('This is good news, isn’t it, Captain?'), id: 'good', branch: true, next: 'timing' },
-          { ...said('Good money. And the worst timing of my life.'), id: 'timing', branch: true, replies: [{ label: 'Why?', go: 'why' }] },
-          { ...said('Because you’re the captain now.'), id: 'why', branch: true, replies: [{ label: 'Me?', end: true }] },
+          { ...said(['Good money. And the worst timing of my life.', 'Because you’re the captain now.']), id: 'timing', branch: true, replies: [{ label: 'Me?', end: true }] },
           { ...you('You say that like it’s bad news, Captain?'), id: 'bad', branch: true, next: 'making' },
           { ...said(['It is good news. It’s just the timing that’s bad.', 'Because I can’t come with. I’m making you the captain.']), id: 'making', branch: true, replies: [{ label: 'Me?', end: true }] },
         ],
@@ -140,7 +136,7 @@ export const muscatineTalk: Record<string, Talk> = {
       },
       {
         flop: [
-          { ...said('Any other bright ideas?'), replies: [{ label: 'Lars?' }] },
+          { ...said('Anything else on your mind?'), replies: [{ label: 'Lars?' }] },
           you('Lars, then. He’s a grown man, and stronger than anyone.'),
           { ...said(['Lars doesn’t speak the language. We’re not even sure that’s his name.', 'And he’s a hopeless Snag player.']), replies: [{ label: 'Snag?' }] },
           you('What has Snag got to do with captaining?'),

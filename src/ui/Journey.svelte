@@ -43,6 +43,7 @@
   } from '../story/mechanics';
   import { seatOf, type Action } from '../engine';
   import { t } from '../i18n';
+  import { capital } from '../story/lines';
   import { RIVER, RIVER_START, RIVER_TALK } from '../story/river';
   import { roundScript } from '../story/mechanics/script';
   import BoatScene from './BoatScene.svelte';
@@ -141,12 +142,21 @@
       for (let i = seenLog; i < n; i++) if (!queuedAt.has(i)) queuedAt.set(i, now);
     });
   });
+  /** Past the stale records waiting (the last one too: written while a table hid the header, it's long past by now). */
+  const passStale = () => {
+    const now = performance.now();
+    while (seenLog < ticker.length && ticker[seenLog].kind === 'record' && now - (queuedAt.get(seenLog) ?? now) > STALE_MS) seenLog++;
+  };
   const typed = () => {
     seenLog = Math.min(seenLog + 1, ticker.length);
-    const now = performance.now();
-    while (seenLog < ticker.length - 1 && ticker[seenLog].kind === 'record' && now - (queuedAt.get(seenLog) ?? now) > STALE_MS) seenLog++;
+    passStale();
     typedLines = 0;
   };
+  // Back from a table (any change of step), before he starts on what's waiting: the stale ones pass by.
+  $effect(() => {
+    void step;
+    untrack(() => typedLines === 0 && passStale());
+  });
   /**
    * Willie's done with what he's writing (typed out: the time to read it waived), so a Snag table may come
    * up over the header. Till then the river's tables wait for him.
@@ -154,10 +164,13 @@
   function willieDone(): boolean {
     for (let guard = 0; freshEntry && guard < 100; guard++) {
       if (!lastEntry || typedLines < lastEntry.split('\n').length) return false;
+      // A breather after his last letter, before the table comes up over it.
+      if (performance.now() - linesTypedAt < RIVER_BREATHER_MS) return false;
       typed();
     }
     return !freshEntry;
   }
+  const RIVER_BREATHER_MS = 4000;
   // (The river doesn't wait for him: he types through anything, debris included. docs/playtest-2026-11-17.md.)
   /** How far into the entry he'd typed (lines): away at a table, he picks up there, not from the top. */
   let typedLines = $state(0);
@@ -171,12 +184,6 @@
   const departing = $derived(step?.type === 'steam' && !!step.landing && !journey.flags.includes(departedFlag));
   function departed() {
     if (!journey.flags.includes(departedFlag)) journey = { ...journey, flags: [...journey.flags, departedFlag] };
-    // Under way, and gathering speed: the run ahead.
-    departureEntry(LEAVING_MUSCATINE.turning);
-  }
-  /** Willie writes as she leaves Muscatine, each entry once (a reload replays the departure, not the words). */
-  function departureEntry(text: string) {
-    if (journey.place === 'muscatine' && !journey.log?.some((e) => e.text === text)) journey = writeLog(journey, text, 'musing');
   }
 
 
@@ -193,11 +200,26 @@
   });
   /** The voyage's heading: "Day 2: Muscatine, upbound". */
   // (Moored, the place alone: "Muscatine". Under way: "Day 1: Muscatine, upbound".)
-  const heading = $derived(
-    dock
-      ? t('river.moored', { day: journey.mornings, place: t(`place.${journey.place}`) })
-      : t('river.heading', { day: journey.mornings, place: t(`place.${journey.place}`), bound: t(`river.${bound}`) }),
-  );
+  // (Aground: stuck, a night on the obstacle and at it again in the morning. Under way: the nearer end of
+  // the stretch, where she left or where she's bound ("inbound" past halfway). At a landing: docked.)
+  const aground = $derived([step, ...journey.pending].some((x) => x?.type === 'encounter' && !!x.stuck && (x.attempt ?? 1) > 1));
+  const boundFor = $derived.by(() => {
+    const day = RIVER.days.find((d) => d.day === journey.day);
+    const rest = [...journey.pending, ...(day?.steps.slice(journey.step) ?? [])];
+    const travel = rest.find((x) => x.type === 'travel');
+    const stretch = rest.find((x) => x.type === 'steam');
+    return travel?.type === 'travel' ? { place: travel.to, to: stretch?.type === 'steam' ? stretch.to : 1 } : null;
+  });
+  const heading = $derived.by(() => {
+    const day = journey.mornings;
+    if (dock) return t('river.moored', { day, place: t(`place.${journey.place}`) });
+    if (aground) return t('river.heading', { day, place: t('place.sandbar'), bound: t('river.aground') });
+    if (!onRiver) return t('river.heading', { day, place: capital(t(`place.${journey.place}`)), bound: t('river.docked') });
+    const inbound = bound === 'upbound' && boundFor && boatT > boundFor.to / 2;
+    return inbound
+      ? t('river.heading', { day, place: capital(t(`place.${boundFor.place}`)), bound: t('river.inbound') })
+      : t('river.heading', { day, place: capital(t(`place.${journey.place}`)), bound: t(`river.${bound}`) });
+  });
   /** Out on the river, setting out on it, or at its landing: the map is beneath the felt. */
   const onRiver = $derived(!!journey.river || step?.type === 'steam' || !!dock);
   const leg = $derived(journey.river?.leg ?? (step?.type === 'steam' ? step.leg : (dock?.leg ?? '')));
@@ -798,7 +820,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
     <div class="status opens" class:opening={step.type === 'shot' && !!step.opening} role="button" tabindex="0" aria-label={t('log.open')} onclick={() => (logOpen = !logOpen)}>
       <span class="day">{heading}</span>
-      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => ((typedLines = n), (linesTypedAt = performance.now()))} paused={racing} />{/if}
+      {#if lastEntry}<TypedLine text={lastEntry} fresh={freshEntry} ontyped={typed} from={typedLines} online={(n) => ((typedLines = n), (linesTypedAt = performance.now()))} paused={racing} promptly={step.type === 'shot' || departing} />{/if}
       {#if journey.salvage}<span>{t('river.salvage', { n: journey.salvage })}</span>{/if}
     </div>
     {#if logOpen && journey.log?.length}<LogView entries={journey.log} today={Math.max(1, journey.mornings)} onclose={() => (logOpen = false)} />{/if}

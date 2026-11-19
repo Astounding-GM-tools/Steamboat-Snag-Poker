@@ -23,8 +23,10 @@
     online?: (line: number) => void;
     /** Hold off (she's racing: nobody types at full steam); he goes on when it's lifted. */
     paused?: boolean;
+    /** Start at once, without the pause before an entry (a shot: the view's moving with his words). */
+    promptly?: boolean;
   }
-  let { text, fresh = false, ontyped, wrap = false, from = 0, online, paused = false }: Props = $props();
+  let { text, fresh = false, ontyped, wrap = false, from = 0, online, paused = false, promptly = false }: Props = $props();
 
   /** The lines of an entry, blanks (a paragraph's end) dropped. */
   const linesOf = (t: string) => t.split('\n').filter((l) => l.trim());
@@ -136,7 +138,7 @@
             later(key, 150);
           }),
         ),
-      wrap ? 400 : ENTRY_MS,
+      wrap ? 400 : untrack(() => promptly) ? 300 : ENTRY_MS,
     );
     return () => clearTimeout(timer);
   });

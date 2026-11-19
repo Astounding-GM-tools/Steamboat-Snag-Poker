@@ -6,7 +6,7 @@
 
 /** What's written when an encounter is over, by its id and how it went. (Not Bill's: Willie tells that himself, on the walk to the harbour master's. Nor the dock fee: he tells it as she leaves Muscatine.) */
 export const ENCOUNTER_RECORDS: Record<string, { solved?: string; failed?: string }> = {
-  sandbar: { solved: 'Off The Sandbar at last. All hands sore.', failed: 'Aground on The Sandbar. We stay the night.' },
+  sandbar: { solved: 'Off The Sandbar at last. All hands sore.', failed: 'Aground. We stay the night on the river.' },
   deck: { solved: 'Cards on deck by lantern light. Repairs seen to.' },
   deckIntel: { solved: 'Anchored downstream of the dock. Went ashore for news.' },
   depot: { solved: 'Cards with the strikers at the coal depot.' },
@@ -30,7 +30,6 @@ const MUSCATINE_TO_DUBUQUE = 125;
 export const LEAVING_MUSCATINE = {
   /** The opening shot, one sentence typed as the view pans and zooms in to her: the day, and what it means on the river. */
   opening: 'The first day of spring is what some folks call the day the ice lets go of the river.',
-  turning: [`Cargo run for Dubuque, ${MUSCATINE_TO_DUBUQUE} miles upriver.`, 'Strong spring-thaw current, four miles an hour.'].join('\n'),
 };
 
 /** Casting off from Muscatine, as the view comes back to her from the harbour master's: how the dock fee went (paid, played for and dodged, or snagged: flags). */
@@ -67,7 +66,7 @@ export const FIRST_CRATE = {
 };
 
 /** After the first crate (whatever came of it), Willie on the run ahead: what he hopes of it. */
-export const SMOOTH_RUN = ['I hope this will be a smooth run.', 'Pick up some prime salvage', 'Make good money on the haul', 'And not leave it all at tables along the way'].join('\n');
+export const SMOOTH_RUN = [`Cargo run on Dubuque, ${MUSCATINE_TO_DUBUQUE} miles up.`, 'I hope this will be a smooth run.', 'Pick up some prime salvage', 'Make good money on the haul', 'And not leave it all at tables along the way'].join('\n');
 
 /** What Willie writes after the first crate: the find and its worth, or what losing it must mean. */
 export function firstCrateRecord(seed: number, won: boolean, worth: number): string {
@@ -107,7 +106,7 @@ export const ENCOUNTER_MARKS: Record<string, string> = { sandbar: CHART_MARKS.ag
 
 /** What's written when an answer at the table ends it, by the answer's effect. */
 export const CHOICE_RECORDS: Record<string, string> = {
-  aground: 'Struck a sandbar, a few miles below the Tri-Cities.',
+  aground: 'Stuck on a sandbar a few miles west of Tri-Cities.',
 };
 
 /** Round an island: which way she went. */

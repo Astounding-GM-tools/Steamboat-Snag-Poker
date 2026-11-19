@@ -348,7 +348,6 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
       // The departure plays (the effect waits for it): Willie writes how the dock fee went as she casts off, and the run as she gets under way.
       dockFeeEntry();
       clock += DEPARTURE_S;
-      log(LEAVING_MUSCATINE.turning);
       departed = true;
     }
     opts.trace?.(`steam ${from.toFixed(3)} to ${to}, typing till +${(pen.busyUntil - clock).toFixed(0)}s`);

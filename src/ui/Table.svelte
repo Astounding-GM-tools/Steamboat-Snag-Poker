@@ -1203,9 +1203,8 @@
           <button class="ghost" onclick={() => answer(replies[0])} disabled={naming && !named}>{label(replies[0], 0)}</button>
           <button onclick={() => answer(replies[1])} disabled={naming && !named}>{label(replies[1], 1)}</button>
         {:else}
-          <button class="ghost" disabled style="visibility: hidden" aria-hidden="true"></button>
-          <!-- "Show me": the answer waits for the cards it asks you to tap. -->
-          <button onclick={() => answer(replies[0])} disabled={naming && !named}>{label(replies[0], 0)}</button>
+          <!-- One answer: the whole row (half of it cuts a question short on a phone). "Show me" waits for the cards it asks you to tap. -->
+          <button class="whole" onclick={() => answer(replies[0])} disabled={naming && !named}>{label(replies[0], 0)}</button>
         {/if}
       {:else}
         <!-- More replies, or longer ones than half the row holds: stacked, rising over the table, the last (white) nearest the thumb.
