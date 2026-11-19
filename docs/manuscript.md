@@ -17,71 +17,65 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **NEW_FIRST_MATE**
 
-- Captain Bill is not coming with us. <sub>[1] · index.ts:21</sub>
-- First Mate made Captain, and I am the new First Mate now. <sub>[2] · index.ts:22</sub>
-- Gus says being First Mate means doing tasks before anyone realises they need doing, and to write down everything the Captain should know and that I should remember. <sub>[3] · index.ts:23</sub>
-- So that is what I’ll do, although I don’t yet know where to begin. <sub>[4] · index.ts:24</sub>
-- I hope this will be a smooth run. <sub>[6] · index.ts:26</sub>
-- Pick up some prime salvage <sub>[7] · index.ts:27</sub>
-- Make good money on the haul <sub>[8] · index.ts:28</sub>
-- And not leave it all at tables along the way <sub>[9] · index.ts:29</sub>
+- First Mate made Captain, and I am the new First Mate now. <sub>[1] · index.ts:21</sub>
+- Gus, the engineer, says being First Mate means being the Captain’s eyes and ears, and to write down everything I need to remember and that the Captain should know about. <sub>[2] · index.ts:22</sub>
 
 **muscatineTalk**
 
-- **Bill:** Landed a big job. <sub>bill.rounds[1].deal[1][1] · index.ts:128</sub>
-- **Bill:** Horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis. <sub>bill.rounds[1].deal[1][2] · index.ts:128</sub>
-- *button* Bad <sub>bill.rounds[1].deal[1].replies[1].label · index.ts:130</sub>
-- *button* Good <sub>bill.rounds[1].deal[1].replies[2].label · index.ts:131</sub>
-- **You:** This is good news, isn’t it, Captain? <sub>bill.rounds[1].deal[2] · index.ts:134</sub>
-- **Bill:** Good money. And the worst timing of my life. <sub>bill.rounds[1].deal[3] · index.ts:135</sub>
-- *button* Why? <sub>bill.rounds[1].deal[3].replies[1].label · index.ts:135</sub>
-- **Bill:** Because you’re the captain now. <sub>bill.rounds[1].deal[4] · index.ts:136</sub>
-- *button* Me? <sub>bill.rounds[1].deal[4].replies[1].label · index.ts:136</sub>
-- **You:** You say that like it’s bad news, Captain? <sub>bill.rounds[1].deal[5] · index.ts:137</sub>
-- **Bill:** It is good news. It’s just the timing that’s bad. <sub>bill.rounds[1].deal[6][1] · index.ts:138</sub>
-- **Bill:** Because I can’t come with. I’m making you the captain. <sub>bill.rounds[1].deal[6][2] · index.ts:138</sub>
-- *button* Me? <sub>bill.rounds[1].deal[6].replies[1].label · index.ts:138</sub>
-- **You:** Me? I’m only the first mate. <sub>bill.rounds[1].flop[1] · index.ts:141</sub>
-- **Bill:** That’s what a first mate is for. <sub>bill.rounds[1].flop[2] · index.ts:142</sub>
-- *button* Gus? <sub>bill.rounds[1].flop[2].replies[1].label · index.ts:142</sub>
-- **You:** Why not Mr. Klemm? No one knows the boat better. <sub>bill.rounds[1].flop[3] · index.ts:143</sub>
-- **Bill:** Gus only cares about his engine. He’d stay in port all day cleaning it if he could. <sub>bill.rounds[1].flop[4] · index.ts:144</sub>
-- **Bill:** Any other bright ideas? <sub>bill.rounds[2].flop[1] · index.ts:149</sub>
-- *button* Lars? <sub>bill.rounds[2].flop[1].replies[1].label · index.ts:149</sub>
-- **You:** Lars, then. He’s a grown man, and stronger than anyone. <sub>bill.rounds[2].flop[2] · index.ts:150</sub>
-- **Bill:** Lars doesn’t speak the language. We’re not even sure that’s his name. <sub>bill.rounds[2].flop[3][1] · index.ts:151</sub>
-- **Bill:** And he’s a hopeless Snag player. <sub>bill.rounds[2].flop[2] · index.ts:151</sub>
-- *button* Snag? <sub>bill.rounds[2].flop[3].replies[1].label · index.ts:151</sub>
-- **You:** What has Snag got to do with captaining? <sub>bill.rounds[2].flop[4] · index.ts:152</sub>
-- **Bill:** Everything. Poker is what makes the river run. <sub>bill.rounds[2].flop[5][1] · index.ts:153</sub>
-- **Bill:** Every decision on the river is made over a hand of cards. Just as we’re doing now. <sub>bill.rounds[2].flop[5][2] · index.ts:153</sub>
-- **Bill:** Well? <sub>bill.rounds[3].deal[1] · index.ts:158</sub>
-- *button* Willie? <sub>bill.rounds[3].deal[1].replies[1].label · index.ts:158</sub>
-- **You:** Willie, then. He’s a great player, and everyone likes him. <sub>bill.rounds[3].deal[2] · index.ts:159</sub>
-- **Bill:** Too young, and too eager. Maybe in a few seasons. For now, it’s your turn. <sub>bill.rounds[3].deal[3] · index.ts:160</sub>
-- **Bill:** My wife’s taken ill. She needs me here, and so do the little ones. <sub>bill.rounds[3].flop[1] · index.ts:163</sub>
-- *button* Bring them? <sub>bill.rounds[3].flop[1].replies[1].label · index.ts:163</sub>
-- **You:** Can’t they come with us, on the river? <sub>bill.rounds[3].flop[2] · index.ts:164</sub>
-- **Bill:** The river’s no place for little ones, and she needs the doctor’s care. <sub>bill.rounds[3].flop[3][1] · index.ts:165</sub>
-- **Bill:** This is how it must be. I’ve made my decision. <sub>bill.rounds[3].flop[2] · index.ts:165</sub>
-- **Bill:** Here. The dock fee bill for the winter, and fifty dollars. Enough to settle it, with a little over for food and coal. Past that, you’ll find your own cargo. <sub>bill.rounds[3].verdict[1][1] · index.ts:168</sub>
-- **Bill:** Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers. <sub>bill.rounds[3].verdict[1][2] · index.ts:168</sub>
-- **The harbour master:** Here to pay your dock fee, I suppose? Thirty-seven dollars. A good deal of money. <sub>harbourTalk.rounds[1].deal[1] · index.ts:178</sub>
-- *button* Pay <sub>harbourTalk.rounds[1].deal[1].replies[1].label · index.ts:180</sub>
-- *button* Snag <sub>harbourTalk.rounds[1].deal[1].replies[2].label · index.ts:181</sub>
-- **The harbour master:** Hrmpf. The River Code: can’t refuse that. But only five rounds, and whoever holds the bill after that settles it. Agreed? <sub>harbourTalk.rounds[1].deal[2] · index.ts:185</sub>
-- *button* Pay <sub>harbourTalk.rounds[1].deal[2].replies[1].label · index.ts:189</sub>
-- *button* Deal <sub>harbourTalk.rounds[1].deal[2].replies[2].label · index.ts:190</sub>
-- **Willie:** First boat up the river this year, Captain, and not a soul ahead of us! <sub>underway.rounds[1].deal[1].text[1] · index.ts:204</sub>
-- **Willie:** Clear water to the Tri-Cities, Mr. Klemm says, and not a single sn— <sub>underway.rounds[1].deal[1].text[2] · index.ts:204</sub>
-- *button* Single what? <sub>underway.rounds[1].deal[1].replies[1].label · index.ts:205</sub>
-- **Willie:** Snag! We are aground, Captain! <sub>underway.rounds[1].deal[2].text[1] · index.ts:208</sub>
-- **Willie:** Stuck fast! <sub>underway.rounds[1].deal[2].text[2] · index.ts:208</sub>
-- **Gus:** We have run aground on a sandbar, Captain. The engine alone can’t shift us, we need shovels and poles. <sub>underway.rounds[1].deal[3].text[1] · index.ts:213</sub>
-- **Gus:** Pray that our strength outlasts the work, or we will spend the night right here. <sub>underway.rounds[1].deal[3].text[2] · index.ts:213</sub>
-- *button* Next <sub>underway.rounds[1].deal[3].replies[1].label · index.ts:214</sub>
-- **The harbour master:** Thirty-seven dollars, Captain. Pleasure doing business. <sub>harbourMaster.rounds[5].verdict[1] · index.ts:229</sub>
-- **The harbour master:** Hrmpf. Mine to settle, then. Off with you. <sub>harbourMaster.rounds[5].verdict[2] · index.ts:230</sub>
+- **Bill:** Landed a big job. <sub>bill.rounds[1].deal[1][1] · index.ts:122</sub>
+- **Bill:** Horseless carriage, up in Dubuque, bound for the World’s Fair in St. Louis. <sub>bill.rounds[1].deal[1][2] · index.ts:122</sub>
+- *button* Bad <sub>bill.rounds[1].deal[1].replies[1].label · index.ts:124</sub>
+- *button* Good <sub>bill.rounds[1].deal[1].replies[2].label · index.ts:125</sub>
+- **You:** This is good news, isn’t it, Captain? <sub>bill.rounds[1].deal[2] · index.ts:128</sub>
+- **Bill:** Good money. And the worst timing of my life. <sub>bill.rounds[1].deal[3] · index.ts:129</sub>
+- *button* Why? <sub>bill.rounds[1].deal[3].replies[1].label · index.ts:129</sub>
+- **Bill:** Because you’re the captain now. <sub>bill.rounds[1].deal[4] · index.ts:130</sub>
+- *button* Me? <sub>bill.rounds[1].deal[4].replies[1].label · index.ts:130</sub>
+- **You:** You say that like it’s bad news, Captain? <sub>bill.rounds[1].deal[5] · index.ts:131</sub>
+- **Bill:** It is good news. It’s just the timing that’s bad. <sub>bill.rounds[1].deal[6][1] · index.ts:132</sub>
+- **Bill:** Because I can’t come with. I’m making you the captain. <sub>bill.rounds[1].deal[6][2] · index.ts:132</sub>
+- *button* Me? <sub>bill.rounds[1].deal[6].replies[1].label · index.ts:132</sub>
+- **You:** Me? I’m only the first mate. <sub>bill.rounds[1].flop[1] · index.ts:135</sub>
+- **Bill:** That’s what a first mate is for. <sub>bill.rounds[1].flop[2] · index.ts:136</sub>
+- *button* Gus? <sub>bill.rounds[1].flop[2].replies[1].label · index.ts:136</sub>
+- **You:** Why not Mr. Klemm? No one knows the boat better. <sub>bill.rounds[1].flop[3] · index.ts:137</sub>
+- **Bill:** Gus only cares about his engine. He’d stay in port all day cleaning it if he could. <sub>bill.rounds[1].flop[4] · index.ts:138</sub>
+- **Bill:** Any other bright ideas? <sub>bill.rounds[2].flop[1] · index.ts:143</sub>
+- *button* Lars? <sub>bill.rounds[2].flop[1].replies[1].label · index.ts:143</sub>
+- **You:** Lars, then. He’s a grown man, and stronger than anyone. <sub>bill.rounds[2].flop[2] · index.ts:144</sub>
+- **Bill:** Lars doesn’t speak the language. We’re not even sure that’s his name. <sub>bill.rounds[2].flop[3][1] · index.ts:145</sub>
+- **Bill:** And he’s a hopeless Snag player. <sub>bill.rounds[2].flop[2] · index.ts:145</sub>
+- *button* Snag? <sub>bill.rounds[2].flop[3].replies[1].label · index.ts:145</sub>
+- **You:** What has Snag got to do with captaining? <sub>bill.rounds[2].flop[4] · index.ts:146</sub>
+- **Bill:** Everything. Poker is what makes the river run. <sub>bill.rounds[2].flop[5][1] · index.ts:147</sub>
+- **Bill:** Every decision on the river is made over a hand of cards. Just as we’re doing now. <sub>bill.rounds[2].flop[5][2] · index.ts:147</sub>
+- **Bill:** Well? <sub>bill.rounds[3].deal[1] · index.ts:152</sub>
+- *button* Willie? <sub>bill.rounds[3].deal[1].replies[1].label · index.ts:152</sub>
+- **You:** Willie, then. He’s a great player, and everyone likes him. <sub>bill.rounds[3].deal[2] · index.ts:153</sub>
+- **Bill:** Too young, and too eager. Maybe in a few seasons. For now, it’s your turn. <sub>bill.rounds[3].deal[3] · index.ts:154</sub>
+- **Bill:** My wife’s taken ill. She needs me here, and so do the little ones. <sub>bill.rounds[3].flop[1] · index.ts:157</sub>
+- *button* Bring them? <sub>bill.rounds[3].flop[1].replies[1].label · index.ts:157</sub>
+- **You:** Can’t they come with us, on the river? <sub>bill.rounds[3].flop[2] · index.ts:158</sub>
+- **Bill:** The river’s no place for little ones, and she needs the doctor’s care. <sub>bill.rounds[3].flop[3][1] · index.ts:159</sub>
+- **Bill:** This is how it must be. I’ve made my decision. <sub>bill.rounds[3].flop[2] · index.ts:159</sub>
+- **Bill:** Here. The dock fee bill for the winter, and fifty dollars. Enough to settle it, with a little over for food and coal. Past that, you’ll find your own cargo. <sub>bill.rounds[3].verdict[1][1] · index.ts:162</sub>
+- **Bill:** Mind her well, Captain. And stay away from those whiskey-swilling gamblers on the grand steamers. <sub>bill.rounds[3].verdict[1][2] · index.ts:162</sub>
+- **The harbour master:** Here to pay your dock fee, I suppose? Thirty-seven dollars. A good deal of money. <sub>harbourTalk.rounds[1].deal[1] · index.ts:172</sub>
+- *button* Pay <sub>harbourTalk.rounds[1].deal[1].replies[1].label · index.ts:174</sub>
+- *button* Snag <sub>harbourTalk.rounds[1].deal[1].replies[2].label · index.ts:175</sub>
+- **The harbour master:** Hrmpf. The River Code: can’t refuse that. But only five rounds, and whoever holds the bill after that settles it. Agreed? <sub>harbourTalk.rounds[1].deal[2] · index.ts:179</sub>
+- *button* Pay <sub>harbourTalk.rounds[1].deal[2].replies[1].label · index.ts:183</sub>
+- *button* Deal <sub>harbourTalk.rounds[1].deal[2].replies[2].label · index.ts:184</sub>
+- **Willie:** It’s a fine day on river, Captain! <sub>underway.rounds[1].deal[1].text[1] · index.ts:198</sub>
+- **Willie:** Clear water up to the Tri-Cities, Mr. Klemm says, and not a single sn— <sub>underway.rounds[1].deal[1].text[2] · index.ts:198</sub>
+- *button* Single what? <sub>underway.rounds[1].deal[1].replies[1].label · index.ts:199</sub>
+- **Willie:** Snag! We are aground, Captain! <sub>underway.rounds[1].deal[2].text[1] · index.ts:202</sub>
+- **Willie:** Stuck fast! <sub>underway.rounds[1].deal[2].text[2] · index.ts:202</sub>
+- **Gus:** We have run aground on a sandbar, Captain. The engine alone can’t shift us, we need shovels and poles. <sub>underway.rounds[1].deal[3].text[1] · index.ts:207</sub>
+- **Gus:** Pray that our strength outlasts the work, or we will spend the night right here. <sub>underway.rounds[1].deal[3].text[2] · index.ts:207</sub>
+- *button* Next <sub>underway.rounds[1].deal[3].replies[1].label · index.ts:208</sub>
+- **The harbour master:** Thirty-seven dollars, Captain. Pleasure doing business. <sub>harbourMaster.rounds[5].verdict[1] · index.ts:223</sub>
+- **The harbour master:** Hrmpf. Mine to settle, then. Off with you. <sub>harbourMaster.rounds[5].verdict[2] · index.ts:224</sub>
 
 ### src/story/characters/sandy.ts
 
@@ -202,36 +196,41 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 **FIRST_CRATE**
 
-- Fished out a crate of clothes-pegs. <sub>found[1] · log.ts:52</sub>
-- A gross of corncob pipes. Gus took the best. <sub>found[2] · log.ts:53</sub>
-- A crate of hymnals. Lars approves. <sub>found[3] · log.ts:54</sub>
-- Two dozen horseshoes. Luck, by the pound. <sub>found[4] · log.ts:55</sub>
-- A crate of bicycle bells, ringing. <sub>found[5] · log.ts:56</sub>
-- Seed packets, dry in their tins. <sub>found[6] · log.ts:57</sub>
-- A crate of sheet music. Lars hums along. <sub>found[7] · log.ts:58</sub>
-- Fished out a crate of doorknobs. No doors. <sub>found[8] · log.ts:59</sub>
-- A crate of horehound candy, a little stuck together. <sub>found[9] · log.ts:60</sub>
-- Lost the first crate of the voyage. Gus says it means nothing. Gus would. <sub>lost[1] · log.ts:63</sub>
-- First crate: soggy cotton. Captain Bill never lost a first crate. I asked. <sub>lost[2] · log.ts:64</sub>
-- The river kept the first one. Testing us, I think. <sub>lost[3] · log.ts:65</sub>
+- Fished a crate of clothes-pegs out of the river. <sub>found[1] · log.ts:52</sub>
+- A gross of corncob pipes. Gus grabbed a handful. <sub>found[2] · log.ts:53</sub>
+- Two dozen horseshoes. I hope they bring luck. <sub>found[3] · log.ts:54</sub>
+- A crate of bicycle bells. <sub>found[4] · log.ts:55</sub>
+- Seed packets, dry in their tins. Labels sloughed off. <sub>found[5] · log.ts:56</sub>
+- Fished out a crate of doorknobs. Now all we need is some doors. <sub>found[6] · log.ts:57</sub>
+- A crate of horehound candy, a little stuck together. Taste still sweet. <sub>found[7] · log.ts:58</sub>
+- Lost the first salvage crate. We’ll never know what’s in it. <sub>lost[1] · log.ts:61</sub>
+- Had to let go of the first salvage. River wouldn’t let go. <sub>lost[2] · log.ts:62</sub>
+- The river kept our first salvage. I hope it is not a sign. <sub>lost[3] · log.ts:63</sub>
+
+**SMOOTH_RUN**
+
+- I hope this will be a smooth run. <sub>[1] · log.ts:68</sub>
+- Pick up some prime salvage <sub>[2] · log.ts:68</sub>
+- Make good money on the haul <sub>[3] · log.ts:68</sub>
+- And not leave it all at tables along the way <sub>[4] · log.ts:68</sub>
 
 **firstCrateRecord**
 
 - {line}  
-> Worth ${worth} at the Mercantile. <sub> · log.ts:73</sub>
+> Worth ${worth} at the Mercantile. <sub> · log.ts:74</sub>
 
 **CHOICE_RECORDS**
 
-- Struck a sandbar, a few miles below the Tri-Cities. <sub>aground · log.ts:78</sub>
+- Struck a sandbar, a few miles below the Tri-Cities. <sub>aground · log.ts:79</sub>
 
 **islandRecord**
 
-- Kept to {way} of {island}. <sub> · log.ts:82</sub>
+- Kept to {way} of {island}. <sub> · log.ts:83</sub>
 
 **tradeRecord**
 
-- Sold {name}, ${price}. <sub> · log.ts:85</sub>
-- Bought {name}, ${price}. <sub> · log.ts:85</sub>
+- Sold {name}, ${price}. <sub> · log.ts:86</sub>
+- Bought {name}, ${price}. <sub> · log.ts:86</sub>
 
 ## The Tri-Cities
 
@@ -1185,7 +1184,7 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 ### character
 
-- `character.captain.name`: The Captain
+- `character.captain.name`: Captain
 - `character.captain.you`: You
 - `character.konrad.name`: Konrad Marlowe
 - `character.konrad.nick`: Whiteknuckle

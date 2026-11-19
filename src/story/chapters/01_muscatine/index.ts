@@ -18,15 +18,8 @@ const TRI_CITIES_AT = 0.6429;
 
 /** Willie, as the Captain walks over to the harbour master's: the chain of command, and what he hopes of the run. */
 const NEW_FIRST_MATE = [
-  'Captain Bill is not coming with us.',
   'First Mate made Captain, and I am the new First Mate now.',
-  'Gus says being First Mate means doing tasks before anyone realises they need doing, and to write down everything the Captain should know and that I should remember.',
-  'So that is what I’ll do, although I don’t yet know where to begin.',
-  '',
-  'I hope this will be a smooth run.',
-  'Pick up some prime salvage',
-  'Make good money on the haul',
-  'And not leave it all at tables along the way',
+  'Gus, the engineer, says being First Mate means being the Captain’s eyes and ears, and to write down everything I need to remember and that the Captain should know about.',
 ].join('\n');
 
 const harbourMaster: Rival = { id: 'harbourMaster', ai: 'stubborn', money: HARBOUR_MASTER_PURSE };
@@ -54,7 +47,8 @@ export const muscatine: Step[] = [
     effects: { snag: DOCK_FEE },
   },
   // Over to the harbour master's office: Willie on the new captain as the view walks into town (he types on through the game there).
-  { type: 'shot', look: HARBOUR_OFFICE, log: { text: NEW_FIRST_MATE }, seconds: 12 },
+  // (It waits for him: the harbour master's table would hide what he's writing.)
+  { type: 'shot', look: HARBOUR_OFFICE, log: { text: NEW_FIRST_MATE }, seconds: 12, wait: true },
   {
     type: 'scene',
     steps: [
@@ -201,7 +195,7 @@ export const muscatineTalk: Record<string, Talk> = {
           {
             size: 'scene',
             who: 'willie',
-            text: ['First boat up the river this year, Captain, and not a soul ahead of us!', 'Clear water to the Tri-Cities, Mr. Klemm says, and not a single sn—'],
+            text: ['It’s a fine day on river, Captain!', 'Clear water up to the Tri-Cities, Mr. Klemm says, and not a single sn—'],
             replies: [{ label: 'Single what?' }],
           },
           // She's hit it: Willie first, then Gus; then the sandbar's table comes up.

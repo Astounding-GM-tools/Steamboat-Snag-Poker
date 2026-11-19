@@ -36,9 +36,9 @@ export const LEAVING_MUSCATINE = {
 /** Casting off from Muscatine, as the view comes back to her from the harbour master's: how the dock fee went (paid, played for and dodged, or snagged: flags). */
 export function leftMuscatine(flags: readonly string[], purse: number, fee: number): string {
   const lines: string[] = [];
-  if (flags.includes(DOCK_FEE_FLAG.dodged)) lines.push('The Captain played the harbour master for the docking fee.', `Dodged the fee: $${fee} saved for coal. We'll need it.`);
-  else if (flags.includes(DOCK_FEE_FLAG.snagged)) lines.push('The Captain played the harbour master for the docking fee.', `Snagged the fee, and the ante. $${purse} left for expenses.`);
-  else lines.push(`Captain paid the dock fee. $${fee}.`, `$${purse} left for the river.`);
+  if (flags.includes(DOCK_FEE_FLAG.dodged)) lines.push('Captain played the harbour master for the docking fee.', `Dodged the fee, $${purse} safe in the strongbox.`);
+  else if (flags.includes(DOCK_FEE_FLAG.snagged)) lines.push('Captain played the harbour master for the docking fee.', `Snagged the fee, and the ante. ${(purse > 0) ? `$${purse}` : "Nothing" } left in the strongbox.`);
+  else lines.push(`Captain paid the dock fee, $${fee}.`, `$${purse} left for the strongbox.`);
   return lines.join('\n');
 }
 
@@ -49,22 +49,23 @@ export function leftMuscatine(flags: readonly string[], purse: number, fee: numb
  */
 export const FIRST_CRATE = {
   found: [
-    'Fished out a crate of clothes-pegs.',
-    'A gross of corncob pipes. Gus took the best.',
-    'A crate of hymnals. Lars approves.',
-    'Two dozen horseshoes. Luck, by the pound.',
-    'A crate of bicycle bells, ringing.',
-    'Seed packets, dry in their tins.',
-    'A crate of sheet music. Lars hums along.',
-    'Fished out a crate of doorknobs. No doors.',
-    'A crate of horehound candy, a little stuck together.',
+    'Fished a crate of clothes-pegs out of the river.',
+    'A gross of corncob pipes. Gus grabbed a handful.',
+    'Two dozen horseshoes. I hope they bring luck.',
+    'A crate of bicycle bells.',
+    'Seed packets, dry in their tins. Labels sloughed off.',
+    'Fished out a crate of doorknobs. Now all we need is some doors.',
+    'A crate of horehound candy, a little stuck together. Taste still sweet.',
   ],
   lost: [
-    'Lost the first crate of the voyage. Gus says it means nothing. Gus would.',
-    'First crate: soggy cotton. Captain Bill never lost a first crate. I asked.',
-    'The river kept the first one. Testing us, I think.',
+    'Lost the first salvage crate. We’ll never know what’s in it.',
+    'Had to let go of the first salvage. River wouldn’t let go.',
+    'The river kept our first salvage. I hope it is not a sign.',
   ],
 };
+
+/** After the first crate (whatever came of it), Willie on the run ahead: what he hopes of it. */
+export const SMOOTH_RUN = ['I hope this will be a smooth run.', 'Pick up some prime salvage', 'Make good money on the haul', 'And not leave it all at tables along the way'].join('\n');
 
 /** What Willie writes after the first crate: the find and its worth, or what losing it must mean. */
 export function firstCrateRecord(seed: number, won: boolean, worth: number): string {

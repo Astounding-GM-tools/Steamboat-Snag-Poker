@@ -270,7 +270,7 @@ export const en = {
   'show.continue': 'Continue ▸',
   'show.skip': 'Skip',
 
-  'character.captain.name': 'The Captain',
+  'character.captain.name': 'Captain',
   'character.captain.you': 'You',
   // The gallery. Players see personality here, never the playbook (that lives in the code).
   'character.konrad.name': 'Konrad Marlowe',

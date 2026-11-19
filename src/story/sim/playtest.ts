@@ -57,7 +57,7 @@ import { nextOnRiver, creepRoom, type Fork } from '../mechanics/stream';
 import { DEBRIS_FLOOR, crateAnteFor, debrisAt, debrisStep, type Debris } from '../characters/debris';
 import { FLAG } from '../flags';
 import { CLIMB_COAL, GAYLORD_FEE, GAYLORD_FIRST_HIRE, GAYLORD_LAST_HIRE, MORNING_ENTRY, READY_STRENGTH } from '../numbers';
-import { CHOICE_RECORDS, DOCK_FEE_FLAG, LEAVING_MUSCATINE, UNDER_WAY_AGAIN, ENCOUNTER_RECORDS, firstCrateRecord, islandRecord, leftMuscatine, castOffRecord } from '../log';
+import { CHOICE_RECORDS, DOCK_FEE_FLAG, LEAVING_MUSCATINE, SMOOTH_RUN, UNDER_WAY_AGAIN, ENCOUNTER_RECORDS, firstCrateRecord, islandRecord, leftMuscatine, castOffRecord } from '../log';
 import { DOCK_FEE_AMOUNT } from '../numbers';
 import { BOAT, shipStrength } from '../mechanics/boat';
 import { crept, REAL_PACE_PX } from '../../ui/map/creep';
@@ -355,7 +355,8 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
     // Leaving Muscatine, nothing yet (the dock fee comes after the river's second piece); elsewhere, a line.
     const first = from === 0 && s.place === 'muscatine';
     const line = from === 0 ? castOffRecord(s.place, 'upbound') : UNDER_WAY_AGAIN;
-    let written = !!step.quiet || first;
+    // (Off a hand on the river, nothing: only a new morning's setting out.)
+    let written = !!step.quiet || first || (from !== 0 && (s.log?.at(-1)?.day ?? 0) >= Math.max(1, s.mornings));
     const writeAt = step.landing ? AFTER_DEPARTURE_S : CAST_OFF_QUIET_S;
     const at = (share: number) => from + share * (to - from);
     const main = step.main ? { window: [at(step.main.window[0]), at(step.main.window[1])] as [number, number] } : undefined;
@@ -380,7 +381,7 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
         if (isl.to > from && isl.to <= to && !passed.has(key) && t >= isl.to) {
           passed.add(key);
           s = { ...s, passed: [...(s.passed ?? []), key] };
-          log(islandRecord(isl.name, 'port'));
+          if (isl.name) log(islandRecord(isl.name, 'port'));
         }
       }
       // A crate in a passage round an island (the stretch's `laneCrates`): met if she's going that way.
@@ -567,7 +568,9 @@ export function playVoyage(seed: number, persona: Persona, opts: PlayOptions = {
         if (d.kind === 'crate' && won) rec.salvageEarned += step.effects?.salvage ?? 0;
         // As the UI writes it: out of Muscatine the first is the set-piece crate; after the second, the dock fee.
         const n = s.place === 'muscatine' && s.fillsMet?.leg === s.river?.leg ? (s.fillsMet?.n ?? 0) : 0;
-        log(n === 1 && d.kind === 'crate' ? firstCrateRecord(s.seed, won, step.effects?.salvage ?? 0) : d.kind === 'crate' ? 'Salvaged goods, worth $2 at the Mercantile.' : 'Steered clear of a snag.');
+        const r = n === 1 && d.kind === 'crate' ? firstCrateRecord(s.seed, won, step.effects?.salvage ?? 0) : d.kind === 'crate' ? 'Salvaged goods, worth $2 at the Mercantile.' : 'Steered clear of a snag.';
+        if (!s.log?.some((x) => x.text === r)) log(r);
+        if (n === 1 && d.kind === 'crate') log(SMOOTH_RUN);
         // (The dock fee's written as she casts off now.)
         debrisNow = null;
       } else {

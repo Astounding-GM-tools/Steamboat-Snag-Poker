@@ -4,10 +4,11 @@ import { DOCK_FEE_FLAG, FIRST_CRATE, firstCrateRecord, leftMuscatine } from './l
 describe("Willie's log", () => {
   it('tells how the dock fee went as she leaves Muscatine', () => {
     const last = (flags: string[]) => leftMuscatine(flags, 9, 37).split('\n').join(' / ');
-    expect(leftMuscatine([DOCK_FEE_FLAG.paid], 13, 37)).toBe('Captain paid the dock fee. $37.\n$13 left for the river.');
-    expect(last([DOCK_FEE_FLAG.paid])).toBe('Captain paid the dock fee. $37. / $9 left for the river.');
-    expect(last([DOCK_FEE_FLAG.dodged])).toBe("The Captain played the harbour master for the docking fee. / Dodged the fee: $37 saved for coal. We'll need it.");
-    expect(last([DOCK_FEE_FLAG.snagged])).toBe('The Captain played the harbour master for the docking fee. / Snagged the fee, and the ante. $9 left for expenses.');
+    expect(leftMuscatine([DOCK_FEE_FLAG.paid], 13, 37)).toBe('Captain paid the dock fee, $37.\n$13 left for the strongbox.');
+    expect(last([DOCK_FEE_FLAG.paid])).toBe('Captain paid the dock fee, $37. / $9 left for the strongbox.');
+    expect(last([DOCK_FEE_FLAG.dodged])).toBe('Captain played the harbour master for the docking fee. / Dodged the fee, $9 safe in the strongbox.');
+    expect(last([DOCK_FEE_FLAG.snagged])).toBe('Captain played the harbour master for the docking fee. / Snagged the fee, and the ante. $9 left in the strongbox.');
+    expect(leftMuscatine([DOCK_FEE_FLAG.snagged], 0, 37)).toBe('Captain played the harbour master for the docking fee.\nSnagged the fee, and the ante. Nothing left in the strongbox.');
   });
 
   it('writes up the first crate: the find and its worth, or what losing it must mean, the same for the same voyage', () => {
