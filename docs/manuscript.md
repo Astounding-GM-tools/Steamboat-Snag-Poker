@@ -66,7 +66,7 @@ descriptions, the river's calls and the log's labels) is at the end.
 - **The harbour master:** Hrmpf. The River Code: can’t refuse that. But only five rounds, and whoever holds the bill after that settles it. Agreed? <sub>harbourTalk.rounds[1].deal[2] · index.ts:179</sub>
 - *button* Pay <sub>harbourTalk.rounds[1].deal[2].replies[1].label · index.ts:183</sub>
 - *button* Deal <sub>harbourTalk.rounds[1].deal[2].replies[2].label · index.ts:184</sub>
-- **Willie:** It’s a fine day on river, Captain! <sub>underway.rounds[1].deal[1].text[1] · index.ts:198</sub>
+- **Willie:** It’s a fine day on the river, Captain! <sub>underway.rounds[1].deal[1].text[1] · index.ts:198</sub>
 - **Willie:** Clear water up to the Tri-Cities, Mr. Klemm says, and not a single sn— <sub>underway.rounds[1].deal[1].text[2] · index.ts:198</sub>
 - *button* Single what? <sub>underway.rounds[1].deal[1].replies[1].label · index.ts:199</sub>
 - **Willie:** Snag! We are aground, Captain! <sub>underway.rounds[1].deal[2].text[1] · index.ts:202</sub>
@@ -203,34 +203,51 @@ descriptions, the river's calls and the log's labels) is at the end.
 - Seed packets, dry in their tins. Labels sloughed off. <sub>found[5] · log.ts:56</sub>
 - Fished out a crate of doorknobs. Now all we need is some doors. <sub>found[6] · log.ts:57</sub>
 - A crate of horehound candy, a little stuck together. Taste still sweet. <sub>found[7] · log.ts:58</sub>
-- Lost the first salvage crate. We’ll never know what’s in it. <sub>lost[1] · log.ts:61</sub>
-- Had to let go of the first salvage. River wouldn’t let go. <sub>lost[2] · log.ts:62</sub>
-- The river kept our first salvage. I hope it is not a sign. <sub>lost[3] · log.ts:63</sub>
+- Peg salvage <sub>marks[1] · log.ts:61</sub>
+- Pipe salvage <sub>marks[2] · log.ts:61</sub>
+- Horseshoe salvage <sub>marks[3] · log.ts:61</sub>
+- Bell salvage <sub>marks[4] · log.ts:61</sub>
+- Seed salvage <sub>marks[5] · log.ts:61</sub>
+- Doorknob salvage <sub>marks[6] · log.ts:61</sub>
+- Candy salvage <sub>marks[7] · log.ts:61</sub>
+- Lost the first salvage crate. We’ll never know what’s in it. <sub>lost[1] · log.ts:63</sub>
+- Had to let go of the first salvage. River wouldn’t let go. <sub>lost[2] · log.ts:64</sub>
+- The river kept our first salvage. I hope it is not a sign. <sub>lost[3] · log.ts:65</sub>
 
 **SMOOTH_RUN**
 
-- I hope this will be a smooth run. <sub>[1] · log.ts:68</sub>
-- Pick up some prime salvage <sub>[2] · log.ts:68</sub>
-- Make good money on the haul <sub>[3] · log.ts:68</sub>
-- And not leave it all at tables along the way <sub>[4] · log.ts:68</sub>
+- I hope this will be a smooth run. <sub>[1] · log.ts:70</sub>
+- Pick up some prime salvage <sub>[2] · log.ts:70</sub>
+- Make good money on the haul <sub>[3] · log.ts:70</sub>
+- And not leave it all at tables along the way <sub>[4] · log.ts:70</sub>
 
 **firstCrateRecord**
 
 - {line}  
-> Worth ${worth} at the Mercantile. <sub> · log.ts:74</sub>
+> Worth ${worth} at the Mercantile. <sub> · log.ts:76</sub>
+
+**CHART_MARKS**
+
+- Salvage <sub>salvage · log.ts:84</sub>
+- Soggy cotton <sub>soggy · log.ts:85</sub>
+- Lost a crate <sub>lostFirst · log.ts:86</sub>
+- Aground <sub>aground · log.ts:87</sub>
+- Hit a sawyer <sub>hazard.sawyer.struck · log.ts:89</sub>
+- Hit a deadhead <sub>hazard.deadhead.struck · log.ts:90</sub>
+- Hit a drift pile <sub>hazard.driftPile.struck · log.ts:91</sub>
 
 **CHOICE_RECORDS**
 
-- Struck a sandbar, a few miles below the Tri-Cities. <sub>aground · log.ts:79</sub>
+- Struck a sandbar, a few miles below the Tri-Cities. <sub>aground · log.ts:110</sub>
 
 **islandRecord**
 
-- Kept to {way} of {island}. <sub> · log.ts:83</sub>
+- Kept to {way} of {island}. <sub> · log.ts:114</sub>
 
 **tradeRecord**
 
-- Sold {name}, ${price}. <sub> · log.ts:86</sub>
-- Bought {name}, ${price}. <sub> · log.ts:86</sub>
+- Sold {name}, ${price}. <sub> · log.ts:117</sub>
+- Bought {name}, ${price}. <sub> · log.ts:117</sub>
 
 ## The Tri-Cities
 
@@ -1325,7 +1342,7 @@ descriptions, the river's calls and the log's labels) is at the end.
 
 ### river
 
-- `river.handOf`: Hand {n} of {of}
+- `river.handOf`: Round {n} of {of}
 - `river.heading`: Day {day}: {place}, {bound}
 - `river.upbound`: upbound
 - `river.moored`: {place}

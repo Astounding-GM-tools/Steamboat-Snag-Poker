@@ -195,7 +195,7 @@ export const muscatineTalk: Record<string, Talk> = {
           {
             size: 'scene',
             who: 'willie',
-            text: ['It’s a fine day on river, Captain!', 'Clear water up to the Tri-Cities, Mr. Klemm says, and not a single sn—'],
+            text: ['It’s a fine day on the river, Captain!', 'Clear water up to the Tri-Cities, Mr. Klemm says, and not a single sn—'],
             replies: [{ label: 'Single what?' }],
           },
           // She's hit it: Willie first, then Gus; then the sandbar's table comes up.

@@ -410,7 +410,7 @@ export const en = {
   'character.eliza.boat': 'High roller on the grand steamers',
   'character.eliza.blurb': 'Charming, patient and terribly polite. Those who lose to her tend to stay lost.',
 
-  'river.handOf': 'Hand {n} of {of}',
+  'river.handOf': 'Round {n} of {of}',
   /** The heading over the voyage's pages: the day, where she is, and which way she's bound. */
   'river.heading': 'Day {day}: {place}, {bound}',
   'river.upbound': 'upbound',
