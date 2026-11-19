@@ -6,7 +6,8 @@
 
 /** What's written when an encounter is over, by its id and how it went. (Not Bill's: Willie tells that himself, on the walk to the harbour master's. Nor the dock fee: he tells it as she leaves Muscatine.) */
 export const ENCOUNTER_RECORDS: Record<string, { solved?: string; failed?: string }> = {
-  sandbar: { solved: 'Off The Sandbar at last. All hands sore.', failed: 'Aground. We stay the night on the river.' },
+  // (Stuck there: written on a moment on the map before the night, AGROUND_NIGHT.)
+  sandbar: { solved: 'Off The Sandbar at last. All hands sore.' },
   deck: { solved: 'Cards on deck by lantern light. Repairs seen to.' },
   deckIntel: { solved: 'Anchored downstream of the dock. Went ashore for news.' },
   depot: { solved: 'Cards with the strikers at the coal depot.' },
@@ -104,10 +105,13 @@ export function debrisMark(id: string, outcome: 'solved' | 'failed', struck: boo
 /** The chart's mark for an encounter on the river (not debris), by its id: only The Sandbar has one. */
 export const ENCOUNTER_MARKS: Record<string, string> = { sandbar: CHART_MARKS.aground };
 
-/** What's written when an answer at the table ends it, by the answer's effect. */
-export const CHOICE_RECORDS: Record<string, string> = {
-  aground: 'Stuck on a sandbar a few miles west of Tri-Cities.',
-};
+/** What's written when an answer at the table ends it, by the answer's effect. (The Sandbar's is written on a shot: STRUCK_SANDBAR.) */
+export const CHOICE_RECORDS: Record<string, string> = {};
+
+/** Struck The Sandbar: Willie writes it on a moment on the map, before its table comes up. */
+export const STRUCK_SANDBAR = 'Stuck on a sandbar a few miles west of Tri-Cities.';
+/** Stuck on it for the night: written on a moment on the map, before the deck game. */
+export const AGROUND_NIGHT = 'Aground. We stay the night on the river.';
 
 /** Round an island: which way she went. */
 export const islandRecord = (name: string | null, way: 'port' | 'starboard') => `Kept to ${way} of ${name ?? 'the island'}.`;

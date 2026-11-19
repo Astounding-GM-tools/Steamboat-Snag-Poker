@@ -197,6 +197,8 @@ export type Step =
       effects?: Effects;
       /** Failing an obstacle: stuck for the night (the deck game aboard), and at it again in the morning. */
       stuck?: boolean;
+      /** Stuck: what Willie writes, on a moment on the map before the night (the table's over: the header's back). */
+      stuckLog?: string;
       /** It hits you: the picture lurches as the table comes up. */
       jolt?: boolean;
       /** In place of `solved`: closing lines taken in turn, a different set each day (the evenings' endings). */
@@ -1046,7 +1048,8 @@ export function leaveEncounter(prev: JourneyState, story: StoryDef): JourneyStat
       return r.obstacle && seat ? { ...r, money: seat.money, jokers: seat.jokers.map((j) => j.index) } : r;
     });
     const again: Step = { ...step, attempt: attempt + 1, encounter: { ...step.encounter, rivals, hands: Math.max(step.encounter.hands, 8) } };
-    state.pending = [...story.stuckNight, { type: 'dawn' }, again, ...state.pending.slice(1)];
+    const shot: Step[] = step.stuckLog ? [{ type: 'shot', log: { text: step.stuckLog, kind: 'record' }, seconds: 6, wait: true }] : [];
+    state.pending = [...shot, ...story.stuckNight, { type: 'dawn' }, again, ...state.pending.slice(1)];
     if (!prev.pending.length) state.step++;
     state.nights++;
     return arrive(state, story);

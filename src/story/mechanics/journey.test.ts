@@ -261,7 +261,7 @@ describe('debris on the river', () => {
     const rest = currentStep(on, RIVER);
     expect(rest?.type).toBe('steam');
     if (rest?.type === 'steam') {
-      expect(rest.main?.steps.length).toBe(2);
+      expect(rest.main?.steps.length).toBe(3);
       // Its window is where it was on the river, as shares of what's left of the stretch.
       const at = (s: number) => 0.1 + s * (rest.to - 0.1);
       // (Her stretch began where she was, 0.05.)

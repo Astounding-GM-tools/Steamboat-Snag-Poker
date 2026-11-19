@@ -6,7 +6,7 @@ import { DOCK_FEE, type Rival, type Step, type Talk } from '../../mechanics';
 import { sandbar, sandbarTalk } from '../../characters/sandy';
 import { say, you } from '../../lines';
 import { DOCK_FEE_AMOUNT, HARBOUR_HANDS, HARBOUR_MASTER_PURSE } from '../../numbers';
-import { LEAVING_MUSCATINE } from '../../log';
+import { AGROUND_NIGHT, LEAVING_MUSCATINE, STRUCK_SANDBAR } from '../../log';
 
 /** The river map's leg (public/maptiles/river-1904/chapter-1/travel), and where on it things happen: Muscatine is 0, LeClaire 1. */
 /** Chapter one's leg on the chart: Muscatine up to the rapids and LeClaire. */
@@ -91,12 +91,15 @@ export const muscatine: Step[] = [
           solved: [],
           choices: { aground: {} },
         },
+        // A moment on the map, aground: Willie writes it before the table comes up over the header.
+        { type: 'shot', log: { text: STRUCK_SANDBAR, kind: 'record' }, seconds: 6, wait: true },
         {
           type: 'encounter',
           encounter: sandbar,
           solved: [],
           failed: [],
           stuck: true,
+          stuckLog: AGROUND_NIGHT,
         },
       ],
     },
