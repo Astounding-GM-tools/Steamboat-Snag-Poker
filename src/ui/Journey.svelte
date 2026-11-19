@@ -269,6 +269,16 @@
   $effect(() => {
     if (departing) untrack(() => (journey = dockFeeEntry(journey)));
   });
+  /**
+   * The map casts her off (backing out, swinging round: about 20 s) and says when. Should it never say
+   * (the chart didn't load: a blocked request, say), she casts off anyway, rather than wait for ever.
+   */
+  const DEPARTURE_FALLBACK_MS = 45_000;
+  $effect(() => {
+    if (!departing) return;
+    const timer = setTimeout(() => untrack(departed), DEPARTURE_FALLBACK_MS);
+    return () => clearTimeout(timer);
+  });
   /** Where she is on the leg's map, as she steams. */
   let boatT = $state(untrack(() => journey.river?.t ?? 0));
   /** Skip held: she races on to wherever she's bound, or till something stops her. */
