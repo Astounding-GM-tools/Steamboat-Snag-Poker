@@ -13,6 +13,7 @@
   import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
   import { cubicInOut } from 'svelte/easing';
+  import { draw, fade } from 'svelte/transition';
   import TileMap from './TileMap.svelte';
   import { course as forked, route, type Pt, type TravelSidecar } from './route';
   import { loadLeg, MAP_ROOT as ROOT } from './legs';
@@ -34,10 +35,8 @@
     jolt?: boolean;
     /** Round the islands, the passages chosen (by island key). */
     lanes?: Record<string, 'left' | 'right'>;
-    /** Debris in the open river ahead, on her course (as the leg's t). */
-    adrift?: number[];
-    /** Debris lying in a passage round an island, there to be spotted whichever way she goes (map px). */
-    pieces?: Pt[];
+    /** X marks the spot: what's been scrawled on this leg's chart, where (the leg's t), after the fact. */
+    marks?: { t: number; label: string }[];
     /** Something ahead to see before she gets there (an island to choose a way round): the view leans towards it. */
     ahead?: Pt | null;
     /** What she has built so far: Bill's bare boat until the story says otherwise. */
@@ -61,7 +60,7 @@
     /** Departing, the opening shot over: the view has come to rest on her at the landing. */
     onopened?: () => void;
   }
-  let { leg, t, mode, jolt = false, lanes = {}, adrift = [], pieces = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, look = null, cast = false, ondeparted, onturn, onopened }: Props = $props();
+  let { leg, t, mode, jolt = false, lanes = {}, marks = [], ahead = null, built = {}, racing = false, effort = 1, departure = null, look = null, cast = false, ondeparted, onturn, onopened }: Props = $props();
 
   let sidecar = $state<TravelSidecar | null>(null);
   $effect(() => {
@@ -138,8 +137,33 @@
   }
   /** How far along the line she is. */
   const distance = $derived(distanceAt(t));
-  /** The debris in the water ahead, on her course. */
-  const flotsam = $derived(sailed ? [...adrift.map((a) => sailed.point(distanceAt(a))), ...pieces] : []);
+  /**
+   * The marks on the chart, on her course where each was made: an X in two strokes, a little different
+   * every time (drawn from where it is and what it says, so a reload draws the same), and the word or two by it.
+   */
+  const scrawled = $derived(
+    sailed
+      ? marks.map((m) => {
+          let h = Math.round(m.t * 1e6);
+          for (const ch of m.label) h = (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0;
+          const j = (k: number) => (((h >>> (k * 3)) & 7) - 3.5) * 0.5;
+          return {
+            key: `${m.t}:${m.label}`,
+            p: sailed.point(distanceAt(m.t)),
+            label: m.label,
+            strokes: [
+              `M ${-7 + j(0)} ${-6 + j(1)} Q ${j(2)} ${j(3) - 1} ${7 + j(4)} ${7 + j(5)}`,
+              `M ${6 + j(6)} ${-7 + j(7)} Q ${j(8) + 1} ${j(9)} ${-6 + j(10)} ${6 + j(1)}`,
+            ],
+            tilt: j(5) * 2,
+          };
+        })
+      : [],
+  );
+
+  /** A mark's layer, wide enough for its word or two; and how long after it's made the pencil comes down (the table going). */
+  const MARK_W = 200;
+  const MARK_DELAY_MS = 900;
 
   /** log2 of the scale: steaming, high enough to see the river's bends; at play, down on her. */
   const zoom = new Tween(untrack(() => (departure ? voyage.dockZoom : voyage.steamZoom)), { duration: 1100, easing: cubicInOut });
@@ -737,14 +761,13 @@
         What's on the chart, each in a small layer of its own, placed by a transform: their smoke and
         bobbing repaint only themselves, not a drawing the size of the screen.
       -->
-      {#each flotsam as c, i (i)}
-        {@const [x, y] = onScreen(c)}
-        <!-- Something in the water: a crate, or a snag. No telling till she's on it. -->
-        <svg class="mark" viewBox="-6 -6 12 12" width={12 * voyage.steamSize} height={12 * voyage.steamSize} style:transform="translate3d({x - 6 * voyage.steamSize}px, {y - 6 * voyage.steamSize}px, 0)">
-          <g class="crate" style:animation-delay="{i * -0.7}s">
-            <path class="ink" d="M -5 0.5 C -4 -2.5 -1 -1.5 0 -3 C 1.5 -1.5 4 -2.5 5 0 C 4 2.5 -3.5 3 -5 0.5 Z" />
-            <path d="M -3.5 -1 L 3 1 M -1 -3.5 L 1.5 2.5" stroke="#f4ecd8" stroke-width="0.8" fill="none" />
-          </g>
+      {#each scrawled as m (m.key)}
+        {@const [x, y] = onScreen(m.p)}
+        <!-- X marks the spot, in Willie's hand: drawn after the fact (on the chart as it's made; a reload just has it there). -->
+        <svg class="mark scrawl" viewBox="-12 -12 {MARK_W} 24" width={MARK_W} height="24" style:transform="translate3d({x - 12}px, {y - 12}px, 0)">
+          <path d={m.strokes[0]} in:draw={{ duration: 260, delay: MARK_DELAY_MS }} />
+          <path d={m.strokes[1]} in:draw={{ duration: 260, delay: MARK_DELAY_MS + 340 }} />
+          <text x="13" y="5" transform="rotate({m.tilt} 13 0)" in:fade={{ duration: 500, delay: MARK_DELAY_MS + 700 }}>{m.label}</text>
         </svg>
       {/each}
       <!-- The Best Intentions from above (src/ui/boat): she turns to any heading, never flips -->
@@ -892,26 +915,25 @@
   .boat {
     transition: opacity 0.8s ease;
   }
-  .crate {
-    animation: bob 2.2s ease-in-out infinite;
-    transform-box: fill-box;
+  /* Willie's pencil on the chart: an X, and a word or two by it. */
+  .scrawl path {
+    fill: none;
+    stroke: #5b1a0e;
+    stroke-width: 2.2;
+    stroke-linecap: round;
   }
-  .play .crate {
-    opacity: 0;
-  }
-  @keyframes bob {
-    50% {
-      translate: 0 1.5px;
-    }
+  .scrawl text {
+    font-family: 'Bradley Hand', 'Noteworthy', 'Segoe Print', var(--body-font);
+    font-size: 16px;
+    font-weight: 700;
+    fill: #5b1a0e;
+    stroke: rgba(244, 236, 216, 0.85);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+    paint-order: stroke;
   }
   .play .boat {
     opacity: 0;
-  }
-  .ink {
-    fill: #15130f;
-    stroke: #f4ecd8;
-    stroke-width: 0.8;
-    paint-order: stroke;
   }
   @media (prefers-reduced-motion: reduce) {
     .felt,

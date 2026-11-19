@@ -13,6 +13,7 @@
     laneCrateFlag,
     laneCratesNow,
     writeLog,
+    markChart,
     buy,
     canBuy,
     itemPrice,
@@ -53,7 +54,7 @@
   import { crateAnte, crateAnteFor, debrisAffordable, debrisAt, debrisRecord, debrisStep, type Debris } from '../story/characters/debris';
   import TypedLine from './TypedLine.svelte';
   import LogView from './LogView.svelte';
-  import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_RECORDS, SMOOTH_RUN, UNDER_WAY_AGAIN, LEAVING_MUSCATINE, castOffRecord, firstCrateRecord, islandRecord, leftMuscatine, tradeRecord } from '../story/log';
+  import { CHOICE_RECORDS, DOCK_FEE_FLAG, ENCOUNTER_MARKS, ENCOUNTER_RECORDS, SMOOTH_RUN, UNDER_WAY_AGAIN, LEAVING_MUSCATINE, castOffRecord, debrisMark, firstCrateRecord, islandRecord, leftMuscatine, tradeRecord } from '../story/log';
   import { DOCK_FEE_AMOUNT } from '../story/numbers';
   import { islandKey, pointAlong, route, sides, type Island, type Pt, type TravelSidecar } from './map/route';
   import { heavy } from './heavy';
@@ -200,6 +201,8 @@
   /** Out on the river, setting out on it, or at its landing: the map is beneath the felt. */
   const onRiver = $derived(!!journey.river || step?.type === 'steam' || !!dock);
   const leg = $derived(journey.river?.leg ?? (step?.type === 'steam' ? step.leg : (dock?.leg ?? '')));
+  /** What's been marked on this leg's chart so far. */
+  const legMarks = $derived((journey.marks ?? []).filter((m) => m.leg === leg));
   /** Where a shot has the view look, moored (the harbour master's office): held through what follows, till another shot or she casts off. */
   let lookHeld = $state<Pt | null>(null);
   $effect(() => {
@@ -690,13 +693,17 @@
     const obstacle = e && e.def.rivals !== 'crew' && e.def.rivals[0]?.obstacle && e.def.hands === 1;
     // Out of Muscatine the first piece is the set-piece crate: Willie on what was in it, or what losing it means.
     const met = obstacle && j.place === 'muscatine' && j.fillsMet?.leg === j.river?.leg ? (j.fillsMet?.n ?? 0) : 0;
+    const struck = e?.session.seats[0].jokers.at(-1)?.index;
     const record = !e?.outcome
       ? undefined
       : obstacle
         ? met === 1 && e.def.id === 'crate'
           ? firstCrateRecord(j.seed, e.outcome === 'solved', crateAnte(e.def))
-          : debrisRecord(e.def.id, e.outcome, crateAnte(e.def), e.session.seats[0].jokers.at(-1)?.index)
+          : debrisRecord(e.def.id, e.outcome, crateAnte(e.def), struck)
         : ENCOUNTER_RECORDS[e.def.id]?.[e.outcome];
+    // X marks the spot: a word or two on the chart where it happened (the first crate's says what was in it).
+    const mark = !e?.outcome ? undefined : obstacle ? debrisMark(e.def.id, e.outcome, struck !== undefined, met === 1 ? j.seed : undefined) : ENCOUNTER_MARKS[e.def.id];
+    if (mark) j = markChart(j, mark);
     // The dock fee played for: whoever holds the bill when the hands are done settles it.
     const fee = e?.def.id === 'harbourMaster' ? (j.snags.some((s) => s.index === DOCK_FEE) ? DOCK_FEE_FLAG.snagged : DOCK_FEE_FLAG.dodged) : null;
     const marked = fee ? { ...j, flags: [...j.flags, fee] } : j;
@@ -768,7 +775,7 @@
 
 <NowPlaying />
 {#if onRiver && leg}
-  <RiverBackdrop {leg} t={boatT} {lanes} {racing} effort={engineEffort} departure={dock?.landing ?? null} look={lookHeld} cast={departing} ondeparted={departed} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' || step?.type === 'shot' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
+  <RiverBackdrop {leg} t={boatT} {lanes} marks={legMarks} {racing} effort={engineEffort} departure={dock?.landing ?? null} look={lookHeld} cast={departing} ondeparted={departed} ahead={islandNear && !racing ? islandMid(islandNear.island) : null} mode={step?.type === 'steam' || step?.type === 'shot' ? 'steam' : 'play'} jolt={jolted || (step?.type === 'encounter' && !!step.jolt)} />
 {/if}
 {#if journey.done || !step}
   <div class="page">

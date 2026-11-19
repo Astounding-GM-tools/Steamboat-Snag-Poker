@@ -337,6 +337,22 @@ export interface JourneyState {
   fillsMet?: { leg: string; n: number };
   /** The First Mate's Log: Willie's record of the voyage, a line at a time (docs/log.md). */
   log?: LogEntry[];
+  /** X marks the spot: what's been scrawled on the chart, where (the leg and its t), after the fact. */
+  marks?: ChartMark[];
+}
+
+/** A mark on the river chart: an X where something happened, and a word or two by it. */
+export interface ChartMark {
+  leg: string;
+  t: number;
+  label: string;
+}
+
+/** Willie marks the chart where she is on the river (off it, nothing; the same mark there already, nothing). */
+export function markChart(prev: JourneyState, label: string): JourneyState {
+  const at = prev.river;
+  if (!at || prev.marks?.some((m) => m.leg === at.leg && m.label === label && Math.abs(m.t - at.t) < 0.002)) return prev;
+  return { ...prev, marks: [...(prev.marks ?? []), { leg: at.leg, t: at.t, label }] };
 }
 
 /**

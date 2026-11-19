@@ -57,6 +57,8 @@ export const FIRST_CRATE = {
     'Fished out a crate of doorknobs. Now all we need is some doors.',
     'A crate of horehound candy, a little stuck together. Taste still sweet.',
   ],
+  /** Scrawled on the chart where each was found (the same order as `found`). */
+  marks: ['Peg salvage', 'Pipe salvage', 'Horseshoe salvage', 'Bell salvage', 'Seed salvage', 'Doorknob salvage', 'Candy salvage'],
   lost: [
     'Lost the first salvage crate. We’ll never know what’s in it.',
     'Had to let go of the first salvage. River wouldn’t let go.',
@@ -73,6 +75,35 @@ export function firstCrateRecord(seed: number, won: boolean, worth: number): str
   const line = list[(seed >>> 0) % list.length];
   return won ? `${line}\nWorth $${worth} at the Mercantile.` : line;
 }
+
+/**
+ * X marks the spot: what Willie scrawls on the chart where something happened on the river, after the
+ * fact (a word or two, in pencil): where the deadheads lie, where she ran aground, where salvage turned up.
+ */
+export const CHART_MARKS = {
+  salvage: 'Salvage',
+  soggy: 'Soggy cotton',
+  lostFirst: 'Lost a crate',
+  aground: 'Aground',
+  hazard: {
+    sawyer: { clear: 'Sawyers', struck: 'Hit a sawyer' },
+    deadhead: { clear: 'Deadheads', struck: 'Hit a deadhead' },
+    driftPile: { clear: 'Drift piles', struck: 'Hit a drift pile' },
+  } as Record<string, { clear: string; struck: string }>,
+};
+
+/** The chart's mark for a piece of debris, by its id and how it went (`struck`: it left her with a snag). The first crate out of Muscatine says what was in it. */
+export function debrisMark(id: string, outcome: 'solved' | 'failed', struck: boolean, firstOf?: number): string | undefined {
+  if (id === 'crate') {
+    if (firstOf !== undefined) return outcome === 'solved' ? FIRST_CRATE.marks[(firstOf >>> 0) % FIRST_CRATE.marks.length] : CHART_MARKS.lostFirst;
+    return outcome === 'solved' ? CHART_MARKS.salvage : CHART_MARKS.soggy;
+  }
+  const h = CHART_MARKS.hazard[id];
+  return h && (struck ? h.struck : h.clear);
+}
+
+/** The chart's mark for an encounter on the river (not debris), by its id: only The Sandbar has one. */
+export const ENCOUNTER_MARKS: Record<string, string> = { sandbar: CHART_MARKS.aground };
 
 /** What's written when an answer at the table ends it, by the answer's effect. */
 export const CHOICE_RECORDS: Record<string, string> = {
