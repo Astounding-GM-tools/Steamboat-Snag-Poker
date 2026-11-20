@@ -411,6 +411,16 @@ export function morningStrength(state: JourneyState): number {
   return shipStrength(state.crew, state.stations, state.parts) + state.comfort + state.tomorrow;
 }
 
+/**
+ * Past the step she's stuck on, whatever it is (an encounter that won't be left, a step the screen
+ * doesn't know): on to the next. A way out for a voyage that's gone wrong, not part of the story.
+ */
+export function skipStep(prev: JourneyState, story: StoryDef): JourneyState {
+  const state = clone(prev);
+  state.encounter = null;
+  return advance(state, story);
+}
+
 /** On to the next step (the pending ones first), then through any that play themselves. */
 function advance(state: JourneyState, story: StoryDef): JourneyState {
   if (state.pending.length) state.pending.shift();

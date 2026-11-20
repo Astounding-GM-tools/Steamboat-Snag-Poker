@@ -102,8 +102,9 @@
    */
   let width = $state(0);
   const room = $derived(width || span * 28);
-  // Across the whole table it's always all there, however narrow the table (a short screen narrows it to fit).
-  const mode = $derived(span === 12 || room >= 260 ? 'full' : room >= 150 ? 'medium' : 'compact');
+  // Across the whole table (a lone rival) it's all there. Sharing the row, it keeps its share, however wide
+  // the screen: 'full' takes the whole row, and two of them stacked one over the other.
+  const mode = $derived(span === 12 ? 'full' : room >= 150 ? 'medium' : 'compact');
   /** Under the name, no quotes: their nickname (Hurler, Deck hand), or else their boat (the Walrus: The Cacophony). */
   const title = $derived(nickname(id) ?? t(`character.${id}.boat`).replace(/^Captain of the /, 'The '));
 </script>

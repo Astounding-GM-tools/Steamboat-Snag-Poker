@@ -425,6 +425,7 @@ export const en = {
   'log.empty': 'Nothing written yet.',
   'river.downbound': 'downbound',
   'river.inbound': 'inbound',
+  'river.unstuck': 'Something went wrong, and the game skipped ahead. (If you can, send a screenshot: {what})',
   'river.aground': 'aground',
   'river.docked': 'docked',
   'hub.anchor.name': 'Anchor downstream',

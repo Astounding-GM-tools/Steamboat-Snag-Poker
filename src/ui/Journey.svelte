@@ -16,6 +16,7 @@
     markChart,
     buy,
     canBuy,
+    skipStep,
     itemPrice,
     canCastOff,
     castOff,
@@ -688,6 +689,13 @@
   });
   const adviceWords = $derived(advice?.who ? `${advice.who}|${advice.text}` : null);
   let popped = $state<SpeechLine | null>(null);
+  /** What went wrong, the last time Continue had to skip ahead: shown small on the page. */
+  let stuckNote = $state<string | null>(null);
+  function unstuck(e: unknown) {
+    console.error(e);
+    stuckNote = e instanceof Error ? e.message : String(e);
+    journey = skipStep(journey, RIVER);
+  }
   let shipOpen = $state(false);
   // It pops in when there's something new to say, and closes by itself.
   $effect(() => {
@@ -787,9 +795,18 @@
   }
   function onwards() {
     if (!step) return;
+    stuckNote = null;
     if (step.type === 'caption') journey = proceed(journey, RIVER);
     else if (step.type === 'council' && canCastOff(journey, RIVER)) journey = castOff(journey, RIVER);
-    else if (step.type === 'encounter' && enc?.outcome) journey = leave(journey);
+    else if (step.type === 'encounter' && enc?.outcome) {
+      // (Should leaving fail, she goes on anyway, and the screen says what went wrong: a tester's screenshot
+      // then tells us. A Continue that does nothing leaves her stuck for good.)
+      try {
+        journey = leave(journey);
+      } catch (e) {
+        unstuck(e);
+      }
+    } else if (step.type !== 'council') unstuck(new Error(`Nothing to continue from (${step.type})`));
   }
   function purchase(id: string) {
     if (canBuy(journey, RIVER, id)) journey = writeLog(buy(journey, RIVER, id), tradeRecord(t(`item.${id}.name`), itemPrice(journey, id)));
@@ -935,6 +952,7 @@
         {#if taken.length}<p class="note">{t('river.troublesTaken', { list: taken.join(', ') })}</p>{/if}
         {#if enc.fixed.length}<p class="note">{t('river.absorbed', { list: enc.fixed.map(snagTitle).join(', ') })}</p>{/if}
       {/if}
+      {#if stuckNote}<p class="note">{t('river.unstuck', { what: stuckNote })}</p>{/if}
       {#if carried.length && step.type !== 'caption'}
         <p class="carried" class:troubled={troubles > 0}>{t('river.snags')}: {carried.join(', ')}</p>
       {/if}
