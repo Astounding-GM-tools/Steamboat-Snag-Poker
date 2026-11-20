@@ -1003,8 +1003,9 @@
   // --- Fitting the screen --------------------------------------------------
   // The table is drawn to the screen's width, and its height follows (the cards are sized by the columns).
   // On a short screen (a phone with its browser's bars showing) that can run past the bottom and take the
-  // buttons with it: then the table narrows, just enough for all of it to fit, its cards a little smaller.
-  let fitWidth = $state<number | null>(null);
+  // buttons with it: then the cards get smaller, just enough for all of it to fit. The table keeps its
+  // width (narrowing it squeezed the names, the portraits and what's said into a column down the middle).
+  let cardCap = $state<number | null>(null);
   /**
    * How tall the table is laid out, ignoring transforms: a piece sliding in or out, or a card in flight,
    * reaches past the bottom for a moment, and mustn't squeeze the table for the rest of the game.
@@ -1016,24 +1017,26 @@
   }
   async function fitScreen() {
     if (!rootEl) return;
-    fitWidth = null;
+    cardCap = null;
     await tick();
     const room = window.innerHeight;
     if (laidOut(rootEl) <= room + 1) return;
-    // The widest table that fits, found by halving (a few layouts, no flicker: they all happen before the next frame).
-    let lo = 240;
-    let hi = rootEl.clientWidth;
-    while (hi - lo > 4) {
+    // The biggest cards that fit, found by halving (a few layouts, no flicker: they all happen before the next frame).
+    // (Between a card too small to read and one bigger than the columns would ever make it.)
+    let lo = 32;
+    let hi = Math.ceil(rootEl.clientWidth / 4);
+    while (hi - lo > 1) {
       const mid = Math.floor((lo + hi) / 2);
-      fitWidth = mid;
+      cardCap = mid;
       await tick();
       if (laidOut(rootEl) <= room + 1) lo = mid;
       else hi = mid;
     }
-    fitWidth = lo;
+    cardCap = lo;
   }
   $effect(() => {
-    void table.chairs.length;
+    // (Again for a new table: who sits there, not just how many. The same company keeps its card size all game.)
+    void table.chairs.map((c) => c.id).join();
     untrack(() => void fitScreen());
     let timer: ReturnType<typeof setTimeout>;
     const again = () => {
@@ -1052,7 +1055,7 @@
 
 <!-- A tap anywhere, while the table is moving, hurries it along. -->
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="table" class:buttons={table.currency === 'buttons'} class:preamble style:max-width={fitWidth ? `${fitWidth}px` : null} bind:this={rootEl} onclick={hurry}>
+<div class="table" class:buttons={table.currency === 'buttons'} class:preamble style:--card-cap={cardCap ? `${cardCap}px` : null} bind:this={rootEl} onclick={hurry}>
   {#if showHelp}<div class="help-layer layer" style="bottom: {helpBottom}px"><HowTo /></div>{/if}
   <!-- How it works covers what's said: the line comes back when it closes. -->
   {#if line && !showHelp}
@@ -1294,7 +1297,7 @@
     row-gap: clamp(0.5rem, 2vh, 1.4rem);
     align-content: end;
     width: 100%;
-    /* As wide as the screen allows, till the table stops making sense (or its height runs out: fitScreen). */
+    /* As wide as the screen allows, till the table stops making sense. (Short of height, the cards shrink: fitScreen.) */
     max-width: 720px;
     min-height: 100svh;
     margin: 0 auto;
@@ -1302,7 +1305,8 @@
   }
   .table > :not(.layer) {
     --col: calc((100cqw - 11 * var(--gap)) / 12);
-    --card-w: calc(2 * var(--col) + var(--gap));
+    /* (Smaller on a short screen: fitScreen.) */
+    --card-w: min(calc(2 * var(--col) + var(--gap)), var(--card-cap, 999px));
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: subgrid;
